@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title>Rhizosphere :: Launcher</title>
+    <link rel="stylesheet" href="css/rhizo.css" type="text/css" media="screen" charset="utf-8">
+    <script type="text/javascript">
+      function doSubmit() {
+        var url = 'rhizo.html?source=' + document.getElementById('source').value;
+        var windowName = 'rhizosphere';
+        var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
+        windowFeatures += (document.getElementById('mini').checked ? "height=300,width=350" : "height=700, width=1000");
+        window.open(url, windowName, windowFeatures);
+        return false;
+      }
+    </script>
+  </head>
+  <body onload="document.getElementById('source').focus();">
+    <div style="margin:auto; width: 400px; margin-top: 50px; margin-bottom: 5px;">
+      <form action="" onsubmit="return doSubmit();" >
+        <span style="font-size: 32px">Datasource:</span>
+        <input type="text" name='source' id="source" style="font-size: 24px">
+        <input type="submit" value="Go" style="font-size: 24px" /> <br />
+        <input type="checkbox" name="mini" id="mini" ><label for="mini">Mini layout</label>
+      </form>
+    </div>
+    <div style="margin:auto; width: 400px; margin-top: 5px; font-size: 15px">    
+      Tested with Firefox only!<br />
+      Try with <i>js/sample/people.js</i> or <i>js/sample/books.js</i><br/>
+      or with a public <a href="http://docs.google.com">Google Spreadsheet</a>.<br />
+      <font color="red"><sup>New</sup></font> Try the Endless desktop with <i>js/sample/usa.js</i>
+    </div>
+    <div style="margin:auto; width: 450px; margin-top: 5px; font-size: 15px">    
+      <object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/oj6Z7C5Hqu0&hl=en&fs=1"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/oj6Z7C5Hqu0&hl=en&fs=1" type="application/x-shockwave-flash" allowfullscreen="true" width="425" height="344"></embed></object>
+    </div>
+    <div style="margin:auto; width: 400px; margin-top: 5px; font-size: 15px">
+      Higher quality videos:<br />
+      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part0.mov">Part 0</a> &nbsp;
+      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part1.mov">Part 1</a> &nbsp;
+      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part2.mov">Part 2</a> &nbsp;
+      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part3.mov">Part 3</a> &nbsp;
+      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part4.mov">Part 4</a> &nbsp; <Br />
+      Sources: <br />
+      <a href="http://code.google.com/p/rhizosphere/">See Rhizosphere on Google Code</a>                        
+  </body>
+</html>

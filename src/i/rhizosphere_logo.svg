@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docbase="/Users/battlehorse"
+   sodipodi:docname="rhizosphere_logo.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.0440874"
+     inkscape:cx="417.14285"
+     inkscape:cy="674.28571"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1240"
+     inkscape:window-height="722"
+     inkscape:window-x="0"
+     inkscape:window-y="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2221"
+       width="166.65273"
+       height="83.326363"
+       x="382.15192"
+       y="344.56699"
+       inkscape:export-xdpi="64.809998"
+       inkscape:export-ydpi="64.809998" />
+    <image
+       y="322.56702"
+       x="461.50711"
+       id="image3297"
+       height="118.8753"
+       width="118.8753"
+       sodipodi:absref="/Users/battlehorse/Pictures/icons/Tango/48x48/actions/view-fullscreen.png"
+       xlink:href="Pictures/icons/Tango/48x48/actions/view-fullscreen.png"
+       style="opacity:0.43209881" />
+    <rect
+       style="opacity:1;fill:#0077aa;fill-opacity:0.4528302;stroke:none;stroke-width:2;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect8162"
+       width="226.99251"
+       height="14.366614"
+       x="357.24979"
+       y="371.38467" />
+    <image
+       y="353.13135"
+       x="388.80075"
+       id="image3282"
+       height="48"
+       width="48"
+       sodipodi:absref="/Users/battlehorse/Pictures/icons/Tango/48x48/actions/view-fullscreen.png"
+       xlink:href="Pictures/icons/Tango/48x48/actions/view-fullscreen.png" />
+    <text
+       xml:space="preserve"
+       style="font-size:27.45020866px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;fill:#000084;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="483.6781"
+       y="378.29767"
+       id="text7185"><tspan
+         sodipodi:role="line"
+         id="tspan7187"
+         x="483.6781"
+         y="378.29767">Rhizo</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:20.44474602px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;fill:#0077aa;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="503.2045"
+       y="398.83508"
+       id="text7189"><tspan
+         sodipodi:role="line"
+         id="tspan7191"
+         x="503.2045"
+         y="398.83508">sphere</tspan></text>
+    <rect
+       style="opacity:1;fill:#0077aa;fill-opacity:0.1446541;stroke:none;stroke-width:2;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect9133"
+       width="226.99251"
+       height="28.733229"
+       x="357.72867"
+       y="381.44131" />
+  </g>
+</svg>
