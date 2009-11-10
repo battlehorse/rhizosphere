@@ -154,7 +154,7 @@ rhizo.meta.DateKind.prototype.survivesFilter =
   
   var survives = ((isNaN(year) || modelValue.getFullYear() == year) &&
           (isNaN(month) || modelValue.getMonth() == month) &&
-          (isNaN(day) || modelValue.getDate() == year));
+          (isNaN(day) || modelValue.getDate() == day));
   return survives;
 };
 
