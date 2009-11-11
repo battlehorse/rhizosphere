@@ -145,7 +145,38 @@ rhizo.meta.LogarithmRangeKind.prototype.toFilterScale_ = function(modelValue) {
 rhizo.meta.LogarithmRangeKind.prototype.toHumanLabel_ =
   rhizo.meta.DecimalRangeKind.prototype.toHumanLabel_;
 
+/**
+  StringArrayKind meta: A filter that behaves exactly like a String meta but
+  expects the model to be an array of strings.
+
+  TODO(battlehorse): This is still very temporary, since a) it doesn't support
+  clustering and b) it could be made a lot more generic (create array filters
+  out of normal filters by wrapping them).
+*/
+rhizo.meta.StringArrayKind = function() {};
+rhizo.meta.StringArrayKind.prototype.renderFilter =
+  rhizo.meta.StringKind.prototype.renderFilter;
+
+rhizo.meta.StringArrayKind.prototype.survivesFilter =
+    function(filterValue, modelValue) {
+  if (filterValue != '') {
+    for (var i=0; i<modelValue.length;i++) {
+      if (modelValue[i].toLowerCase().indexOf(filterValue.toLowerCase()) != -1) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+rhizo.meta.StringArrayKind.prototype.cluster = function(modelValue) {
+  return { key: "undefined",
+           label: "Clustering unsupported for this datatype." };
+};
+
+
 // Register the extra filters
 rhizo.meta.Kind.DECIMAL = new rhizo.meta.DecimalKind();
 rhizo.meta.Kind.DECIMALRANGE = new rhizo.meta.DecimalRangeKind();
 rhizo.meta.Kind.LOGARITHMRANGE = new rhizo.meta.LogarithmRangeKind();
+rhizo.meta.Kind.STRINGARRAY = new rhizo.meta.StringArrayKind();
