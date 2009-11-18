@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo.ui,rhizo.layout
 // Components Namespace
 namespace("rhizo.ui.component");
 
@@ -92,7 +93,7 @@ rhizo.ui.component.Viewport.prototype.activatePanning_ = function() {
     top: $('#rhizo-viewport').offset().top +
          $('#rhizo-universe').offset().top,
     left: $('#rhizo-viewport').offset().left +
-          $('#rhizo-universe').offset().left,
+          $('#rhizo-universe').offset().left
   };
 
   $('#rhizo-scroll-trigger').click(function() {

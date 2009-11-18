@@ -15,6 +15,7 @@
 */
 
 // Global project namespace
+// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout
 namespace("rhizo");
 
 $p = null;

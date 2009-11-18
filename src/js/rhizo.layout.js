@@ -36,6 +36,7 @@ To define a new layout:
 - update the rhizo.layout.layouts structure
 */
 
+// RHIZODEP=rhizo.log,rhizo.meta
 namespace("rhizo.layout");
 
 /**

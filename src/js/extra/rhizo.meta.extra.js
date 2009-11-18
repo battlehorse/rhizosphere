@@ -14,6 +14,8 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo.meta
+
 /*
   This file contains extra filters that suit very specialized needs and do not
   make sense to pack into the main distribution.

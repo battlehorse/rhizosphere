@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo
 namespace("rhizo");
 
 /**

@@ -14,6 +14,16 @@
   limitations under the License.
 */
 
+// TODO(battlehorse): this file should depend on rhizo.bootstrap, but this
+// dependency is omitted because it would cause a circular dependency.
+// The reason is that the bootstrap sequence is actually composed of 2 steps:
+// - a first step that render the chrome, initiates model loading (hence calling
+//   the functions declared here)
+// - a second step that renders and deploys the loaded models (called from 
+//   within this file for some loaders).
+// The fix requires splitting bootstrap into 2 separate files.
+
+// RHIZODEP=rhizo.gviz
 namespace("rhizo.model.loader");
 
 // Global registry of available loaders.
