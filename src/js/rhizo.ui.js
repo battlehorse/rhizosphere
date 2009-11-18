@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo
 // UI namespace
 namespace("rhizo.ui");
 

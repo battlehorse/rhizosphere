@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui
 namespace('rhizo.bootstrap');
 
 rhizo.bootstrap.go = function(container, opt_options, opt_resource) {

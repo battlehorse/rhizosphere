@@ -36,6 +36,7 @@ To define a new meta-type:
 - update the rhizo.meta.Kind structure.
 */
 
+// RHIZODEP=rhizo
 // Metamodel namespace
 namespace("rhizo.meta");
 

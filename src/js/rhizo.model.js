@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo.ui
 namespace("rhizo.model");
 
 rhizo.model.SuperModel = function(model, opt_selected, opt_filtered) {

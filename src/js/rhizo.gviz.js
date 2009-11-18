@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo.meta,rhizo.autorender
 namespace("rhizo.gviz");
 
 rhizo.gviz.Initializer = function(dataTable, opt_options, opt_customRenderer) {

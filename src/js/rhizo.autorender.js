@@ -14,6 +14,7 @@
   limitations under the License.
 */
 
+// RHIZODEP=rhizo.meta
 namespace("rhizo.autorender");
 
 rhizo.autorender.AR = function(metamodel,

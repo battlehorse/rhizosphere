@@ -38,6 +38,9 @@
     Using this abstract set of coordinates allows the TreePainter to re-use the same rendering code.
     Utility methods are provided to convert between the 'physical' and 'abstract' coordinate set.
 */
+
+// RHIZODEP=rhizo.layout
+
 /**
  * @constructor
  */
