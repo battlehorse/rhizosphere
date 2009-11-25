@@ -104,7 +104,7 @@
             }
           }
         });
-        $('#try-rhizosphere-link').click(function() {
+        $('.try-rhizosphere-link').click(function() {
           go(carousel_js_file, 'mini');
         });
         $('#try-your-own').submit(function() {
@@ -141,14 +141,34 @@
           <a href="http://sites.google.com/site/rhizosphereui">Learn more</a>.
         </p>
         <ul id="carousel" class="jcarousel-skin-tango">
-          <li><img src="other/img/picasa.png"></li>
-          <li><img src="other/img/people.png"></li>
-          <li><img src="other/img/books.png"></li>
-          <li><img src="other/img/bugs.png"></li>          
-          <li><img src="other/img/usa.png"></li>
+          <li>
+            <a href="#" class="try-rhizosphere-link">
+              <img src="other/img/picasa.png" border="0">
+            </a>
+          </li>
+          <li>
+            <a href="#" class="try-rhizosphere-link">
+              <img src="other/img/people.png" border="0">
+            </a>
+          </li>
+          <li>
+            <a href="#" class="try-rhizosphere-link">
+              <img src="other/img/books.png" border="0">
+            </a>
+          </li>
+          <li>
+            <a href="#" class="try-rhizosphere-link">
+              <img src="other/img/bugs.png" border="0">
+            </a>
+          </li>
+          <li>
+            <a href="#" class="try-rhizosphere-link">
+              <img src="other/img/usa.png" border="0">
+            </a>
+          </li>
         </ul>
         <div style="float:right; height: 100px; margin-right: 40px; padding-top: 10px">
-          <a href="#" id="try-rhizosphere-link">
+          <a href="#" class="try-rhizosphere-link">
             <img src="other/img/try.png" alt="Try Rhizosphere" border="0">
           </a><br />
           <label for="mini" class="smaller">Mini layout</label>
