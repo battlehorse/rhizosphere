@@ -1,44 +1,323 @@
 <html>
   <head>
     <title>Rhizosphere :: Launcher</title>
-    <link rel="stylesheet" href="css/rhizo.css" type="text/css" media="screen" charset="utf-8">
-    <script type="text/javascript">
-      function doSubmit() {
-        var url = 'rhizo.html?source=' + document.getElementById('source').value;
+    <style type="text/css" media="screen">
+      body {
+        background-color: #f0f7f9;
+      }
+      
+      .contents {
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        background: #fff;
+        border: 1px solid #6b90da;
+        padding: 0 1em;
+        margin-bottom: 10px;
+      }
+      
+      .detail-contents {
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+        background: #f0f7f9;
+        border: 1px solid #BAE0EB;
+        display: none;
+        margin-left: 132px;
+      }
+            
+      * {
+        font-family: sans-serif;
+      }
+      
+      .carousel-description {
+        display: none;
+        margin: 0 0 0 40px;
+        padding-top: 10px;
+      }
+      
+      .carousel-description h2 {
+        margin: 0.2em 0;
+      }
+      
+      .small {
+        font-size: 12px;
+      }
+      
+      .justified {
+        text-align: justify;
+      }
+      
+      .smaller {
+        color: #999;
+        font-size: 11px;
+      }
+      
+      .shaded {
+        color: #999;
+      }
+      
+      .bluelight {
+        color: #6b90da;
+      }
+      
+      #mini-label, #try-your-own-mini-label {
+        color: #999;
+        font-size: 11px;
+      }
+    </style>
+    <script src="js/jquery-1.3.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="other/js/jcarousel/jquery.jcarousel.pack.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="other/css/jcarousel/jquery.jcarousel.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <link rel="stylesheet" href="other/css/jcarousel/skin.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script type="text/javascript" charset="utf-8">
+      var carousel_js_file;
+      var js_files = [
+        'js/sample/picasa.js',
+        'js/sample/people.js',
+        'js/sample/books.js',
+        'js/sample/bugs.js',
+        'js/sample/usa.js' ];
+        
+      function go(js_file, mini_id) {
+        var url = 'rhizo.html?source=' + js_file;
         var windowName = 'rhizosphere';
         var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
-        windowFeatures += (document.getElementById('mini').checked ? "height=300,width=350" : "height=700, width=1000");
+        windowFeatures += (document.getElementById(mini_id).checked ? "height=300,width=350" : "height=700, width=1000");
         window.open(url, windowName, windowFeatures);
-        return false;
+        return false;        
       }
+      
+      jQuery(document).ready(function() {
+        jQuery('#carousel').jcarousel({
+          visible: 1,
+          scroll: 1,
+          start: Math.floor(Math.random()*5)+1,
+          wrap: 'both',
+          itemVisibleInCallback: {
+            onBeforeAnimation: function(carousel, item, index, state) {
+              $('.carousel-description').not('#desc.' + index).fadeOut();
+            },
+            onAfterAnimation: function(carousel, item, index, state) {
+              $('#desc-' + index).fadeIn();
+              carousel_js_file = js_files[index-1];
+            }
+          }
+        });
+        $('#try-rhizosphere-link').click(function() {
+          go(carousel_js_file, 'mini');
+        });
+        $('#try-your-own').submit(function() {
+          return go($('#source').val(), 'try-your-own-mini');
+        });
+        $('#try-learn').click(function() {
+          $('#try-learn-contents').show('fast');
+          $('#source').focus();
+          return false;
+        });
+        $('#try-watch').click(function() {
+          $('#try-watch-contents').show('fast');
+          return false;
+        });        
+        $('#try-explore').click(function() {
+          $('#try-explore-contents').show('fast');
+          return false;
+        });        
+      });
     </script>
   </head>
-  <body onload="document.getElementById('source').focus();">
-    <div style="margin:auto; width: 400px; margin-top: 50px; margin-bottom: 5px;">
-      <form action="" onsubmit="return doSubmit();" >
-        <span style="font-size: 32px">Datasource:</span>
-        <input type="text" name='source' id="source" style="font-size: 24px">
-        <input type="submit" value="Go" style="font-size: 24px" /> <br />
-        <input type="checkbox" name="mini" id="mini" ><label for="mini">Mini layout</label>
-      </form>
-    </div>
-    <div style="margin:auto; width: 400px; margin-top: 5px; font-size: 15px">    
-      Tested with Firefox only!<br />
-      Try with <i>js/sample/people.js</i> or <i>js/sample/books.js</i><br/>
-      or with a public <a href="http://docs.google.com">Google Spreadsheet</a>.<br />
-      <font color="red"><sup>New</sup></font> Try the Endless desktop with <i>js/sample/usa.js</i>
-    </div>
-    <div style="margin:auto; width: 450px; margin-top: 5px; font-size: 15px">    
-      <object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/oj6Z7C5Hqu0&hl=en&fs=1"></param><param name="allowFullScreen" value="true"></param><embed src="http://www.youtube.com/v/oj6Z7C5Hqu0&hl=en&fs=1" type="application/x-shockwave-flash" allowfullscreen="true" width="425" height="344"></embed></object>
-    </div>
-    <div style="margin:auto; width: 400px; margin-top: 5px; font-size: 15px">
-      Higher quality videos:<br />
-      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part0.mov">Part 0</a> &nbsp;
-      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part1.mov">Part 1</a> &nbsp;
-      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part2.mov">Part 2</a> &nbsp;
-      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part3.mov">Part 3</a> &nbsp;
-      <a href="http://www.battlehorse.net/rhizosphere/rhizo-part4.mov">Part 4</a> &nbsp; <Br />
-      Sources: <br />
-      <a href="http://code.google.com/p/rhizosphere/">See Rhizosphere on Google Code</a>                        
+  <body>
+    <div style="margin:auto; width: 920px; margin-top: 10px; margin-bottom: 5px;">
+      <h1 style="text-align:right; height: 50px">
+        <a href="http://sites.google.com/site/rhizosphereui">
+          <img src="i/rhizosphere_logo.png" style="float:left; vertical-align:text-bottom; border: 1px solid #6b90da">
+        </a>
+        Rhizosphere<span class="bluelight">!</span>
+      </h1>
+      <div class="contents">
+        <p class="small" style="padding-left: 40px;">
+          <a style="color: #000" href="http://www.youtube.com/watch?v=NwVBzx0LMNQ">Minority Report</a>
+          <span class="bluelight"><strong>can</strong></span> happen in a browser.
+          <a href="http://sites.google.com/site/rhizosphereui">Learn more</a>.
+        </p>
+        <ul id="carousel" class="jcarousel-skin-tango">
+          <li><img src="other/img/picasa.png"></li>
+          <li><img src="other/img/people.png"></li>
+          <li><img src="other/img/books.png"></li>
+          <li><img src="other/img/bugs.png"></li>          
+          <li><img src="other/img/usa.png"></li>
+        </ul>
+        <div style="float:right; height: 100px; margin-right: 40px; padding-top: 10px">
+          <a href="#" id="try-rhizosphere-link">
+            <img src="other/img/try.png" alt="Try Rhizosphere" border="0">
+          </a><br />
+          <label for="mini" class="smaller">Mini layout</label>
+          <input type="checkbox" name="mini" id="mini" >
+        </div>
+        <div id="desc-1" class="carousel-description">
+          <h2>Picasa<span class="bluelight">.js</span></h2>
+          <p>
+            Simple photo browsing and picture organizer.<br />
+          <span class="shaded">
+            Drag pictures around, group them to your liking, magnify the
+            interesting ones.
+          </span>
+          </p>
+        </div>
+        <div id="desc-2" class="carousel-description">
+          <h2>People<span class="bluelight">.js</span></h2>
+          <p>
+            Organizational charts, family trees and contacts management.<br />
+          <span class="shaded">
+            Try the hierarchical layout and see how it reacts to dynamic filtering.
+          </span>
+          </p>
+        </div>
+        <div id="desc-3" class="carousel-description">
+          <h2>Books<span class="bluelight">.js</span></h2>
+          <p>
+            A renewed shopping experience.<br />
+          <span class="shaded">
+            Use the filters to find the book you've been always looking for.
+          </span>
+          </p>
+        </div>
+        <div id="desc-4" class="carousel-description">
+          <h2>Bugs<span class="bluelight">.js</span></h2>
+          <p>
+            Project tracking made easy. Don't get overwhelmed by your bugs.<br />
+          <span class="shaded">
+            Slice'n'dice according to multiple metrics: author, priority, severity
+            and other metrics.
+          </span>
+          </p>
+        </div>
+        <div id="desc-5" class="carousel-description">
+          <h2>Usa<span class="bluelight">.js</span></h2>
+          <p>
+            A new way to explore geography, politics and navigate through
+            complex data.<br />
+          <span class="shaded">
+            Too much data on screen? Click the panning icon to activate the
+            endless desktop.
+          </span>
+          </p>
+        </div>
+        <div style="clear:both"></div>
+      </div>
+      <div class="contents more">
+        <div>
+          <img src="other/img/tryyourown.png" style="float:left; margin-right: 15px">
+          <p>
+            <strong>Try your own.</strong><br />
+            <span class="shaded">
+              Try Rhizosphere with your custom javascript file or model.
+              <a href="#" id="try-learn">Learn more</a>
+            </span>
+            <div id="try-learn-contents" class="detail-contents">
+              <form id="try-your-own" >
+                <table>
+                  <tr>
+                    <td><span style="font-size: 24px">Datasource:</span></td>
+                    <td>
+                      <input type="text" name='source' id="source" style="font-size: 24px; width: 500px">
+                      <input type="submit" value="Go" style="font-size: 24px" />
+                    </td>
+                  </tr><tr valign="top">
+                    <td>
+                      <label for="try-your-own-mini" class="smaller">Mini layout</label>
+                      <input type="checkbox" name="try-your-own-mini" id="try-your-own-mini" >
+                    </td><td>
+                      <span class="smaller"><strong>Example:</strong> js/sample/people.js</span>
+                      <p class="small justified">
+                        Rhizosphere can load the data to visualize from many sources,
+                        such as <em>custom javascript files</em> or 
+                        <a href="http://code.google.com/apis/visualization/">Google Visualization</a> datasources.
+                        It also has many additional features. Give these a try:
+                      </p>
+                      <ul class="small">
+                        <li><a href="rhizo.html?source=js/sample/many.js" target="_blank">many.js</a>: 
+                          thousand of elements on screen!</li>
+                        <li><a href="rhizo.html?source=js/sample/autorender.js" target="_blank">autorender.js</a>: 
+                          Legend and color coding for your items.</li>
+                        <li><a href="rhizo.html?source=http://spreadsheets.google.com/tq?range=A1:K14&headers=-1&key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&gid=0" target="_blank">
+                          Phone prices</a>: load contents from 
+                          <a href="http://spreadsheets.google.com/ccc?key=0Av88pFrCTjLhdGZzYlhEMkxZUmhZbUNfU1JLU3JlWEE&hl=en_GB" target="_blank">this spreadsheet</a>
+                          via Google Visualization API.</li>
+                        <li><a href="http://spreadsheets.google.com/ccc?key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&hl=en_GB" target="_blank">Spreadsheet Gadget</a>:
+                          Use Rhizosphere directly within the spreadsheet!</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </table>
+              </form>
+            </div>
+          </p>
+          <div style="clear:both"></div>
+        </div>
+        <div>
+          <img src="other/img/watch.png" style="float:left; margin-right: 15px">
+          <p>
+            <strong>Watch</strong><br />
+            <span class="shaded">
+              Take a look at Rhizosphere videos and screencasts.
+              <a href="#" id="try-watch">Learn more</a>
+            </span>
+            <div id="try-watch-contents" class="detail-contents">
+              <p>A quick 30 secs demo:</p>
+              <center>
+                <object width="480" height="295"><param name="movie" value="http://www.youtube.com/v/q-N_dNFmr6c&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/q-N_dNFmr6c&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="295"></embed></object>
+              </center>
+              <p>Way longer full overview (grab a cup of tea):</p>
+              <center>
+                <object width="320" height="265"><param name="movie" value="http://www.youtube.com/v/oj6Z7C5Hqu0&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/oj6Z7C5Hqu0&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="320" height="265"></embed></object>
+              </center>
+              <p>Still interested? We have <a href="http://sites.google.com/site/rhizosphereui/Home/videos">more videos.</a>
+            </div>
+          </p>
+          <div style="clear:both"></div>
+        </div>
+        <div>
+          <img src="other/img/explore.png" style="float:left; margin-right: 15px">
+          <p>
+            <strong>Explore</strong><br />
+            <span class="shaded">
+              Discover Rhizosphere and contribute to its development.
+              <a href="#" id="try-explore">Learn more</a>
+            </span>
+            <div id="try-explore-contents" class="detail-contents">
+              <p class="small justified">
+                Rhizosphere is <strong>open source</strong>!
+                You can reuse Rhizosphere code in your projects or contribute to
+                its development. Here are some links to get started:
+                <ul class="small">
+                  <li>Learn more about the <a href="http://sites.google.com/site/rhizosphereui">Rhizosphere project</a></li>
+                  <li>Take a look at the <a href="http://code.google.com/p/rhizosphere">source code</a></li>
+                  <li><a href="http://twitter.com/rhizosphere">Follow Rhizosphere</a> on Twitter 
+                    <a href="http://twitter.com/rhizosphere">
+                      <img src="other/img/twitter_icon.gif" style="vertical-align:middle; border: 0;">
+                    </a>
+                  </li>
+                </ul>
+              </p>
+            </div>
+          </p>
+          <div style="clear:both"></div>
+        </div>
+      </div>
+      <div class="contents more">
+        <p class="small">
+          Rhizosphere supports the following browsers:
+          <span class="shaded">
+            <img src="other/img/chrome.png"> Google Chrome
+            <img src="other/img/firefox.png"> Mozilla Firefox
+            <img src="other/img/safari.png"> Safari
+            <img src="other/img/opera.png"> Opera
+          </span><br />
+          Using Internet Explorer? Please install <a href="http://code.google.com/chrome/chromeframe/">Google Chrome Frame</a>.
+        </p>
+        <p class="smaller">
+          Crystal Icons by <a href="http://www.everaldo.com/crystal/">Everaldo</a>.
+          Carousel by <a href="http://sorgalla.com/jcarousel/">JCarousel</a>.
+        </p>
+      </div>
   </body>
 </html>
