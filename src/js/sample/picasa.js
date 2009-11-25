@@ -72,7 +72,7 @@ var renderer = {
 };
 
 // Choose a tag (either a default or extracted from the URL) to query picasa with
-var tag = 'sunset';
+var tag = 'flower';
 var tagregex = new RegExp('tag=([^&]*)');
 var tagresults = tagregex.exec(document.location.href);
 if (tagresults && tagresults[1]) {
