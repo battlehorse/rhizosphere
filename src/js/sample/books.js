@@ -49,7 +49,7 @@ var models = [
                   false),
   new sample.Book('0321525655',
                   'Presentation Zen',
-                  'http://ecx.images-amazon.com/images/I/41iLssLPHCL._SL110_.jpg',
+                  'http://ecx.images-amazon.com/images/I/41Uet2bhPOL._SL110_.jpg',
                   4,
                   65.79,
                   ['programming'],
