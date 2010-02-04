@@ -45,9 +45,9 @@ rhizo.util.log10_ = function(val) {
  */
 rhizo.util.orderOfMagnitude = function(num) {
   if (num == 0) {
-    return Number.NaN;  
+    return Number.NaN;
   }
-  
+
   // The multiply/divide by 100 trick is just to get rid of rounding errors.
   // For example, in Safari/MacOs log10(1M) would result in 5.999 instead of 6
   // and consequently floored to 5. And we cannot remove floor().

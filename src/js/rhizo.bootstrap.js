@@ -47,26 +47,26 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
       this.options_.miniLayout = false;
     } else {
       this.options_.miniLayout = true;
-    }    
-  }  
-  
+    }
+  }
+
   $globalBootstrapper_ = this;
 }
 
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   // Get the minimum chrome up and running
-  this.template_ = this.options_.miniLayout ? 
+  this.template_ = this.options_.miniLayout ?
       new rhizo.ui.component.MiniTemplate() :
       new rhizo.ui.component.StandardTemplate();
   this.template_.renderChrome(this.container_, this.options_);
   this.template_.activateChrome(this.options_);
-  
+
   // Disable animations and other performance tunings if needed
   rhizo.ui.performanceTuning(this.options_.noAnims);
-  
+
   // Create the project
   this.project_ = new rhizo.Project(this.options_);
-  
+
   var source = opt_resource;
   if (!source) {
     var regex = new RegExp('source=(.*)$');
@@ -76,8 +76,8 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
     } else {
       source = unescape(results[1]);
     }
-  } 
-  
+  }
+
   if (source) {
     rhizo.model.loader.load(source, this.options_);
   }
