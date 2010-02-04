@@ -53,7 +53,7 @@ rhizo.ui.component.Logo = function() {};
 
 rhizo.ui.component.Logo.prototype.render = function(container, opt_options) {
  $('<div id="rhizo-header"><h1>Rhizosphere</h1><p>' +
-    'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2009<br />' +
+    'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2010<br />' +
     '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
     '&nbsp;' +
     '<a href="http://sites.google.com/site/rhizosphereui/Home/documentation" target="_blank" ' +
