@@ -18,7 +18,6 @@
 // RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout
 namespace("rhizo");
 
-$p = null;
 rhizo.Project = function(opt_options) {
   this.models_ = [];
 
@@ -28,7 +27,6 @@ rhizo.Project = function(opt_options) {
   this.layoutName_ = 'flow'; // default layout engine
   this.layouEngine_ = null;
   this.options_ = opt_options || {};
-  $p = this;
 };
 
 rhizo.Project.prototype.deploy = function(opt_models) {
@@ -57,7 +55,7 @@ rhizo.Project.prototype.addModels_ = function(models) {
 rhizo.Project.prototype.finalizeUI_ = function() {
   // Once the models are rendered, bind events that require rendered
   // DOM elements to be present, such as the maximize icon.
-  rhizo.ui.initExpandable(this.renderer_, this.options_);
+  rhizo.ui.initExpandable(this, this.renderer_, this.options_);
 
   // We manually disable animations for the initial layout (the browser is
   // already busy creating the whole dom).
@@ -129,8 +127,9 @@ rhizo.Project.prototype.allSelected = function() {
 };
 
 rhizo.Project.prototype.allUnselected = function() {
+  var selectionMap = this.selectionMap_;
   return $.grep(this.models_, function(superModel) {
-    return !$p.selectionMap_[superModel.id];
+    return !selectionMap[superModel.id];
   });
 };
 
@@ -164,6 +163,7 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 
 rhizo.Project.prototype.initializeModel_ = function(model) {
   var rendering = rhizo.model.kickstart(model,
+                                        this,
                                         this.renderer_,
                                         this.options_);
 
@@ -200,6 +200,7 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
     });
     engine.layout('#rhizo-universe',
                   nonFilteredModels,
+                  this.modelsMap_,
                   this.metaModel_,
                   opt_options);
   }

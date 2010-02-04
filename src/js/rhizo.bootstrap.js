@@ -92,8 +92,8 @@ rhizo.bootstrap.Bootstrap.prototype.setRenderer = function(renderer) {
 };
 
 rhizo.bootstrap.Bootstrap.prototype.deploy = function(opt_models) {
-  this.template_.renderDynamic(this.container_, this.options_);
-  this.template_.activateDynamic(this.options_);
+  this.template_.renderDynamic(this.container_, this.project_, this.options_);
+  this.template_.activateDynamic(this.project_, this.options_);
 
   this.project_.deploy(opt_models);
   this.template_.done();

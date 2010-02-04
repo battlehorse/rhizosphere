@@ -44,11 +44,11 @@ namespace("rhizo.meta");
 rhizo.meta.StringKind = function() {};
 
 // metadata is the part of the metamodel that applies to this kind
-rhizo.meta.StringKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.StringKind.prototype.renderFilter = function(project, metadata, key) {
   var input = $("<input type='text' />");
   // keypress handling removed due to browser quirks in key detection
   $(input).change(function(ev) {
-    $p.filter(key, $(this).val());
+    project.filter(key, $(this).val());
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -116,7 +116,7 @@ rhizo.meta.DateKind = function(opt_clusterby) {
   }
 };
 
-rhizo.meta.DateKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.DateKind.prototype.renderFilter = function(project, metadata, key) {
   var year = $("<select style='vertical-align:top' />");
   year.append("<option value='yyyy'>yyyy</option>");
   for (var i = metadata.minYear ; i <= metadata.maxYear; i++) {
@@ -135,7 +135,7 @@ rhizo.meta.DateKind.prototype.renderFilter = function(metadata, key) {
   }
   
   $(year).add($(month)).add($(day)).change(function(ev) {
-    $p.filter(key, [$(year).val(), $(month).val(), $(day).val()]);
+    project.filter(key, [$(year).val(), $(month).val(), $(day).val()]);
   });
 
   return $("<div class='rhizo-filter' />").
@@ -198,7 +198,7 @@ rhizo.meta.DateKind.prototype.addZero_ = function(value) {
 /* RangeKind meta */
 rhizo.meta.RangeKind = function() {};
 
-rhizo.meta.RangeKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
   var slider = $("<div id='rhizo-slider-" + key + "' />");
   var minLabel = $("<strong>" + this.toHumanLabel_(metadata.min) + "</strong>");
   var maxLabel = $("<strong>" + this.toHumanLabel_(metadata.max) + "</strong>");
@@ -244,7 +244,7 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(metadata, key) {
                  removeClass("rhizo-slider-moving");
         maxLabel.text(that.toHumanLabel_(that.toModelScale_(maxSlide))).
                  removeClass("rhizo-slider-moving");
-        $p.filter(key, { min: minSlide, max: maxSlide });
+        project.filter(key, { min: minSlide, max: maxSlide });
       };
   }).call(this);
 
@@ -307,11 +307,11 @@ rhizo.meta.RangeKind.prototype.toFilterScale_ = function(modelValue) {
 
 /**
    Converts a numeric value into a human readable form.
-   
+
    The default implementation of this method is a no-op. Custom filters
    extending the range slider should customize this method according to their
    needs. rhizo.ui.toHumanLabel() is a useful helper in this case.
-   
+
    @oaram {number} the value to be converted
  */
 rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
@@ -321,14 +321,14 @@ rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
 /* BooleanKind meta */
 rhizo.meta.BooleanKind = function() {};
 
-rhizo.meta.BooleanKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.BooleanKind.prototype.renderFilter = function(project, metadata, key) {
   var check = $("<select />");
   check.append("<option value=''>-</option>");
   check.append("<option value='true'>Yes</option>");
   check.append("<option value='false'>No</option>");
 
   $(check).change(function(ev) {
-    $p.filter(key, $(this).val());
+    project.filter(key, $(this).val());
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -349,7 +349,7 @@ rhizo.meta.BooleanKind.prototype.compare = function(firstValue, secondValue) {
 /* CategoryKind meta */
 rhizo.meta.CategoryKind = function() {};
 
-rhizo.meta.CategoryKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.CategoryKind.prototype.renderFilter = function(project, metadata, key) {
   var categories = $("<select " +
                      (metadata.multiple ? 'multiple size="4" ' : '') +
                      " style='vertical-align:top' />");
@@ -366,7 +366,7 @@ rhizo.meta.CategoryKind.prototype.renderFilter = function(metadata, key) {
         return category != '';
       });
     }
-    $p.filter(key, selectedCategories);
+    project.filter(key, selectedCategories);
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
