@@ -21,7 +21,7 @@ namespace("rhizo");
  * Permanently disables logging. Turns rhizo.log into a no-op.
  */
 rhizo.disableLogging = function() {
-  rhizo.log = function() {};  
+  rhizo.log = function() {};
 };
 
 rhizo.log = function(message, opt_severity) {
@@ -49,10 +49,10 @@ rhizo.log = function(message, opt_severity) {
   }
   if (!$('#rhizo-console-contents').is(':visible') && opt_severity) {
     if (!$('#rhizo-right').is(':visible')) {
-      $('#rhizo-right-pop').effect("highlight", {color: highlightColor }, 1000);      
+      $('#rhizo-right-pop').effect("highlight", {color: highlightColor }, 1000);
     } else {
       $('#rhizo-console-header').effect("highlight",
-                                        {color: highlightColor }, 1000);            
+                                        {color: highlightColor }, 1000);
     }
   }
 };
