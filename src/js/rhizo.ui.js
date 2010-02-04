@@ -97,13 +97,13 @@ rhizo.ui.expandable = function(renderer, opt_options) {
   } else {
     return false;
   }
-}
+};
 
 /**
   Wires the expansion listeners to the rendering expansion icons,
   if the renderer supports expansion.
  */
-rhizo.ui.initExpandable = function(renderer, opt_options) {
+rhizo.ui.initExpandable = function(project, renderer, opt_options) {
   if (rhizo.ui.expandable(renderer, opt_options)) {
     // register the hover effect to show/hide the expand icon
     $('.rhizo-model').hover(
@@ -113,10 +113,10 @@ rhizo.ui.initExpandable = function(renderer, opt_options) {
         $(this).children('.rhizo-expand-model').css('display', 'none');
       });
 
-    // register the expan icon handler
+    // register the expand icon handler
     $('.rhizo-expand-model').click(function() {
       var id = $(this).attr('id').replace(/rhizo-expand-/, '');
-      var model = $p.model(id);
+      var model = project.model(id);
 
       // flip the expansion status
       model.expanded = !model.expanded;

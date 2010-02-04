@@ -41,15 +41,16 @@ namespace("rhizo.layout");
 
 /**
  * Creates a dropdown control that enumerates all the metaModel keys.
+ * @param {rhizo.Project} project
  * @param {string} id
  * @return {Element} the jquery-enhanced HTML dropdown control
  */
-rhizo.layout.metaModelKeySelector = function(id) {
+rhizo.layout.metaModelKeySelector = function(project, id) {
   var select = $("<select id='" + id + "' />");
-  if ($p && $p.metaModel()) {
-    for (key in $p.metaModel()) {
+  if (project && project.metaModel()) {
+    for (key in project.metaModel()) {
       select.append("<option value='" + key + "'>" +
-                    $p.metaModel()[key].label + "</option>");
+                    project.metaModel()[key].label + "</option>");
     }
   }
   return select;
@@ -59,6 +60,7 @@ rhizo.layout.NoLayout = function() {};
 
 rhizo.layout.NoLayout.prototype.layout = function(container,
                                                   supermodels,
+                                                  allmodels,
                                                   meta,
                                                   opt_options) {};
 
@@ -73,6 +75,7 @@ rhizo.layout.FlowLayout = function(opt_top, opt_left) {
 
 rhizo.layout.FlowLayout.prototype.layout = function(container,
                                                     supermodels,
+                                                    allmodels,
                                                     meta,
                                                     opt_options) {
   var maxWidth = $(container).width();
@@ -108,10 +111,11 @@ rhizo.layout.FlowLayout.prototype.cleanup = function() {
   this.top = this.left = 5;
 };
 
-rhizo.layout.FlowLayout.prototype.details = function() {
+rhizo.layout.FlowLayout.prototype.details = function(project) {
   return $("<div />").
            append("Ordered by: ").
-           append(rhizo.layout.metaModelKeySelector('rhizo-flowlayout-order')).
+           append(rhizo.layout.metaModelKeySelector(project,
+                                                    'rhizo-flowlayout-order')).
            append(" desc?").
            append('<input type="checkbox" id="rhizo-flowlayout-desc" />');
 };
@@ -124,6 +128,7 @@ rhizo.layout.ScrambleLayout = function() {};
 
 rhizo.layout.ScrambleLayout.prototype.layout = function(container,
                                                         supermodels,
+                                                        allmodels,
                                                         meta,
                                                         opt_options) {
   if (opt_options && opt_options.filter) {
@@ -154,6 +159,7 @@ rhizo.layout.BucketLayout = function() {
 
 rhizo.layout.BucketLayout.prototype.layout = function(container,
                                                       supermodels,
+                                                      allmodels,
                                                       meta,
                                                       opt_options) {
   var reverse = $('#rhizo-bucketlayout-desc:checked').length > 0;
@@ -207,6 +213,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
     this.renderBucketHeader_(container, bucketsLabels[bucketKey]);
     this.internalFlowLayout_.layout(container,
                                     buckets[bucketKey],
+                                    allmodels,
                                     meta,
                                     opt_options);
 
@@ -230,10 +237,11 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
 };
 
 
-rhizo.layout.BucketLayout.prototype.details = function() {
+rhizo.layout.BucketLayout.prototype.details = function(project) {
   return $("<div />").
            append("Group by: ").
-           append(rhizo.layout.metaModelKeySelector('rhizo-bucketlayout-bucket')).
+           append(rhizo.layout.metaModelKeySelector(project,
+                                                    'rhizo-bucketlayout-bucket')).
            append(" desc?").
            append('<input type="checkbox" id="rhizo-bucketlayout-desc" />');
 };

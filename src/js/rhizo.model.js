@@ -50,9 +50,9 @@ rhizo.model.SuperModel.prototype.filter = function(key) {
 
 rhizo.model.SuperModel.prototype.resetFilter = function(key) {
   delete this.filters_[key];
-}
+};
 
-rhizo.model.kickstart = function(model, renderer, opt_options) {
+rhizo.model.kickstart = function(model, project, renderer, opt_options) {
   var naked_render = renderer.render(
       model.unwrap(), // rendered expects the naked model
       model.expanded, // initial expansion status, dictated by the SuperModel
@@ -75,10 +75,10 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
 
   $(rendering).attr("id", model.id);
   $(rendering).dblclick(function() {
-    if ($p.isSelected(this.id)) {
-      $p.unselect(this.id);
+    if (project.isSelected(this.id)) {
+      project.unselect(this.id);
     } else {
-      $p.select(this.id);
+      project.select(this.id);
     }
   });
 
@@ -88,7 +88,7 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
     zIndex: 10000,
     distance: 3,
     start: function(ev, ui) {
-      $p.toggleSelection('disable');
+      project.toggleSelection('disable');
 
       // used by droppable feature
       $('#' + ui.helper[0].id).data(
@@ -100,8 +100,8 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
 
       // figure out all the initial positions for the selected elements
       // and store them.
-      if ($p.isSelected(ui.helper[0].id)) {
-        for (id in $p.allSelected()) {
+      if (project.isSelected(ui.helper[0].id)) {
+        for (id in project.allSelected()) {
           $('#'+id).data(
             "top0",
             parseInt($('#'+id).css("top"),10) -
@@ -118,8 +118,8 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
       }
     },
     drag: function(ev, ui) {
-      if ($p.isSelected(ui.helper[0].id)) {
-        for (id in $p.allSelected()) {
+      if (project.isSelected(ui.helper[0].id)) {
+        for (id in project.allSelected()) {
           if (id != ui.helper[0].id) {
             $('#' + id).css('top',
                             $('#'+id).data("top0") + ui.position.top);
@@ -130,9 +130,9 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
       }
     },
     stop: function(ev, ui) {
-      $p.toggleSelection('enable');
-      if ($p.isSelected(ui.helper[0].id)) {
-        for (id in $p.allSelected()) {
+      project.toggleSelection('enable');
+      if (project.isSelected(ui.helper[0].id)) {
+        for (id in project.allSelected()) {
          $('#'+id).removeData("top0");
          $('#'+id).removeData("left0");
         }
