@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui
+// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui,rhizo.ui.gui
 namespace('rhizo.bootstrap');
 
 rhizo.bootstrap.go = function(container, opt_options, opt_resource) {
@@ -54,11 +54,13 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
 }
 
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
+  var gui = new rhizo.ui.gui.GUI(this.container_);
+
   // Get the minimum chrome up and running
   this.template_ = this.options_.miniLayout ?
-      new rhizo.ui.component.MiniTemplate() :
-      new rhizo.ui.component.StandardTemplate();
-  this.template_.renderChrome(this.container_, this.options_);
+      new rhizo.ui.component.MiniTemplate(gui) :
+      new rhizo.ui.component.StandardTemplate(gui);
+  this.template_.renderChrome(this.options_);
   this.template_.activateChrome(this.options_);
 
   // Disable animations and other performance tunings if needed
@@ -66,6 +68,7 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
 
   // Create the project
   this.project_ = new rhizo.Project(this.options_);
+  this.project_.setGui(gui);
 
   var source = opt_resource;
   if (!source) {
@@ -92,7 +95,7 @@ rhizo.bootstrap.Bootstrap.prototype.setRenderer = function(renderer) {
 };
 
 rhizo.bootstrap.Bootstrap.prototype.deploy = function(opt_models) {
-  this.template_.renderDynamic(this.container_, this.project_, this.options_);
+  this.template_.renderDynamic(this.project_, this.options_);
   this.template_.activateDynamic(this.project_, this.options_);
 
   this.project_.deploy(opt_models);

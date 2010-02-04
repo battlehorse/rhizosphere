@@ -27,6 +27,8 @@ rhizo.Project = function(opt_options) {
   this.layoutName_ = 'flow'; // default layout engine
   this.layouEngine_ = null;
   this.options_ = opt_options || {};
+
+  this.gui_ = null;
 };
 
 rhizo.Project.prototype.deploy = function(opt_models) {
@@ -88,6 +90,10 @@ rhizo.Project.prototype.setRenderer = function(renderer) {
   this.renderer_ = renderer;
 };
 
+rhizo.Project.prototype.setGui = function(gui) {
+  this.gui_ = gui;
+};
+
 rhizo.Project.prototype.resetAllFilter = function(key) {
   this.models_.forEach(function(model) {
     model.resetFilter(key);
@@ -139,7 +145,7 @@ rhizo.Project.prototype.allUnselected = function() {
    @param {string} status either 'enable' or 'disable'
  */
 rhizo.Project.prototype.toggleSelection = function(status) {
-  $('#rhizo-viewport').selectable(status);
+  this.gui_.viewport.selectable(status);
 };
 
 rhizo.Project.prototype.checkModels_ = function() {
@@ -173,7 +179,7 @@ rhizo.Project.prototype.initializeModel_ = function(model) {
               .css("left", 0)
               .css("display", "none");
 
-  $("#rhizo-universe").append(rendering);
+  this.gui_.universe.append(rendering);
 };
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
@@ -192,13 +198,13 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
     this.layoutEngine_ = engine;
 
     // reset panning
-    $('#rhizo-universe').move(0, 0, 0, 0);
+    this.gui_.universe.move(0, 0, 0, 0);
 
     // layout only non filtered models
     var nonFilteredModels = jQuery.grep(this.models_, function(model) {
       return !model.isFiltered();
     });
-    engine.layout('#rhizo-universe',
+    engine.layout(this.gui_.universe,
                   nonFilteredModels,
                   this.modelsMap_,
                   this.metaModel_,

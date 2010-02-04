@@ -9,23 +9,23 @@ A:hover {
   background-color: #e5ecf9;
 }
 
-A, #rhizo-header A:visited {
+A, .rhizo-header A:visited {
   color: #7aa5d6;
 }
 
 /* Header */
-#rhizo-header {
+.rhizo-header {
   padding: 5px 0 0 5px;
 }
 
-#rhizo-header H1 {
+.rhizo-header H1 {
   font-size: 28px;
   margin: 0;
   padding: 0;
   color: #7aa5d6;
 }
 
-#rhizo-header P {
+.rhizo-header P {
   font-size: 11px;
   margin: 0;
   padding: 0;
@@ -200,7 +200,7 @@ A, #rhizo-header A:visited {
 }
 
 /* Endless desktop, Panning and scrolling */
-#rhizo-scroll-trigger {
+.rhizo-scroll-trigger {
   background: transparent url(../i/scroll_small.png) no-repeat top left;
   position: absolute;
   bottom: 0;
@@ -210,13 +210,13 @@ A, #rhizo-header A:visited {
   cursor: pointer;
 }
 
-#rhizo-scroll-overlay {
+.rhizo-scroll-overlay {
   background: transparent url(../i/scroll_big.png) no-repeat center center;
   position: absolute;
   z-index: -1;
 }
 
-#rhizo-scroll-overlay BUTTON {
+.rhizo-scroll-done {
   position: absolute;
   bottom: 5px;
   margin: 0 auto;
@@ -226,7 +226,7 @@ A, #rhizo-header A:visited {
   width: 100px;
 }
 
-#rhizo-viewport {
+.rhizo-viewport {
   position: absolute; 
   background-color: #e5ecf9;
   top: 0;
@@ -237,7 +237,7 @@ A, #rhizo-header A:visited {
   overflow: hidden;  
 }
 
-#rhizo-universe {
+.rhizo-universe {
   position: absolute; 
   top: 0;
   left: 0;
@@ -327,15 +327,15 @@ DIV.ui-selected {
   width: 160px;
 }
 
-.rhizo-miniRender #rhizo-scroll-trigger {
+.rhizo-miniRender .rhizo-scroll-trigger {
   top: 0;
 }
 
-#rhizo-scroll-overlay.rhizo-miniRender {
+.rhizo-miniRender .rhizo-scroll-overlay {
   background-position: center 30%;
 }
 
-#rhizo-scroll-overlay.rhizo-miniRender  BUTTON {
+.rhizo-miniRender .rhizo-scroll-done {
   bottom: 30px;
 }
 
@@ -482,7 +482,7 @@ DIV.ui-selected {
 }
 
 /* Progress bar */
-#rhizo-progressbar-panel {
+.rhizo-progressbar-panel {
   position: absolute;
   z-index: 1000;
   -webkit-box-shadow: 5px 5px 5px #aaa;
@@ -494,11 +494,11 @@ DIV.ui-selected {
   background-color: #fff;
 }
 
-#rhizo-progressbar {
+.rhizo-progressbar {
   margin: 5px 10px;
 }
 
-#rhizo-progressbar-text {
+.rhizo-progressbar-text {
   text-align: center;
   color: #7aa5d6;
   font-size: 12px;

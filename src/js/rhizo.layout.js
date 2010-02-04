@@ -78,7 +78,7 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
                                                     allmodels,
                                                     meta,
                                                     opt_options) {
-  var maxWidth = $(container).width();
+  var maxWidth = container.width();
   var lineHeight = 0;
 
   // reorder supermodels if needed
@@ -134,14 +134,14 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(container,
   if (opt_options && opt_options.filter) {
     return; // re-layouting because of filtering doesn't affect the layout
   }
-  var maxWidth = Math.round($(container).width()*0.3) ;
-  var maxHeight = Math.round($(container).height()*0.3);
+  var maxWidth = Math.round(container.width()*0.3) ;
+  var maxHeight = Math.round(container.height()*0.3);
 
   for (var i = 0, len = supermodels.length; i < len; i++) {
     var r = $(supermodels[i].rendering);
-    var top = Math.round($(container).height() / 3 +
+    var top = Math.round(container.height() / 3 +
                          Math.random()*maxHeight*2 - maxHeight);
-    var left = Math.round($(container).width() / 3 +
+    var left = Math.round(container.width() / 3 +
                           Math.random()*maxWidth*2 - maxWidth);
 
     r.move(top, left);
@@ -232,7 +232,7 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
                css('left', 5).
                css('top', this.internalFlowLayout_.top);
   this.bucketHeaders_.push(bucketHeader);
-  $(container).append(bucketHeader);
+  container.append(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
 };
 

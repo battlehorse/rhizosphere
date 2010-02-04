@@ -80,7 +80,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
       var boundingRect = this.treePainter_.toAbsoluteCoords_(unrotatedBoundingRect);
 
       // 'return carriage' if needed
-      if (drawingOffset.left + boundingRect.w > $(container).width()) {
+      if (drawingOffset.left + boundingRect.w > container.width()) {
         drawingOffset.left = 0;
         drawingOffset.top += maxHeight + (maxHeight > 0 ? 5 : 0);
       }
@@ -428,8 +428,8 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(container, curCente
 
   this.connectors_.push(gdconnector);
   this.connectors_.push(odconnector);
-  $(container).append(gdconnector);
-  $(container).append(odconnector);
+  container.append(gdconnector);
+  container.append(odconnector);
 };
 
 rhizo.layout.TreePainter.prototype.cleanup_ = function() {
