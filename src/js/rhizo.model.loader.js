@@ -31,13 +31,11 @@ namespace("rhizo.model.loader");
 rhizo.model.loader.loaders = [];
 
 // Plain Javascript file loader
-rhizo.model.loader.JS = function() {};
-rhizo.model.loader.loaders.push(new rhizo.model.loader.JS());
-
-rhizo.model.loader.JS.prototype.setGlobalOptions =
-    function(globalOptions) {
+rhizo.model.loader.JS = function(project, globalOptions) {
+  this.project_ = project;
   this.globalOptions_ = globalOptions;
-}
+};
+rhizo.model.loader.loaders.push(rhizo.model.loader.JS);
 
 rhizo.model.loader.JS.prototype.match = function(resource) {
   return /\.js$/.test(resource);
@@ -54,13 +52,11 @@ rhizo.model.loader.JS.prototype.load = function(resource) {
 };
 
 // Google Spreadsheet GViz loader
-rhizo.model.loader.GoogleSpreadsheet = function() {};
-rhizo.model.loader.loaders.push(new rhizo.model.loader.GoogleSpreadsheet());
-
-rhizo.model.loader.GoogleSpreadsheet.prototype.setGlobalOptions =
-    function(globalOptions) {
+rhizo.model.loader.GoogleSpreadsheet = function(project, globalOptions) {
+  this.project_ = project;
   this.globalOptions_ = globalOptions;
-}
+};
+rhizo.model.loader.loaders.push(rhizo.model.loader.GoogleSpreadsheet);
 
 rhizo.model.loader.GoogleSpreadsheet.prototype.match = function(resource) {
   return /spreadsheets\.google\.com/.test(resource);
@@ -70,7 +66,7 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.load = function(resource) {
   // The javascript http://www.google.com/jsapi and the visualization
   // package must be already included in the page and available at this point.
   if (!google.visualization) {
-    rhizo.error('Google Visualization APIs not available.');
+    this.project_.logger().error('Google Visualization APIs not available.');
   } else {
     var query = new google.visualization.Query(resource);
     var that = this;  // needed to propagate this through the Gviz callback.
@@ -84,10 +80,11 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.load = function(resource) {
 rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_ =
     function(response) {
   if (response.isError()) {
-    alert("GViz load failed: " + response.getMessage());
+    this.project_.logger().error("GViz load failed: " + response.getMessage());
     return;
   }
   var initializer = new rhizo.gviz.Initializer(response.getDataTable(),
+                                               this.project_,
                                                this.globalOptions_);
 
   rhizo.bootstrap.setRenderer(initializer.renderer);
@@ -96,13 +93,11 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_ =
 };
 
 // Gadget GViz loader
-rhizo.model.loader.GoogleGadget = function() {};
-rhizo.model.loader.loaders.push(new rhizo.model.loader.GoogleGadget());
-
-rhizo.model.loader.GoogleGadget.prototype.setGlobalOptions =
-    function(globalOptions) {
+rhizo.model.loader.GoogleGadget = function(project, globalOptions) {
+  this.project_ = project;
   this.globalOptions_ = globalOptions;
-}
+};
+rhizo.model.loader.loaders.push(rhizo.model.loader.GoogleGadget);
 
 rhizo.model.loader.GoogleGadget.RESOURCE = "__google_gadget";
 rhizo.model.loader.GoogleGadget.prototype.match = function(resource) {
@@ -112,12 +107,12 @@ rhizo.model.loader.GoogleGadget.prototype.match = function(resource) {
 
 rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
   if (!google.visualization) {
-    rhizo.error('Google Visualization APIs not available.');
+    this.project_.logger().error('Google Visualization APIs not available.');
     return;
   }
 
   if (typeof _IG_Prefs == 'undefined') {
-    rhizo.error('Google Gadget APIs not available.');
+    this.project_.logger().error('Google Gadget APIs not available.');
     return;
   }
 
@@ -143,20 +138,21 @@ rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =
  *
  * @param {string} resource the resource to load.
  *     Tipically this will be a URL.
+ * @param {rhizo.Project} project the project we're loading the models for.
  * @param {Object} globalOptions key-values for the global options.
  */
-rhizo.model.loader.load = function(resource, globalOptions) {
-  var loaders = rhizo.model.loader.loaders;
+rhizo.model.loader.load = function(resource, project, globalOptions) {
+  var loader_ctors = rhizo.model.loader.loaders;
 
-  for (var i = 0; i < loaders.length; i++) {
-    loaders[i].setGlobalOptions(globalOptions);
-    if (loaders[i].match(resource)) {
-      loaders[i].load(resource);
+  for (var i = 0; i < loader_ctors.length; i++) {
+    var loader = new loader_ctors[i](project, globalOptions);
+    if (loader.match(resource)) {
+      loader.load(resource);
       return;
     }
   }
 
   // No rhizo-console at this point yet, so we rely on alerts. This is
   // probably going to change if dynamic model loading is introduced.
-  alert('No loader available for the resource: ' + resource);
+  project.logger().error('No loader available for the resource: ' + resource);
 };

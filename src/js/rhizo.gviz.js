@@ -17,8 +17,12 @@
 // RHIZODEP=rhizo.meta,rhizo.autorender
 namespace("rhizo.gviz");
 
-rhizo.gviz.Initializer = function(dataTable, opt_options, opt_customRenderer) {
+rhizo.gviz.Initializer = function(dataTable,
+                                  project,
+                                  opt_options,
+                                  opt_customRenderer) {
   this.dt_ = dataTable;
+  this.project_ = project;
   this.options_ = opt_options || {};
   this.customRenderer_ = opt_customRenderer;
 
@@ -62,8 +66,9 @@ rhizo.gviz.Initializer.prototype.buildMetaModel_ = function() {
     } else {
       // assumed string type
       if (type != 'string') {
-        rhizo.warning("Column " + metamodel[id].label +
-                      " will be treated as String. Unsupported type: " + type);
+        this.project_.logger().warning(
+            "Column " + metamodel[id].label +
+            " will be treated as String. Unsupported type: " + type);
       }
 
       if (metamodel[id].label.indexOf("CAT") != -1) {

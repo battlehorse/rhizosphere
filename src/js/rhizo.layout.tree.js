@@ -44,7 +44,9 @@
 /**
  * @constructor
  */
-rhizo.layout.TreeLayout = function() {};
+rhizo.layout.TreeLayout = function(project) {
+  this.project_ = project;
+};
 
 rhizo.layout.TreeLayout.prototype.layout = function(container,
                                                     supermodels,
@@ -59,10 +61,10 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
   // detect parent
   var parentKey = $('#rhizo-treelayout-parentKey').val();
   if (!meta[parentKey]) {
-    rhizo.error("parentKey attribute does not match any property");
+    this.project_.logger().error("parentKey attribute does not match any property");
     return;
   }
-  rhizo.log("Creating tree by " + parentKey);
+  this.project_.logger().info("Creating tree by " + parentKey);
 
   try {
     // builds the tree model and also checks for validity
@@ -94,7 +96,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
     }
   } catch(e) {
     if (e.name == "TreeCycleException") {
-      rhizo.error(e);
+      this.project_.logger().error(e);
     } else {
       throw e;
     }
@@ -191,14 +193,14 @@ rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(allmodels,
   return superParent;
 };
 
-rhizo.layout.TreeLayout.prototype.details = function(project) {
+rhizo.layout.TreeLayout.prototype.details = function() {
   var select = $("<select id='rhizo-treelayout-direction' />");
   select.append("<option value='hor'>Horizontally</option>");
   select.append("<option value='ver'>Vertically</option>");
 
   return $("<div />").append(select).
                       append(" arrange by: ").
-                      append(rhizo.layout.metaModelKeySelector(project,
+                      append(rhizo.layout.metaModelKeySelector(this.project_,
                                                                'rhizo-treelayout-parentKey'));
 };
 
@@ -469,4 +471,4 @@ rhizo.layout.TreeCycleException.prototype.toString = function() {
 };
 
 // register the treelayout in the global layouts list
-rhizo.layout.layouts.tree = new rhizo.layout.TreeLayout();
+rhizo.layout.layouts.tree = rhizo.layout.TreeLayout;
