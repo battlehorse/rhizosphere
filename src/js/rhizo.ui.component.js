@@ -556,17 +556,13 @@ rhizo.ui.component.Legend.prototype.activate = function(project, gui, opt_option
 rhizo.ui.component.Actions = function() {};
 
 rhizo.ui.component.Actions.prototype.render = function(container, project, gui, opt_options) {
-  $(
-    '<div id="rhizo-actions">' +
-      '<h1>Actions</h1>' +
-      '<div class="rhizo-action" id="rhizo-action-2">' +
-        'Sample Action 1' +
-      '</div>' +
-      '<div class="rhizo-action" id="rhizo-action-1">' +
-        'Sample Action 2' +
-      '</div>' +
-    '</div>'
-    ).appendTo(container);
+  var actionsContainer = $('<div />', {class: 'rhizo-actions'}).
+    append($("<h1 />").text('Actions')).appendTo(container);
+
+  // Create 2 sample actions
+  for (var i = 0; i < 2; i++) {
+    $('<div />', {class: 'rhizo-action'}).text('Sample Action ' + (i+1)).appendTo(actionsContainer);
+  }
 };
 
 rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_options) {
