@@ -43,11 +43,11 @@ A, .rhizo-header A:visited {
 }
 
 /* Actions */
-#rhizo-actions {
+.rhizo-actions {
   margin-top: 5px;
 }
 
-#rhizo-actions H1 {
+.rhizo-actions H1 {
   font-variant: small-caps;
   text-align: center;
   font-size: 14px;
