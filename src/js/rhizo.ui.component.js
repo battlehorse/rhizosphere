@@ -662,7 +662,7 @@ rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(opt_option
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
-  this.leftBar_= $('<div id="rhizo-left"></div>').appendTo(this.gui_.container);
+  this.leftBar_= $('<div/>', {class: 'rhizo-left'}).appendTo(this.gui_.container);
   $('<div id="rhizo-right-pop"></div>').appendTo(this.gui_.container);
   this.rightBar_ = $('<div id="rhizo-right" style="display:none"></div>').appendTo(this.gui_.container);
 
