@@ -41,7 +41,8 @@ rhizo.NativeLogger.prototype.warning = function(message) {
 };
 
 rhizo.Logger = function(gui) {
-  this.gui_ = gui;
+  this.console_ = gui.getComponent('rhizo.ui.component.Console');
+  this.rightBar_ = gui.getComponent('rhizo.ui.component.RightBar');
 };
 
 rhizo.Logger.prototype.log_ = function(message, opt_severity) {
@@ -63,16 +64,17 @@ rhizo.Logger.prototype.log_ = function(message, opt_severity) {
   var htmlMsg = $("<p class='rhizo-log-" + severity + "'>" +
                   dateMsg + message + "</p>");
 
-  $('#rhizo-console-contents').prepend(htmlMsg);
+  this.console_.getContents().prepend(htmlMsg);
   if (opt_severity) {
     htmlMsg.effect("highlight", {color: highlightColor }, 1000);
   }
-  if (!$('#rhizo-console-contents').is(':visible') && opt_severity) {
-    if (!$('#rhizo-right').is(':visible')) {
-      $('#rhizo-right-pop').effect("highlight", {color: highlightColor }, 1000);
+  if (!this.console_.getContents().is(':visible') && opt_severity) {
+    if (this.rightBar_ && !this.rightBar_.getBar().is(':visible')) {
+      this.rightBar_.getToggle().effect(
+          "highlight", {color: highlightColor }, 1000);
     } else {
-      $('#rhizo-console-header').effect("highlight",
-                                        {color: highlightColor }, 1000);
+      this.console_.getHeader().effect(
+          "highlight", {color: highlightColor }, 1000);
     }
   }
 };

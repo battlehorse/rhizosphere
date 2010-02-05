@@ -83,7 +83,7 @@ A, .rhizo-header A:visited {
 
 
 /* Console */
-#rhizo-right {
+.rhizo-right {
   position: absolute;
   top: 0;
   right: 5px;
@@ -92,7 +92,7 @@ A, .rhizo-header A:visited {
   font-size: 14px;
 }
 
-#rhizo-console-header { 
+.rhizo-console-header { 
   border: 1px solid #7aa5d6;
   min-height: 20px;
   padding: 3px 0 0 5px;
@@ -100,7 +100,7 @@ A, .rhizo-header A:visited {
   background-color: #fff;
 }
 
-#rhizo-console-close {
+.rhizo-console-close {
   float: right;
   border: 2px solid #7aa5d6;
   font-family: sans-serif;
@@ -111,13 +111,13 @@ A, .rhizo-header A:visited {
   text-align: center;
 }
 
-#rhizo-console-close:hover {
+.rhizo-console-close:hover {
   background-color: #e5ecf9;
   color: #7aa5d6;
   cursor: pointer;
 }
 
-#rhizo-right-pop {
+.rhizo-right-pop {
   position: absolute;
   top: 0;
   right: 0;
@@ -126,30 +126,32 @@ A, .rhizo-header A:visited {
   background-color: #fff;
 }
 
-#rhizo-right-pop:hover {
+.rhizo-right-pop:hover {
   background: rgb(167, 237, 193) url(../i/hide-arrow.gif) no-repeat center center;
 }
 
-#rhizo-console-contents {
+.rhizo-console-contents {
   border: 1px solid #7aa5d6;
   border-top-width: 0px;
   font-size: 11px;
   height: 400px;
   overflow: hidden;
   background-color: #e5ecf9;
+  clear: right;
+  display: none;
 }
 
-#rhizo-console-contents P {
+.rhizo-console-contents P {
   margin: 1px 0;
   padding: 0;
   background-color: #e5ecf9;
 }
 
-#rhizo-console-contents P.rhizo-log-error {
+.rhizo-console-contents P.rhizo-log-error {
   background-color: #ff9999;
 }
 
-#rhizo-console-contents P.rhizo-log-warning {
+.rhizo-console-contents P.rhizo-log-warning {
   background-color: #ffff99;
 }
 
