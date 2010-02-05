@@ -152,7 +152,8 @@ rhizo.model.loader.load = function(resource, project, globalOptions) {
     }
   }
 
-  // No rhizo-console at this point yet, so we rely on alerts. This is
-  // probably going to change if dynamic model loading is introduced.
+  // TODO(battlehorse): The logger here might not be visible to the user
+  // (e.g.: native console or NoOpLogger ), should we rely on alert() to
+  // make sure the user receives the message?
   project.logger().error('No loader available for the resource: ' + resource);
 };
