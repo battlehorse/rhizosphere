@@ -273,7 +273,7 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
   }
 
   this.layoutPanel_ = $('<div />').appendTo(container);
-  this.layoutOptions_ = $('<div />').appendTo(this.layoutPanel_);
+  this.layoutOptions_ = $('<div />', {class: 'rhizo-layout-extra-options'}).appendTo(this.layoutPanel_);
 
   if (options.miniLayout) {
     this.layoutPanel_.addClass('rhizo-floating-panel').css('display', 'none');
@@ -429,15 +429,22 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   var options = opt_options || {};
 
   if (!options.miniLayout) {
-    $('<div class="rhizo-filters-header">Filters</div>').appendTo(container);
+    $('<div />', {class: 'rhizo-filters-header'}).
+        text('Filters').
+        appendTo(container);
   }
 
-  $('<div id="rhizo-filter-container"></div>').appendTo(container);
+  this.filterPanel_ = $('<div />', {class: 'rhizo-filter-container'}).appendTo(container);
 
+  this.nextFilter_ = null;
+  this.prevFilter_ = null;
   if (options.miniLayout) {
-    $('#rhizo-filter-container').addClass('rhizo-floating-panel').css('display', 'none');
-    $('<span id="rhizo-next-filter" title="Next filter"></span>').appendTo($('#rhizo-filter-container'));
-    $('<span id="rhizo-prev-filter" title="Previous filter"></span>').appendTo($('#rhizo-filter-container'));  
+    this.filterPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+
+    this.nextFilter_ = $('<span />', {class: 'rhizo-next-filter', title: 'Next filter'}).
+      appendTo(this.filterPanel_);
+    this.prevFilter_ = $('<span />', {class: 'rhizo-prev-filter', title: 'Previous filter'}).
+      appendTo(this.filterPanel_);
   }
 
   var first = true;
@@ -451,32 +458,36 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
         filter.css('display', 'none');
       }
     }
-    $('#rhizo-filter-container').append(filter);
+    this.filterPanel_.append(filter);
   }
 };
 
 rhizo.ui.component.Filters.prototype.activate = function(project, gui, opt_options) {
   // Every single filter implementation auto-activates itself when created.
   // Here we only need to activate the navigation between filters.
-  $('#rhizo-next-filter').click(function() {
-    var current = $('.rhizo-filter:visible');
-    var next = current.next('.rhizo-filter:hidden').eq(0);
-    if (next.length > 0) {
-      // cannot use hide/show otherwise safari clips rendering
-      current.css('display', 'none');
-      next.css('display', '');
-    }
-  });
+  if (this.nextFilter_) {
+    this.nextFilter_.click(function() {
+      var current = $('.rhizo-filter:visible');
+      var next = current.next('.rhizo-filter:hidden').eq(0);
+      if (next.length > 0) {
+        // cannot use hide/show otherwise safari clips rendering
+        current.css('display', 'none');
+        next.css('display', '');
+      }
+    });
+  }
 
-  $('#rhizo-prev-filter').click(function() {
-    var current = $('.rhizo-filter:visible');
-    var prev = current.prev('.rhizo-filter:hidden').eq(0);
-    if (prev.length > 0) {
-      // cannot use hide/show otherwise safari clips rendering
-      current.css('display', 'none');
-      prev.css('display', '');
-    }
-  });
+  if (this.prevFilter_) {
+    this.prevFilter_.click(function() {
+      var current = $('.rhizo-filter:visible');
+      var prev = current.prev('.rhizo-filter:hidden').eq(0);
+      if (prev.length > 0) {
+        // cannot use hide/show otherwise safari clips rendering
+        current.css('display', 'none');
+        prev.css('display', '');
+      }
+    });
+  }
 };
 
 rhizo.ui.component.Legend = function() {};
