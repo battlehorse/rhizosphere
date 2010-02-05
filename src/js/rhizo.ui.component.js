@@ -192,28 +192,71 @@ rhizo.ui.component.MiniToolbar.prototype.activate = function(gui, opt_options) {
 rhizo.ui.component.Console = function() {};
 
 rhizo.ui.component.Console.prototype.render = function(container, gui, opt_options) {
-  $(
-  '<div id="rhizo-console-header">' +
-    '<div id="rhizo-console-close">&#8659;</div>' +
-    'Log Console' +
-  '</div>' +
-  '<div id="rhizo-console-contents" style="clear: right; display: none">' +
-  '</div>').appendTo(container);
+  gui.addComponent('rhizo.ui.component.Console', this);
+
+  this.toggleButton_ = $('<div />', {class: 'rhizo-console-close'}).html('&#8659;');
+
+  this.consoleHeader_ = $('<div />', {class: 'rhizo-console-header'});
+  this.consoleHeader_.append(this.toggleButton_).append('Log Console');
+  this.consoleHeader_.appendTo(container);
+
+  this.consoleContents_ = $('<div />', {class: 'rhizo-console-contents'});
+  this.consoleContents_.appendTo(container);
 };
 
 rhizo.ui.component.Console.prototype.activate = function(gui, opt_options) {
-  $('#rhizo-console-close').click(function() {
-    if ($('#rhizo-console-contents').is(":visible")) {
-      $('#rhizo-console-contents').slideUp("slow", function() {
-        $('#rhizo-console-close').html("&#8659;");
-        $('#rhizo-console-contents').empty();
-      });
+  this.toggleButton_.click(jQuery.proxy(function() {
+    if (this.consoleContents_.is(":visible")) {
+      this.consoleContents_.slideUp("slow", jQuery.proxy(function() {
+        this.toggleButton_.html("&#8659;");
+        this.consoleContents_.empty();
+      }, this));
     } else {
-      $('#rhizo-console-contents').slideDown("slow", function() {
-        $('#rhizo-console-close').html("&#8657;");
-      });
+      this.consoleContents_.slideDown("slow", jQuery.proxy(function() {
+        this.toggleButton_.html("&#8657;");
+      }, this));
     }
-  });
+  }, this));
+};
+
+rhizo.ui.component.Console.prototype.getContents = function() {
+  return this.consoleContents_;
+};
+
+rhizo.ui.component.Console.prototype.getHeader = function() {
+  return this.consoleHeader_;
+};
+
+rhizo.ui.component.RightBar = function() {};
+
+rhizo.ui.component.RightBar.prototype.render = function(container, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.RightBar', this);
+
+  this.toggle_ = $('<div />', {class: 'rhizo-right-pop'}).appendTo(container);
+  this.rightBar_ = $('<div />', {class: 'rhizo-right'}).css('display', 'none').
+      appendTo(container);
+};
+
+rhizo.ui.component.RightBar.prototype.activate = function(gui, opt_options) {
+  this.toggle_.click(jQuery.proxy(function() {
+    if (this.rightBar_.is(":visible")) {
+      this.toggle_.css('right', 0);
+      gui.viewport.css('right', 5);
+      this.rightBar_.css('display', 'none');
+    } else {
+      gui.viewport.css('right', 135);
+      this.toggle_.css('right', 130);
+      this.rightBar_.css('display', '');
+    }
+  }, this));
+};
+
+rhizo.ui.component.RightBar.prototype.getToggle = function() {
+  return this.toggle_;
+};
+
+rhizo.ui.component.RightBar.prototype.getBar = function() {
+  return this.rightBar_;
 };
 
 rhizo.ui.component.Layout = function() {};
@@ -647,6 +690,7 @@ rhizo.ui.component.StandardTemplate = function(project) {
     // chrome components
     LOGO: new rhizo.ui.component.Logo(),
     VIEWPORT: new rhizo.ui.component.Viewport(),
+    RIGHTBAR: new rhizo.ui.component.RightBar(),
     CONSOLE: new rhizo.ui.component.Console(),
 
     // dynamic components
@@ -663,31 +707,21 @@ rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(opt_option
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
   this.leftBar_= $('<div/>', {class: 'rhizo-left'}).appendTo(this.gui_.container);
-  $('<div id="rhizo-right-pop"></div>').appendTo(this.gui_.container);
-  this.rightBar_ = $('<div id="rhizo-right" style="display:none"></div>').appendTo(this.gui_.container);
+  this.components_.RIGHTBAR.render(this.gui_.container, this.gui_, opt_options);
 
   this.progress_.update(10, 'Creating static UI...');
   this.components_.LOGO.render(this.leftBar_, this.gui_, opt_options);
-  this.components_.CONSOLE.render(this.rightBar_, this.gui_, opt_options);
+  this.components_.CONSOLE.render(
+      this.components_.RIGHTBAR.getBar(),
+      this.gui_,
+      opt_options);
   this.progress_.update(25, 'All static UI created.');
 };
 
 rhizo.ui.component.StandardTemplate.prototype.activateChrome = function(opt_options) {
   this.progress_.update(26, 'Activating static UI...');
 
-  var viewport = this.gui_.viewport;
-  $('#rhizo-right-pop').click(function() {
-    if ($('#rhizo-right').is(":visible")) {
-      $(this).css('right', 0);
-      viewport.css('right', 5);
-      $('#rhizo-right').css('display', 'none');
-    } else {
-      viewport.css('right', 135);
-      $(this).css('right', 130);
-      $('#rhizo-right').css('display', '');
-    }
-  });
-
+  this.components_.RIGHTBAR.activate(this.gui_, opt_options);
   this.components_.CONSOLE.activate(this.gui_, opt_options);
   this.components_.VIEWPORT.activate(this.gui_, opt_options);
   this.progress_.update(33, 'Loading models...');
@@ -704,7 +738,11 @@ rhizo.ui.component.StandardTemplate.prototype.renderDynamic =
   this.progress_.update(46, 'Filters created.');
   this.components_.LEGEND.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(48, 'Legend created.');
-  this.components_.ACTIONS.render(this.rightBar_, this.project_, this.gui_, opt_options);
+  this.components_.ACTIONS.render(
+      this.components_.RIGHTBAR.getBar(),
+      this.project_,
+      this.gui_,
+      opt_options);
   this.progress_.update(50, 'Actions created');
 };
 
