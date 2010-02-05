@@ -32,7 +32,7 @@ A, .rhizo-header A:visited {
 }
 
 /* Admin interface */
-#rhizo-left {
+.rhizo-left {
   position: absolute;
   background: #fff url(../i/background.png) no-repeat top left;
   left: 0;
