@@ -165,6 +165,8 @@ rhizo.ui.component.MiniToolbar.prototype.render = function(container, gui, opt_o
 };
 
 rhizo.ui.component.MiniToolbar.prototype.activate = function(gui, opt_options) {
+
+  // TODO(battlehorse): needs fixing!
   var panels = [
     { panel: '#rhizo-update-layout', link: '#rhizo-link-display'},
     { panel: '#rhizo-selection', link: '#rhizo-link-selection'},
@@ -265,41 +267,42 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
   var options = opt_options || {};
 
   if (!options.miniLayout) {
-    $('<div class="rhizo-filters-header">Display</div>').appendTo(container);
+    $('<div />', {class: 'rhizo-filters-header'}).
+        text('Display').
+        appendTo(container);
   }
 
-  $(
-    '<div id="rhizo-update-layout"><div id="rhizo-layout-extra-options">' +
-    '</div></div>').appendTo(container);
+  this.layoutPanel_ = $('<div />').appendTo(container);
+  this.layoutOptions_ = $('<div />').appendTo(this.layoutPanel_);
 
   if (options.miniLayout) {
-    $('#rhizo-update-layout').addClass('rhizo-floating-panel').css('display', 'none');
+    this.layoutPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 
-  this.select_ = $("<select id='rhizo-layout' />");
+  this.layoutSelector_ = $("<select />");
   this.detailsMap_ = {};
   if (rhizo.layout && rhizo.layout.layouts) {
     for (layout in rhizo.layout.layouts){
       var engine_ctor = rhizo.layout.layouts[layout];
       var engine = new engine_ctor(project);
-      this.select_.append($("<option value='" + layout + "'>" + engine  + "</option>"));
+      this.layoutSelector_.append($("<option value='" + layout + "'>" + engine  + "</option>"));
       if (engine.details) {
 	var details = engine.details();
 	this.detailsMap_[layout] = details;
-	$('#rhizo-layout-extra-options').append(details.css("display","none"));
+	this.layoutOptions_.append(details.css("display","none"));
       }
     }
   }
 
-  this.submit_ = $("<button>Update</button>");
-  $('#rhizo-update-layout').prepend(this.submit_)
-                           .prepend(this.select_)
-                           .prepend("Keep items ordered by: ");
+  this.submit_ = $('<button />').text('Update');
+  this.layoutPanel_.prepend(this.submit_).
+      prepend(this.layoutSelector_).
+      prepend("Keep items ordered by: ");
 };
 
 rhizo.ui.component.Layout.prototype.activate = function(project, gui, opt_options) {
   var detailsMap = this.detailsMap_;
-  this.select_.change(function(ev) {
+  this.layoutSelector_.change(function(ev) {
     for (layout in detailsMap) {
       if (layout == $(this).val()) {
         detailsMap[layout].show("fast");
@@ -309,9 +312,9 @@ rhizo.ui.component.Layout.prototype.activate = function(project, gui, opt_option
     }
   });
 
-  this.submit_.click(function() {
-    project.layout($('#rhizo-layout').val());
-  });
+  this.submit_.click(jQuery.proxy(function() {
+    project.layout(this.layoutSelector_.val());
+  }, this));
 };
 
 rhizo.ui.component.SelectionManager = function() {};
@@ -320,19 +323,20 @@ rhizo.ui.component.SelectionManager.prototype.render = function(container, proje
   var options = opt_options || {};
 
   if (!options.miniLayout) {
-    $('<div class="rhizo-filters-header">Selection</div>').appendTo(container);
+    $('<div />', {class: 'rhizo-filters-header'}).
+        text('Selection').
+        appendTo(container);
   }
 
-  $('<div id="rhizo-selection"></div>').appendTo(container);
+  this.selectionFilter_ = $('<div />', {class: 'rhizo-selection'}).
+      appendTo(container);
 
   if (options.miniLayout) {
-    $('#rhizo-selection').addClass('rhizo-floating-panel').css('display', 'none');
+    this.selectionFilter_.addClass('rhizo-floating-panel').css('display', 'none');
   }
-  this.button_ = $('<button id="rhizo-selected-items-only">' +
-                 'Work on selected items only</button>');
-  this.resetButton_ = $('<button id="rhizo-selected-reset" disabled="disabled">' +
-                      'Reset</button>');
-  $('#rhizo-selection').append(this.button_).append(this.resetButton_);
+  this.selectButton_ = $('<button />').text('Work on selected items only');
+  this.resetButton_ = $('<button />', {disabled: 'disabled'}).text('Reset');
+  this.selectionFilter_.append(this.selectButton_).append(this.resetButton_);
 };
 
 rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, opt_options) {
@@ -341,7 +345,7 @@ rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, 
 };
 
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, opt_options) {
-  this.button_.click(function(ev) {
+  this.selectButton_.click(jQuery.proxy(function(ev) {
     var countSelected = 0;
     for (id in project.allSelected()) { countSelected++ };
     if (countSelected == 0) {
@@ -359,10 +363,10 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
     project.alignVisibility();
     project.layout(null, { filter: true});
     project.unselectAll();
-    $('#rhizo-selected-reset').
+    this.resetButton_.
         removeAttr("disabled").
         text("Reset (" + countFiltered + " filtered)");
-  });
+  }, this));
 
 
   this.resetButton_.click(function(ev) {
@@ -489,48 +493,50 @@ rhizo.ui.component.Legend.prototype.render = function(container, project, gui, o
     colorRange = project.renderer().getColorRange();
   }
 
-  if (sizeRange || colorRange) {
-    $('<div id="rhizo-legend-panel"></div>').appendTo(container);
-    if (!options.miniLayout) {
-      $('<div class="rhizo-filters-header">Legend</div>').appendTo($('#rhizo-legend-panel'));
-    } else {
-      $('#rhizo-legend-panel').addClass('rhizo-floating-panel').css('display', 'none');
-      // TODO(battlehorse): this direct reference to an element declared elsewhere
-      // should not be here, as it creates an underwater dependency between components. 
-      $('#rhizo-legend').show();
-    }
+  if (!options.miniLayout) {
+    $('<div />', {class: 'rhizo-filters-header'}).
+    text('Legend').
+    appendTo(container);
+  }
+
+  this.legendPanel_ = $('<div />', {class: "rhizo-legend-panel"}).appendTo(container);
+
+  if (options.miniLayout) {
+    this.legendPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+
+    // TODO(battlehorse): this direct reference to an element declared elsewhere
+    // should not be here, as it creates an underwater dependency between components. 
+    $('#rhizo-legend').show();
   }
 
   if (sizeRange) {
-    $(
-      '<div id="rhizo-legend-size" style="margin-bottom: 5px">' +
-        '<span id="rhizo-legend-size-min" ></span>' +
-        '<span class="ar-fon-0">A</span> -- ' +
-        '<span class="ar-fon-5">A</span>' +
-        '<span id="rhizo-legend-size-max" ></span>' +
-      '</div>'
-      ).appendTo($('#rhizo-legend-panel'));
-    $('#rhizo-legend-size-min').html(
+    var panel = $('<div />', {class: 'rhizo-legend-size'});
+    var minLabel = $('<span />', {class: 'rhizo-legend-size-min'}).html(
         sizeRange.label + ' &nbsp; ' + rhizo.ui.toHumanLabel(sizeRange.min) + ':');
-    $('#rhizo-legend-size-max').html(': ' + rhizo.ui.toHumanLabel(sizeRange.max));
+    var maxLabel = $('<span />', {class: 'rhizo-legend-size-max'}).html(
+        ': ' + rhizo.ui.toHumanLabel(sizeRange.max));
+
+    panel.append(minLabel).append(
+        '<span class="ar-fon-0">A</span> -- ' +
+        '<span class="ar-fon-5">A</span>').
+        append(maxLabel).appendTo(this.legendPanel_);
   }
 
   if (colorRange) {
-    $(
-      '<div id="rhizo-legend-color" style="margin-bottom: 5px">' +
-        '<span id="rhizo-legend-color-min"></span>' +
+    var panel = $('<div />', {class: 'rhizo-legend-color'});
+    var minLabel = $('<span />', {class: 'rhizo-legend-color-min'}).html(
+        colorRange.label + ' &nbsp; ' + rhizo.ui.toHumanLabel(colorRange.min) + ':');
+    var maxLabel = $('<span />', {class: 'rhizo-legend-color-max'}).html(
+        ': ' + rhizo.ui.toHumanLabel(colorRange.max));
+
+    panel.append(minLabel).append(
         '<span class="ar-col-0 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-1 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-2 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-3 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-4 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
-        '<span class="ar-col-5 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
-        '<span id="rhizo-legend-color-max"></span>' +
-      '</div>'
-      ).appendTo($('#rhizo-legend-panel'));
-    $('#rhizo-legend-color-min').html(
-        colorRange.label + ' &nbsp; ' + rhizo.ui.toHumanLabel(colorRange.min) + ':');
-    $('#rhizo-legend-color-max').html(': ' + rhizo.ui.toHumanLabel(colorRange.max));
+        '<span class="ar-col-5 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;').
+        append(maxLabel).appendTo(this.legendPanel_);
   }
 };
 
@@ -664,8 +670,15 @@ rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) 
   this.progress_.update(42, 'Selection manager created.');
   this.components_.FILTERS.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(46, 'Filters created.');
-  this.components_.LEGEND.render(this.bottomBar_, this.project_, this.gui_, opt_options);
-  this.progress_.update(48, 'Legend created.');
+
+  if (this.project_.renderer().getSizeRange ||
+      this.project_.renderer().getColorRange) {
+    this.components_.LEGEND.render(this.bottomBar_,
+                                   this.project_,
+                                   this.gui_,
+                                   opt_options);
+    this.progress_.update(48, 'Legend created.');
+  }
 };
 
 rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options) {
@@ -736,8 +749,15 @@ rhizo.ui.component.StandardTemplate.prototype.renderDynamic =
   this.progress_.update(42, 'Selection manager created.');
   this.components_.FILTERS.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(46, 'Filters created.');
-  this.components_.LEGEND.render(this.leftBar_, this.project_, this.gui_, opt_options);
-  this.progress_.update(48, 'Legend created.');
+
+  if (this.project_.renderer().getSizeRange ||
+      this.project_.renderer().getColorRange) {
+    this.components_.LEGEND.render(this.leftBar_,
+                                   this.project_,
+                                   this.gui_,
+                                   opt_options);
+    this.progress_.update(48, 'Legend created.');
+  }
   this.components_.ACTIONS.render(
       this.components_.RIGHTBAR.getBar(),
       this.project_,
