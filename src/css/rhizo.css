@@ -296,6 +296,15 @@ DIV.ui-selected {
   padding: 0;
 }
 
+/* Legend */
+.rhizo-legend-size {
+  margin-bottom: 5px;
+}
+
+.rhizo-legend-color {
+  margin-bottom: 5px;
+}
+
 /* autoRender options */
 .ar-fon-0m { font-weight: bold; font-size: 10px;}
 .ar-fon-1m { font-weight: bold; font-size: 12px;}
