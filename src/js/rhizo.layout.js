@@ -56,7 +56,7 @@ rhizo.layout.metaModelKeySelector = function(project, id) {
   return select;
 };
 
-rhizo.layout.NoLayout = function() {};
+rhizo.layout.NoLayout = function(unused_project) {};
 
 rhizo.layout.NoLayout.prototype.layout = function(container,
                                                   supermodels,
@@ -68,7 +68,8 @@ rhizo.layout.NoLayout.prototype.toString = function() {
   return "-";
 };
 
-rhizo.layout.FlowLayout = function(opt_top, opt_left) {
+rhizo.layout.FlowLayout = function(project, opt_top, opt_left) {
+  this.project_ = project;
   this.top = opt_top || 5;
   this.left = opt_left || 5;
 };
@@ -85,7 +86,7 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
   var order = $('#rhizo-flowlayout-order').val();
   var reverse = $('#rhizo-flowlayout-desc:checked').length > 0;
   if (order) {
-    rhizo.log("Sorting by " + order);
+    this.project_.logger().info("Sorting by " + order);
     supermodels.sort(rhizo.meta.sortBy(order, meta[order].kind, reverse));
   }
 
@@ -111,10 +112,10 @@ rhizo.layout.FlowLayout.prototype.cleanup = function() {
   this.top = this.left = 5;
 };
 
-rhizo.layout.FlowLayout.prototype.details = function(project) {
+rhizo.layout.FlowLayout.prototype.details = function() {
   return $("<div />").
            append("Ordered by: ").
-           append(rhizo.layout.metaModelKeySelector(project,
+           append(rhizo.layout.metaModelKeySelector(this.project_,
                                                     'rhizo-flowlayout-order')).
            append(" desc?").
            append('<input type="checkbox" id="rhizo-flowlayout-desc" />');
@@ -124,7 +125,7 @@ rhizo.layout.FlowLayout.prototype.toString = function() {
   return "List";
 };
 
-rhizo.layout.ScrambleLayout = function() {};
+rhizo.layout.ScrambleLayout = function(unused_project) {};
 
 rhizo.layout.ScrambleLayout.prototype.layout = function(container,
                                                         supermodels,
@@ -152,8 +153,9 @@ rhizo.layout.ScrambleLayout.prototype.toString = function() {
   return "Random";
 };
 
-rhizo.layout.BucketLayout = function() {
-  this.internalFlowLayout_ = new rhizo.layout.FlowLayout();
+rhizo.layout.BucketLayout = function(project) {
+  this.project_ = project;
+  this.internalFlowLayout_ = new rhizo.layout.FlowLayout(project);
   this.bucketHeaders_ = [];
 };
 
@@ -167,10 +169,10 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   // detect bucket
   var bucketBy = $('#rhizo-bucketlayout-bucket').val();
   if (!meta[bucketBy]) {
-    rhizo.error("layoutBy attribute does not match any property");
+    this.project_.logger().error("layoutBy attribute does not match any property");
     return;
   }
-  rhizo.log("Bucketing by " + bucketBy);
+  this.project_.logger().info("Bucketing by " + bucketBy);
 
   var clusterFunction;
   var clusterThis;
@@ -237,10 +239,10 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
 };
 
 
-rhizo.layout.BucketLayout.prototype.details = function(project) {
+rhizo.layout.BucketLayout.prototype.details = function() {
   return $("<div />").
            append("Group by: ").
-           append(rhizo.layout.metaModelKeySelector(project,
+           append(rhizo.layout.metaModelKeySelector(this.project_,
                                                     'rhizo-bucketlayout-bucket')).
            append(" desc?").
            append('<input type="checkbox" id="rhizo-bucketlayout-desc" />');
@@ -260,8 +262,8 @@ rhizo.layout.BucketLayout.prototype.toString = function() {
 
 
 rhizo.layout.layouts = {
-  no: new rhizo.layout.NoLayout(),
-  flow: new rhizo.layout.FlowLayout(),
-  scramble: new rhizo.layout.ScrambleLayout(),
-  bucket: new rhizo.layout.BucketLayout()
+  no: rhizo.layout.NoLayout,
+  flow: rhizo.layout.FlowLayout,
+  scramble: rhizo.layout.ScrambleLayout,
+  bucket: rhizo.layout.BucketLayout
 };

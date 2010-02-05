@@ -17,14 +17,34 @@
 // RHIZODEP=rhizo
 namespace("rhizo");
 
-/**
- * Permanently disables logging. Turns rhizo.log into a no-op.
- */
-rhizo.disableLogging = function() {
-  rhizo.log = function() {};
+rhizo.nativeConsoleExists = function() {
+  return typeof(console) !== 'undefined' && console != null;
 };
 
-rhizo.log = function(message, opt_severity) {
+rhizo.NoOpLogger = function() {};
+rhizo.NoOpLogger.prototype.info = function() {};
+rhizo.NoOpLogger.prototype.error = function() {};
+rhizo.NoOpLogger.prototype.warning = function() {};
+
+rhizo.NativeLogger = function() {};
+
+rhizo.NativeLogger.prototype.info = function(message) {
+  console.info(message);
+};
+
+rhizo.NativeLogger.prototype.error = function(message) {
+  console.error(message);
+};
+
+rhizo.NativeLogger.prototype.warning = function(message) {
+  console.warn(message);
+};
+
+rhizo.Logger = function(gui) {
+  this.gui_ = gui;
+};
+
+rhizo.Logger.prototype.log_ = function(message, opt_severity) {
   var severity = opt_severity || 'info';
   var highlightColor = "#888";
   switch(severity) {
@@ -57,10 +77,14 @@ rhizo.log = function(message, opt_severity) {
   }
 };
 
-rhizo.error = function(message) {
-  rhizo.log(message, "error");
+rhizo.Logger.prototype.info = function(message) {
+  this.log_(message);
 };
 
-rhizo.warning = function(message) {
-  rhizo.log(message, "warning");
-}
+rhizo.Logger.prototype.error = function(message) {
+  this.log_(message, "error");
+};
+
+rhizo.Logger.prototype.warning = function(message) {
+  this.log_(message, "warning");
+};

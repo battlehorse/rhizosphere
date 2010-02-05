@@ -237,10 +237,11 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
   this.detailsMap_ = {};
   if (rhizo.layout && rhizo.layout.layouts) {
     for (layout in rhizo.layout.layouts){
-      var engine = rhizo.layout.layouts[layout];
+      var engine_ctor = rhizo.layout.layouts[layout];
+      var engine = new engine_ctor(project);
       this.select_.append($("<option value='" + layout + "'>" + engine  + "</option>"));
       if (engine.details) {
-	var details = engine.details(project);
+	var details = engine.details();
 	this.detailsMap_[layout] = details;
 	$('#rhizo-layout-extra-options').append(details.css("display","none"));
       }
@@ -301,7 +302,7 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
     var countSelected = 0;
     for (id in project.allSelected()) { countSelected++ };
     if (countSelected == 0) {
-      rhizo.error("No items selected");
+      project.logger().error("No items selected");
       return;
     }
 
@@ -575,8 +576,9 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_optio
   }
 };
 
-rhizo.ui.component.MiniTemplate = function(gui) {
-  this.gui_ = gui;
+rhizo.ui.component.MiniTemplate = function(project) {
+  this.project_ = project;
+  this.gui_ = project.gui();
   this.components_ = {
     // chrome components
     LOGO: new rhizo.ui.component.Logo(),
@@ -592,7 +594,6 @@ rhizo.ui.component.MiniTemplate = function(gui) {
 };
 
 rhizo.ui.component.MiniTemplate.prototype.renderChrome = function(opt_options) {
-  rhizo.disableLogging();
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
   this.bottomBar_ = $('<div id="rhizo-bottom-bar"></div>').appendTo(this.gui_.container);
@@ -612,26 +613,24 @@ rhizo.ui.component.MiniTemplate.prototype.activateChrome = function(opt_options)
   this.progress_.update(33, 'Loading models...');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.renderDynamic =
-    function(project, opt_options) {
+rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) {
   this.progress_.update(34, 'Creating dynamic controls...');
-  this.components_.LAYOUT.render(this.bottomBar_, project, this.gui_, opt_options);
+  this.components_.LAYOUT.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(38, 'Layout engine created.');
-  this.components_.SELECTION_MANAGER.render(this.bottomBar_, project, this.gui_, opt_options);
+  this.components_.SELECTION_MANAGER.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(42, 'Selection manager created.');
-  this.components_.FILTERS.render(this.bottomBar_, project, this.gui_, opt_options);
+  this.components_.FILTERS.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(46, 'Filters created.');
-  this.components_.LEGEND.render(this.bottomBar_, project, this.gui_, opt_options);
+  this.components_.LEGEND.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(48, 'Legend created.');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.activateDynamic =
-    function(project, opt_options) {
+rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options) {
   this.progress_.update(51, 'Activating dynamic controls...');
-  this.components_.LAYOUT.activate(project, this.gui_, opt_options);
-  this.components_.SELECTION_MANAGER.activate(project, this.gui_, opt_options);
-  this.components_.FILTERS.activate(project, this.gui_, opt_options);
-  this.components_.LEGEND.activate(project, this.gui_, opt_options);
+  this.components_.LAYOUT.activate(this.project_, this.gui_, opt_options);
+  this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
+  this.components_.FILTERS.activate(this.project_, this.gui_, opt_options);
+  this.components_.LEGEND.activate(this.project_, this.gui_, opt_options);
   this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 
@@ -641,8 +640,9 @@ rhizo.ui.component.MiniTemplate.prototype.done = function() {
 
 
 
-rhizo.ui.component.StandardTemplate = function(gui) {
-  this.gui_ = gui;
+rhizo.ui.component.StandardTemplate = function(project) {
+  this.project_ = project;
+  this.gui_ = project.gui();
   this.components_ = {
     // chrome components
     LOGO: new rhizo.ui.component.Logo(),
@@ -694,28 +694,28 @@ rhizo.ui.component.StandardTemplate.prototype.activateChrome = function(opt_opti
 };
 
 rhizo.ui.component.StandardTemplate.prototype.renderDynamic =
-    function(project, opt_options) {
+    function(opt_options) {
   this.progress_.update(34, 'Creating dynamic controls...');
-  this.components_.LAYOUT.render(this.leftBar_, project, this.gui_, opt_options);
+  this.components_.LAYOUT.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(38, 'Layout engine created.');
-  this.components_.SELECTION_MANAGER.render(this.leftBar_, project, this.gui_, opt_options);
+  this.components_.SELECTION_MANAGER.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(42, 'Selection manager created.');
-  this.components_.FILTERS.render(this.leftBar_, project, this.gui_, opt_options);
+  this.components_.FILTERS.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(46, 'Filters created.');
-  this.components_.LEGEND.render(this.leftBar_, project, this.gui_, opt_options);
+  this.components_.LEGEND.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(48, 'Legend created.');
-  this.components_.ACTIONS.render(this.rightBar_, project, this.gui_, opt_options);
+  this.components_.ACTIONS.render(this.rightBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(50, 'Actions created');
 };
 
 rhizo.ui.component.StandardTemplate.prototype.activateDynamic =
-    function(project, opt_options) {
+    function(opt_options) {
   this.progress_.update(51, 'Activating dynamic controls...');
-  this.components_.LAYOUT.activate(project, this.gui_, opt_options);
-  this.components_.SELECTION_MANAGER.activate(project, this.gui_, opt_options);
-  this.components_.FILTERS.activate(project, this.gui_, opt_options);
-  this.components_.LEGEND.activate(project, this.gui_, opt_options);
-  this.components_.ACTIONS.activate(project, this.gui_, opt_options);
+  this.components_.LAYOUT.activate(this.project_, this.gui_, opt_options);
+  this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
+  this.components_.FILTERS.activate(this.project_, this.gui_, opt_options);
+  this.components_.LEGEND.activate(this.project_, this.gui_, opt_options);
+  this.components_.ACTIONS.activate(this.project_, this.gui_, opt_options);
   this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 

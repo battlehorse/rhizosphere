@@ -51,38 +51,42 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
   }
 
   $globalBootstrapper_ = this;
-}
+};
 
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
+  // Create the GUI.
   var gui = new rhizo.ui.gui.GUI(this.container_);
 
-  // Get the minimum chrome up and running
+  // Create the project.
+  this.project_ = new rhizo.Project(gui, this.options_);
+
+  // Get the minimum chrome up and running.
   this.template_ = this.options_.miniLayout ?
-      new rhizo.ui.component.MiniTemplate(gui) :
-      new rhizo.ui.component.StandardTemplate(gui);
+      new rhizo.ui.component.MiniTemplate(this.project_) :
+      new rhizo.ui.component.StandardTemplate(this.project_);
   this.template_.renderChrome(this.options_);
   this.template_.activateChrome(this.options_);
 
-  // Disable animations and other performance tunings if needed
+  this.project_.chromeReady();
+
+  // Disable animations and other performance tunings if needed.
   rhizo.ui.performanceTuning(this.options_.noAnims);
 
-  // Create the project
-  this.project_ = new rhizo.Project(this.options_);
-  this.project_.setGui(gui);
-
+  // Open the models' source...
   var source = opt_resource;
   if (!source) {
     var regex = new RegExp('source=(.*)$');
     var results = regex.exec(document.location.href);
     if (!results || !results[1]) {
-      rhizo.error("Unable to identify datasource from location");
+      this.project_.logger().error("Unable to identify datasource from location");
     } else {
       source = unescape(results[1]);
     }
   }
 
+  // ... and load it.
   if (source) {
-    rhizo.model.loader.load(source, this.options_);
+    rhizo.model.loader.load(source, this.project_, this.options_);
   }
 };
 
@@ -95,8 +99,8 @@ rhizo.bootstrap.Bootstrap.prototype.setRenderer = function(renderer) {
 };
 
 rhizo.bootstrap.Bootstrap.prototype.deploy = function(opt_models) {
-  this.template_.renderDynamic(this.project_, this.options_);
-  this.template_.activateDynamic(this.project_, this.options_);
+  this.template_.renderDynamic(this.options_);
+  this.template_.activateDynamic(this.options_);
 
   this.project_.deploy(opt_models);
   this.template_.done();

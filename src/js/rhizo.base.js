@@ -18,7 +18,7 @@
 // RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout
 namespace("rhizo");
 
-rhizo.Project = function(opt_options) {
+rhizo.Project = function(gui, opt_options) {
   this.models_ = [];
 
   this.modelsMap_ = {};
@@ -28,14 +28,28 @@ rhizo.Project = function(opt_options) {
   this.layouEngine_ = null;
   this.options_ = opt_options || {};
 
-  this.gui_ = null;
+  this.gui_ = gui;
+
+  if (rhizo.nativeConsoleExists()) {
+    this.logger_ = new rhizo.NativeLogger();
+  } else {
+    this.logger_ = new rhizo.NoOpLogger();
+  }
+};
+
+rhizo.Project.prototype.chromeReady = function() {
+  // All the static UI components are in place. This might include the
+  // logging console.
+  if (this.gui_.getComponent('rhizo.ui.component.Console')) {
+    this.logger_ = new rhizo.Logger(this.gui_);
+  }
 };
 
 rhizo.Project.prototype.deploy = function(opt_models) {
   if (opt_models && this.addModels_(opt_models)) {
     this.finalizeUI_();
   }
-  rhizo.log("*** Ready!");
+  this.logger_.info("*** Ready!");
 };
 
 rhizo.Project.prototype.addModels_ = function(models) {
@@ -90,8 +104,12 @@ rhizo.Project.prototype.setRenderer = function(renderer) {
   this.renderer_ = renderer;
 };
 
-rhizo.Project.prototype.setGui = function(gui) {
-  this.gui_ = gui;
+rhizo.Project.prototype.gui = function() {
+  return this.gui_;
+};
+
+rhizo.Project.prototype.logger = function() {
+  return this.logger_;
 };
 
 rhizo.Project.prototype.resetAllFilter = function(key) {
@@ -106,7 +124,7 @@ rhizo.Project.prototype.select = function(id) {
   supermodel.selected = true;
   $('#' + id).addClass('ui-selected');
 
-  rhizo.log("Selected " + supermodel);
+  this.logger_.info("Selected " + supermodel);
 };
 
 rhizo.Project.prototype.unselect = function(id) {
@@ -115,7 +133,7 @@ rhizo.Project.prototype.unselect = function(id) {
   delete this.selectionMap_[id];
   supermodel.selected = false;
   $('#' + id).removeClass('ui-selected');
-  rhizo.log("Unselected " + supermodel);
+  this.logger_.info("Unselected " + supermodel);
 };
 
 rhizo.Project.prototype.unselectAll = function() {
@@ -149,19 +167,19 @@ rhizo.Project.prototype.toggleSelection = function(status) {
 };
 
 rhizo.Project.prototype.checkModels_ = function() {
-  rhizo.log("Checking models...");
+  this.logger_.info("Checking models...");
   var modelsAreCorrect = true;
   this.models_.forEach(function(model){
     if (!model.id) {
       modelsAreCorrect = false;
-      rhizo.error("Verify your models: missing ids.")
+      this.logger_.error("Verify your models: missing ids.")
     }
   });
   return modelsAreCorrect;
 };
 
 rhizo.Project.prototype.buildModelsMap_ = function() {
-  rhizo.log("Building models map...");
+  this.logger_.info("Building models map...");
   this.models_.forEach(function(model) {
     this.modelsMap_[model.id] = model;
   }, this);
@@ -185,17 +203,17 @@ rhizo.Project.prototype.initializeModel_ = function(model) {
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
   var layoutEngineName = opt_layoutEngineName ?
                          opt_layoutEngineName : this.layoutName_;
-  var engine = rhizo.layout.layouts[layoutEngineName];
-  if (!engine) {
-    rhizo.error("Invalid layout engine:" + layoutEngineName);
+  var engine_ctor = rhizo.layout.layouts[layoutEngineName];
+  if (!engine_ctor) {
+    this.logger_.error("Invalid layout engine:" + layoutEngineName);
   } else {
-    rhizo.log('laying out...');
+    this.logger_.info('laying out...');
     if (this.layoutEngine_ && this.layoutEngine_.cleanup) {
       this.layoutEngine_.cleanup(); // cleanup previous layout engine
     }
 
     this.layoutName_ = layoutEngineName;
-    this.layoutEngine_ = engine;
+    this.layoutEngine_ = new engine_ctor(this);
 
     // reset panning
     this.gui_.universe.move(0, 0, 0, 0);
@@ -204,17 +222,17 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
     var nonFilteredModels = jQuery.grep(this.models_, function(model) {
       return !model.isFiltered();
     });
-    engine.layout(this.gui_.universe,
-                  nonFilteredModels,
-                  this.modelsMap_,
-                  this.metaModel_,
-                  opt_options);
+    this.layoutEngine_.layout(this.gui_.universe,
+                              nonFilteredModels,
+                              this.modelsMap_,
+                              this.metaModel_,
+                              opt_options);
   }
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
   if (!this.metaModel_[key]) {
-    rhizo.error("Invalid filtering key: " + key);
+    this.logger_.error("Invalid filtering key: " + key);
   }
   if (value != '') {
     this.models_.forEach(function(model) {
