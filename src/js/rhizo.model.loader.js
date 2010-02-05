@@ -19,7 +19,7 @@
 // The reason is that the bootstrap sequence is actually composed of 2 steps:
 // - a first step that render the chrome, initiates model loading (hence calling
 //   the functions declared here)
-// - a second step that renders and deploys the loaded models (called from 
+// - a second step that renders and deploys the loaded models (called from
 //   within this file for some loaders).
 // The fix requires splitting bootstrap into 2 separate files.
 
@@ -115,12 +115,12 @@ rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
     rhizo.error('Google Visualization APIs not available.');
     return;
   }
-  
+
   if (typeof _IG_Prefs == 'undefined') {
     rhizo.error('Google Gadget APIs not available.');
     return;
-  } 
-  
+  }
+
   var prefs = new _IG_Prefs();
   var gadgetHelper = new google.visualization.GadgetHelper();
   var query = gadgetHelper.createQueryFromPrefs(prefs);
@@ -131,7 +131,7 @@ rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
   query.send(callback);
 };
 
-rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =  
+rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =
   rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_;
 
 
