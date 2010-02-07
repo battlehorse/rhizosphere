@@ -334,7 +334,7 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
 rhizo.ui.component.Layout.prototype.activate = function(project, gui, opt_options) {
   var detailsMap = this.detailsMap_;
   this.layoutSelector_.change(function(ev) {
-    for (layout in detailsMap) {
+    for (var layout in detailsMap) {
       if (layout == $(this).val()) {
         detailsMap[layout].show("fast");
       } else {
