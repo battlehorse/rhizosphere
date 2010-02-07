@@ -52,14 +52,25 @@ rhizo.ui.component.Progress.prototype.destroy_ = function() {
 
 rhizo.ui.component.Logo = function() {};
 
+rhizo.ui.component.Logo.prototype.getPanel = function() {
+  return this.headerPanel_;
+};
+
 rhizo.ui.component.Logo.prototype.render = function(container, gui, opt_options) {
- $('<div class="rhizo-header"><h1>Rhizosphere</h1><p>' +
-    'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2010<br />' +
-    '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
-    '&nbsp;' +
-    '<a href="http://sites.google.com/site/rhizosphereui/Home/documentation" target="_blank" ' +
-    'style="font-weight:bold; text-decoration: underline">I Need Help!</a>' +
-    '</p></div>').appendTo(container);
+  var options = opt_options || {};
+  gui.addComponent('rhizo.ui.component.Logo', this);
+  this.headerPanel_ = $('<div />', {class: 'rhizo-header'}).html(
+      '<h1>Rhizosphere</h1><p>' +
+      'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2010<br />' +
+      '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
+      '&nbsp;' +
+      '<a href="http://sites.google.com/site/rhizosphereui/Home/documentation" target="_blank" ' +
+      'style="font-weight:bold; text-decoration: underline">I Need Help!</a>' +
+      '</p>').appendTo(container);
+
+  if (options.miniLayout) {
+    this.headerPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+  }
 };
 
 rhizo.ui.component.Viewport = function() {};
@@ -151,43 +162,58 @@ rhizo.ui.component.Viewport.prototype.stopScroll_ = function() {
 
 rhizo.ui.component.MiniToolbar = function() {};
 
-rhizo.ui.component.MiniToolbar.prototype.render = function(container, gui, opt_options) {
-  $(
-    '<span>' +
-      '<a href="" onclick="return false" id="rhizo-link-help" title="Help" >?</a>' +
-      '<a href="" onclick="self.resizeTo(1000,700);self.reload();" title="Maximize" class="rhizo-maximize-icon"></a>' +
-    '</span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-link-display" >Display</a></span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-link-selection" >Selection</a></span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-link-filters" >Filters</a></span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-legend" style="display: none">Legend</a></span>'
-    ).appendTo(container);
+rhizo.ui.component.MiniToolbar.prototype.render = function(container, project, gui, opt_options) {
+  var span = $('<span />').appendTo(container);
+  this.resizeLink_ = $('<a/>', {href: '#', title: 'Maximize', class: 'rhizo-maximize-icon'}).
+    appendTo(span);
+
+  this.components_ = [
+    {component: 'rhizo.ui.component.Layout', title: 'Display', class: ''},
+    {component: 'rhizo.ui.component.SelectionManager', title: 'Selection', class: ''},
+    {component: 'rhizo.ui.component.Filters', title: 'Filters', class: ''},
+    {component: 'rhizo.ui.component.Legend', title: 'Legend', class: ''},
+    {component: 'rhizo.ui.component.Logo', title: '?', class: 'rhizo-link-help'}
+  ];
+  this.components_ = jQuery.grep(
+    this.components_,
+    function(c) {
+      return gui.getComponent(c.component) ? true : false;
+    });
+  for (var i = 0; i < this.components_.length; i++) {
+    this.components_[i].link = this.createLink_(this.components_[i].title,
+                                                this.components_[i].class,
+                                                container);
+    this.components_[i].panel = gui.getComponent(this.components_[i].component).getPanel();
+  }
 };
 
-rhizo.ui.component.MiniToolbar.prototype.activate = function(gui, opt_options) {
+rhizo.ui.component.MiniToolbar.prototype.createLink_ = function(text, class, container) {
+  var span = $('<span />', {class: 'rhizo-filters-header'}).appendTo(container);
+  var link = $('<a/>', {href:  '#', title: text, class: class}).text(text).appendTo(span);
+  return link;
+};
 
-  // TODO(battlehorse): needs fixing!
-  var panels = [
-    { panel: '#rhizo-update-layout', link: '#rhizo-link-display'},
-    { panel: '#rhizo-selection', link: '#rhizo-link-selection'},
-    { panel: '#rhizo-filter-container', link: '#rhizo-link-filters'},
-    { panel: '#rhizo-help', link: '#rhizo-link-help'},
-    { panel: '#rhizo-legend-panel',  link: '#rhizo-legend'}];
+rhizo.ui.component.MiniToolbar.prototype.activate = function(project, gui, opt_options) {
+  this.resizeLink_.click(function() {
+    self.resizeTo(1000, 700);
+    self.location.reload();
+    return false;
+  });
 
-  panels.forEach(function(currentPanel) {
-    $(currentPanel.link).click(function() {
-      panels.forEach(function(p) {
-        if (p.panel == currentPanel.panel) {
-          $(p.panel).toggle();
-          $(p.link).toggleClass('rhizo-filter-open');
+  jQuery.each(this.components_, jQuery.proxy(function(i, currentComponent) {
+    currentComponent.link.click(jQuery.proxy(function() {
+      jQuery.each(this.components_, function(j, comp) {
+        if (comp == currentComponent) {
+          $(comp.panel).toggle();
+          $(comp.link).toggleClass('rhizo-filter-open');
         } else {
-          $(p.panel).css('display', 'none');
-          $(p.link).removeClass('rhizo-filter-open');
+          $(comp.panel).css('display', 'none');
+          $(comp.link).removeClass('rhizo-filter-open');
         }
       });
       return false;
-    });
-  });
+    }, this));
+  }, this));
 };
 
 
@@ -257,13 +283,18 @@ rhizo.ui.component.RightBar.prototype.getToggle = function() {
   return this.toggle_;
 };
 
-rhizo.ui.component.RightBar.prototype.getBar = function() {
+rhizo.ui.component.RightBar.prototype.getPanel = function() {
   return this.rightBar_;
 };
 
 rhizo.ui.component.Layout = function() {};
 
+rhizo.ui.component.Layout.prototype.getPanel = function() {
+  return this.layoutPanel_;
+};
+
 rhizo.ui.component.Layout.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Layout', this);
   var options = opt_options || {};
 
   if (!options.miniLayout) {
@@ -319,7 +350,13 @@ rhizo.ui.component.Layout.prototype.activate = function(project, gui, opt_option
 
 rhizo.ui.component.SelectionManager = function() {};
 
+rhizo.ui.component.SelectionManager.prototype.getPanel = function() {
+  return this.selectionPanel_;
+};
+
 rhizo.ui.component.SelectionManager.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.SelectionManager', this);
+
   var options = opt_options || {};
 
   if (!options.miniLayout) {
@@ -328,15 +365,15 @@ rhizo.ui.component.SelectionManager.prototype.render = function(container, proje
         appendTo(container);
   }
 
-  this.selectionFilter_ = $('<div />', {class: 'rhizo-selection'}).
+  this.selectionPanel_ = $('<div />', {class: 'rhizo-selection'}).
       appendTo(container);
 
   if (options.miniLayout) {
-    this.selectionFilter_.addClass('rhizo-floating-panel').css('display', 'none');
+    this.selectionPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
   this.selectButton_ = $('<button />').text('Work on selected items only');
   this.resetButton_ = $('<button />', {disabled: 'disabled'}).text('Reset');
-  this.selectionFilter_.append(this.selectButton_).append(this.resetButton_);
+  this.selectionPanel_.append(this.selectButton_).append(this.resetButton_);
 };
 
 rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, opt_options) {
@@ -425,7 +462,12 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
 
 rhizo.ui.component.Filters = function() {};
 
+rhizo.ui.component.Filters.prototype.getPanel = function() {
+  return this.filterPanel_;
+};
+
 rhizo.ui.component.Filters.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Filters', this);
   var options = opt_options || {};
 
   if (!options.miniLayout) {
@@ -492,7 +534,12 @@ rhizo.ui.component.Filters.prototype.activate = function(project, gui, opt_optio
 
 rhizo.ui.component.Legend = function() {};
 
+rhizo.ui.component.Legend.prototype.getPanel = function() {
+  return this.legendPanel_;
+};
+
 rhizo.ui.component.Legend.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Legend', this);
   var options = opt_options || {};
 
   var sizeRange = null;
@@ -514,10 +561,6 @@ rhizo.ui.component.Legend.prototype.render = function(container, project, gui, o
 
   if (options.miniLayout) {
     this.legendPanel_.addClass('rhizo-floating-panel').css('display', 'none');
-
-    // TODO(battlehorse): this direct reference to an element declared elsewhere
-    // should not be here, as it creates an underwater dependency between components. 
-    $('#rhizo-legend').show();
   }
 
   if (sizeRange) {
@@ -639,44 +682,40 @@ rhizo.ui.component.MiniTemplate = function(project) {
     // chrome components
     LOGO: new rhizo.ui.component.Logo(),
     VIEWPORT: new rhizo.ui.component.Viewport(),
-    MINITOOLBAR: new rhizo.ui.component.MiniToolbar(),
 
     // dynamic components
     LAYOUT: new rhizo.ui.component.Layout(),
     SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(),
     FILTERS: new rhizo.ui.component.Filters(),
-    LEGEND: new rhizo.ui.component.Legend()
+    LEGEND: new rhizo.ui.component.Legend(),
+    MINITOOLBAR: new rhizo.ui.component.MiniToolbar()
   };
 };
 
 rhizo.ui.component.MiniTemplate.prototype.renderChrome = function(opt_options) {
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
-  this.bottomBar_ = $('<div id="rhizo-bottom-bar"></div>').appendTo(this.gui_.container);
 
   this.progress_.update(10, 'Creating static UI...');
-  this.components_.MINITOOLBAR.render(this.bottomBar_, this.gui_, opt_options);
-
-  var help_floating_panel = $('<div id="rhizo-help" class="rhizo-floating-panel" style="display:none"></div>').appendTo(this.bottomBar_);
-  this.components_.LOGO.render(help_floating_panel, this.gui_, opt_options);
+  this.bottomBar_ = $('<div />', {class: "rhizo-bottom-bar"}).appendTo(this.gui_.container);
+  this.components_.LOGO.render(this.bottomBar_, this.gui_, opt_options);
   this.progress_.update(25, 'All static UI created.');
 };
 
 rhizo.ui.component.MiniTemplate.prototype.activateChrome = function(opt_options) {
   this.progress_.update(26, 'Activating static UI...');
   this.components_.VIEWPORT.activate(this.gui_, opt_options);
-  this.components_.MINITOOLBAR.activate(this.gui_, opt_options);
   this.progress_.update(33, 'Loading models...');
 };
 
 rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) {
   this.progress_.update(34, 'Creating dynamic controls...');
   this.components_.LAYOUT.render(this.bottomBar_, this.project_, this.gui_, opt_options);
-  this.progress_.update(38, 'Layout engine created.');
+  this.progress_.update(36, 'Layout engine created.');
   this.components_.SELECTION_MANAGER.render(this.bottomBar_, this.project_, this.gui_, opt_options);
-  this.progress_.update(42, 'Selection manager created.');
+  this.progress_.update(40, 'Selection manager created.');
   this.components_.FILTERS.render(this.bottomBar_, this.project_, this.gui_, opt_options);
-  this.progress_.update(46, 'Filters created.');
+  this.progress_.update(44, 'Filters created.');
 
   if (this.project_.renderer().getSizeRange ||
       this.project_.renderer().getColorRange) {
@@ -684,8 +723,12 @@ rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) 
                                    this.project_,
                                    this.gui_,
                                    opt_options);
-    this.progress_.update(48, 'Legend created.');
+    this.progress_.update(46, 'Legend created.');
   }
+
+  // All other components must be in place before creating the toolbar.
+  this.components_.MINITOOLBAR.render(this.bottomBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(48, 'Toolbar created.');
 };
 
 rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options) {
@@ -694,6 +737,7 @@ rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options
   this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
   this.components_.FILTERS.activate(this.project_, this.gui_, opt_options);
   this.components_.LEGEND.activate(this.project_, this.gui_, opt_options);
+  this.components_.MINITOOLBAR.activate(this.project_, this.gui_, opt_options);
   this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 
@@ -732,7 +776,7 @@ rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(opt_option
   this.progress_.update(10, 'Creating static UI...');
   this.components_.LOGO.render(this.leftBar_, this.gui_, opt_options);
   this.components_.CONSOLE.render(
-      this.components_.RIGHTBAR.getBar(),
+      this.components_.RIGHTBAR.getPanel(),
       this.gui_,
       opt_options);
   this.progress_.update(25, 'All static UI created.');
@@ -766,7 +810,7 @@ rhizo.ui.component.StandardTemplate.prototype.renderDynamic =
     this.progress_.update(48, 'Legend created.');
   }
   this.components_.ACTIONS.render(
-      this.components_.RIGHTBAR.getBar(),
+      this.components_.RIGHTBAR.getPanel(),
       this.project_,
       this.gui_,
       opt_options);
