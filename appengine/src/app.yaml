@@ -1,0 +1,21 @@
+application: rhizosphere
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /
+  script: py/handlers/main.py
+
+- url: /sample/.*
+  script: py/handlers/sample.py
+
+- url: /js
+  static_dir: js
+
+- url: /stylesheets
+  static_dir: stylesheets
+
+- url: /static/(.*\.(gif|png|jpg|ico))
+  static_files: static/\1
+  upload: static/(.*\.(gif|png|jpg|ico))
