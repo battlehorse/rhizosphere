@@ -10,12 +10,5 @@ handlers:
 - url: /sample/.*
   script: py/handlers/sample.py
 
-- url: /js
-  static_dir: js
-
-- url: /stylesheets
-  static_dir: stylesheets
-
-- url: /static/(.*\.(gif|png|jpg|ico))
-  static_files: static/\1
-  upload: static/(.*\.(gif|png|jpg|ico))
+- url: /static
+  static_dir: static
