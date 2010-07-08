@@ -1,4 +1,4 @@
-application: rhizosphere
+application: rhizospherejs
 version: 1
 runtime: python
 api_version: 1
@@ -6,6 +6,9 @@ api_version: 1
 handlers:
 - url: /
   script: py/handlers/main.py
+
+- url: /rhizo.html
+  script: py/handlers/rhizo.py
 
 - url: /sample/.*
   script: py/handlers/sample.py
