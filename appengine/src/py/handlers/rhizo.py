@@ -8,16 +8,17 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from py import rhizoglobals
 
-class MainHandler(webapp.RequestHandler):
+class RhizoHandler(webapp.RequestHandler):
 
     def get(self):
-        template_values = {}
-        path = os.path.join(os.path.dirname(__file__), '../../templates/index.html')
+        debug = self.request.get('d', '0') == '1'
+        template_values = {'debug': debug}
+        path = os.path.join(os.path.dirname(__file__), '../../templates/rhizo.html')
         self.response.out.write(template.render(path, template_values))
 
 
 application = webapp.WSGIApplication(
-    [('/', MainHandler),],
+    [('/rhizo.html', RhizoHandler),],
     debug=rhizoglobals.debug)
 
 
