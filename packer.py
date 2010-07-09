@@ -70,7 +70,7 @@
 #
 # Generates a dependency graph:
 #
-# ./packer.py --graphviz
+# ./packer.py --graphviz | dot -Tpng > rhizosphere_deps.png
 #
 # = Generated output
 # ==================
