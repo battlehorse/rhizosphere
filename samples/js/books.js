@@ -149,7 +149,7 @@ var renderer = {
   stars: function(model) {
     var str = [];
     for (i = 0; i < model.rating; i++) {
-      str.push("<img src='i/star.png'>");
+      str.push("<img src='static/samples/img/books/star.png'>");
     }
     return str.join("");
   },

@@ -19,7 +19,7 @@ namespace("picasa");
 // Load an additional library we need to create photo-frame effects to 
 // thumbnails
 var e = document.createElement("script");
-e.src = "js/sample/cvi_instant_lib.js";
+e.src = "sample/cvi_instant_lib.js";
 e.type="text/javascript";
 document.getElementsByTagName("head")[0].appendChild(e);
 

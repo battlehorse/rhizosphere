@@ -10,8 +10,29 @@ handlers:
 - url: /rhizo.html
   script: py/handlers/rhizo.py
 
-- url: /sample/.*
+- url: /sample/.*\.js
   script: py/handlers/sample.py
 
-- url: /static
-  static_dir: static
+# Static files. Exclude static/samples/js since it is served by the
+# sample handler.
+
+- url: /static/lib/(.*?)/(.*)
+  static_files: static/lib/\1/\2
+  upload: static/lib/(.*?)/(.*)
+
+- url: /static/shared/(.*?)/(.*)
+  static_files: static/shared/\1/\2
+  upload: static/shared/(.*?)/(.*)
+
+- url: /static/welcome/(.*?)/(.*)
+  static_files: static/welcome/\1/\2
+  upload: static/welcome/(.*?)/(.*)
+
+- url: /static/samples/img/(.*)
+  static_files: static/samples/img/\1
+  upload: static/samples/img/(.*)
+
+
+- url: /static/samples/stylesheets/(.*)
+  static_files: static/samples/stylesheets/\1
+  upload: static/samples/stylesheets/(.*)
