@@ -17,24 +17,6 @@
 // RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui,rhizo.ui.gui
 namespace('rhizo.bootstrap');
 
-rhizo.bootstrap.go = function(container, opt_options, opt_resource) {
-  new rhizo.bootstrap.Bootstrap(container, opt_options);
-  $globalBootstrapper_.go(opt_resource);
-};
-
-rhizo.bootstrap.setMetaModel = function(metamodel) {
-  $globalBootstrapper_.setMetaModel(metamodel);
-};
-
-rhizo.bootstrap.setRenderer = function(renderer) {
-  $globalBootstrapper_.setRenderer(renderer);
-};
-
-rhizo.bootstrap.deploy = function(opt_models) {
-  $globalBootstrapper_.deploy(opt_models);
-};
-
-$globalBootstrapper_ = null;
 rhizo.bootstrap.Bootstrap = function(container, opt_options) {
   this.container_ = container;
   this.options_ = { selectfilter: '.rhizo-model:visible' };
@@ -49,8 +31,6 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
       this.options_.miniLayout = true;
     }
   }
-
-  $globalBootstrapper_ = this;
 };
 
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
@@ -86,22 +66,17 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
 
   // ... and load it.
   if (source) {
-    rhizo.model.loader.load(source, this.project_, this.options_);
+    rhizo.model.loader.load(source, this, this.project_, this.options_);
   }
 };
 
-rhizo.bootstrap.Bootstrap.prototype.setMetaModel = function(metamodel) {
-  this.project_.setMetaModel(metamodel);
-};
-
-rhizo.bootstrap.Bootstrap.prototype.setRenderer = function(renderer) {
-  this.project_.setRenderer(renderer);
-};
-
-rhizo.bootstrap.Bootstrap.prototype.deploy = function(opt_models) {
+rhizo.bootstrap.Bootstrap.prototype.deploy = function(payload) {
+  this.project_.setMetaModel(payload.metamodel);
+  this.project_.setRenderer(payload.renderer);
+  
   this.template_.renderDynamic(this.options_);
   this.template_.activateDynamic(this.options_);
 
-  this.project_.deploy(opt_models);
+  this.project_.deploy(payload.models);
   this.template_.done();
 };
