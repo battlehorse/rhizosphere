@@ -46,14 +46,15 @@ rhizo.util.log10_ = function(val) {
  */
 rhizo.util.orderOfMagnitude = function(num) {
   if (num == 0) {
-    return Number.NaN;  
+    return Number.NaN;
   }
-  
+
   // The multiply/divide by 100 trick is just to get rid of rounding errors.
   // For example, in Safari/MacOs log10(1M) would result in 5.999 instead of 6
   // and consequently floored to 5. And we cannot remove floor().
   return Math.floor(Math.round(rhizo.util.log10_(Math.abs(num))*100)/100);
-};/* ./src/js/rhizo.ui.js */
+};
+/* ./src/js/rhizo.ui.js */
 /*
   Copyright 2008 Riccardo Govoni battlehorse@gmail.com
 
@@ -153,13 +154,13 @@ rhizo.ui.expandable = function(renderer, opt_options) {
   } else {
     return false;
   }
-}
+};
 
 /**
   Wires the expansion listeners to the rendering expansion icons,
   if the renderer supports expansion.
  */
-rhizo.ui.initExpandable = function(renderer, opt_options) {
+rhizo.ui.initExpandable = function(project, renderer, opt_options) {
   if (rhizo.ui.expandable(renderer, opt_options)) {
     // register the hover effect to show/hide the expand icon
     $('.rhizo-model').hover(
@@ -169,10 +170,10 @@ rhizo.ui.initExpandable = function(renderer, opt_options) {
         $(this).children('.rhizo-expand-model').css('display', 'none');
       });
 
-    // register the expan icon handler
+    // register the expand icon handler
     $('.rhizo-expand-model').click(function() {
       var id = $(this).attr('id').replace(/rhizo-expand-/, '');
-      var model = $p.model(id);
+      var model = project.model(id);
 
       // flip the expansion status
       model.expanded = !model.expanded;
@@ -238,11 +239,11 @@ namespace("rhizo.meta");
 rhizo.meta.StringKind = function() {};
 
 // metadata is the part of the metamodel that applies to this kind
-rhizo.meta.StringKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.StringKind.prototype.renderFilter = function(project, metadata, key) {
   var input = $("<input type='text' />");
   // keypress handling removed due to browser quirks in key detection
   $(input).change(function(ev) {
-    $p.filter(key, $(this).val());
+    project.filter(key, $(this).val());
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -310,7 +311,7 @@ rhizo.meta.DateKind = function(opt_clusterby) {
   }
 };
 
-rhizo.meta.DateKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.DateKind.prototype.renderFilter = function(project, metadata, key) {
   var year = $("<select style='vertical-align:top' />");
   year.append("<option value='yyyy'>yyyy</option>");
   for (var i = metadata.minYear ; i <= metadata.maxYear; i++) {
@@ -329,7 +330,7 @@ rhizo.meta.DateKind.prototype.renderFilter = function(metadata, key) {
   }
   
   $(year).add($(month)).add($(day)).change(function(ev) {
-    $p.filter(key, [$(year).val(), $(month).val(), $(day).val()]);
+    project.filter(key, [$(year).val(), $(month).val(), $(day).val()]);
   });
 
   return $("<div class='rhizo-filter' />").
@@ -392,7 +393,7 @@ rhizo.meta.DateKind.prototype.addZero_ = function(value) {
 /* RangeKind meta */
 rhizo.meta.RangeKind = function() {};
 
-rhizo.meta.RangeKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
   var slider = $("<div id='rhizo-slider-" + key + "' />");
   var minLabel = $("<strong>" + this.toHumanLabel_(metadata.min) + "</strong>");
   var maxLabel = $("<strong>" + this.toHumanLabel_(metadata.max) + "</strong>");
@@ -438,7 +439,7 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(metadata, key) {
                  removeClass("rhizo-slider-moving");
         maxLabel.text(that.toHumanLabel_(that.toModelScale_(maxSlide))).
                  removeClass("rhizo-slider-moving");
-        $p.filter(key, { min: minSlide, max: maxSlide });
+        project.filter(key, { min: minSlide, max: maxSlide });
       };
   }).call(this);
 
@@ -501,11 +502,11 @@ rhizo.meta.RangeKind.prototype.toFilterScale_ = function(modelValue) {
 
 /**
    Converts a numeric value into a human readable form.
-   
+
    The default implementation of this method is a no-op. Custom filters
    extending the range slider should customize this method according to their
    needs. rhizo.ui.toHumanLabel() is a useful helper in this case.
-   
+
    @oaram {number} the value to be converted
  */
 rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
@@ -515,14 +516,14 @@ rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
 /* BooleanKind meta */
 rhizo.meta.BooleanKind = function() {};
 
-rhizo.meta.BooleanKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.BooleanKind.prototype.renderFilter = function(project, metadata, key) {
   var check = $("<select />");
   check.append("<option value=''>-</option>");
   check.append("<option value='true'>Yes</option>");
   check.append("<option value='false'>No</option>");
 
   $(check).change(function(ev) {
-    $p.filter(key, $(this).val());
+    project.filter(key, $(this).val());
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -543,7 +544,7 @@ rhizo.meta.BooleanKind.prototype.compare = function(firstValue, secondValue) {
 /* CategoryKind meta */
 rhizo.meta.CategoryKind = function() {};
 
-rhizo.meta.CategoryKind.prototype.renderFilter = function(metadata, key) {
+rhizo.meta.CategoryKind.prototype.renderFilter = function(project, metadata, key) {
   var categories = $("<select " +
                      (metadata.multiple ? 'multiple size="4" ' : '') +
                      " style='vertical-align:top' />");
@@ -560,7 +561,7 @@ rhizo.meta.CategoryKind.prototype.renderFilter = function(metadata, key) {
         return category != '';
       });
     }
-    $p.filter(key, selectedCategories);
+    project.filter(key, selectedCategories);
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -663,14 +664,35 @@ rhizo.meta.Kind = {
 // RHIZODEP=rhizo
 namespace("rhizo");
 
-/**
- * Permanently disables logging. Turns rhizo.log into a no-op.
- */
-rhizo.disableLogging = function() {
-  rhizo.log = function() {};  
+rhizo.nativeConsoleExists = function() {
+  return typeof(console) !== 'undefined' && console != null;
 };
 
-rhizo.log = function(message, opt_severity) {
+rhizo.NoOpLogger = function() {};
+rhizo.NoOpLogger.prototype.info = function() {};
+rhizo.NoOpLogger.prototype.error = function() {};
+rhizo.NoOpLogger.prototype.warning = function() {};
+
+rhizo.NativeLogger = function() {};
+
+rhizo.NativeLogger.prototype.info = function(message) {
+  console.info(message);
+};
+
+rhizo.NativeLogger.prototype.error = function(message) {
+  console.error(message);
+};
+
+rhizo.NativeLogger.prototype.warning = function(message) {
+  console.warn(message);
+};
+
+rhizo.Logger = function(gui) {
+  this.console_ = gui.getComponent('rhizo.ui.component.Console');
+  this.rightBar_ = gui.getComponent('rhizo.ui.component.RightBar');
+};
+
+rhizo.Logger.prototype.log_ = function(message, opt_severity) {
   var severity = opt_severity || 'info';
   var highlightColor = "#888";
   switch(severity) {
@@ -689,27 +711,33 @@ rhizo.log = function(message, opt_severity) {
   var htmlMsg = $("<p class='rhizo-log-" + severity + "'>" +
                   dateMsg + message + "</p>");
 
-  $('#rhizo-console-contents').prepend(htmlMsg);
+  this.console_.getContents().prepend(htmlMsg);
   if (opt_severity) {
     htmlMsg.effect("highlight", {color: highlightColor }, 1000);
   }
-  if (!$('#rhizo-console-contents').is(':visible') && opt_severity) {
-    if (!$('#rhizo-right').is(':visible')) {
-      $('#rhizo-right-pop').effect("highlight", {color: highlightColor }, 1000);      
+  if (!this.console_.getContents().is(':visible') && opt_severity) {
+    if (this.rightBar_ && !this.rightBar_.getPanel().is(':visible')) {
+      this.rightBar_.getToggle().effect(
+          "highlight", {color: highlightColor }, 1000);
     } else {
-      $('#rhizo-console-header').effect("highlight",
-                                        {color: highlightColor }, 1000);            
+      this.console_.getHeader().effect(
+          "highlight", {color: highlightColor }, 1000);
     }
   }
 };
 
-rhizo.error = function(message) {
-  rhizo.log(message, "error");
+rhizo.Logger.prototype.info = function(message) {
+  this.log_(message);
 };
 
-rhizo.warning = function(message) {
-  rhizo.log(message, "warning");
-}/* ./src/js/extra/rhizo.meta.extra.js */
+rhizo.Logger.prototype.error = function(message) {
+  this.log_(message, "error");
+};
+
+rhizo.Logger.prototype.warning = function(message) {
+  this.log_(message, "warning");
+};
+/* ./src/js/extra/rhizo.meta.extra.js */
 /*
   Copyright 2008 Riccardo Govoni battlehorse@gmail.com
 
@@ -947,9 +975,9 @@ rhizo.model.SuperModel.prototype.filter = function(key) {
 
 rhizo.model.SuperModel.prototype.resetFilter = function(key) {
   delete this.filters_[key];
-}
+};
 
-rhizo.model.kickstart = function(model, renderer, opt_options) {
+rhizo.model.kickstart = function(model, project, renderer, opt_options) {
   var naked_render = renderer.render(
       model.unwrap(), // rendered expects the naked model
       model.expanded, // initial expansion status, dictated by the SuperModel
@@ -972,10 +1000,10 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
 
   $(rendering).attr("id", model.id);
   $(rendering).dblclick(function() {
-    if ($p.isSelected(this.id)) {
-      $p.unselect(this.id);
+    if (project.isSelected(this.id)) {
+      project.unselect(this.id);
     } else {
-      $p.select(this.id);
+      project.select(this.id);
     }
   });
 
@@ -985,7 +1013,7 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
     zIndex: 10000,
     distance: 3,
     start: function(ev, ui) {
-      $p.toggleSelection('disable');
+      project.toggleSelection('disable');
 
       // used by droppable feature
       $('#' + ui.helper[0].id).data(
@@ -997,8 +1025,8 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
 
       // figure out all the initial positions for the selected elements
       // and store them.
-      if ($p.isSelected(ui.helper[0].id)) {
-        for (id in $p.allSelected()) {
+      if (project.isSelected(ui.helper[0].id)) {
+        for (id in project.allSelected()) {
           $('#'+id).data(
             "top0",
             parseInt($('#'+id).css("top"),10) -
@@ -1015,8 +1043,8 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
       }
     },
     drag: function(ev, ui) {
-      if ($p.isSelected(ui.helper[0].id)) {
-        for (id in $p.allSelected()) {
+      if (project.isSelected(ui.helper[0].id)) {
+        for (id in project.allSelected()) {
           if (id != ui.helper[0].id) {
             $('#' + id).css('top',
                             $('#'+id).data("top0") + ui.position.top);
@@ -1027,9 +1055,9 @@ rhizo.model.kickstart = function(model, renderer, opt_options) {
       }
     },
     stop: function(ev, ui) {
-      $p.toggleSelection('enable');
-      if ($p.isSelected(ui.helper[0].id)) {
-        for (id in $p.allSelected()) {
+      project.toggleSelection('enable');
+      if (project.isSelected(ui.helper[0].id)) {
+        for (id in project.allSelected()) {
          $('#'+id).removeData("top0");
          $('#'+id).removeData("left0");
         }
@@ -1084,24 +1112,26 @@ namespace("rhizo.layout");
 
 /**
  * Creates a dropdown control that enumerates all the metaModel keys.
+ * @param {rhizo.Project} project
  * @param {string} id
  * @return {Element} the jquery-enhanced HTML dropdown control
  */
-rhizo.layout.metaModelKeySelector = function(id) {
+rhizo.layout.metaModelKeySelector = function(project, id) {
   var select = $("<select id='" + id + "' />");
-  if ($p && $p.metaModel()) {
-    for (key in $p.metaModel()) {
+  if (project && project.metaModel()) {
+    for (key in project.metaModel()) {
       select.append("<option value='" + key + "'>" +
-                    $p.metaModel()[key].label + "</option>");
+                    project.metaModel()[key].label + "</option>");
     }
   }
   return select;
 };
 
-rhizo.layout.NoLayout = function() {};
+rhizo.layout.NoLayout = function(unused_project) {};
 
 rhizo.layout.NoLayout.prototype.layout = function(container,
                                                   supermodels,
+                                                  allmodels,
                                                   meta,
                                                   opt_options) {};
 
@@ -1109,23 +1139,25 @@ rhizo.layout.NoLayout.prototype.toString = function() {
   return "-";
 };
 
-rhizo.layout.FlowLayout = function(opt_top, opt_left) {
+rhizo.layout.FlowLayout = function(project, opt_top, opt_left) {
+  this.project_ = project;
   this.top = opt_top || 5;
   this.left = opt_left || 5;
 };
 
 rhizo.layout.FlowLayout.prototype.layout = function(container,
                                                     supermodels,
+                                                    allmodels,
                                                     meta,
                                                     opt_options) {
-  var maxWidth = $(container).width();
+  var maxWidth = container.width();
   var lineHeight = 0;
 
   // reorder supermodels if needed
   var order = $('#rhizo-flowlayout-order').val();
   var reverse = $('#rhizo-flowlayout-desc:checked').length > 0;
   if (order) {
-    rhizo.log("Sorting by " + order);
+    this.project_.logger().info("Sorting by " + order);
     supermodels.sort(rhizo.meta.sortBy(order, meta[order].kind, reverse));
   }
 
@@ -1154,7 +1186,8 @@ rhizo.layout.FlowLayout.prototype.cleanup = function() {
 rhizo.layout.FlowLayout.prototype.details = function() {
   return $("<div />").
            append("Ordered by: ").
-           append(rhizo.layout.metaModelKeySelector('rhizo-flowlayout-order')).
+           append(rhizo.layout.metaModelKeySelector(this.project_,
+                                                    'rhizo-flowlayout-order')).
            append(" desc?").
            append('<input type="checkbox" id="rhizo-flowlayout-desc" />');
 };
@@ -1163,23 +1196,24 @@ rhizo.layout.FlowLayout.prototype.toString = function() {
   return "List";
 };
 
-rhizo.layout.ScrambleLayout = function() {};
+rhizo.layout.ScrambleLayout = function(unused_project) {};
 
 rhizo.layout.ScrambleLayout.prototype.layout = function(container,
                                                         supermodels,
+                                                        allmodels,
                                                         meta,
                                                         opt_options) {
   if (opt_options && opt_options.filter) {
     return; // re-layouting because of filtering doesn't affect the layout
   }
-  var maxWidth = Math.round($(container).width()*0.3) ;
-  var maxHeight = Math.round($(container).height()*0.3);
+  var maxWidth = Math.round(container.width()*0.3) ;
+  var maxHeight = Math.round(container.height()*0.3);
 
   for (var i = 0, len = supermodels.length; i < len; i++) {
     var r = $(supermodels[i].rendering);
-    var top = Math.round($(container).height() / 3 +
+    var top = Math.round(container.height() / 3 +
                          Math.random()*maxHeight*2 - maxHeight);
-    var left = Math.round($(container).width() / 3 +
+    var left = Math.round(container.width() / 3 +
                           Math.random()*maxWidth*2 - maxWidth);
 
     r.move(top, left);
@@ -1190,13 +1224,15 @@ rhizo.layout.ScrambleLayout.prototype.toString = function() {
   return "Random";
 };
 
-rhizo.layout.BucketLayout = function() {
-  this.internalFlowLayout_ = new rhizo.layout.FlowLayout();
+rhizo.layout.BucketLayout = function(project) {
+  this.project_ = project;
+  this.internalFlowLayout_ = new rhizo.layout.FlowLayout(project);
   this.bucketHeaders_ = [];
 };
 
 rhizo.layout.BucketLayout.prototype.layout = function(container,
                                                       supermodels,
+                                                      allmodels,
                                                       meta,
                                                       opt_options) {
   var reverse = $('#rhizo-bucketlayout-desc:checked').length > 0;
@@ -1204,10 +1240,10 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   // detect bucket
   var bucketBy = $('#rhizo-bucketlayout-bucket').val();
   if (!meta[bucketBy]) {
-    rhizo.error("layoutBy attribute does not match any property");
+    this.project_.logger().error("layoutBy attribute does not match any property");
     return;
   }
-  rhizo.log("Bucketing by " + bucketBy);
+  this.project_.logger().info("Bucketing by " + bucketBy);
 
   var clusterFunction;
   var clusterThis;
@@ -1250,6 +1286,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
     this.renderBucketHeader_(container, bucketsLabels[bucketKey]);
     this.internalFlowLayout_.layout(container,
                                     buckets[bucketKey],
+                                    allmodels,
                                     meta,
                                     opt_options);
 
@@ -1268,7 +1305,7 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
                css('left', 5).
                css('top', this.internalFlowLayout_.top);
   this.bucketHeaders_.push(bucketHeader);
-  $(container).append(bucketHeader);
+  container.append(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
 };
 
@@ -1276,7 +1313,8 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
 rhizo.layout.BucketLayout.prototype.details = function() {
   return $("<div />").
            append("Group by: ").
-           append(rhizo.layout.metaModelKeySelector('rhizo-bucketlayout-bucket')).
+           append(rhizo.layout.metaModelKeySelector(this.project_,
+                                                    'rhizo-bucketlayout-bucket')).
            append(" desc?").
            append('<input type="checkbox" id="rhizo-bucketlayout-desc" />');
 };
@@ -1295,10 +1333,10 @@ rhizo.layout.BucketLayout.prototype.toString = function() {
 
 
 rhizo.layout.layouts = {
-  no: new rhizo.layout.NoLayout(),
-  flow: new rhizo.layout.FlowLayout(),
-  scramble: new rhizo.layout.ScrambleLayout(),
-  bucket: new rhizo.layout.BucketLayout()
+  no: rhizo.layout.NoLayout,
+  flow: rhizo.layout.FlowLayout,
+  scramble: rhizo.layout.ScrambleLayout,
+  bucket: rhizo.layout.BucketLayout
 };
 /* ./src/js/rhizo.autorender.js */
 /*
@@ -1560,8 +1598,7 @@ rhizo.autorender.AR.prototype.render = function(model,
 // RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout
 namespace("rhizo");
 
-$p = null;
-rhizo.Project = function(opt_options) {
+rhizo.Project = function(gui, opt_options) {
   this.models_ = [];
 
   this.modelsMap_ = {};
@@ -1570,14 +1607,29 @@ rhizo.Project = function(opt_options) {
   this.layoutName_ = 'flow'; // default layout engine
   this.layouEngine_ = null;
   this.options_ = opt_options || {};
-  $p = this;
+
+  this.gui_ = gui;
+
+  if (rhizo.nativeConsoleExists()) {
+    this.logger_ = new rhizo.NativeLogger();
+  } else {
+    this.logger_ = new rhizo.NoOpLogger();
+  }
+};
+
+rhizo.Project.prototype.chromeReady = function() {
+  // All the static UI components are in place. This might include the
+  // logging console.
+  if (this.gui_.getComponent('rhizo.ui.component.Console')) {
+    this.logger_ = new rhizo.Logger(this.gui_);
+  }
 };
 
 rhizo.Project.prototype.deploy = function(opt_models) {
   if (opt_models && this.addModels_(opt_models)) {
     this.finalizeUI_();
   }
-  rhizo.log("*** Ready!");
+  this.logger_.info("*** Ready!");
 };
 
 rhizo.Project.prototype.addModels_ = function(models) {
@@ -1599,7 +1651,7 @@ rhizo.Project.prototype.addModels_ = function(models) {
 rhizo.Project.prototype.finalizeUI_ = function() {
   // Once the models are rendered, bind events that require rendered
   // DOM elements to be present, such as the maximize icon.
-  rhizo.ui.initExpandable(this.renderer_, this.options_);
+  rhizo.ui.initExpandable(this, this.renderer_, this.options_);
 
   // We manually disable animations for the initial layout (the browser is
   // already busy creating the whole dom).
@@ -1632,6 +1684,14 @@ rhizo.Project.prototype.setRenderer = function(renderer) {
   this.renderer_ = renderer;
 };
 
+rhizo.Project.prototype.gui = function() {
+  return this.gui_;
+};
+
+rhizo.Project.prototype.logger = function() {
+  return this.logger_;
+};
+
 rhizo.Project.prototype.resetAllFilter = function(key) {
   this.models_.forEach(function(model) {
     model.resetFilter(key);
@@ -1644,7 +1704,7 @@ rhizo.Project.prototype.select = function(id) {
   supermodel.selected = true;
   $('#' + id).addClass('ui-selected');
 
-  rhizo.log("Selected " + supermodel);
+  this.logger_.info("Selected " + supermodel);
 };
 
 rhizo.Project.prototype.unselect = function(id) {
@@ -1653,7 +1713,7 @@ rhizo.Project.prototype.unselect = function(id) {
   delete this.selectionMap_[id];
   supermodel.selected = false;
   $('#' + id).removeClass('ui-selected');
-  rhizo.log("Unselected " + supermodel);
+  this.logger_.info("Unselected " + supermodel);
 };
 
 rhizo.Project.prototype.unselectAll = function() {
@@ -1671,8 +1731,9 @@ rhizo.Project.prototype.allSelected = function() {
 };
 
 rhizo.Project.prototype.allUnselected = function() {
+  var selectionMap = this.selectionMap_;
   return $.grep(this.models_, function(superModel) {
-    return !$p.selectionMap_[superModel.id];
+    return !selectionMap[superModel.id];
   });
 };
 
@@ -1682,23 +1743,23 @@ rhizo.Project.prototype.allUnselected = function() {
    @param {string} status either 'enable' or 'disable'
  */
 rhizo.Project.prototype.toggleSelection = function(status) {
-  $('#rhizo-viewport').selectable(status);
+  this.gui_.viewport.selectable(status);
 };
 
 rhizo.Project.prototype.checkModels_ = function() {
-  rhizo.log("Checking models...");
+  this.logger_.info("Checking models...");
   var modelsAreCorrect = true;
   this.models_.forEach(function(model){
     if (!model.id) {
       modelsAreCorrect = false;
-      rhizo.error("Verify your models: missing ids.")
+      this.logger_.error("Verify your models: missing ids.")
     }
   });
   return modelsAreCorrect;
 };
 
 rhizo.Project.prototype.buildModelsMap_ = function() {
-  rhizo.log("Building models map...");
+  this.logger_.info("Building models map...");
   this.models_.forEach(function(model) {
     this.modelsMap_[model.id] = model;
   }, this);
@@ -1706,6 +1767,7 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 
 rhizo.Project.prototype.initializeModel_ = function(model) {
   var rendering = rhizo.model.kickstart(model,
+                                        this,
                                         this.renderer_,
                                         this.options_);
 
@@ -1715,41 +1777,42 @@ rhizo.Project.prototype.initializeModel_ = function(model) {
               .css("left", 0)
               .css("display", "none");
 
-  $("#rhizo-universe").append(rendering);
+  this.gui_.universe.append(rendering);
 };
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
   var layoutEngineName = opt_layoutEngineName ?
                          opt_layoutEngineName : this.layoutName_;
-  var engine = rhizo.layout.layouts[layoutEngineName];
-  if (!engine) {
-    rhizo.error("Invalid layout engine:" + layoutEngineName);
+  var engine_ctor = rhizo.layout.layouts[layoutEngineName];
+  if (!engine_ctor) {
+    this.logger_.error("Invalid layout engine:" + layoutEngineName);
   } else {
-    rhizo.log('laying out...');
+    this.logger_.info('laying out...');
     if (this.layoutEngine_ && this.layoutEngine_.cleanup) {
       this.layoutEngine_.cleanup(); // cleanup previous layout engine
     }
 
     this.layoutName_ = layoutEngineName;
-    this.layoutEngine_ = engine;
+    this.layoutEngine_ = new engine_ctor(this);
 
     // reset panning
-    $('#rhizo-universe').move(0, 0, 0, 0);
+    this.gui_.universe.move(0, 0, 0, 0);
 
     // layout only non filtered models
     var nonFilteredModels = jQuery.grep(this.models_, function(model) {
       return !model.isFiltered();
     });
-    engine.layout('#rhizo-universe',
-                  nonFilteredModels,
-                  this.metaModel_,
-                  opt_options);
+    this.layoutEngine_.layout(this.gui_.universe,
+                              nonFilteredModels,
+                              this.modelsMap_,
+                              this.metaModel_,
+                              opt_options);
   }
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
   if (!this.metaModel_[key]) {
-    rhizo.error("Invalid filtering key: " + key);
+    this.logger_.error("Invalid filtering key: " + key);
   }
   if (value != '') {
     this.models_.forEach(function(model) {
@@ -1826,22 +1889,22 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   - TreeLayout: the layout itself. It builds the tree structure out of the supermodels
     and, for every root found, draws a tree. Trees are stacked from left to right, top to bottom,
     hence this class uses the 'traditional' set of positioning coordinates (top, left, width, height).
-    
+
   - TreeNode: a simple datastructure representing a node in the tree. It is used also to store some
     rendering information about the node, such as the bounding rectangle which can contain the rendering
     of the node itself and all its children
-    
+
   - TreePainter: the class responsible for drawing each tree (aka, each set of nodes connected to a single
     root). Since trees can be rendered both vertically and horizontally, the TreePainter uses
     and abstract set of coordinates :
     * gd: the growing direction
     * od: the opposite direction
-    Siblings are appended to the layout following the growing direction. 
+    Siblings are appended to the layout following the growing direction.
     Childs are appended to their parents following the opposite direction.
-    
+
     Hence, in a horizontal tree, _gd_ is left to right and _od_ is top to bottom.
     In a vertical tree, _gd_ is top to bottom and _od_ is left to right.
-    
+
     Using this abstract set of coordinates allows the TreePainter to re-use the same rendering code.
     Utility methods are provided to convert between the 'physical' and 'abstract' coordinate set.
 */
@@ -1851,83 +1914,92 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
 /**
  * @constructor
  */
-rhizo.layout.TreeLayout = function() {};
-  
-rhizo.layout.TreeLayout.prototype.layout = function(container, supermodels, meta, opt_options) {
-  
+rhizo.layout.TreeLayout = function(project) {
+  this.project_ = project;
+};
+
+rhizo.layout.TreeLayout.prototype.layout = function(container,
+                                                    supermodels,
+                                                    allmodels,
+                                                    meta,
+                                                    opt_options) {
+
   // detect rendering direction
   var vertical = $('#rhizo-treelayout-direction').val() == 'ver';
   this.treePainter_ = new rhizo.layout.TreePainter(vertical);
-  
+
   // detect parent
   var parentKey = $('#rhizo-treelayout-parentKey').val();
   if (!meta[parentKey]) {
-    rhizo.error("parentKey attribute does not match any property");
+    this.project_.logger().error("parentKey attribute does not match any property");
     return;
   }
-  rhizo.log("Creating tree by " + parentKey);
-  
+  this.project_.logger().info("Creating tree by " + parentKey);
+
   try {
     // builds the tree model and also checks for validity
-    var roots = this.buildTree_(supermodels, parentKey);
-    
+    var roots = this.buildTree_(supermodels, allmodels, parentKey);
+
     var drawingOffset = { left: 0, top: 0 };
-    
+
     var maxHeight = 0;
     for (var id in roots) { // for each root found
-      
+
       // calculate the bounding rectangle for the whole tree, in gd-od coordinates
       var unrotatedBoundingRect = this.treePainter_.calculateBoundingRect_(roots[id]);
-      
+
       // flip the bounding rectangle back to physical coordinates
       var boundingRect = this.treePainter_.toAbsoluteCoords_(unrotatedBoundingRect);
-      
+
       // 'return carriage' if needed
-      if (drawingOffset.left + boundingRect.w > $(container).width()) {
+      if (drawingOffset.left + boundingRect.w > container.width()) {
         drawingOffset.left = 0;
         drawingOffset.top += maxHeight + (maxHeight > 0 ? 5 : 0);
       }
-      
+
       // Flip the drawing offset back into the gd-od coordinate set and draw the tree.
       this.treePainter_.draw_(container, roots[id], this.treePainter_.toRelativeCoords_(drawingOffset));
-      
+
       // update offset positions
       drawingOffset.left += boundingRect.w;
       maxHeight = Math.max(maxHeight, boundingRect.h);
     }
   } catch(e) {
     if (e.name == "TreeCycleException") {
-      rhizo.error(e);
+      this.project_.logger().error(e);
     } else {
       throw e;
     }
-    
-  }  
+
+  }
 };
 
 /**
  * Builds a hierarchical structure of TreeNodes. Raises exceptions
  * if cycles are found within the tree. Deals automatically with "filtered"
  * parts of the tree
- * @private 
+ * @private
  */
-rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels, parentKey) {
+rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels,
+                                                        allmodels,
+                                                        parentKey) {
   var globalNodesMap = {};
   for (var i = 0, l = supermodels.length; i < l; i++) {
     globalNodesMap[supermodels[i].id] = new rhizo.layout.TreeNode(supermodels[i]);
   }
-  
+
   var roots = {};
-  
-  // supermodels contains only the _visible_ models
+
+  // supermodels contains only the _visible_ models, while allmodels contains
+  // all the known models.
   for (var i = 0, l = supermodels.length; i < l; i++) {
-    if (!globalNodesMap[supermodels[i].unwrap().id].validated) { 
-      
+    if (!globalNodesMap[supermodels[i].unwrap().id].validated) {
+
       // we never encountered the node before. Start navigating
       // this branch upward, paying attention to cycles
       var localNodesMap = {};
       var model = supermodels[i].unwrap();
-    
+
       while(true) {
         if (localNodesMap[model.id]) {
           // cycle detected
@@ -1935,8 +2007,10 @@ rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels, parentKey) 
         }
         localNodesMap[model.id] = model;
         globalNodesMap[model.id].validated = true;
-        
-        var parentSuperModel = this.findFirstVisibleParent_($p.model(model[parentKey]), parentKey);
+
+        var parentSuperModel = this.findFirstVisibleParent_(allmodels,
+                                                            allmodels[model[parentKey]],
+                                                            parentKey);
         if (parentSuperModel) {
           var parentModel = parentSuperModel.unwrap();
           globalNodesMap[parentModel.id].addChild(globalNodesMap[model.id]);
@@ -1948,25 +2022,29 @@ rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels, parentKey) 
       }
     }
   }
-  
+
   return roots;
 };
 
 
 /**
- * From a given model, returns the first non-filtered model in the tree hierarchy defined 
+ * From a given model, returns the first non-filtered model in the tree hierarchy defined
  * according to parentKey. If the given model itself is not filtered, it is returned without
  * further search. If a cycle is detected while traversing filtered parents, an exception is raised.
  *
+ * @param {Object} allmodels a map associating model ids to SuperModel instances.
+ *     currently known to the project.
  * @param {rhizo.model.SuperModel} superParent the model to start the search from.
  * @param {string} parentKey the name of the model attribute that defines the parent-child relationship.
  * @private
  */
-rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(superParent, parentKey) {
+rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(allmodels,
+                                                                     superParent,
+                                                                     parentKey) {
   if (!superParent) {
     return null;
   }
-  
+
   var localNodesMap = {};
   while (superParent.isFiltered()) {
     if (localNodesMap[superParent.id]) {
@@ -1974,25 +2052,26 @@ rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(superParent
       throw new rhizo.layout.TreeCycleException("Tree is invalid: hidden cycle detected");
     }
     localNodesMap[superParent.id] = superParent;
-    
-    superParent = $p.model(superParent.unwrap()[parentKey]);
+
+    superParent = allmodels[superParent.unwrap()[parentKey]];
     if (!superParent) {
       // we reached an hidden root.
       return null;
     }
   }
-  
+
   return superParent;
 };
 
 rhizo.layout.TreeLayout.prototype.details = function() {
   var select = $("<select id='rhizo-treelayout-direction' />");
   select.append("<option value='hor'>Horizontally</option>");
-  select.append("<option value='ver'>Vertically</option>");  
-  
-  return $("<div />").append(select)
-                     .append(" arrange by: ")
-                     .append(rhizo.layout.metaModelKeySelector('rhizo-treelayout-parentKey'));
+  select.append("<option value='ver'>Vertically</option>");
+
+  return $("<div />").append(select).
+                      append(" arrange by: ").
+                      append(rhizo.layout.metaModelKeySelector(this.project_,
+                                                               'rhizo-treelayout-parentKey'));
 };
 
 rhizo.layout.TreeLayout.prototype.toString = function() {
@@ -2009,7 +2088,7 @@ rhizo.layout.TreeLayout.prototype.cleanup = function() {
 /*
   The whole class depends on coordinate transformation between screen width-height
   into the gd-od coordinates.
-  
+
   +--------> width/left
   |
   |        Vertical layout      Horizontal Layout
@@ -2019,15 +2098,15 @@ rhizo.layout.TreeLayout.prototype.cleanup = function() {
   height   |   |__[c]           |   |     |   |
   top      |   |__[c]           |   [c]   [c] [c]
            \/                   \/
-          gd                    od 
-  
+          gd                    od
+
   This class adopts two different layout variations when rendered vertically rather
   than horizontally.
-  
+
   When rendered vertically, each parent will always be above, or at the same (physical or, equivalently, gd)
   height as the highest of its children. In this way, it looks like childrens are hanging under the parents.
   This is called the 'packed' layout.
-  
+
   When rendered horizontally, each parent will be positioned evenly in the middle along the 
   (phyisical, or, equivalently gd) width of the area occupied by all its children. It this way, the tree
   appears to be balanced.
@@ -2037,9 +2116,9 @@ rhizo.layout.TreeLayout.prototype.cleanup = function() {
  * @constructor
  */
 rhizo.layout.TreePainter = function(vertical) {
-  this.connectors_ = []; 
+  this.connectors_ = [];
   this.vertical_ = vertical;
-  
+
   // translate coordinate names and distances into gd-od names
   if (this.vertical_) {
     this.gdName_ = 'top';
@@ -2051,7 +2130,7 @@ rhizo.layout.TreePainter = function(vertical) {
     this.odName_ = 'top';
     this.gdLength_ = 'width';
     this.odLength_ = 'height';
-    
+
   }
 }
 
@@ -2126,7 +2205,7 @@ rhizo.layout.TreePainter.prototype.evenCenter_ = function(offset, rendering, bou
 
 /**
  * For every node, recursively calculate its bounding rectangle, in gd-od coordinates.
- * 
+ *
  * @param {rhizo.layout.TreeNode} treenode the node
  * @private
  */
@@ -2137,14 +2216,14 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
     childsArea.gd += childRect.gd + 5;
     childsArea.od = Math.max(childsArea.od, childRect.od);
   }
-    
+
   var r = treenode.superModel.rendering;
-  
+
   // enrich the treenode with rendering info
   treenode.boundingRect =
     { od: this.od_(r) + childsArea.od + 25, // 20 px padding between node and childs, 5 px padding for the whole rect
       gd: Math.max(this.gd_(r), childsArea.gd) + 5};
-  
+
   return treenode.boundingRect;
 };
 
@@ -2156,34 +2235,34 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
  */
 rhizo.layout.TreePainter.prototype.draw_ = function(container, treenode, offset, parentOffset, parentNode) {
   var r = $(treenode.superModel.rendering);
-  
+
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
   if (this.vertical_) {
     r.move(offset.gd + 5, offset.od);
-    
+
     // draw connector if needed
     if (parentOffset != null) {
-      this.drawConnector_(container, 
+      this.drawConnector_(container,
         this.packedCenter_(offset, r),
-        this.packedCenter_(parentOffset, parentNode.superModel.rendering));      
+        this.packedCenter_(parentOffset, parentNode.superModel.rendering));
     }
   } else {
     r.move(offset.od + 5, offset.gd + (treenode.boundingRect.gd - this.gd_(r))/2);
-    
+
     // draw connector if needed
     if (parentOffset != null) {
-      this.drawConnector_(container, 
+      this.drawConnector_(container,
         this.evenCenter_(offset, r, treenode.boundingRect),
         this.evenCenter_(parentOffset, parentNode.superModel.rendering, parentNode.boundingRect));    
     }
   }
-  
+
   // Renders all the children along the gd direction
   var progressiveGd = offset.gd;
   for (var childId in treenode.childs) {
     var childNode = treenode.childs[childId];
-    
+
     var childOffset = {
       od: offset.od + this.od_(r) + 20,
       gd: progressiveGd
@@ -2210,7 +2289,7 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(container, curCente
     .css(this.odName_, parentCenter.od)
     .css(this.odLength_, 2)
     .css(this.gdLength_, Math.abs(parentCenter.gd - curCenter.gd));
-  
+
   var odconnector = $("<div class='rhizo-tree-connector' />");
   odconnector
     .css('position', 'absolute')
@@ -2218,12 +2297,11 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(container, curCente
     .css(this.odName_, parentCenter.od)
     .css(this.gdLength_, 2)
     .css(this.odLength_, Math.abs(parentCenter.od - curCenter.od));
-    
-  
+
   this.connectors_.push(gdconnector);
   this.connectors_.push(odconnector);
-  $(container).append(gdconnector);
-  $(container).append(odconnector);  
+  container.append(gdconnector);
+  container.append(odconnector);
 };
 
 rhizo.layout.TreePainter.prototype.cleanup_ = function() {
@@ -2263,7 +2341,7 @@ rhizo.layout.TreeCycleException.prototype.toString = function() {
 };
 
 // register the treelayout in the global layouts list
-rhizo.layout.layouts.tree = new rhizo.layout.TreeLayout();
+rhizo.layout.layouts.tree = rhizo.layout.TreeLayout;
 /* ./src/js/rhizo.ui.component.js */
 /*
   Copyright 2009 Riccardo Govoni battlehorse@gmail.com
@@ -2287,17 +2365,18 @@ namespace("rhizo.ui.component");
 
 // Progress-bar to handle application startup feedback
 rhizo.ui.component.Progress = function(container) {
-  var pbarPanel = $('<div id="rhizo-progressbar-panel"></div>').appendTo(container);
-  var pbar = $('<div id="rhizo-progressbar"></div>').appendTo(pbarPanel);
+  this.pbarPanel_ = $('<div/>', {'class': 'rhizo-progressbar-panel'}).appendTo(container);
+  var pbar = $('<div/>', {'class': 'rhizo-progressbar'}).appendTo(this.pbarPanel_);
   this.pbar_ = pbar.progressbar({value: 1});
-  $('<div id="rhizo-progressbar-text">Loading...</div>').appendTo(pbarPanel);  
-  // setTimeout(function() { $('#rhizo-progressbar-panel').fadeIn(500); }, 500);
+  this.pbarText_ = $('<div/>', {'class': 'rhizo-progressbar-text'}).
+      text('Loading...').
+      appendTo(this.pbarPanel_);
 };
 
 rhizo.ui.component.Progress.prototype.update = function(value, opt_text) {
   this.pbar_.progressbar('value', value);
   if (opt_text) {
-    $('#rhizo-progressbar-text').text(opt_text);
+    this.pbarText_.text(opt_text);
   }
   if (value >= 100) {
     this.destroy_();
@@ -2305,136 +2384,409 @@ rhizo.ui.component.Progress.prototype.update = function(value, opt_text) {
 };
 
 rhizo.ui.component.Progress.prototype.destroy_ = function() {
-  if ($('#rhizo-progressbar-panel').is(':visible')) {
-    setTimeout(function() {
-      $('#rhizo-progressbar-panel').fadeOut(500, function() {
+  if (this.pbarPanel_.is(':visible')) {
+    setTimeout(jQuery.proxy(function() {
+      this.pbarPanel_.fadeOut(500, function() {
         $(this).remove();
       });
-    }, 1000);
+    }, this), 1000);
   } else {
-    $('#rhizo-progressbar-panel').remove();
-  }    
+    this.pbarPanel_.remove();
+  }
 };
 
 rhizo.ui.component.Logo = function() {};
 
-rhizo.ui.component.Logo.prototype.render = function(container, opt_options) {  
- $('<div id="rhizo-header"><h1>Rhizosphere</h1><p>' +
-    'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2009<br />' +
-    '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
-    '&nbsp;' +
-    '<a href="http://sites.google.com/site/rhizosphereui/Home/documentation" target="_blank" ' +
-    'style="font-weight:bold; text-decoration: underline">I Need Help!</a>' +
-    '</p></div>').appendTo(container);
+rhizo.ui.component.Logo.prototype.getPanel = function() {
+  return this.headerPanel_;
+};
+
+rhizo.ui.component.Logo.prototype.render = function(container, gui, opt_options) {
+  var options = opt_options || {};
+  gui.addComponent('rhizo.ui.component.Logo', this);
+  this.headerPanel_ = $('<div />', {'class': 'rhizo-header'}).html(
+      '<h1>Rhizosphere</h1><p>' +
+      'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2010<br />' +
+      '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
+      '&nbsp;' +
+      '<a href="http://sites.google.com/site/rhizosphereui/Home/documentation" target="_blank" ' +
+      'style="font-weight:bold; text-decoration: underline">I Need Help!</a>' +
+      '</p>').appendTo(container);
+
+  if (options.miniLayout) {
+    this.headerPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+  }
 };
 
 rhizo.ui.component.Viewport = function() {};
 
-rhizo.ui.component.Viewport.prototype.render = function(container, opt_options) {
+rhizo.ui.component.Viewport.prototype.render = function(container, gui, opt_options) {
   var options = opt_options || {};
-  
-  $('<div id="rhizo-viewport">' +
-    '<div id="rhizo-universe"></div>' +
-    '<div id="rhizo-scroll-trigger" title="Click to pan around" ></div>' +
-    '</div>' +
-    '<div id="rhizo-scroll-overlay" style="display: none">' +
-    '<div><button id="rhizo-scroll-done">Done</button></div>' +
-    '</div>').appendTo(container);
-    
+
+  this.viewport_ = $('<div/>', {'class': 'rhizo-viewport'}).appendTo(container);
+  this.universe_ = $('<div/>', {'class': 'rhizo-universe'}).appendTo(this.viewport_);
+
+  // Update the GUI object.
+  gui.setViewport(this.viewport_);
+  gui.setUniverse(this.universe_);
+
+  this.scroll_trigger_ = $('<div/>', {
+      'class': 'rhizo-scroll-trigger',
+      title: 'Click to pan around'
+    }).appendTo(this.viewport_);
+
+  this.scroll_overlay_ = $('<div />', {'class': 'rhizo-scroll-overlay'}).
+      css('display', 'none').appendTo(container);
+  this.scroll_done_ = $('<button />', {'class': 'rhizo-scroll-done'}).text('Done');
+  $('<div />').append(this.scroll_done_).appendTo(this.scroll_overlay_);
+
   if (options.miniLayout) {
-    $('#rhizo-viewport').addClass('rhizo-miniRender');
-    $('#rhizo-scroll-overlay').addClass('rhizo-miniRender');
+    this.viewport_.addClass('rhizo-miniRender');
+    this.scroll_overlay_.addClass('rhizo-miniRender');
   } else {
     // shrink the viewport
-    $('#rhizo-viewport').css('left',300).css('right', 5);    
+    this.viewport_.css('left',300).css('right', 5);
   }
 };
 
-rhizo.ui.component.Viewport.prototype.activate = function(opt_options) {
-  this.activatePanning_();
-  this.activateSelectionSupport_(opt_options);
+rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
+  this.scroll_trigger_.click(
+      jQuery.proxy(rhizo.ui.component.Viewport.prototype.startScroll_, this));
+  this.scroll_done_.click(
+      jQuery.proxy(rhizo.ui.component.Viewport.prototype.stopScroll_, this));
 };
 
-rhizo.ui.component.Viewport.prototype.activatePanning_ = function() {
+rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
   var dragDelta = {
-    top: $('#rhizo-viewport').offset().top +
-         $('#rhizo-universe').offset().top,
-    left: $('#rhizo-viewport').offset().left +
-          $('#rhizo-universe').offset().left
+    top: this.viewport_.offset().top +
+         this.universe_.offset().top,
+    left: this.viewport_.offset().left +
+          this.universe_.offset().left
   };
 
-  $('#rhizo-scroll-trigger').click(function() {
-    $(this).hide();
-    var viewport = $('#rhizo-viewport');
-    $('#rhizo-scroll-overlay')
-      .css('left', viewport.css('left'))
-      .css('top', viewport.css('top'))
-      .css('width', viewport.width())
-      .css('height', viewport.height())
-      .css('z-index', 99)
-      .css('display', '');
-
-    $('#rhizo-scroll-overlay').draggable({
-      helper: function() {
-        return $("<div />");
-      },
-      start: function(ev, ui) {
-        var offset = $('#rhizo-universe').offset();
-        $('#rhizo-universe')
-          .data("top0", offset.top)
-          .data("left0", offset.left);
-      },
-      drag: function(ev, ui) {
-        var universe = $('#rhizo-universe');
-        var offset = universe.offset();
-
-        var dragTop = ui.position.top +
-                      universe.data("top0") - dragDelta.top;
-        var dragLeft = ui.position.left +
-                       universe.data("left0") - dragDelta.left;
-
-        $('#rhizo-universe')
-          .css('top', dragTop).css('bottom', -dragTop)
-          .css('left', dragLeft).css('right', -dragLeft);
-      },
-      refreshPositions: false
+  this.scroll_trigger_.hide();
+  this.scroll_overlay_.css({
+      'left': this.viewport_.css('left'),
+      'top': this.viewport_.css('top'),
+      'width': this.viewport_.width(),
+      'height': this.viewport_.height(),
+      'z-index': 99,
+      'display': ''
     });
+
+  this.scroll_overlay_.draggable({
+    helper: function() {
+      return $("<div />");
+    },
+    start: jQuery.proxy(function(ev, ui) {
+      var offset = this.universe_.offset();
+      this.universe_.data("top0", offset.top).data("left0", offset.left);
+    }, this),
+    drag: jQuery.proxy(function(ev, ui) {
+      var offset = this.universe_.offset();
+      var dragTop = ui.position.top +
+                    this.universe_.data("top0") - dragDelta.top;
+      var dragLeft = ui.position.left +
+                     this.universe_.data("left0") - dragDelta.left;
+
+      this.universe_.
+          css('top', dragTop).css('bottom', -dragTop).
+          css('left', dragLeft).css('right', -dragLeft);
+    }, this),
+    refreshPositions: false
+  });
+};
+
+rhizo.ui.component.Viewport.prototype.stopScroll_ = function() {
+  this.scroll_overlay_.css({
+      'z-index': -1,
+      'display': 'none'
+    });
+  this.scroll_trigger_.show();
+};
+
+rhizo.ui.component.MiniToolbar = function() {};
+
+rhizo.ui.component.MiniToolbar.prototype.render = function(container, project, gui, opt_options) {
+  var span = $('<span />').appendTo(container);
+  this.resizeLink_ = $('<a/>', {href: '#', title: 'Maximize', 'class': 'rhizo-maximize-icon'}).
+    appendTo(span);
+
+  this.components_ = [
+    {component: 'rhizo.ui.component.Layout', title: 'Display', 'class': ''},
+    {component: 'rhizo.ui.component.SelectionManager', title: 'Selection', 'class': ''},
+    {component: 'rhizo.ui.component.Filters', title: 'Filters', 'class': ''},
+    {component: 'rhizo.ui.component.Legend', title: 'Legend', 'class': ''},
+    {component: 'rhizo.ui.component.Logo', title: '?', 'class': 'rhizo-link-help'}
+  ];
+  this.components_ = jQuery.grep(
+    this.components_,
+    function(c) {
+      return gui.getComponent(c.component) ? true : false;
+    });
+  for (var i = 0; i < this.components_.length; i++) {
+    this.components_[i].link = this.createLink_(this.components_[i].title,
+                                                this.components_[i]['class'],
+                                                container);
+    this.components_[i].panel = gui.getComponent(this.components_[i].component).getPanel();
+  }
+};
+
+rhizo.ui.component.MiniToolbar.prototype.createLink_ = function(text, className, container) {
+  var span = $('<span />', {'class': 'rhizo-filters-header'}).appendTo(container);
+  var link = $('<a/>', {href:  '#', title: text, 'class': className}).text(text).appendTo(span);
+  return link;
+};
+
+rhizo.ui.component.MiniToolbar.prototype.activate = function(project, gui, opt_options) {
+  this.resizeLink_.click(function() {
+    self.resizeTo(1000, 700);
+    self.location.reload();
+    return false;
   });
 
-  $('#rhizo-scroll-done').click(function() {
-    $('#rhizo-scroll-overlay')
-      .css('z-index', -1)
-      .css('display', 'none');
-    $('#rhizo-scroll-trigger').show();
-  });  
+  jQuery.each(this.components_, jQuery.proxy(function(i, currentComponent) {
+    currentComponent.link.click(jQuery.proxy(function() {
+      jQuery.each(this.components_, function(j, comp) {
+        if (comp == currentComponent) {
+          $(comp.panel).toggle();
+          $(comp.link).toggleClass('rhizo-filter-open');
+        } else {
+          $(comp.panel).css('display', 'none');
+          $(comp.link).removeClass('rhizo-filter-open');
+        }
+      });
+      return false;
+    }, this));
+  }, this));
+};
+
+
+rhizo.ui.component.Console = function() {};
+
+rhizo.ui.component.Console.prototype.render = function(container, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Console', this);
+
+  this.toggleButton_ = $('<div />', {'class': 'rhizo-console-close'}).html('&#8659;');
+
+  this.consoleHeader_ = $('<div />', {'class': 'rhizo-console-header'});
+  this.consoleHeader_.append(this.toggleButton_).append('Log Console');
+  this.consoleHeader_.appendTo(container);
+
+  this.consoleContents_ = $('<div />', {'class': 'rhizo-console-contents'});
+  this.consoleContents_.appendTo(container);
+};
+
+rhizo.ui.component.Console.prototype.activate = function(gui, opt_options) {
+  this.toggleButton_.click(jQuery.proxy(function() {
+    if (this.consoleContents_.is(":visible")) {
+      this.consoleContents_.slideUp("slow", jQuery.proxy(function() {
+        this.toggleButton_.html("&#8659;");
+        this.consoleContents_.empty();
+      }, this));
+    } else {
+      this.consoleContents_.slideDown("slow", jQuery.proxy(function() {
+        this.toggleButton_.html("&#8657;");
+      }, this));
+    }
+  }, this));
+};
+
+rhizo.ui.component.Console.prototype.getContents = function() {
+  return this.consoleContents_;
+};
+
+rhizo.ui.component.Console.prototype.getHeader = function() {
+  return this.consoleHeader_;
+};
+
+rhizo.ui.component.RightBar = function() {};
+
+rhizo.ui.component.RightBar.prototype.render = function(container, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.RightBar', this);
+
+  this.toggle_ = $('<div />', {'class': 'rhizo-right-pop'}).appendTo(container);
+  this.rightBar_ = $('<div />', {'class': 'rhizo-right'}).css('display', 'none').
+      appendTo(container);
+};
+
+rhizo.ui.component.RightBar.prototype.activate = function(gui, opt_options) {
+  this.toggle_.click(jQuery.proxy(function() {
+    if (this.rightBar_.is(":visible")) {
+      this.toggle_.css('right', 0);
+      gui.viewport.css('right', 5);
+      this.rightBar_.css('display', 'none');
+    } else {
+      gui.viewport.css('right', 135);
+      this.toggle_.css('right', 130);
+      this.rightBar_.css('display', '');
+    }
+  }, this));
+};
+
+rhizo.ui.component.RightBar.prototype.getToggle = function() {
+  return this.toggle_;
+};
+
+rhizo.ui.component.RightBar.prototype.getPanel = function() {
+  return this.rightBar_;
+};
+
+rhizo.ui.component.Layout = function() {};
+
+rhizo.ui.component.Layout.prototype.getPanel = function() {
+  return this.layoutPanel_;
+};
+
+rhizo.ui.component.Layout.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Layout', this);
+  var options = opt_options || {};
+
+  if (!options.miniLayout) {
+    $('<div />', {'class': 'rhizo-filters-header'}).
+        text('Display').
+        appendTo(container);
+  }
+
+  this.layoutPanel_ = $('<div />').appendTo(container);
+  this.layoutOptions_ = $('<div />', {'class': 'rhizo-layout-extra-options'}).appendTo(this.layoutPanel_);
+
+  if (options.miniLayout) {
+    this.layoutPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+  }
+
+  this.layoutSelector_ = $("<select />");
+  this.detailsMap_ = {};
+  if (rhizo.layout && rhizo.layout.layouts) {
+    for (layout in rhizo.layout.layouts){
+      var engine_ctor = rhizo.layout.layouts[layout];
+      var engine = new engine_ctor(project);
+      this.layoutSelector_.append($("<option value='" + layout + "'>" + engine  + "</option>"));
+      if (engine.details) {
+	var details = engine.details();
+	this.detailsMap_[layout] = details;
+	this.layoutOptions_.append(details.css("display","none"));
+      }
+    }
+  }
+
+  this.submit_ = $('<button />').text('Update');
+  this.layoutPanel_.prepend(this.submit_).
+      prepend(this.layoutSelector_).
+      prepend("Keep items ordered by: ");
+};
+
+rhizo.ui.component.Layout.prototype.activate = function(project, gui, opt_options) {
+  var detailsMap = this.detailsMap_;
+  this.layoutSelector_.change(function(ev) {
+    for (var layout in detailsMap) {
+      if (layout == $(this).val()) {
+        detailsMap[layout].show("fast");
+      } else {
+        detailsMap[layout].hide("fast");
+      }
+    }
+  });
+
+  this.submit_.click(jQuery.proxy(function() {
+    project.layout(this.layoutSelector_.val());
+  }, this));
+};
+
+rhizo.ui.component.SelectionManager = function() {};
+
+rhizo.ui.component.SelectionManager.prototype.getPanel = function() {
+  return this.selectionPanel_;
+};
+
+rhizo.ui.component.SelectionManager.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.SelectionManager', this);
+
+  var options = opt_options || {};
+
+  if (!options.miniLayout) {
+    $('<div />', {'class': 'rhizo-filters-header'}).
+        text('Selection').
+        appendTo(container);
+  }
+
+  this.selectionPanel_ = $('<div />', {'class': 'rhizo-selection'}).
+      appendTo(container);
+
+  if (options.miniLayout) {
+    this.selectionPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+  }
+  this.selectButton_ = $('<button />').text('Work on selected items only');
+  this.resetButton_ = $('<button />', {disabled: 'disabled'}).text('Reset');
+  this.selectionPanel_.append(this.selectButton_).append(this.resetButton_);
+};
+
+rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, opt_options) {
+  this.activateSelectableViewport_(project, gui, opt_options);
+  this.activateButtons_(project, opt_options);
+};
+
+rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, opt_options) {
+  this.selectButton_.click(jQuery.proxy(function(ev) {
+    var countSelected = 0;
+    for (id in project.allSelected()) { countSelected++ };
+    if (countSelected == 0) {
+      project.logger().error("No items selected");
+      return;
+    }
+
+    var allUnselected = project.allUnselected();
+    var countFiltered = 0;
+    for (id in allUnselected) {
+      allUnselected[id].filter("__selection__"); // hard-coded keyword
+      countFiltered++;
+    }
+    // after filtering some elements, perform layout again
+    project.alignVisibility();
+    project.layout(null, { filter: true});
+    project.unselectAll();
+    this.resetButton_.
+        removeAttr("disabled").
+        text("Reset (" + countFiltered + " filtered)");
+  }, this));
+
+
+  this.resetButton_.click(function(ev) {
+    project.resetAllFilter("__selection__");
+    // after filtering some elements, perform layout again
+    project.alignVisibility();
+    project.layout(null, { filter: true});
+    $(this).attr("disabled","disabled").text("Reset");
+  });
 };
 
 /**
    Checks whether an event was raised on empty space, i.e. somewhere in the
    viewport, but not on top of any models or any other elements.
 
-   Since the viewport and the universe may not be on top of each other, the
+   Since the viewport and the universe may be not on top of each other, the
    method checks whether any of the two is the original target of the event.
 
    @params {Event} the event to inspect.
    @returns {boolean} true if the click occurred on the viewport, false
      otherwise.
  */
-rhizo.ui.component.Viewport.prototype.isOnEmptySpace = function(evt) {
-  return evt.target.id == 'rhizo-viewport' ||
-         evt.target.id == 'rhizo-universe';
+rhizo.ui.component.SelectionManager.prototype.isOnEmptySpace_ = function(evt) {
+  return $(evt.target).hasClass('rhizo-viewport') ||
+         $(evt.target).hasClass('rhizo-universe');
 };
 
-rhizo.ui.component.Viewport.prototype.activateSelectionSupport_ = function(opt_options) {
-  $("#rhizo-viewport").selectable({
+rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
+    function(project, gui, opt_options) {
+  gui.viewport.selectable({
     selected: function(ev, ui) {
       if (ui.selected.id) {
-        $p.select(ui.selected.id);
+        project.select(ui.selected.id);
       }
     },
     unselected: function(ev, ui) {
       if (ui.unselected.id) {
-        $p.unselect(ui.unselected.id);
+        project.unselect(ui.unselected.id);
       }
     },
     // TODO: disabled until incremental refresh() is implemented
@@ -2444,211 +2796,48 @@ rhizo.ui.component.Viewport.prototype.activateSelectionSupport_ = function(opt_o
     distance: 1
   });
 
-  var viewport = this;
-  $("#rhizo-viewport").click(function(ev, ui) {
-    if (viewport.isOnEmptySpace(ev)) {
-      $p.unselectAll();
+  var that = this;
+  gui.viewport.click(function(ev, ui) {
+    if (that.isOnEmptySpace_(ev)) {
+      project.unselectAll();
     }
   });
 };
 
-rhizo.ui.component.MiniToolbar = function() {};
-
-rhizo.ui.component.MiniToolbar.prototype.render = function(container, opt_options) {
-  $(
-    '<span>' +
-      '<a href="" onclick="return false" id="rhizo-link-help" title="Help" >?</a>' +
-      '<a href="" onclick="self.resizeTo(1000,700);self.reload();" title="Maximize" class="rhizo-maximize-icon"></a>' +
-    '</span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-link-display" >Display</a></span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-link-selection" >Selection</a></span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-link-filters" >Filters</a></span>' +
-    '<span class="rhizo-filters-header"><a href="" onclick="return false;" id="rhizo-legend" style="display: none">Legend</a></span>'
-    ).appendTo(container);
-};
-
-rhizo.ui.component.MiniToolbar.prototype.activate = function(opt_options) {
-  var panels = [
-    { panel: '#rhizo-update-layout', link: '#rhizo-link-display'},
-    { panel: '#rhizo-selection', link: '#rhizo-link-selection'},
-    { panel: '#rhizo-filter-container', link: '#rhizo-link-filters'},
-    { panel: '#rhizo-help', link: '#rhizo-link-help'},
-    { panel: '#rhizo-legend-panel',  link: '#rhizo-legend'}];
-
-  panels.forEach(function(currentPanel) {
-    $(currentPanel.link).click(function() {
-      panels.forEach(function(p) {
-        if (p.panel == currentPanel.panel) {
-          $(p.panel).toggle();
-          $(p.link).toggleClass('rhizo-filter-open');
-        } else {
-          $(p.panel).css('display', 'none');
-          $(p.link).removeClass('rhizo-filter-open');
-        }
-      });
-      return false;
-    });
-  });  
-};
-
-
-rhizo.ui.component.Console = function() {};
-
-rhizo.ui.component.Console.prototype.render = function(container, opt_options) {
-  $(
-  '<div id="rhizo-console-header">' +
-    '<div id="rhizo-console-close">&#8659;</div>' +
-    'Log Console' +
-  '</div>' +
-  '<div id="rhizo-console-contents" style="clear: right; display: none">' +
-  '</div>').appendTo(container);
-};
-
-rhizo.ui.component.Console.prototype.activate = function(opt_options) {
-  $('#rhizo-console-close').click(function() {
-    if ($('#rhizo-console-contents').is(":visible")) {
-      $('#rhizo-console-contents').slideUp("slow", function() {
-        $('#rhizo-console-close').html("&#8659;");
-        $('#rhizo-console-contents').empty();
-      });
-    } else {
-      $('#rhizo-console-contents').slideDown("slow", function() {
-        $('#rhizo-console-close').html("&#8657;");
-      });
-    }
-  });
-};
-
-rhizo.ui.component.Layout = function() {};
-
-rhizo.ui.component.Layout.prototype.render = function(container, opt_options) {
-  var options = opt_options || {};
-  
-  if (!options.miniLayout) {
-    $('<div class="rhizo-filters-header">Display</div>').appendTo(container);
-  }
-  
-  $(
-    '<div id="rhizo-update-layout"><div id="rhizo-layout-extra-options">' +
-    '</div></div>').appendTo(container);
-    
-  if (options.miniLayout) {
-    $('#rhizo-update-layout').addClass('rhizo-floating-panel').css('display', 'none');
-  }
-
-  this.select_ = $("<select id='rhizo-layout' />");
-  this.detailsMap_ = {};
-  if (rhizo.layout && rhizo.layout.layouts) {
-    for (layout in rhizo.layout.layouts){
-      var engine = rhizo.layout.layouts[layout];
-      this.select_.append($("<option value='" + layout + "'>" + engine  + "</option>"));
-      if (engine.details) {
-	var details = engine.details();
-	this.detailsMap_[layout] = details;
-	$('#rhizo-layout-extra-options').append(details.css("display","none"));
-      }
-    }
-  }
-
-  this.submit_ = $("<button>Update</button>");
-  $('#rhizo-update-layout').prepend(this.submit_)
-                           .prepend(this.select_)
-                           .prepend("Keep items ordered by: ");
-};
-
-rhizo.ui.component.Layout.prototype.activate = function(opt_options) {
-  var detailsMap = this.detailsMap_;
-  this.select_.change(function(ev) {
-    for (layout in detailsMap) {
-      if (layout == $(this).val()) {
-        detailsMap[layout].show("fast");
-      } else {
-        detailsMap[layout].hide("fast");
-      }
-    }
-  });
-
-  this.submit_.click(function() {
-    $p.layout($('#rhizo-layout').val());
-  });
-};
-
-rhizo.ui.component.SelectionManager = function() {};
-
-rhizo.ui.component.SelectionManager.prototype.render = function(container, opt_options) {
-  var options = opt_options || {};
-  
-  if (!options.miniLayout) {
-    $('<div class="rhizo-filters-header">Selection</div>').appendTo(container);
-  } 
-  
-  $('<div id="rhizo-selection"></div>').appendTo(container);
-  
-  if (options.miniLayout) {
-    $('#rhizo-selection').addClass('rhizo-floating-panel').css('display', 'none');
-  }  
-  this.button_ = $('<button id="rhizo-selected-items-only">' +
-                 'Work on selected items only</button>');
-  this.resetButton_ = $('<button id="rhizo-selected-reset" disabled="disabled">' +
-                      'Reset</button>');
-  $('#rhizo-selection').append(this.button_).append(this.resetButton_); 
-};
-
-rhizo.ui.component.SelectionManager.prototype.activate = function(opt_options) {
-  this.button_.click(function(ev) {
-    var countSelected = 0;
-    for (id in $p.allSelected()) { countSelected++ };
-    if (countSelected == 0) {
-      rhizo.error("No items selected");
-      return;
-    }
-
-    var allUnselected = $p.allUnselected();
-    var countFiltered = 0;
-    for (id in allUnselected) {
-      allUnselected[id].filter("__selection__"); // hard-coded keyword
-      countFiltered++;
-    }
-    // after filtering some elements, perform layout again
-    $p.alignVisibility();
-    $p.layout(null, { filter: true});
-    $p.unselectAll();
-    $('#rhizo-selected-reset').
-        removeAttr("disabled").
-        text("Reset (" + countFiltered + " filtered)");
-  });
-
-
-  this.resetButton_.click(function(ev) {
-    $p.resetAllFilter("__selection__");
-    // after filtering some elements, perform layout again
-    $p.alignVisibility();
-    $p.layout(null, { filter: true});
-    $(this).attr("disabled","disabled").text("Reset");
-  }); 
-};
 
 rhizo.ui.component.Filters = function() {};
 
-rhizo.ui.component.Filters.prototype.render = function(container, opt_options) {
+rhizo.ui.component.Filters.prototype.getPanel = function() {
+  return this.filterPanel_;
+};
+
+rhizo.ui.component.Filters.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Filters', this);
   var options = opt_options || {};
-  
+
   if (!options.miniLayout) {
-    $('<div class="rhizo-filters-header">Filters</div>').appendTo(container);
+    $('<div />', {'class': 'rhizo-filters-header'}).
+        text('Filters').
+        appendTo(container);
   }
-    
-  $('<div id="rhizo-filter-container"></div>').appendTo(container);
-  
+
+  this.filterPanel_ = $('<div />', {'class': 'rhizo-filter-container'}).appendTo(container);
+
+  this.nextFilter_ = null;
+  this.prevFilter_ = null;
   if (options.miniLayout) {
-    $('#rhizo-filter-container').addClass('rhizo-floating-panel').css('display', 'none');
-    $('<span id="rhizo-next-filter" title="Next filter"></span>').appendTo($('#rhizo-filter-container'));
-    $('<span id="rhizo-prev-filter" title="Previous filter"></span>').appendTo($('#rhizo-filter-container'));  
+    this.filterPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+
+    this.nextFilter_ = $('<span />', {'class': 'rhizo-next-filter', title: 'Next filter'}).
+      appendTo(this.filterPanel_);
+    this.prevFilter_ = $('<span />', {'class': 'rhizo-prev-filter', title: 'Previous filter'}).
+      appendTo(this.filterPanel_);
   }
-  
+
   var first = true;
-  var metaModel = $p.metaModel();
+  var metaModel = project.metaModel();
   for (key in metaModel) {
-    var filter = metaModel[key].kind.renderFilter(metaModel[key], key);
+    var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
     if (options.miniLayout) {
       if (first) {
         first = false;
@@ -2656,120 +2845,123 @@ rhizo.ui.component.Filters.prototype.render = function(container, opt_options) {
         filter.css('display', 'none');
       }
     }
-    $('#rhizo-filter-container').append(filter);
-  }  
+    this.filterPanel_.append(filter);
+  }
 };
 
-rhizo.ui.component.Filters.prototype.activate = function(opt_options) {
+rhizo.ui.component.Filters.prototype.activate = function(project, gui, opt_options) {
   // Every single filter implementation auto-activates itself when created.
   // Here we only need to activate the navigation between filters.
-  $('#rhizo-next-filter').click(function() {
-    var current = $('.rhizo-filter:visible');
-    var next = current.next('.rhizo-filter:hidden').eq(0);
-    if (next.length > 0) {
-      // cannot use hide/show otherwise safari clips rendering
-      current.css('display', 'none');
-      next.css('display', '');
-    }
-  });
+  if (this.nextFilter_) {
+    this.nextFilter_.click(function() {
+      var current = $('.rhizo-filter:visible');
+      var next = current.next('.rhizo-filter:hidden').eq(0);
+      if (next.length > 0) {
+        // cannot use hide/show otherwise safari clips rendering
+        current.css('display', 'none');
+        next.css('display', '');
+      }
+    });
+  }
 
-  $('#rhizo-prev-filter').click(function() {      
-    var current = $('.rhizo-filter:visible');
-    var prev = current.prev('.rhizo-filter:hidden').eq(0);
-    if (prev.length > 0) {
-      // cannot use hide/show otherwise safari clips rendering
-      current.css('display', 'none');
-      prev.css('display', '');
-    }
-  });  
+  if (this.prevFilter_) {
+    this.prevFilter_.click(function() {
+      var current = $('.rhizo-filter:visible');
+      var prev = current.prev('.rhizo-filter:hidden').eq(0);
+      if (prev.length > 0) {
+        // cannot use hide/show otherwise safari clips rendering
+        current.css('display', 'none');
+        prev.css('display', '');
+      }
+    });
+  }
 };
 
 rhizo.ui.component.Legend = function() {};
 
-rhizo.ui.component.Legend.prototype.render = function(container, opt_options) {
+rhizo.ui.component.Legend.prototype.getPanel = function() {
+  return this.legendPanel_;
+};
+
+rhizo.ui.component.Legend.prototype.render = function(container, project, gui, opt_options) {
+  gui.addComponent('rhizo.ui.component.Legend', this);
   var options = opt_options || {};
-  
+
   var sizeRange = null;
-  if ($p.renderer().getSizeRange) {
-    sizeRange = $p.renderer().getSizeRange();
+  if (project.renderer().getSizeRange) {
+    sizeRange = project.renderer().getSizeRange();
   }
   var colorRange = null;
-  if ($p.renderer().getColorRange) {
-    colorRange = $p.renderer().getColorRange();
+  if (project.renderer().getColorRange) {
+    colorRange = project.renderer().getColorRange();
   }
-  
-  if (sizeRange || colorRange) {
-    $('<div id="rhizo-legend-panel"></div>').appendTo(container);
-    if (!options.miniLayout) {
-      $('<div class="rhizo-filters-header">Legend</div>').appendTo($('#rhizo-legend-panel'));
-    } else {
-      $('#rhizo-legend-panel').addClass('rhizo-floating-panel').css('display', 'none');
-      // TODO(battlehorse): this direct reference to an element declared elsewhere
-      // should not be here, as it creates an underwater dependency between components. 
-      $('#rhizo-legend').show();
-    }    
+
+  if (!options.miniLayout) {
+    $('<div />', {'class': 'rhizo-filters-header'}).
+    text('Legend').
+    appendTo(container);
+  }
+
+  this.legendPanel_ = $('<div />', {'class': "rhizo-legend-panel"}).appendTo(container);
+
+  if (options.miniLayout) {
+    this.legendPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 
   if (sizeRange) {
-    $(
-      '<div id="rhizo-legend-size" style="margin-bottom: 5px">' +
-        '<span id="rhizo-legend-size-min" ></span>' +
-        '<span class="ar-fon-0">A</span> -- ' +
-        '<span class="ar-fon-5">A</span>' +
-        '<span id="rhizo-legend-size-max" ></span>' +
-      '</div>'
-      ).appendTo($('#rhizo-legend-panel'));
-    $('#rhizo-legend-size-min').html(
+    var panel = $('<div />', {'class': 'rhizo-legend-size'});
+    var minLabel = $('<span />', {'class': 'rhizo-legend-size-min'}).html(
         sizeRange.label + ' &nbsp; ' + rhizo.ui.toHumanLabel(sizeRange.min) + ':');
-    $('#rhizo-legend-size-max').html(': ' + rhizo.ui.toHumanLabel(sizeRange.max));
+    var maxLabel = $('<span />', {'class': 'rhizo-legend-size-max'}).html(
+        ': ' + rhizo.ui.toHumanLabel(sizeRange.max));
+
+    panel.append(minLabel).append(
+        '<span class="ar-fon-0">A</span> -- ' +
+        '<span class="ar-fon-5">A</span>').
+        append(maxLabel).appendTo(this.legendPanel_);
   }
-  
+
   if (colorRange) {
-    $(
-      '<div id="rhizo-legend-color" style="margin-bottom: 5px">' +
-        '<span id="rhizo-legend-color-min"></span>' +
+    var panel = $('<div />', {'class': 'rhizo-legend-color'});
+    var minLabel = $('<span />', {'class': 'rhizo-legend-color-min'}).html(
+        colorRange.label + ' &nbsp; ' + rhizo.ui.toHumanLabel(colorRange.min) + ':');
+    var maxLabel = $('<span />', {'class': 'rhizo-legend-color-max'}).html(
+        ': ' + rhizo.ui.toHumanLabel(colorRange.max));
+
+    panel.append(minLabel).append(
         '<span class="ar-col-0 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-1 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-2 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-3 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
         '<span class="ar-col-4 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
-        '<span class="ar-col-5 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;' +
-        '<span id="rhizo-legend-color-max"></span>' +          
-      '</div>'
-      ).appendTo($('#rhizo-legend-panel'));
-    $('#rhizo-legend-color-min').html(
-        colorRange.label + ' &nbsp; ' + rhizo.ui.toHumanLabel(colorRange.min) + ':');
-    $('#rhizo-legend-color-max').html(': ' + rhizo.ui.toHumanLabel(colorRange.max));
-  }  
+        '<span class="ar-col-5 ar-col-legend">&nbsp; &nbsp;</span>&nbsp;').
+        append(maxLabel).appendTo(this.legendPanel_);
+  }
 };
 
-rhizo.ui.component.Legend.prototype.activate = function(opt_options) {};
+rhizo.ui.component.Legend.prototype.activate = function(project, gui, opt_options) {};
 
 rhizo.ui.component.Actions = function() {};
 
-rhizo.ui.component.Actions.prototype.render = function(container, opt_options) {
-  $(  
-    '<div id="rhizo-actions">' +
-      '<h1>Actions</h1>' +
-      '<div class="rhizo-action" id="rhizo-action-2">' +
-        'Sample Action 1' +
-      '</div>' +
-      '<div class="rhizo-action" id="rhizo-action-1">' +
-        'Sample Action 2' +
-      '</div>' +
-    '</div>'
-    ).appendTo(container);
+rhizo.ui.component.Actions.prototype.render = function(container, project, gui, opt_options) {
+  var actionsContainer = $('<div />', {'class': 'rhizo-actions'}).
+    append($("<h1 />").text('Actions')).appendTo(container);
+
+  // Create 2 sample actions
+  for (var i = 0; i < 2; i++) {
+    $('<div />', {'class': 'rhizo-action'}).text('Sample Action ' + (i+1)).appendTo(actionsContainer);
+  }
 };
 
-rhizo.ui.component.Actions.prototype.activate = function(opt_options) {
+rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_options) {
   if ($('.rhizo-action').length > 0) {
     $('.rhizo-action').draggable({helper: 'clone'});
-    $('#rhizo-universe').droppable({
+    gui.universe.droppable({
       accept: '.rhizo-action',
       drop: function(ev, ui) {
-        var offset = $('#rhizo-universe').offset();
-        var rightBorder = $('#rhizo-universe').width();
-        var bottomBorder = $('#rhizo-universe').height();
+        var offset = gui.universe.offset();
+        var rightBorder = gui.universe.width();
+        var bottomBorder = gui.universe.height();
 
         var actionName = ui.draggable.text();
 
@@ -2791,30 +2983,30 @@ rhizo.ui.component.Actions.prototype.activate = function(opt_options) {
           .css('left', left)
           .css('display', 'none');
 
-        $('#rhizo-universe').append(dropbox);
+        gui.universe.append(dropbox);
         dropbox.fadeIn();
         dropbox.draggable({
-          start: function() { $p.toggleSelection('disable'); },
-          stop: function() { $p.toggleSelection('enable'); }
+          start: function() { project.toggleSelection('disable'); },
+          stop: function() { project.toggleSelection('enable'); }
         });
         dropbox.droppable({
           accept: '.rhizo-model',
           drop: function(ev, ui) {
-            if (!$p.isSelected(ui.draggable[0].id)) {
+            if (!project.isSelected(ui.draggable[0].id)) {
               var id = ui.draggable[0].id;
-              alert("Action applied on " + $p.model(id));
+              alert("Action applied on " + project.model(id));
               $('#' + id).move($('#'+id).data("dropTop0"),
                                $('#'+id).data("dropLeft0"));
             } else {
               var countSelected = 0;
-              for (var id in $p.allSelected()) { countSelected++;}
+              for (var id in project.allSelected()) { countSelected++;}
               alert("Action applied on " + countSelected + " elements");
 
-              for (var id in $p.allSelected()) {
+              for (var id in project.allSelected()) {
                 $('#' + id).move($('#'+id).data("dropTop0"),
                                  $('#'+id).data("dropLeft0"));
               }
-              $p.unselectAll();
+              project.unselectAll();
             }
           }
         });
@@ -2825,74 +3017,92 @@ rhizo.ui.component.Actions.prototype.activate = function(opt_options) {
         });
       }
     });
-  }  
+  }
 };
 
-rhizo.ui.component.MiniTemplate = function() {
+rhizo.ui.component.MiniTemplate = function(project) {
+  this.project_ = project;
+  this.gui_ = project.gui();
   this.components_ = {
+    // chrome components
     LOGO: new rhizo.ui.component.Logo(),
     VIEWPORT: new rhizo.ui.component.Viewport(),
+
+    // dynamic components
     LAYOUT: new rhizo.ui.component.Layout(),
     SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(),
     FILTERS: new rhizo.ui.component.Filters(),
-    LEGEND: new rhizo.ui.component.Legend(),    
+    LEGEND: new rhizo.ui.component.Legend(),
     MINITOOLBAR: new rhizo.ui.component.MiniToolbar()
   };
 };
 
-rhizo.ui.component.MiniTemplate.prototype.renderChrome = function(container, opt_options) {
-  rhizo.disableLogging();
-  this.components_.VIEWPORT.render(container, opt_options);
-  this.progress_ = new rhizo.ui.component.Progress($('#rhizo-viewport'));
-  this.bottomBar_ = $('<div id="rhizo-bottom-bar"></div>').appendTo(container); 
-  
+rhizo.ui.component.MiniTemplate.prototype.renderChrome = function(opt_options) {
+  this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
+  this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
+
   this.progress_.update(10, 'Creating static UI...');
-  this.components_.MINITOOLBAR.render(this.bottomBar_, opt_options);
-  
-  var help_floating_panel = $('<div id="rhizo-help" class="rhizo-floating-panel" style="display:none"></div>').appendTo(this.bottomBar_);
-  this.components_.LOGO.render(help_floating_panel, opt_options);
+  this.bottomBar_ = $('<div />', {'class': "rhizo-bottom-bar"}).appendTo(this.gui_.container);
+  this.components_.LOGO.render(this.bottomBar_, this.gui_, opt_options);
   this.progress_.update(25, 'All static UI created.');
 };
 
 rhizo.ui.component.MiniTemplate.prototype.activateChrome = function(opt_options) {
   this.progress_.update(26, 'Activating static UI...');
-  this.components_.VIEWPORT.activate(opt_options);
-  this.components_.MINITOOLBAR.activate(opt_options);  
+  this.components_.VIEWPORT.activate(this.gui_, opt_options);
   this.progress_.update(33, 'Loading models...');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(container, opt_options) {
+rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) {
   this.progress_.update(34, 'Creating dynamic controls...');
-  this.components_.LAYOUT.render(this.bottomBar_, opt_options);
-  this.progress_.update(38, 'Layout engine created.');
-  this.components_.SELECTION_MANAGER.render(this.bottomBar_, opt_options);
-  this.progress_.update(42, 'Selection manager created.');
-  this.components_.FILTERS.render(this.bottomBar_, opt_options);  
-  this.progress_.update(46, 'Filters created.');
-  this.components_.LEGEND.render(this.bottomBar_, opt_options);
-  this.progress_.update(48, 'Legend created.');  
+  this.components_.LAYOUT.render(this.bottomBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(36, 'Layout engine created.');
+  this.components_.SELECTION_MANAGER.render(this.bottomBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(40, 'Selection manager created.');
+  this.components_.FILTERS.render(this.bottomBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(44, 'Filters created.');
+
+  if (this.project_.renderer().getSizeRange ||
+      this.project_.renderer().getColorRange) {
+    this.components_.LEGEND.render(this.bottomBar_,
+                                   this.project_,
+                                   this.gui_,
+                                   opt_options);
+    this.progress_.update(46, 'Legend created.');
+  }
+
+  // All other components must be in place before creating the toolbar.
+  this.components_.MINITOOLBAR.render(this.bottomBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(48, 'Toolbar created.');
 };
 
 rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options) {
   this.progress_.update(51, 'Activating dynamic controls...');
-  this.components_.LAYOUT.activate(opt_options);
-  this.components_.SELECTION_MANAGER.activate(opt_options);
-  this.components_.FILTERS.activate(opt_options);    
-  this.components_.LEGEND.activate(opt_options);
-  this.progress_.update(66, 'Rhizosphere controls are ready.');   
+  this.components_.LAYOUT.activate(this.project_, this.gui_, opt_options);
+  this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
+  this.components_.FILTERS.activate(this.project_, this.gui_, opt_options);
+  this.components_.LEGEND.activate(this.project_, this.gui_, opt_options);
+  this.components_.MINITOOLBAR.activate(this.project_, this.gui_, opt_options);
+  this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 
 rhizo.ui.component.MiniTemplate.prototype.done = function() {
-  this.progress_.update(100, 'Rhizosphere ready!');  
+  this.progress_.update(100, 'Rhizosphere ready!');
 };
 
 
 
-rhizo.ui.component.StandardTemplate = function() {
+rhizo.ui.component.StandardTemplate = function(project) {
+  this.project_ = project;
+  this.gui_ = project.gui();
   this.components_ = {
+    // chrome components
     LOGO: new rhizo.ui.component.Logo(),
     VIEWPORT: new rhizo.ui.component.Viewport(),
+    RIGHTBAR: new rhizo.ui.component.RightBar(),
     CONSOLE: new rhizo.ui.component.Console(),
+
+    // dynamic components
     LAYOUT: new rhizo.ui.component.Layout(),
     SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(),
     FILTERS: new rhizo.ui.component.Filters(),
@@ -2901,67 +3111,72 @@ rhizo.ui.component.StandardTemplate = function() {
   };
 };
 
-rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(container, opt_options) {
-  this.components_.VIEWPORT.render(container, opt_options);
-  this.progress_ = new rhizo.ui.component.Progress($('#rhizo-viewport'));
+rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(opt_options) {
+  this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
+  this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
-  this.leftBar_= $('<div id="rhizo-left"></div>').appendTo(container);
-  $('<div id="rhizo-right-pop"></div>').appendTo(container);
-  this.rightBar_ = $('<div id="rhizo-right" style="display:none"></div>').appendTo(container);
+  this.leftBar_= $('<div/>', {'class': 'rhizo-left'}).appendTo(this.gui_.container);
+  this.components_.RIGHTBAR.render(this.gui_.container, this.gui_, opt_options);
 
   this.progress_.update(10, 'Creating static UI...');
-  this.components_.LOGO.render(this.leftBar_, opt_options);
-  this.components_.CONSOLE.render(this.rightBar_, opt_options);
+  this.components_.LOGO.render(this.leftBar_, this.gui_, opt_options);
+  this.components_.CONSOLE.render(
+      this.components_.RIGHTBAR.getPanel(),
+      this.gui_,
+      opt_options);
   this.progress_.update(25, 'All static UI created.');
 };
 
 rhizo.ui.component.StandardTemplate.prototype.activateChrome = function(opt_options) {
   this.progress_.update(26, 'Activating static UI...');
-  
-  $('#rhizo-right-pop').click(function() {
-    if ($('#rhizo-right').is(":visible")) {
-      $(this).css('right', 0);
-      $('#rhizo-viewport').css('right', 5);
-      $('#rhizo-right').css('display', 'none');
-    } else {
-      $('#rhizo-viewport').css('right', 135);
-      $(this).css('right', 130);
-      $('#rhizo-right').css('display', '');
-    }
-  });
-  
-  this.components_.CONSOLE.activate(opt_options);
-  this.components_.VIEWPORT.activate(opt_options);
+
+  this.components_.RIGHTBAR.activate(this.gui_, opt_options);
+  this.components_.CONSOLE.activate(this.gui_, opt_options);
+  this.components_.VIEWPORT.activate(this.gui_, opt_options);
   this.progress_.update(33, 'Loading models...');
 };
 
-rhizo.ui.component.StandardTemplate.prototype.renderDynamic = function(container, opt_options) {
+rhizo.ui.component.StandardTemplate.prototype.renderDynamic =
+    function(opt_options) {
   this.progress_.update(34, 'Creating dynamic controls...');
-  this.components_.LAYOUT.render(this.leftBar_, opt_options);
-  this.progress_.update(38, 'Layout engine created.');  
-  this.components_.SELECTION_MANAGER.render(this.leftBar_, opt_options);
-  this.progress_.update(42, 'Selection manager created.');      
-  this.components_.FILTERS.render(this.leftBar_, opt_options);
+  this.components_.LAYOUT.render(this.leftBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(38, 'Layout engine created.');
+  this.components_.SELECTION_MANAGER.render(this.leftBar_, this.project_, this.gui_, opt_options);
+  this.progress_.update(42, 'Selection manager created.');
+  this.components_.FILTERS.render(this.leftBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(46, 'Filters created.');
-  this.components_.LEGEND.render(this.leftBar_, opt_options);
-  this.progress_.update(48, 'Legend created.');
-  this.components_.ACTIONS.render(this.rightBar_, opt_options);
+
+  if (this.project_.renderer().getSizeRange ||
+      this.project_.renderer().getColorRange) {
+    this.components_.LEGEND.render(this.leftBar_,
+                                   this.project_,
+                                   this.gui_,
+                                   opt_options);
+    this.progress_.update(48, 'Legend created.');
+  }
+  this.components_.ACTIONS.render(
+      this.components_.RIGHTBAR.getPanel(),
+      this.project_,
+      this.gui_,
+      opt_options);
   this.progress_.update(50, 'Actions created');
 };
 
-rhizo.ui.component.StandardTemplate.prototype.activateDynamic = function(opt_options) {
+rhizo.ui.component.StandardTemplate.prototype.activateDynamic =
+    function(opt_options) {
   this.progress_.update(51, 'Activating dynamic controls...');
-  this.components_.LAYOUT.activate(opt_options);
-  this.components_.SELECTION_MANAGER.activate(opt_options);
-  this.components_.FILTERS.activate(opt_options);
-  this.components_.LEGEND.activate(opt_options);  
-  this.components_.ACTIONS.activate(opt_options); 
-  this.progress_.update(66, 'Rhizosphere controls are ready.');  
+  this.components_.LAYOUT.activate(this.project_, this.gui_, opt_options);
+  this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
+  this.components_.FILTERS.activate(this.project_, this.gui_, opt_options);
+  this.components_.LEGEND.activate(this.project_, this.gui_, opt_options);
+  this.components_.ACTIONS.activate(this.project_, this.gui_, opt_options);
+  this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 
 rhizo.ui.component.StandardTemplate.prototype.done = function() {
   this.progress_.update(100, 'Rhizosphere ready!');
-};/* ./src/js/rhizo.gviz.js */
+};
+/* ./src/js/rhizo.gviz.js */
 /*
   Copyright 2008 Riccardo Govoni battlehorse@gmail.com
 
@@ -2981,8 +3196,12 @@ rhizo.ui.component.StandardTemplate.prototype.done = function() {
 // RHIZODEP=rhizo.meta,rhizo.autorender
 namespace("rhizo.gviz");
 
-rhizo.gviz.Initializer = function(dataTable, opt_options, opt_customRenderer) {
+rhizo.gviz.Initializer = function(dataTable,
+                                  project,
+                                  opt_options,
+                                  opt_customRenderer) {
   this.dt_ = dataTable;
+  this.project_ = project;
   this.options_ = opt_options || {};
   this.customRenderer_ = opt_customRenderer;
 
@@ -3026,8 +3245,9 @@ rhizo.gviz.Initializer.prototype.buildMetaModel_ = function() {
     } else {
       // assumed string type
       if (type != 'string') {
-        rhizo.warning("Column " + metamodel[id].label +
-                      " will be treated as String. Unsupported type: " + type);
+        this.project_.logger().warning(
+            "Column " + metamodel[id].label +
+            " will be treated as String. Unsupported type: " + type);
       }
 
       if (metamodel[id].label.indexOf("CAT") != -1) {
@@ -3180,6 +3400,69 @@ rhizo.gviz.DebugRenderer.prototype.render = function(model) {
   }
   return div;
 };
+/* ./src/js/rhizo.ui.gui.js */
+/*
+  Copyright 2010 Riccardo Govoni battlehorse@gmail.com
+
+  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
+// RHIZODEP=rhizo.ui.component
+// GUI Namespace
+namespace("rhizo.ui.gui");
+
+/*
+  A GUI is a collection of UI Components. A GUI is built by a Template.
+*/
+rhizo.ui.gui.GUI = function(container) {
+
+  // A JQuery object pointing to the DOM element that contains the whole
+  // Rhizosphere instance.
+  this.container = container;
+
+  // The universe component is the container for all the models managed
+  // by Rhizosphere. A universe must always exist in a Rhizosphere
+  // visualization.
+  this.universe = null;
+
+  // The viewport component defines which part of the universe is visible to
+  // the user. The universe may be bigger than the current visible area,
+  // so the viewport is responsible for panning too.
+  this.viewport = null;
+
+  // A set of additional components, each one identified by a unique name
+  // (map key).
+  //
+  // In addition to the mandatory components, defined above, a GUI can have
+  // extra components attached to it.
+  this.componentsMap_ = {};
+};
+
+rhizo.ui.gui.GUI.prototype.setViewport = function(viewport) {
+  this.viewport = viewport;
+};
+
+rhizo.ui.gui.GUI.prototype.setUniverse = function(universe) {
+  this.universe = universe;
+};
+
+rhizo.ui.gui.GUI.prototype.addComponent = function(component_key, component) {
+  this.componentsMap_[component_key] = component;
+};
+
+rhizo.ui.gui.GUI.prototype.getComponent = function(component_key) {
+  return this.componentsMap_[component_key];
+};
 /* ./src/js/rhizo.model.loader.js */
 /*
   Copyright 2008 Riccardo Govoni battlehorse@gmail.com
@@ -3202,7 +3485,7 @@ rhizo.gviz.DebugRenderer.prototype.render = function(model) {
 // The reason is that the bootstrap sequence is actually composed of 2 steps:
 // - a first step that render the chrome, initiates model loading (hence calling
 //   the functions declared here)
-// - a second step that renders and deploys the loaded models (called from 
+// - a second step that renders and deploys the loaded models (called from
 //   within this file for some loaders).
 // The fix requires splitting bootstrap into 2 separate files.
 
@@ -3214,13 +3497,11 @@ namespace("rhizo.model.loader");
 rhizo.model.loader.loaders = [];
 
 // Plain Javascript file loader
-rhizo.model.loader.JS = function() {};
-rhizo.model.loader.loaders.push(new rhizo.model.loader.JS());
-
-rhizo.model.loader.JS.prototype.setGlobalOptions =
-    function(globalOptions) {
+rhizo.model.loader.JS = function(project, globalOptions) {
+  this.project_ = project;
   this.globalOptions_ = globalOptions;
-}
+};
+rhizo.model.loader.loaders.push(rhizo.model.loader.JS);
 
 rhizo.model.loader.JS.prototype.match = function(resource) {
   return /\.js$/.test(resource);
@@ -3237,13 +3518,11 @@ rhizo.model.loader.JS.prototype.load = function(resource) {
 };
 
 // Google Spreadsheet GViz loader
-rhizo.model.loader.GoogleSpreadsheet = function() {};
-rhizo.model.loader.loaders.push(new rhizo.model.loader.GoogleSpreadsheet());
-
-rhizo.model.loader.GoogleSpreadsheet.prototype.setGlobalOptions =
-    function(globalOptions) {
+rhizo.model.loader.GoogleSpreadsheet = function(project, globalOptions) {
+  this.project_ = project;
   this.globalOptions_ = globalOptions;
-}
+};
+rhizo.model.loader.loaders.push(rhizo.model.loader.GoogleSpreadsheet);
 
 rhizo.model.loader.GoogleSpreadsheet.prototype.match = function(resource) {
   return /spreadsheets\.google\.com/.test(resource);
@@ -3253,7 +3532,7 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.load = function(resource) {
   // The javascript http://www.google.com/jsapi and the visualization
   // package must be already included in the page and available at this point.
   if (!google.visualization) {
-    rhizo.error('Google Visualization APIs not available.');
+    this.project_.logger().error('Google Visualization APIs not available.');
   } else {
     var query = new google.visualization.Query(resource);
     var that = this;  // needed to propagate this through the Gviz callback.
@@ -3267,10 +3546,11 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.load = function(resource) {
 rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_ =
     function(response) {
   if (response.isError()) {
-    alert("GViz load failed: " + response.getMessage());
+    this.project_.logger().error("GViz load failed: " + response.getMessage());
     return;
   }
   var initializer = new rhizo.gviz.Initializer(response.getDataTable(),
+                                               this.project_,
                                                this.globalOptions_);
 
   rhizo.bootstrap.setRenderer(initializer.renderer);
@@ -3279,13 +3559,11 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_ =
 };
 
 // Gadget GViz loader
-rhizo.model.loader.GoogleGadget = function() {};
-rhizo.model.loader.loaders.push(new rhizo.model.loader.GoogleGadget());
-
-rhizo.model.loader.GoogleGadget.prototype.setGlobalOptions =
-    function(globalOptions) {
+rhizo.model.loader.GoogleGadget = function(project, globalOptions) {
+  this.project_ = project;
   this.globalOptions_ = globalOptions;
-}
+};
+rhizo.model.loader.loaders.push(rhizo.model.loader.GoogleGadget);
 
 rhizo.model.loader.GoogleGadget.RESOURCE = "__google_gadget";
 rhizo.model.loader.GoogleGadget.prototype.match = function(resource) {
@@ -3295,15 +3573,15 @@ rhizo.model.loader.GoogleGadget.prototype.match = function(resource) {
 
 rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
   if (!google.visualization) {
-    rhizo.error('Google Visualization APIs not available.');
+    this.project_.logger().error('Google Visualization APIs not available.');
     return;
   }
-  
+
   if (typeof _IG_Prefs == 'undefined') {
-    rhizo.error('Google Gadget APIs not available.');
+    this.project_.logger().error('Google Gadget APIs not available.');
     return;
-  } 
-  
+  }
+
   var prefs = new _IG_Prefs();
   var gadgetHelper = new google.visualization.GadgetHelper();
   var query = gadgetHelper.createQueryFromPrefs(prefs);
@@ -3314,7 +3592,7 @@ rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
   query.send(callback);
 };
 
-rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =  
+rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =
   rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_;
 
 
@@ -3326,22 +3604,24 @@ rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =
  *
  * @param {string} resource the resource to load.
  *     Tipically this will be a URL.
+ * @param {rhizo.Project} project the project we're loading the models for.
  * @param {Object} globalOptions key-values for the global options.
  */
-rhizo.model.loader.load = function(resource, globalOptions) {
-  var loaders = rhizo.model.loader.loaders;
+rhizo.model.loader.load = function(resource, project, globalOptions) {
+  var loader_ctors = rhizo.model.loader.loaders;
 
-  for (var i = 0; i < loaders.length; i++) {
-    loaders[i].setGlobalOptions(globalOptions);
-    if (loaders[i].match(resource)) {
-      loaders[i].load(resource);
+  for (var i = 0; i < loader_ctors.length; i++) {
+    var loader = new loader_ctors[i](project, globalOptions);
+    if (loader.match(resource)) {
+      loader.load(resource);
       return;
     }
   }
 
-  // No rhizo-console at this point yet, so we rely on alerts. This is
-  // probably going to change if dynamic model loading is introduced.
-  alert('No loader available for the resource: ' + resource);
+  // TODO(battlehorse): The logger here might not be visible to the user
+  // (e.g.: native console or NoOpLogger ), should we rely on alert() to
+  // make sure the user receives the message?
+  project.logger().error('No loader available for the resource: ' + resource);
 };
 /* ./src/js/rhizo.bootstrap.js */
 /*
@@ -3360,7 +3640,7 @@ rhizo.model.loader.load = function(resource, globalOptions) {
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui
+// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui,rhizo.ui.gui
 namespace('rhizo.bootstrap');
 
 rhizo.bootstrap.go = function(container, opt_options, opt_resource) {
@@ -3393,39 +3673,46 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
       this.options_.miniLayout = false;
     } else {
       this.options_.miniLayout = true;
-    }    
-  }  
-  
+    }
+  }
+
   $globalBootstrapper_ = this;
-}
+};
 
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
-  // Get the minimum chrome up and running
-  this.template_ = this.options_.miniLayout ? 
-      new rhizo.ui.component.MiniTemplate() :
-      new rhizo.ui.component.StandardTemplate();
-  this.template_.renderChrome(this.container_, this.options_);
+  // Create the GUI.
+  var gui = new rhizo.ui.gui.GUI(this.container_);
+
+  // Create the project.
+  this.project_ = new rhizo.Project(gui, this.options_);
+
+  // Get the minimum chrome up and running.
+  this.template_ = this.options_.miniLayout ?
+      new rhizo.ui.component.MiniTemplate(this.project_) :
+      new rhizo.ui.component.StandardTemplate(this.project_);
+  this.template_.renderChrome(this.options_);
   this.template_.activateChrome(this.options_);
-  
-  // Disable animations and other performance tunings if needed
+
+  this.project_.chromeReady();
+
+  // Disable animations and other performance tunings if needed.
   rhizo.ui.performanceTuning(this.options_.noAnims);
-  
-  // Create the project
-  this.project_ = new rhizo.Project(this.options_);
-  
+
+  // Open the models' source...
   var source = opt_resource;
   if (!source) {
     var regex = new RegExp('source=(.*)$');
     var results = regex.exec(document.location.href);
     if (!results || !results[1]) {
-      rhizo.error("Unable to identify datasource from location");
+      this.project_.logger().error("Unable to identify datasource from location");
     } else {
       source = unescape(results[1]);
     }
-  } 
-  
+  }
+
+  // ... and load it.
   if (source) {
-    rhizo.model.loader.load(source, this.options_);
+    rhizo.model.loader.load(source, this.project_, this.options_);
   }
 };
 
@@ -3438,7 +3725,7 @@ rhizo.bootstrap.Bootstrap.prototype.setRenderer = function(renderer) {
 };
 
 rhizo.bootstrap.Bootstrap.prototype.deploy = function(opt_models) {
-  this.template_.renderDynamic(this.container_, this.options_);
+  this.template_.renderDynamic(this.options_);
   this.template_.activateDynamic(this.options_);
 
   this.project_.deploy(opt_models);
