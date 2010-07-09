@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Rhizosphere :: Launcher</title>
@@ -6,7 +7,7 @@
       body {
         background-color: #f0f7f9;
       }
-      
+
       .contents {
         -moz-border-radius: 10px;
         -webkit-border-radius: 10px;
@@ -15,7 +16,7 @@
         padding: 0 1em;
         margin-bottom: 10px;
       }
-      
+
       .detail-contents {
         -moz-border-radius: 2px;
         -webkit-border-radius: 2px;
@@ -24,70 +25,70 @@
         display: none;
         margin-left: 132px;
       }
-            
+
       * {
         font-family: sans-serif;
       }
-      
+
       .carousel-description {
         display: none;
         margin: 0 0 0 40px;
         padding-top: 10px;
       }
-      
+
       .carousel-description h2 {
         margin: 0.2em 0;
       }
-      
+
       .small {
         font-size: 12px;
       }
-      
+
       .justified {
         text-align: justify;
       }
-      
+
       .smaller {
         color: #999;
         font-size: 11px;
       }
-      
+
       .shaded {
         color: #999;
       }
-      
+
       .bluelight {
         color: #6b90da;
       }
-      
+
       #mini-label, #try-your-own-mini-label {
         color: #999;
         font-size: 11px;
       }
     </style>
-    <script src="js/jquery-1.4.1.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="other/js/jcarousel/jquery.jcarousel.pack.js" type="text/javascript" charset="utf-8"></script>
+    <script src="static/shared/js/jquery-1.4.1.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="static/welcome/js/jquery.jcarousel.pack.js" type="text/javascript" charset="utf-8"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js" type="text/javascript"> </script>
-    <link rel="stylesheet" href="other/css/jcarousel/jquery.jcarousel.css" type="text/css" media="screen" title="no title" charset="utf-8">
-    <link rel="stylesheet" href="other/css/jcarousel/skin.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <link rel="stylesheet" href="static/welcome/stylesheets/jquery.jcarousel.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <link rel="stylesheet" href="static/welcome/stylesheets/skin.css" type="text/css" media="screen" title="no title" charset="utf-8">
     <script type="text/javascript" charset="utf-8">
       var carousel_js_file;
       var js_files = [
-        'js/sample/picasa.js',
-        'js/sample/people.js',
-        'js/sample/books.js',
-        'js/sample/bugs.js',
-        'js/sample/usa.js' ];
-        
+        'sample/picasa.js',
+        'sample/people.js',
+        'sample/books.js',
+        'sample/bugs.js',
+        'sample/usa.js' ];
+
       function go(js_file, mini_id) {
         var url = 'rhizo.html?source=' + js_file;
         var windowName = 'rhizosphere';
         var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
         windowFeatures += (document.getElementById(mini_id).checked ? "height=300,width=350" : "height=700, width=1000");
         window.open(url, windowName, windowFeatures);
-        return false;        
+        return false;
       }
-      
+
       jQuery(document).ready(function() {
         jQuery('#carousel').jcarousel({
           visible: 1,
@@ -118,11 +119,11 @@
         $('#try-watch').click(function() {
           $('#try-watch-contents').show('fast');
           return false;
-        });        
+        });
         $('#try-explore').click(function() {
           $('#try-explore-contents').show('fast');
           return false;
-        });        
+        });
       });
     </script>
   </head>
@@ -130,7 +131,7 @@
     <div style="margin:auto; width: 920px; margin-top: 10px; margin-bottom: 5px;">
       <h1 style="text-align:right; height: 50px">
         <a href="http://sites.google.com/site/rhizosphereui">
-          <img src="i/rhizosphere_logo.png" style="float:left; vertical-align:text-bottom; border: 1px solid #6b90da">
+          <img src="static/shared/img/rhizosphere_logo.png" style="float:left; vertical-align:text-bottom; border: 1px solid #6b90da">
         </a>
         Rhizosphere<span class="bluelight">!</span>
       </h1>
@@ -143,33 +144,33 @@
         <ul id="carousel" class="jcarousel-skin-tango">
           <li>
             <a href="#" class="try-rhizosphere-link">
-              <img src="other/img/picasa.png" border="0">
+              <img src="static/welcome/img/picasa.png" border="0">
             </a>
           </li>
           <li>
             <a href="#" class="try-rhizosphere-link">
-              <img src="other/img/people.png" border="0">
+              <img src="static/welcome/img/people.png" border="0">
             </a>
           </li>
           <li>
             <a href="#" class="try-rhizosphere-link">
-              <img src="other/img/books.png" border="0">
+              <img src="static/welcome/img/books.png" border="0">
             </a>
           </li>
           <li>
             <a href="#" class="try-rhizosphere-link">
-              <img src="other/img/bugs.png" border="0">
+              <img src="static/welcome/img/bugs.png" border="0">
             </a>
           </li>
           <li>
             <a href="#" class="try-rhizosphere-link">
-              <img src="other/img/usa.png" border="0">
+              <img src="static/welcome/img/usa.png" border="0">
             </a>
           </li>
         </ul>
         <div style="float:right; height: 100px; margin-right: 40px; padding-top: 10px">
           <a href="#" class="try-rhizosphere-link">
-            <img src="other/img/try.png" alt="Try Rhizosphere" border="0">
+            <img src="static/welcome/img/try.png" alt="Try Rhizosphere" border="0">
           </a><br />
           <label for="mini" class="smaller">Mini layout</label>
           <input type="checkbox" name="mini" id="mini" >
@@ -227,7 +228,7 @@
       </div>
       <div class="contents more">
         <div>
-          <img src="other/img/tryyourown.png" style="float:left; margin-right: 15px">
+          <img src="static/welcome/img/tryyourown.png" style="float:left; margin-right: 15px">
           <p>
             <strong>Try your own</strong><br />
             <span class="shaded">
@@ -248,23 +249,23 @@
                       <label for="try-your-own-mini" class="smaller">Mini layout</label>
                       <input type="checkbox" name="try-your-own-mini" id="try-your-own-mini" >
                     </td><td>
-                      <span class="smaller"><strong>Example:</strong> js/sample/people.js</span>
+                      <span class="smaller"><strong>Example:</strong> sample/people.js</span>
                       <p class="small justified">
                         Rhizosphere can load the data to visualize from many sources,
-                        such as <em>custom javascript files</em> or 
+                        such as <em>custom javascript files</em> or
                         <a href="http://code.google.com/apis/visualization/">Google Visualization</a> datasources.
                         It also has many additional features. Give these a try:
                       </p>
                       <ul class="small">
-                        <li><a href="rhizo.html?source=js/sample/many.js" target="_blank">many.js</a>: 
+                        <li><a href="rhizo.html?source=sample/many.js" target="_blank">many.js</a>:
                           thousand of elements on screen!</li>
-                        <li><a href="rhizo.html?source=js/sample/autorender.js" target="_blank">autorender.js</a>: 
+                        <li><a href="rhizo.html?source=sample/autorender.js" target="_blank">autorender.js</a>:
                           Legend and color coding for your items.</li>
                         <li><a href="rhizo.html?source=http://spreadsheets.google.com/tq?range=A1:K14&headers=-1&key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&gid=0" target="_blank">
-                          Phone prices</a>: load contents from 
+                          Phone prices</a>: load contents from
                           <a href="http://spreadsheets.google.com/ccc?key=0Av88pFrCTjLhdGZzYlhEMkxZUmhZbUNfU1JLU3JlWEE&hl=en_GB" target="_blank">this spreadsheet</a>
                           via Google Visualization API.</li>
-                        <li><a href="http://spreadsheets.google.com/ccc?key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&hl=en_GB" target="_blank">Spreadsheet Gadget</a>:
+                        <li><a href="http://spreadsheets.google.com/ccc?key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&hl=en_GB&waffle=false&forced=true#gid=0" target="_blank">Spreadsheet Gadget</a>:
                           Use Rhizosphere directly within the spreadsheet!</li>
                       </ul>
                     </td>
@@ -276,7 +277,7 @@
           <div style="clear:both"></div>
         </div>
         <div>
-          <img src="other/img/watch.png" style="float:left; margin-right: 15px">
+          <img src="static/welcome/img/watch.png" style="float:left; margin-right: 15px">
           <p>
             <strong>Watch</strong><br />
             <span class="shaded">
@@ -298,7 +299,7 @@
           <div style="clear:both"></div>
         </div>
         <div>
-          <img src="other/img/explore.png" style="float:left; margin-right: 15px">
+          <img src="static/welcome/img/explore.png" style="float:left; margin-right: 15px">
           <p>
             <strong>Explore</strong><br />
             <span class="shaded">
@@ -313,9 +314,9 @@
                 <ul class="small">
                   <li>Learn more about the <a href="http://sites.google.com/site/rhizosphereui">Rhizosphere project</a></li>
                   <li>Take a look at the <a href="http://code.google.com/p/rhizosphere">source code</a></li>
-                  <li><a href="http://twitter.com/rhizosphere">Follow Rhizosphere</a> on Twitter 
+                  <li><a href="http://twitter.com/rhizosphere">Follow Rhizosphere</a> on Twitter
                     <a href="http://twitter.com/rhizosphere">
-                      <img src="other/img/twitter_icon.gif" style="vertical-align:middle; border: 0;">
+                      <img src="static/welcome/img/twitter_icon.gif" style="vertical-align:middle; border: 0;">
                     </a>
                   </li>
                 </ul>
@@ -329,10 +330,10 @@
         <p class="small">
           Rhizosphere supports the following browsers:
           <span class="shaded">
-            <img src="other/img/chrome.png"> Google Chrome
-            <img src="other/img/firefox.png"> Mozilla Firefox
-            <img src="other/img/safari.png"> Safari
-            <img src="other/img/opera.png"> Opera
+            <img src="static/welcome/img/chrome.png"> Google Chrome
+            <img src="static/welcome/img/firefox.png"> Mozilla Firefox
+            <img src="static/welcome/img/safari.png"> Safari
+            <img src="static/welcome/img/opera.png"> Opera
           </span><br />
           Using Internet Explorer? Please install <a href="http://code.google.com/chrome/chromeframe/">Google Chrome Frame</a>.
         </p>
@@ -343,6 +344,6 @@
       </div>
       <script>
        CFInstall.check();
-      </script>      
+      </script>
   </body>
 </html>

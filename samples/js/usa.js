@@ -325,7 +325,7 @@ var renderer = {
       html.push("<div style='padding: 3px'>");
       html.push("<p style='font-size:10px'>");
       if (model.kind == 'State' || model.kind == 'Country') {
-        html.push("<img src='js/sample/usa_flags/" + model.imgName + "' width='50px' align='left' >");
+        html.push("<img src='static/samples/img/usa_flags/" + model.imgName + "' width='50px' align='left' >");
       }
       html.push("<b><span style='color:" + this.getElectionColor(model) + ";'>" + model.name + "</span></b><br />");
       html.push("<span class='dim'>" + model.kind + "</span></p>");

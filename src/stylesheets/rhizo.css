@@ -34,7 +34,7 @@ A, .rhizo-header A:visited {
 /* Admin interface */
 .rhizo-left {
   position: absolute;
-  background: #fff url(../i/background.png) no-repeat top left;
+  background: #fff url(../img/background.png) no-repeat top left;
   left: 0;
   top: 0;
   width: 295px;
@@ -127,7 +127,7 @@ A, .rhizo-header A:visited {
 }
 
 .rhizo-right-pop:hover {
-  background: rgb(167, 237, 193) url(../i/hide-arrow.gif) no-repeat center center;
+  background: rgb(167, 237, 193) url(../img/hide-arrow.gif) no-repeat center center;
 }
 
 .rhizo-console-contents {
@@ -199,7 +199,7 @@ A, .rhizo-header A:visited {
 
 /* Endless desktop, Panning and scrolling */
 .rhizo-scroll-trigger {
-  background: transparent url(../i/scroll_small.png) no-repeat top left;
+  background: transparent url(../img/scroll_small.png) no-repeat top left;
   position: absolute;
   bottom: 0;
   right: 0;
@@ -209,7 +209,7 @@ A, .rhizo-header A:visited {
 }
 
 .rhizo-scroll-overlay {
-  background: transparent url(../i/scroll_big.png) no-repeat center center;
+  background: transparent url(../img/scroll_big.png) no-repeat center center;
   position: absolute;
   z-index: -1;
 }
@@ -258,7 +258,7 @@ DIV.ui-selected {
 
 /* Model rendering */
 .rhizo-expand-model {
-  background: #fff url('../i/maximize.gif') no-repeat top left;
+  background: #fff url('../img/maximize.gif') no-repeat top left;
   position: absolute;
   top: 2px;
   right: 2px;
@@ -267,7 +267,7 @@ DIV.ui-selected {
 }
 
 .rhizo-expand-model:hover {
-  background: #fff url('../i/maximize-hover.gif') no-repeat top left;
+  background: #fff url('../img/maximize-hover.gif') no-repeat top left;
 }
 
 .rhizo-model {
@@ -443,12 +443,13 @@ DIV.ui-selected {
   overflow: hidden;
 }
 
+<<<<<<< local
 .rhizo-bottom-bar .rhizo-filter-container SELECT {
   max-width: 190px;
 }
 
 .rhizo-bottom-bar .rhizo-next-filter {
-  background: transparent url('../i/next_filter.gif') no-repeat top left;
+  background: transparent url('../img/next_filter.gif') no-repeat top left;
   float: right;
   width: 12px;
   height: 13px;
@@ -456,12 +457,12 @@ DIV.ui-selected {
 }
 
 .rhizo-bottom-bar .rhizo-next-filter:hover {
-  background: transparent url('../i/next_filter-hover.gif') no-repeat top left;
+  background: transparent url('../img/next_filter-hover.gif') no-repeat top left;
   cursor: pointer;
 }
 
 .rhizo-bottom-bar .rhizo-prev-filter {
-  background: transparent url('../i/prev_filter.gif') no-repeat top left;
+  background: transparent url('../img/prev_filter.gif') no-repeat top left;
   float: right;
   width: 12px;
   height: 13px;
@@ -469,12 +470,12 @@ DIV.ui-selected {
 }
 
 .rhizo-bottom-bar .rhizo-prev-filter:hover {
-  background: transparent url('../i/prev_filter-hover.gif') no-repeat top left;
+  background: transparent url('../img/prev_filter-hover.gif') no-repeat top left;
   cursor: pointer;
 }
 
 .rhizo-bottom-bar .rhizo-maximize-icon {
-  background: #fff url('../i/maximize.gif') no-repeat top left;
+  background: #fff url('../img/maximize.gif') no-repeat top left;
   margin: 3px;
   width: 13px;
   height: 12px;
@@ -482,7 +483,7 @@ DIV.ui-selected {
 }
 
 .rhizo-bottom-bar .rhizo-maximize-icon:hover {
-  background: #fff url('../i/maximize-hover.gif') no-repeat top left;
+  background: #fff url('../img/maximize-hover.gif') no-repeat top left;
   cursor: pointer;
 }
 
