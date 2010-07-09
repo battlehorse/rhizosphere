@@ -1605,7 +1605,7 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   // already busy creating the whole dom).
   jQuery.fx.off = true;
 
-  // layouting
+  // laying out models
   this.layout(this.layoutName_);
 
   // showing elements and re-aligning animation settings
@@ -1725,7 +1725,7 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
   if (!engine) {
     rhizo.error("Invalid layout engine:" + layoutEngineName);
   } else {
-    rhizo.log('layouting...');
+    rhizo.log('laying out...');
     if (this.layoutEngine_ && this.layoutEngine_.cleanup) {
       this.layoutEngine_.cleanup(); // cleanup previous layout engine
     }
