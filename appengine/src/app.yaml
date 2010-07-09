@@ -10,6 +10,9 @@ handlers:
 - url: /rhizo.html
   script: py/handlers/rhizo.py
 
+- url: /ig
+  script: py/handlers/rhizo.py
+
 - url: /sample/.*\.js
   script: py/handlers/sample.py
 
