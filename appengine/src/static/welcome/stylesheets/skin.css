@@ -19,7 +19,7 @@
 .jcarousel-skin-tango .jcarousel-clip-horizontal {
     width:  800px;
     height: 250px;
-    border: 1px solid #6b90da;    
+    border: 1px solid #6b90da;
 }
 
 .jcarousel-skin-tango .jcarousel-clip-vertical {
@@ -55,7 +55,7 @@
     width: 32px;
     height: 32px;
     cursor: pointer;
-    background: transparent url(next-horizontal.png) no-repeat 0 0;
+    background: transparent url(../img/next-horizontal.png) no-repeat 0 0;
 }
 
 .jcarousel-skin-tango .jcarousel-next-horizontal:hover {
@@ -80,7 +80,7 @@
     width: 32px;
     height: 32px;
     cursor: pointer;
-    background: transparent url(prev-horizontal.png) no-repeat 0 0;
+    background: transparent url(../img/prev-horizontal.png) no-repeat 0 0;
 }
 
 .jcarousel-skin-tango .jcarousel-prev-horizontal:hover {
@@ -108,7 +108,7 @@
     width: 32px;
     height: 32px;
     cursor: pointer;
-    background: transparent url(next-vertical.png) no-repeat 0 0;
+    background: transparent url(../img/next-vertical.png) no-repeat 0 0;
 }
 
 .jcarousel-skin-tango .jcarousel-next-vertical:hover {
@@ -133,7 +133,7 @@
     width: 32px;
     height: 32px;
     cursor: pointer;
-    background: transparent url(prev-vertical.png) no-repeat 0 0;
+    background: transparent url(../img/prev-vertical.png) no-repeat 0 0;
 }
 
 .jcarousel-skin-tango .jcarousel-prev-vertical:hover {
