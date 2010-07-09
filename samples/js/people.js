@@ -77,10 +77,12 @@ var renderer = {
     }
   }
 };
+
 // uncomment to try the autorenderer here, either with or
 // without defaults ( third parameter )
 // renderer = new rhizo.autorender.AR(metamodel, models, true, 2);
-rhizo.bootstrap.setRenderer(renderer);
-rhizo.bootstrap.setMetaModel(metamodel);
 
-rhizo.bootstrap.deploy(models);
+{{ jsonp_callback }}({
+  'renderer': renderer,
+  'metamodel': metamodel,
+  'models': models});

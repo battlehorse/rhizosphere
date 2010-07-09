@@ -31,9 +31,14 @@ namespace("rhizo.model.loader");
 rhizo.model.loader.loaders = [];
 
 // Plain Javascript file loader
-rhizo.model.loader.JS = function(project, globalOptions) {
+$globalJSLoaderCount = 0;
+$globalJSLoaderMap = {};
+rhizo.model.loader.JS = function(bootstrapper, project, globalOptions) {
+  this.bootstrapper_ = bootstrapper;
   this.project_ = project;
   this.globalOptions_ = globalOptions;
+  this.loaderCount_ = $globalJSLoaderCount++;
+  $globalJSLoaderMap[this.loaderCount_] = this;
 };
 rhizo.model.loader.loaders.push(rhizo.model.loader.JS);
 
@@ -43,7 +48,7 @@ rhizo.model.loader.JS.prototype.match = function(resource) {
 
 rhizo.model.loader.JS.prototype.load = function(resource) {
   var e = document.createElement("script");
-  e.src = resource;
+  e.src = resource + '?jsonp=$globalJSLoaderMap[' + this.loaderCount_ + '].loadDone';
   e.type="text/javascript";
   document.getElementsByTagName("head")[0].appendChild(e);
 
@@ -51,8 +56,13 @@ rhizo.model.loader.JS.prototype.load = function(resource) {
   // in addition to just defining models and renderers.
 };
 
+rhizo.model.loader.JS.prototype.loadDone = function(payload) {
+  this.bootstrapper_.deploy(payload);
+};
+
 // Google Spreadsheet GViz loader
-rhizo.model.loader.GoogleSpreadsheet = function(project, globalOptions) {
+rhizo.model.loader.GoogleSpreadsheet = function(bootstrapper, project, globalOptions) {
+  this.bootstrapper_ = bootstrapper;
   this.project_ = project;
   this.globalOptions_ = globalOptions;
 };
@@ -72,7 +82,7 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.load = function(resource) {
     var that = this;  // needed to propagate this through the Gviz callback.
     var callback = function(response) {
       that.handleQueryResponse_(response);
-    }
+    };
     query.send(callback);
   }
 };
@@ -87,13 +97,15 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_ =
                                                this.project_,
                                                this.globalOptions_);
 
-  rhizo.bootstrap.setRenderer(initializer.renderer);
-  rhizo.bootstrap.setMetaModel(initializer.metamodel);
-  rhizo.bootstrap.deploy(initializer.models);
+  this.bootstrapper_.deploy({
+    'renderer': initilizer.renderer,
+    'metamodel': initializer.metamodel,
+    'models': initializer.models});
 };
 
 // Gadget GViz loader
-rhizo.model.loader.GoogleGadget = function(project, globalOptions) {
+rhizo.model.loader.GoogleGadget = function(bootstrapper, project, globalOptions) {
+  this.bootstrapper_ = bootstrapper;
   this.project_ = project;
   this.globalOptions_ = globalOptions;
 };
@@ -122,7 +134,7 @@ rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
   var that = this;  // needed to propagate this through the Gviz callback.
   var callback = function(response) {
     that.handleQueryResponse_(response);
-  }
+  };
   query.send(callback);
 };
 
@@ -138,14 +150,15 @@ rhizo.model.loader.GoogleGadget.prototype.handleQueryResponse_ =
  *
  * @param {string} resource the resource to load.
  *     Tipically this will be a URL.
+ * @param {rhizo.boostrap.Bootstrap} bootstrapper the project bootstrapper.
  * @param {rhizo.Project} project the project we're loading the models for.
  * @param {Object} globalOptions key-values for the global options.
  */
-rhizo.model.loader.load = function(resource, project, globalOptions) {
+rhizo.model.loader.load = function(resource, bootstrapper, project, globalOptions) {
   var loader_ctors = rhizo.model.loader.loaders;
 
   for (var i = 0; i < loader_ctors.length; i++) {
-    var loader = new loader_ctors[i](project, globalOptions);
+    var loader = new loader_ctors[i](bootstrapper, project, globalOptions);
     if (loader.match(resource)) {
       loader.load(resource);
       return;

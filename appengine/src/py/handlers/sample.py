@@ -11,7 +11,8 @@ from py import rhizoglobals
 class ScriptHandler(webapp.RequestHandler):
     def get(self):
         jsfile = self.request.path.replace('/sample/', '')
-        template_values = {}
+        jsonp_callback = self.request.get('jsonp', 'jsonp_callback')
+        template_values = {'jsonp_callback': jsonp_callback}
         path = os.path.join(os.path.dirname(__file__),
                             '../../static/samples/js/%s' % jsfile)
         self.response.headers.add_header('Content-Type', 'text/javascript')

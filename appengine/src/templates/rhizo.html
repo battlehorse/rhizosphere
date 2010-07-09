@@ -59,7 +59,9 @@
       }
 
       $(document).ready(function() {
-        rhizo.bootstrap.go($('#rhizo-pangea'), {autoSize: true});
+        var bootstrapper = new rhizo.bootstrap.Bootstrap(
+            $('#rhizo-pangea'), {autoSize: true});
+        bootstrapper.go();
       });
     </script>
   </body>
