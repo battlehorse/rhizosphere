@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import os.path
 
 from google.appengine.ext import webapp
@@ -17,8 +18,19 @@ class RhizoHandler(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
 
 
+class IGoogleHandler(webapp.RequestHandler):
+
+    def get(self):
+        template_values = {'hostname': 'http://%s' % os.environ['HTTP_HOST']}
+        path = os.path.join(os.path.dirname(__file__), '../../templates/ig.xml')
+        self.response.headers.add_header('Content-Type', 'text/xml')
+        self.response.out.write(template.render(path, template_values))
+
+
 application = webapp.WSGIApplication(
-    [('/rhizo.html', RhizoHandler),],
+    [('/rhizo.html', RhizoHandler),
+     ('/ig', IGoogleHandler),
+    ],
     debug=rhizoglobals.debug)
 
 
