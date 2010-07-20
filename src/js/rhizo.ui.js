@@ -115,7 +115,7 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
 
     // register the expand icon handler
     $('.rhizo-expand-model').click(function() {
-      var id = $(this).attr('id').replace(/rhizo-expand-/, '');
+      var id = $(this).data('id');
       var model = project.model(id);
 
       // flip the expansion status

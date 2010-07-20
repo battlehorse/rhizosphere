@@ -137,7 +137,7 @@ rhizo.Project.prototype.select = function(id) {
   var supermodel = this.model(id);
   this.selectionMap_[id] = supermodel;
   supermodel.selected = true;
-  $('#' + id).addClass('ui-selected');
+  supermodel.rendering.addClass('ui-selected');
 
   this.logger_.info("Selected " + supermodel);
 };
@@ -147,7 +147,7 @@ rhizo.Project.prototype.unselect = function(id) {
   this.selectionMap_[id] = null;
   delete this.selectionMap_[id];
   supermodel.selected = false;
-  $('#' + id).removeClass('ui-selected');
+  supermodel.rendering.removeClass('ui-selected');
   this.logger_.info("Unselected " + supermodel);
 };
 
@@ -281,7 +281,7 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   var numShownModels = 0;
   for (var i = this.models_.length-1; i >=0; i--) {
     if (this.models_[i].isFiltered()) {
-      $('#' + this.models_[i].id).fadeOut();
+      this.models_[i].rendering.fadeOut();
     } else {
       numShownModels += 1;
     }
@@ -296,7 +296,7 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // delay has been requested.
   for (var i = this.models_.length-1; i >= 0; i--) {
     if (!this.models_[i].isFiltered()) {
-      $('#' + this.models_[i].id).fadeIn();
+      this.models_[i].rendering.fadeIn();
     }
   }
 
