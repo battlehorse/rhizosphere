@@ -348,10 +348,10 @@ rhizo.meta.CategoryKind.prototype.renderFilter = function(project, metadata, key
                      (metadata.multiple ? 'multiple size="4" ' : '') +
                      " style='vertical-align:top' />");
   categories.append("<option value=''>-</option>");
-  metadata.categories.forEach(function(category) {
-    categories.append("<option value='" + category + "'>" +
-                      category + "</option>");
-  });
+  for (var i = 0; i < metadata.categories.length; i++) {
+    categories.append("<option value='" + metadata.categories[i] + "'>" +
+                      metadata.categories[i] + "</option>");
+  }
 
   $(categories).change(function(ev) {
     var selectedCategories = [ $(this).val() ];
@@ -372,20 +372,22 @@ rhizo.meta.CategoryKind.prototype.survivesFilter =
   // AND-filter
 
   // var survives = true;
-  // filterValue.forEach(function(category) {
-  //   if (modelValue.indexOf(category) == -1) {
+  // for (var i = 0; i < filterValue.length; i++) {
+  //   if (modelValue.indexOf(filterValue[i]) == -1) {
   //     survives = false;
+  //     break;
   //   }
-  // });
+  // }
   // return survives;
 
   // OR-filter
   var survives = false;
-  filterValue.forEach(function(category) {
-    if (modelValue.indexOf(category) != -1) {
+  for (var i = 0; i < filterValue.length; i++) {
+    if (modelValue.indexOf(filterValue[i]) != -1) {
       survives = true;
+      break;
     }
-  });
+  }
   return survives;
 };
 

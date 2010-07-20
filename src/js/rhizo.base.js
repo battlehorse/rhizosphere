@@ -69,7 +69,9 @@ rhizo.Project.prototype.addModels_ = function(models) {
   }
 
   this.buildModelsMap_();
-  this.models_.forEach(this.initializeModel_, this);
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    this.initializeModel_(this.models_[i]);
+  }
   return true;
 };
 
@@ -126,10 +128,10 @@ rhizo.Project.prototype.currentLayoutEngineName = function() {
 };
 
 rhizo.Project.prototype.resetAllFilter = function(key) {
-  this.models_.forEach(function(model) {
-    model.resetFilter(key);
-  });
-}
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    this.models_[i].resetFilter(key);
+  }
+};
 
 rhizo.Project.prototype.select = function(id) {
   var supermodel = this.model(id);
@@ -182,20 +184,21 @@ rhizo.Project.prototype.toggleSelection = function(status) {
 rhizo.Project.prototype.checkModels_ = function() {
   this.logger_.info("Checking models...");
   var modelsAreCorrect = true;
-  this.models_.forEach(function(model){
-    if (!model.id) {
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    if (!this.models_[i].id) {
       modelsAreCorrect = false;
       this.logger_.error("Verify your models: missing ids.");
     }
-  });
+  }
   return modelsAreCorrect;
 };
 
 rhizo.Project.prototype.buildModelsMap_ = function() {
   this.logger_.info("Building models map...");
-  this.models_.forEach(function(model) {
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    var model = this.models_[i];
     this.modelsMap_[model.id] = model;
-  }, this);
+  }
 };
 
 rhizo.Project.prototype.initializeModel_ = function(model) {
@@ -249,7 +252,8 @@ rhizo.Project.prototype.filter = function(key, value) {
     this.logger_.error("Invalid filtering key: " + key);
   }
   if (value != '') {
-    this.models_.forEach(function(model) {
+    for (var i = this.models_.length-1; i >= 0; i--) {
+      var model = this.models_[i];
       if (this.metaModel_[key].kind.survivesFilter(value, model.unwrap()[key])) {
         // matches filter. Doesn't have to be hidden
         model.resetFilter(key);
@@ -257,12 +261,10 @@ rhizo.Project.prototype.filter = function(key, value) {
         // do not matches filter. Must be hidden
         model.filter(key);
       }
-    }, this);
+    }
   } else {
     // reset filter
-    this.models_.forEach(function(model) {
-      model.resetFilter(key);
-    });
+    this.resetAllFilter(key);
   }
 
   // hide/show filtered elements
@@ -277,12 +279,13 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // This number affects performance choices.
   // Fade out is done _before_ changing performance settings
   var numShownModels = 0;
-  this.models_.forEach(function(model) {
-    numShownModels += model.isFiltered() ? 0 : 1;
-    if (model.isFiltered()) {
-      $('#' + model.id).fadeOut();
+  for (var i = this.models_.length-1; i >=0; i--) {
+    if (this.models_[i].isFiltered()) {
+      $('#' + this.models_[i].id).fadeOut();
+    } else {
+      numShownModels += 1;
     }
-  });
+  }
 
   if (!opt_delayCount) {
     jQuery.fx.off = this.options_.noAnims || numShownModels > 200;
@@ -291,11 +294,11 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // fade in all the affected elements according to current filter status
   // fade in is done _after_ changing performance settings, unless explicit
   // delay has been requested.
-  this.models_.forEach(function(model) {
-    if (!model.isFiltered()) {
-      $('#' + model.id).fadeIn();
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    if (!this.models_[i].isFiltered()) {
+      $('#' + this.models_[i].id).fadeIn();
     }
-  });
+  }
 
   if (opt_delayCount) {
     jQuery.fx.off = this.options_.noAnims || numShownModels > 200;

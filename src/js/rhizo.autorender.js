@@ -120,7 +120,7 @@ rhizo.autorender.AR.prototype.locateMinMax_ = function(models, key) {
     // iterate over models to figure out min and max
     var modelMin = Number.POSITIVE_INFINITY;
     var modelMax = Number.NEGATIVE_INFINITY;
-    models.forEach(function(model) {
+    $.each(models, function(i, model) {
       modelMin = Math.min(modelMin, model[key]);
       modelMax = Math.max(modelMax, model[key]);
     });
