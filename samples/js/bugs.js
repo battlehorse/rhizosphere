@@ -14,10 +14,10 @@
   limitations under the License.
 */
 
-namespace("chromiumbugs");
+(function(){
 
 var priorities = ['#FF3C3C', '#FFB263' , '#FFE685', '#FDFFC0'];
-chromiumbugs.Bug = function(arr) {
+var Bug = function(arr) {
   // arr is "ID","Stars","Pri","Area","Type","Status","Summary","Modified","Owner","Mstone"
   this.id = arr[0];
   this.stars = parseInt(arr[1], 10);
@@ -4800,16 +4800,16 @@ bugs.push(["14361","2","2","Misc","Bug","Unconfirmed","[www.wow-europe.com]: WOW
 
 //+ Jonas Raoni Soares Silva
 //@ http://jsfromhell.com/array/shuffle [rev. #1]
-chromiumbugs.shuffle = function(v){
+var shuffle = function(v){
     for(var j, x, i = v.length; i; j = parseInt(Math.random() * i), x = v[--i], v[i] = v[j], v[j] = x);
     return v;
 };
-bugs = chromiumbugs.shuffle(bugs);
+bugs = shuffle(bugs);
 var models = [];
 var limit = 200;
 
 for (var i = 0; i < limit; i++) {
-  models.push(new chromiumbugs.Bug(bugs[i]));
+  models.push(new Bug(bugs[i]));
 }
 
 var renderer = {
@@ -4881,3 +4881,5 @@ var metamodel = {
     'metamodel': metamodel,
     'models': models
 });
+
+})();

@@ -14,42 +14,42 @@
   limitations under the License.
 */
 
-namespace("sample");
+(function() {
+  var Number = function(id, name) {
+    this.id = id;
+    this.name = name;
+    this.val = parseInt(this.id, 10);
+    this.inverse = 10 - this.val;
+  };
 
-sample.Number = function(id, name) {
-  this.id = id;
-  this.name = name;
-  this.val = parseInt(this.id, 10);
-  this.inverse = 10 - this.val;
-};
+  Number.prototype.toString = function() {
+    return this.name;
+  };
 
-sample.Number.prototype.toString = function() {
-  return this.name;
-};
+  var models = [
+    new Number("1", "one"),
+    new Number("2", "two"),
+    new Number("3", "three"),
+    new Number("4", "four"),
+    new Number("5", "five"),
+    new Number("6", "six"),
+    new Number("7", "seven"),
+    new Number("8", "eight"),
+    new Number("9", "nine"),
+    new Number("10", "ten")
+  ];
 
+  var metamodel = {
+    name: { kind: rhizo.meta.Kind.STRING, label: "Name" , ar: { master: true} },
+    val: { kind: rhizo.meta.Kind.RANGE, label: "Value",
+           min: 1, max: 10, stepping: 1, ar: {bind: 'size'}},
+    inverse: { kind: rhizo.meta.Kind.NUMBER, label: "Inverse", ar: {bind: 'color'}}
+  };
 
-var models = [
-  new sample.Number("1", "one"),
-  new sample.Number("2", "two"),
-  new sample.Number("3", "three"),
-  new sample.Number("4", "four"),
-  new sample.Number("5", "five"),
-  new sample.Number("6", "six"),
-  new sample.Number("7", "seven"),
-  new sample.Number("8", "eight"),
-  new sample.Number("9", "nine"),
-  new sample.Number("10", "ten")
-];
+  var renderer = new rhizo.autorender.AR(metamodel, models, true, 0);
 
-var metamodel = {
-  name: { kind: rhizo.meta.Kind.STRING, label: "Name" , ar: { master: true} },
-  val: { kind: rhizo.meta.Kind.RANGE, label: "Value", min: 1, max: 10, stepping: 1, ar: {bind: 'size'}},
-  inverse: { kind: rhizo.meta.Kind.NUMBER, label: "Inverse", ar: {bind: 'color'}}
-};
-
-var renderer = new rhizo.autorender.AR(metamodel, models, true, 0);
-
-{{ jsonp_callback }}({
-  'renderer': renderer,
-  'metamodel': metamodel,
-  'models': models});
+  {{ jsonp_callback }}({
+      'renderer': renderer,
+      'metamodel': metamodel,
+      'models': models});
+})();
