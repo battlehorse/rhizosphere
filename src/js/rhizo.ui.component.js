@@ -388,7 +388,7 @@ rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, 
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, opt_options) {
   this.selectButton_.click(jQuery.proxy(function(ev) {
     var countSelected = 0;
-    for (id in project.allSelected()) { countSelected++; };
+    for (var id in project.allSelected()) { countSelected++; };
     if (countSelected == 0) {
       project.logger().error("No items selected");
       return;
@@ -396,7 +396,7 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
 
     var allUnselected = project.allUnselected();
     var countFiltered = 0;
-    for (id in allUnselected) {
+    for (var id in allUnselected) {
       allUnselected[id].filter("__selection__"); // hard-coded keyword
       countFiltered++;
     }
@@ -439,13 +439,15 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     function(project, gui, opt_options) {
   gui.viewport.selectable({
     selected: function(ev, ui) {
-      if (ui.selected.id) {
-        project.select(ui.selected.id);
+      var selected_id = $(ui.selected).data("id");
+      if (selected_id) {
+        project.select(selected_id);
       }
     },
     unselected: function(ev, ui) {
-      if (ui.unselected.id) {
-        project.unselect(ui.unselected.id);
+      var unselected_id = $(ui.unselected).data("id");
+      if (unselected_id) {
+        project.unselect(unselected_id);
       }
     },
     // TODO: disabled until incremental refresh() is implemented
@@ -651,19 +653,21 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_optio
         dropbox.droppable({
           accept: '.rhizo-model',
           drop: function(ev, ui) {
-            if (!project.isSelected(ui.draggable[0].id)) {
-              var id = ui.draggable[0].id;
+            var id = ui.draggable.data("id");
+            if (!project.isSelected(id)) {
               alert("Action applied on " + project.model(id));
-              $('#' + id).move($('#'+id).data("dropTop0"),
-                               $('#'+id).data("dropLeft0"));
+              ui.draggable.move(ui.draggable.data("dropTop0"),
+                                ui.draggable.data("dropLeft0"));
             } else {
               var countSelected = 0;
-              for (var id in project.allSelected()) { countSelected++;}
+              var all_selected = project.allSelected();
+              for (var id in all_selected) { countSelected++;}
               alert("Action applied on " + countSelected + " elements");
 
-              for (var id in project.allSelected()) {
-                $('#' + id).move($('#'+id).data("dropTop0"),
-                                 $('#'+id).data("dropLeft0"));
+              for (var id in all_selected) {
+                all_selected[id].rendering.move(
+                  all_selected[id].rendering.data("dropTop0"),
+                  all_selected[id].rendering.data("dropLeft0"));
               }
               project.unselectAll();
             }

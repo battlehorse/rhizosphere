@@ -65,76 +65,84 @@ rhizo.model.kickstart = function(model, project, renderer, opt_options) {
   // Add the maximize icon, if the renderer supports expansion
   if (rhizo.ui.expandable(renderer, opt_options)) {
     var expander = $('<div class="rhizo-expand-model" ' +
-                     'style="display:none" ' +
-                     'id="rhizo-expand-' + model.id + '"></div>');
-    $(rendering).append(expander);
+                     'style="display:none"></div>');
+    expander.data("id", model.id);
+    rendering.append(expander);
   }
 
   // enrich the super model
   model.rendering = rendering;
 
-  $(rendering).attr("id", model.id);
-  $(rendering).dblclick(function() {
-    if (project.isSelected(this.id)) {
-      project.unselect(this.id);
+  rendering.data("id", model.id);
+  rendering.dblclick(function() {
+    if (project.isSelected($(this).data("id"))) {
+      project.unselect($(this).data("id"));
     } else {
-      project.select(this.id);
+      project.select($(this).data("id"));
     }
   });
 
-  $(rendering).draggable({
+  rendering.draggable({
     opacity: 0.7,
     cursor: 'pointer',
     zIndex: 10000,
     distance: 3,
     start: function(ev, ui) {
       project.toggleSelection('disable');
-
       // used by droppable feature
-      $('#' + ui.helper[0].id).data(
+      ui.helper.data(
           "dropTop0",
-          parseInt($('#'+ ui.helper[0].id).css("top"),10));
-      $('#' + ui.helper[0].id).data(
+          parseInt(ui.helper.css("top"),10));
+      ui.helper.data(
           "dropLeft0",
-          parseInt($('#'+ ui.helper[0].id).css("left"),10));
+          parseInt(ui.helper.css("left"),10));
 
       // figure out all the initial positions for the selected elements
       // and store them.
-      if (project.isSelected(ui.helper[0].id)) {
-        for (id in project.allSelected()) {
-          $('#'+id).data(
+      if (project.isSelected(ui.helper.data("id"))) {
+        var all_selected = project.allSelected();
+        for (var id in all_selected) {
+          var selected_rendering = all_selected[id].rendering;
+          selected_rendering.data(
             "top0",
-            parseInt($('#'+id).css("top"),10) -
-              parseInt($(ui.helper[0]).css("top"),10));
-          $('#'+id).data(
+            parseInt(selected_rendering.css("top"),10) -
+              parseInt(ui.helper.css("top"),10));
+          selected_rendering.data(
             "left0",
-            parseInt($('#'+id).css("left"),10) -
-              parseInt($(ui.helper[0]).css("left"),10));
+            parseInt(selected_rendering.css("left"),10) -
+              parseInt(ui.helper.css("left"),10));
 
           // used by droppable feature
-          $('#' + id).data("dropTop0", parseInt($('#'+id).css("top"),10));
-          $('#' + id).data("dropLeft0", parseInt($('#'+id).css("left"),10));
+          selected_rendering.data("dropTop0",
+                                  parseInt(selected_rendering.css("top"),10));
+          selected_rendering.data("dropLeft0",
+                                  parseInt(selected_rendering.css("left"),10));
         }
       }
     },
     drag: function(ev, ui) {
-      if (project.isSelected(ui.helper[0].id)) {
-        for (id in project.allSelected()) {
-          if (id != ui.helper[0].id) {
-            $('#' + id).css('top',
-                            $('#'+id).data("top0") + ui.position.top);
-            $('#' + id).css('left',
-                            $('#'+id).data("left0") + ui.position.left);
+      var drag_helper_id = ui.helper.data("id");
+      if (project.isSelected(drag_helper_id)) {
+        var all_selected = project.allSelected();
+        for (var id in all_selected) {
+          if (id != drag_helper_id) {
+            all_selected[id].rendering.css(
+                'top',
+                all_selected[id].rendering.data("top0") + ui.position.top);
+            all_selected[id].rendering.css(
+                'left',
+                all_selected[id].rendering.data("left0") + ui.position.left);
           }
         }
       }
     },
     stop: function(ev, ui) {
       project.toggleSelection('enable');
-      if (project.isSelected(ui.helper[0].id)) {
-        for (id in project.allSelected()) {
-         $('#'+id).removeData("top0");
-         $('#'+id).removeData("left0");
+      if (project.isSelected(ui.helper.data("id"))) {
+        var all_selected = project.allSelected();
+        for (var id in all_selected) {
+          all_selected[id].rendering.removeData("top0");
+          all_selected[id].rendering.removeData("left0");
         }
       }
     },
