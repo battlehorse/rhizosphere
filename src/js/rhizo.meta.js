@@ -199,7 +199,7 @@ rhizo.meta.DateKind.prototype.addZero_ = function(value) {
 rhizo.meta.RangeKind = function() {};
 
 rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
-  var slider = $("<div id='rhizo-slider-" + key + "' />");
+  var slider = $("<div class='rhizo-slider' />");
   var minLabel = $("<strong>" + this.toHumanLabel_(metadata.min) + "</strong>");
   var maxLabel = $("<strong>" + this.toHumanLabel_(metadata.max) + "</strong>");
 
@@ -212,41 +212,35 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
 
   // wrap slide handler into a closure to preserve access to the RangeKind
   // filter.
-  var slideCallback = (function() {
-      var that = this;
-      return function(ev, ui) {
-        var minSlide = $('#rhizo-slider-' + key).slider('values',0);
-        var maxSlide = $('#rhizo-slider-' + key).slider('values',1);
-        if (minSlide == ui.value) {
-          // min slider has moved
-          minLabel.text(that.toHumanLabel_(that.toModelScale_(minSlide))).
-                   addClass("rhizo-slider-moving");
-          maxLabel.removeClass("rhizo-slider-moving");
-        } else {
-          // max slider has moved
-          maxLabel.text(that.toHumanLabel_(that.toModelScale_(maxSlide))).
-                   addClass("rhizo-slider-moving");
-          minLabel.removeClass("rhizo-slider-moving");
-        }
-      };
-  }).call(this);
+  var slideCallback = jQuery.proxy(function(ev, ui) {
+      var minSlide = this.slider.slider('values',0);
+      var maxSlide = this.slider.slider('values',1);
+      if (minSlide == ui.value) {
+        // min slider has moved
+        minLabel.text(this.meta.toHumanLabel_(this.meta.toModelScale_(minSlide))).
+                 addClass("rhizo-slider-moving");
+        maxLabel.removeClass("rhizo-slider-moving");
+      } else {
+        // max slider has moved
+        maxLabel.text(this.meta.toHumanLabel_(this.meta.toModelScale_(maxSlide))).
+                 addClass("rhizo-slider-moving");
+        minLabel.removeClass("rhizo-slider-moving");
+      }
+  }, {meta: this, slider: slider});
 
   // wrap change handler into a closure to preserve access to the RangeKind
   // filter.
-  var stopCallback = (function() {
-      var that = this;
-      return function(ev, ui) {
-        var minSlide = Math.max($('#rhizo-slider-' + key).slider('values',0),
-                                minFilterScale);
-        var maxSlide = Math.min($('#rhizo-slider-' + key).slider('values',1),
-                                maxFilterScale);
-        minLabel.text(that.toHumanLabel_(that.toModelScale_(minSlide))).
-                 removeClass("rhizo-slider-moving");
-        maxLabel.text(that.toHumanLabel_(that.toModelScale_(maxSlide))).
-                 removeClass("rhizo-slider-moving");
-        project.filter(key, { min: minSlide, max: maxSlide });
-      };
-  }).call(this);
+  var stopCallback = jQuery.proxy(function(ev, ui) {
+      var minSlide = Math.max(this.slider.slider('values',0),
+                              minFilterScale);
+      var maxSlide = Math.min(this.slider.slider('values',1),
+                              maxFilterScale);
+      minLabel.text(this.meta.toHumanLabel_(this.meta.toModelScale_(minSlide))).
+               removeClass("rhizo-slider-moving");
+      maxLabel.text(this.meta.toHumanLabel_(this.meta.toModelScale_(maxSlide))).
+               removeClass("rhizo-slider-moving");
+      project.filter(key, { min: minSlide, max: maxSlide });
+  }, {meta: this, slider: slider});
 
   $(slider).slider({
     stepping: metadata.stepping,
