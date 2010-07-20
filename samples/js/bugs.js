@@ -4874,7 +4874,10 @@ var metamodel = {
   area: {kind: rhizo.meta.Kind.CATEGORY, label: "Area" , categories: areas},  
   status: {kind: rhizo.meta.Kind.CATEGORY, label: "Status" , categories: statuses},  
   type: {kind: rhizo.meta.Kind.CATEGORY, label: "Type" , categories: types}
-};    
-rhizo.bootstrap.setRenderer(renderer);
-rhizo.bootstrap.setMetaModel(metamodel);
-rhizo.bootstrap.deploy(models);
+};
+
+{{ jsonp_callback }}({
+    'renderer': renderer,
+    'metamodel': metamodel,
+    'models': models
+});

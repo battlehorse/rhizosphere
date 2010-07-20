@@ -30,9 +30,12 @@ namespace("rhizo.model.loader");
 // Add elements to this array if you want to include your loader.
 rhizo.model.loader.loaders = [];
 
-// Plain Javascript file loader
+// Global tracking of existing Javascript loaders, necessary to match the
+// JSONP callbacks fired by included scripts to the right loader.
 $globalJSLoaderCount = 0;
 $globalJSLoaderMap = {};
+
+// Plain Javascript file loader
 rhizo.model.loader.JS = function(bootstrapper, project, globalOptions) {
   this.bootstrapper_ = bootstrapper;
   this.project_ = project;
@@ -58,6 +61,7 @@ rhizo.model.loader.JS.prototype.load = function(resource) {
 
 rhizo.model.loader.JS.prototype.loadDone = function(payload) {
   this.bootstrapper_.deploy(payload);
+  $globalJSLoaderMap[this.loaderCount_] = null;
 };
 
 // Google Spreadsheet GViz loader
@@ -75,7 +79,8 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.match = function(resource) {
 rhizo.model.loader.GoogleSpreadsheet.prototype.load = function(resource) {
   // The javascript http://www.google.com/jsapi and the visualization
   // package must be already included in the page and available at this point.
-  if (!google.visualization) {
+  if (typeof google == 'undefined' ||
+      typeof google.visualization == 'undefined') {
     this.project_.logger().error('Google Visualization APIs not available.');
   } else {
     var query = new google.visualization.Query(resource);
@@ -118,7 +123,8 @@ rhizo.model.loader.GoogleGadget.prototype.match = function(resource) {
 };
 
 rhizo.model.loader.GoogleGadget.prototype.load = function(resource) {
-  if (!google.visualization) {
+  if (typeof google == 'undefined' ||
+      typeof google.visualization == 'undefined') {
     this.project_.logger().error('Google Visualization APIs not available.');
     return;
   }

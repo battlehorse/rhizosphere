@@ -77,7 +77,9 @@
 
       function vizLoaded_() {
         $(document).ready(function() {
-          rhizo.bootstrap.go($('#rhizo-pangea'), globalOptions, rhizo.model.loader.GoogleGadget.RESOURCE);
+          var bootstrapper = new rhizo.bootstrap.Bootstrap(
+              $('#rhizo-pangea'), globalOptions);
+          bootstrapper.go(rhizo.model.loader.GoogleGadget.RESOURCE);
         });
       }
     </script>

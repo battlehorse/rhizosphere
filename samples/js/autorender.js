@@ -49,6 +49,7 @@ var metamodel = {
 
 var renderer = new rhizo.autorender.AR(metamodel, models, true, 0);
 
-rhizo.bootstrap.setRenderer(renderer);
-rhizo.bootstrap.setMetaModel(metamodel);
-rhizo.bootstrap.deploy(models);
+{{ jsonp_callback }}({
+  'renderer': renderer,
+  'metamodel': metamodel,
+  'models': models});

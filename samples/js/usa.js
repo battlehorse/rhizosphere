@@ -338,6 +338,7 @@ var renderer = {
   }
 };
 
-rhizo.bootstrap.setRenderer(renderer);
-rhizo.bootstrap.setMetaModel(metamodel);
-rhizo.bootstrap.deploy(models);
+{{ jsonp_callback }}({
+  'renderer': renderer,
+  'metamodel': metamodel,
+  'models': models});
