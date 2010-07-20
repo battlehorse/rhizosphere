@@ -20,20 +20,25 @@ namespace("rhizo");
 
 rhizo.Project = function(gui, opt_options) {
   this.models_ = [];
-
   this.modelsMap_ = {};
   this.selectionMap_ = {};
-
-  this.layoutName_ = 'flow'; // default layout engine
-  this.layouEngine_ = null;
   this.options_ = opt_options || {};
-
   this.gui_ = gui;
 
   if (rhizo.nativeConsoleExists()) {
     this.logger_ = new rhizo.NativeLogger();
   } else {
     this.logger_ = new rhizo.NoOpLogger();
+  }
+
+  this.initializeLayoutEngines_();
+};
+
+rhizo.Project.prototype.initializeLayoutEngines_ = function() {
+  this.curLayoutName_ = 'flow'; // default layout engine
+  this.layoutEngines_ = {};
+  for (var layoutName in rhizo.layout.layouts) {
+    this.layoutEngines_[layoutName] = new rhizo.layout.layouts[layoutName](this);
   }
 };
 
@@ -78,7 +83,7 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   jQuery.fx.off = true;
 
   // laying out models
-  this.layout(this.layoutName_);
+  this.layout(this.curLayoutName_);
 
   // showing elements and re-aligning animation settings
   this.alignVisibility(true);
@@ -110,6 +115,14 @@ rhizo.Project.prototype.gui = function() {
 
 rhizo.Project.prototype.logger = function() {
   return this.logger_;
+};
+
+rhizo.Project.prototype.layoutEngines = function() {
+  return this.layoutEngines_;
+};
+
+rhizo.Project.prototype.currentLayoutEngineName = function() {
+  return this.curLayoutName_;
 };
 
 rhizo.Project.prototype.resetAllFilter = function(key) {
@@ -172,7 +185,7 @@ rhizo.Project.prototype.checkModels_ = function() {
   this.models_.forEach(function(model){
     if (!model.id) {
       modelsAreCorrect = false;
-      this.logger_.error("Verify your models: missing ids.")
+      this.logger_.error("Verify your models: missing ids.");
     }
   });
   return modelsAreCorrect;
@@ -201,33 +214,34 @@ rhizo.Project.prototype.initializeModel_ = function(model) {
 };
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
-  var layoutEngineName = opt_layoutEngineName ?
-                         opt_layoutEngineName : this.layoutName_;
-  var engine_ctor = rhizo.layout.layouts[layoutEngineName];
-  if (!engine_ctor) {
-    this.logger_.error("Invalid layout engine:" + layoutEngineName);
-  } else {
-    this.logger_.info('laying out...');
-    if (this.layoutEngine_ && this.layoutEngine_.cleanup) {
-      this.layoutEngine_.cleanup(); // cleanup previous layout engine
-    }
-
-    this.layoutName_ = layoutEngineName;
-    this.layoutEngine_ = new engine_ctor(this);
-
-    // reset panning
-    this.gui_.universe.move(0, 0, 0, 0);
-
-    // layout only non filtered models
-    var nonFilteredModels = jQuery.grep(this.models_, function(model) {
-      return !model.isFiltered();
-    });
-    this.layoutEngine_.layout(this.gui_.universe,
-                              nonFilteredModels,
-                              this.modelsMap_,
-                              this.metaModel_,
-                              opt_options);
+  var layoutEngine = this.layoutEngines_[this.curLayoutName_];
+  if (layoutEngine && layoutEngine.cleanup) {
+    layoutEngine.cleanup();  // cleanup previous layout engine.
   }
+
+  // Update the name of the current engine.
+  if (opt_layoutEngineName) {
+    this.curLayoutName_ = opt_layoutEngineName;
+  }
+  layoutEngine = this.layoutEngines_[this.curLayoutName_];
+  if (!layoutEngine) {
+    this.logger_.error("Invalid layout engine:" + this.curLayoutName_);    
+    return;
+  }
+  this.logger_.info('laying out...');
+
+  // reset panning
+  this.gui_.universe.move(0, 0, 0, 0);
+
+  // layout only non filtered models
+  var nonFilteredModels = jQuery.grep(this.models_, function(model) {
+    return !model.isFiltered();
+  });
+  layoutEngine.layout(this.gui_.universe,
+                      nonFilteredModels,
+                      this.modelsMap_,
+                      this.metaModel_,
+                      opt_options);
 };
 
 rhizo.Project.prototype.filter = function(key, value) {

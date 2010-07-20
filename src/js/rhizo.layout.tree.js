@@ -46,6 +46,8 @@
  */
 rhizo.layout.TreeLayout = function(project) {
   this.project_ = project;
+  this.directionSelector_ = null;
+  this.metaModelKeySelector_ = null;
 };
 
 rhizo.layout.TreeLayout.prototype.layout = function(container,
@@ -55,11 +57,11 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
                                                     opt_options) {
 
   // detect rendering direction
-  var vertical = $('#rhizo-treelayout-direction').val() == 'ver';
+  var vertical = this.directionSelector_.val() == 'ver';
   this.treePainter_ = new rhizo.layout.TreePainter(vertical);
 
   // detect parent
-  var parentKey = $('#rhizo-treelayout-parentKey').val();
+  var parentKey = this.metaModelKeySelector_.val();
   if (!meta[parentKey]) {
     this.project_.logger().error("parentKey attribute does not match any property");
     return;
@@ -194,14 +196,16 @@ rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(allmodels,
 };
 
 rhizo.layout.TreeLayout.prototype.details = function() {
-  var select = $("<select id='rhizo-treelayout-direction' />");
-  select.append("<option value='hor'>Horizontally</option>");
-  select.append("<option value='ver'>Vertically</option>");
+  this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
+  this.directionSelector_.append("<option value='hor'>Horizontally</option>");
+  this.directionSelector_.append("<option value='ver'>Vertically</option>");
 
-  return $("<div />").append(select).
+  this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
+      this.project_, 'rhizo-treelayout-parentKey');
+
+  return $("<div />").append(this.directionSelector_).
                       append(" arrange by: ").
-                      append(rhizo.layout.metaModelKeySelector(this.project_,
-                                                               'rhizo-treelayout-parentKey'));
+                      append(this.metaModelKeySelector_);
 };
 
 rhizo.layout.TreeLayout.prototype.toString = function() {

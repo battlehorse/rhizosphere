@@ -42,11 +42,11 @@ namespace("rhizo.layout");
 /**
  * Creates a dropdown control that enumerates all the metaModel keys.
  * @param {rhizo.Project} project
- * @param {string} id
+ * @param {string} className
  * @return {Element} the jquery-enhanced HTML dropdown control
  */
-rhizo.layout.metaModelKeySelector = function(project, id) {
-  var select = $("<select id='" + id + "' />");
+rhizo.layout.metaModelKeySelector = function(project, className) {
+  var select = $("<select class='" + className + "' />");
   if (project && project.metaModel()) {
     for (key in project.metaModel()) {
       select.append("<option value='" + key + "'>" +
@@ -72,6 +72,8 @@ rhizo.layout.FlowLayout = function(project, opt_top, opt_left) {
   this.project_ = project;
   this.top = opt_top || 5;
   this.left = opt_left || 5;
+  this.orderSelector_ = null;
+  this.reverseCheckbox_ = null;
 };
 
 rhizo.layout.FlowLayout.prototype.layout = function(container,
@@ -83,8 +85,8 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
   var lineHeight = 0;
 
   // reorder supermodels if needed
-  var order = $('#rhizo-flowlayout-order').val();
-  var reverse = $('#rhizo-flowlayout-desc:checked').length > 0;
+  var order = this.orderSelector_.val();
+  var reverse = this.reverseCheckbox_.is(":checked");
   if (order) {
     this.project_.logger().info("Sorting by " + order);
     supermodels.sort(rhizo.meta.sortBy(order, meta[order].kind, reverse));
@@ -108,17 +110,26 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
   this.top += lineHeight;
 };
 
+rhizo.layout.FlowLayout.prototype.overrideDetailControls = function(
+  orderSelector, reverseCheckbox) {
+  this.orderSelector_ = orderSelector;
+  this.reverseCheckbox_ = reverseCheckbox;
+};
+
 rhizo.layout.FlowLayout.prototype.cleanup = function() {
   this.top = this.left = 5;
 };
 
 rhizo.layout.FlowLayout.prototype.details = function() {
+  this.orderSelector_ =  rhizo.layout.metaModelKeySelector(
+    this.project_, 'rhizo-flowlayout-order');
+  this.reverseCheckbox_ = $(
+    '<input type="checkbox" class="rhizo-flowlayout-desc" />');
   return $("<div />").
            append("Ordered by: ").
-           append(rhizo.layout.metaModelKeySelector(this.project_,
-                                                    'rhizo-flowlayout-order')).
+           append(this.orderSelector_).
            append(" desc?").
-           append('<input type="checkbox" id="rhizo-flowlayout-desc" />');
+           append(this.reverseCheckbox_);
 };
 
 rhizo.layout.FlowLayout.prototype.toString = function() {
@@ -157,6 +168,8 @@ rhizo.layout.BucketLayout = function(project) {
   this.project_ = project;
   this.internalFlowLayout_ = new rhizo.layout.FlowLayout(project);
   this.bucketHeaders_ = [];
+  this.bucketSelector_ = null;
+  this.reverseCheckbox_ = null;
 };
 
 rhizo.layout.BucketLayout.prototype.layout = function(container,
@@ -164,15 +177,18 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
                                                       allmodels,
                                                       meta,
                                                       opt_options) {
-  var reverse = $('#rhizo-bucketlayout-desc:checked').length > 0;
+  var reverse = this.reverseCheckbox_.is(":checked");
 
   // detect bucket
-  var bucketBy = $('#rhizo-bucketlayout-bucket').val();
+  var bucketBy = this.bucketSelector_.val();
   if (!meta[bucketBy]) {
     this.project_.logger().error("layoutBy attribute does not match any property");
     return;
   }
   this.project_.logger().info("Bucketing by " + bucketBy);
+
+  this.internalFlowLayout_.overrideDetailControls(this.bucketSelector_,
+                                                  this.reverseCheckbox_);
 
   var clusterFunction;
   var clusterThis;
@@ -196,7 +212,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
       bucketLabel = keyLabel['label'];
     }
     if (!buckets[bucketKey]) {
-      buckets[bucketKey] = []
+      buckets[bucketKey] = [];
       bucketsLabels[bucketKey] = bucketLabel;
     }
     buckets[bucketKey].push(supermodels[i]);
@@ -240,12 +256,15 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
 
 
 rhizo.layout.BucketLayout.prototype.details = function() {
+  this.bucketSelector_ = rhizo.layout.metaModelKeySelector(
+      this.project_, 'rhizo-bucketlayout-bucket');
+  this.reverseCheckbox_ = $('<input type="checkbox" ' +
+                            'class="rhizo-bucketlayout-desc" />');
   return $("<div />").
            append("Group by: ").
-           append(rhizo.layout.metaModelKeySelector(this.project_,
-                                                    'rhizo-bucketlayout-bucket')).
+           append(this.bucketSelector_).
            append(" desc?").
-           append('<input type="checkbox" id="rhizo-bucketlayout-desc" />');
+           append(this.reverseCheckbox_);
 };
 
 rhizo.layout.BucketLayout.prototype.cleanup = function() {
