@@ -312,16 +312,20 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
 
   this.layoutSelector_ = $("<select />");
   this.detailsMap_ = {};
-  if (rhizo.layout && rhizo.layout.layouts) {
-    for (layout in rhizo.layout.layouts){
-      var engine_ctor = rhizo.layout.layouts[layout];
-      var engine = new engine_ctor(project);
-      this.layoutSelector_.append($("<option value='" + layout + "'>" + engine  + "</option>"));
-      if (engine.details) {
-	var details = engine.details();
-	this.detailsMap_[layout] = details;
-	this.layoutOptions_.append(details.css("display","none"));
-      }
+  var layoutEngines = project.layoutEngines();
+  for (var layoutEngineName in layoutEngines) {
+    var layoutEngine = layoutEngines[layoutEngineName];
+    this.layoutSelector_.append(
+      $("<option value='" + layoutEngineName + "' " +
+        (project.currentLayoutEngineName() == layoutEngineName ? "selected" : "") +
+        ">" + layoutEngine  + "</option>"));
+    if (layoutEngine.details) {
+	var details = layoutEngine.details();
+	this.detailsMap_[layoutEngineName] = details;
+        if (project.currentLayoutEngineName() != layoutEngineName) {
+          details.css("display","none");
+        }
+        this.layoutOptions_.append(details);
     }
   }
 
@@ -384,7 +388,7 @@ rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, 
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, opt_options) {
   this.selectButton_.click(jQuery.proxy(function(ev) {
     var countSelected = 0;
-    for (id in project.allSelected()) { countSelected++ };
+    for (id in project.allSelected()) { countSelected++; };
     if (countSelected == 0) {
       project.logger().error("No items selected");
       return;
