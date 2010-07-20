@@ -227,7 +227,8 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   // sort bucketKeys
   bucketKeys.sort(rhizo.meta.sortByKind(meta[bucketBy].kind, reverse));
 
-  bucketKeys.forEach(function(bucketKey) {
+  for (var i = 0; i < bucketKeys.length; i++) {
+    var bucketKey = bucketKeys[i];
     this.renderBucketHeader_(container, bucketsLabels[bucketKey]);
     this.internalFlowLayout_.layout(container,
                                     buckets[bucketKey],
@@ -238,7 +239,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
     // re-position for next bucket
     this.internalFlowLayout_.top += 10;
     this.internalFlowLayout_.left = 5;
-  }, this);
+  }
 };
 
 rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
@@ -269,9 +270,7 @@ rhizo.layout.BucketLayout.prototype.details = function() {
 
 rhizo.layout.BucketLayout.prototype.cleanup = function() {
   this.internalFlowLayout_.cleanup();
-  this.bucketHeaders_.forEach(function(bucketHeader) {
-    $(bucketHeader).remove();
-  });
+  $.each(this.bucketHeaders_, function() { this.remove(); });
   this.bucketHeaders_ = [];
 };
 

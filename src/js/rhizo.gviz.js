@@ -103,9 +103,9 @@ rhizo.gviz.Initializer.prototype.parseSingleCategory_ = function(value) {
     return category != '';
   });
 
-  prunedCats = prunedCats.forEach(function(category) {
-    categoriesMap[category.replace(/^\s+|\s+$/g, "")] = true;
-  });
+  for (var i = 0; i < prunedCats.length; i++) {
+    categoriesMap[prunedCats[i].replace(/^\s+|\s+$/g, "")] = true;
+  }
 
   var categories = [];
   for (category in categoriesMap) {
@@ -120,9 +120,9 @@ rhizo.gviz.Initializer.prototype.parseCategories_ = function(columnIndex) {
   for (var i = 0, len = this.dt_.getNumberOfRows(); i < len; i++) {
     var rowCategories = this.parseSingleCategory_(
         this.dt_.getValue(i, columnIndex));
-    rowCategories.forEach(function(category) {
-      categoriesMap[category] = true;
-    });
+    for (var r = 0; r < rowCategories.length; r++) {
+      categoriesMap[rowCategories[r]] = true;
+    }
   }
 
   var categories = [];

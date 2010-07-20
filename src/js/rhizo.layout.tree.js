@@ -439,9 +439,7 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(container, curCente
 };
 
 rhizo.layout.TreePainter.prototype.cleanup_ = function() {
-  this.connectors_.forEach(function(connector) {
-    $(connector).remove();
-  });
+  $.each(this.connectors_, function() { this.remove(); });
   this.connectors_ = [];
 };
 
