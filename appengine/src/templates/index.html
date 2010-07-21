@@ -121,6 +121,10 @@
           $('#try-explore-contents').show('fast');
           return false;
         });
+        $('#try-advanced').click(function() {
+          $('#try-advanced-contents').show('fast');
+          return false;
+        });
       });
     </script>
   </head>
@@ -226,7 +230,7 @@
         <div style="clear:both"></div>
       </div>
       <div class="contents more">
-        <div>
+        <div> <!-- Try Your Own -->
           <img src="static/welcome/img/tryyourown.png" style="float:left; margin-right: 15px">
           <p>
             <strong>Try your own</strong><br />
@@ -277,7 +281,7 @@
           </p>
           <div style="clear:both"></div>
         </div>
-        <div>
+        <div>  <!-- Watch -->
           <img src="static/welcome/img/watch.png" style="float:left; margin-right: 15px">
           <p>
             <strong>Watch</strong><br />
@@ -299,7 +303,7 @@
           </p>
           <div style="clear:both"></div>
         </div>
-        <div>
+        <div> <!-- Explore -->
           <img src="static/welcome/img/explore.png" style="float:left; margin-right: 15px">
           <p>
             <strong>Explore</strong><br />
@@ -320,6 +324,26 @@
                       <img src="static/welcome/img/twitter_icon.gif" style="vertical-align:middle; border: 0;">
                     </a>
                   </li>
+                </ul>
+              </p>
+            </div>
+          </p>
+          <div style="clear:both"></div>
+        </div>
+        <div> <!-- Advanced -->
+          <img src="static/welcome/img/advanced.png" style="float:left; margin-right: 15px">
+          <p>
+            <strong>Advanced</strong><br />
+            <span class="shaded">
+              Play with Rhizosphere advanced and less common features..
+              <a href="#" id="try-advanced">Learn more</a>
+            </span>
+            <div id="try-advanced-contents" class="detail-contents">
+              <p class="small justified">
+                Here is a selection of advanced features:
+                <ul class="small">
+                  <li><strong><a href="multi.html">Multisphere</a></strong>:
+                    Embed multiple Rhizosphere instances in a single webpage.</li>
                 </ul>
               </p>
             </div>

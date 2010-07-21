@@ -14,7 +14,8 @@ class RhizoHandler(webapp.RequestHandler):
     def get(self):
         debug = self.request.get('d', '0') == '1'
         template_values = {'debug': debug}
-        path = os.path.join(os.path.dirname(__file__), '../../templates/rhizo.html')
+        path = os.path.join(os.path.dirname(__file__),
+                            '../../templates%s' % self.request.path)
         self.response.out.write(template.render(path, template_values))
 
 
@@ -29,6 +30,7 @@ class IGoogleHandler(webapp.RequestHandler):
 
 application = webapp.WSGIApplication(
     [('/rhizo.html', RhizoHandler),
+     ('/multi.html', RhizoHandler),
      ('/ig', IGoogleHandler),
     ],
     debug=rhizoglobals.debug)
