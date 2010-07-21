@@ -1,0 +1,37 @@
+<link rel="stylesheet" href="static/shared/stylesheets/jquery-ui-1.7.custom.css" type="text/css" media="screen" charset="utf-8">
+<link rel="stylesheet" href="static/lib/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
+
+<!-- Scripts section -->
+
+<!-- for the GViz loader -->
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+<!-- JQuery specific libraries -->
+{% if debug %}
+  <script src="static/shared/js/jquery-1.4.1.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/shared/js/jquery-ui-1.7.custom.js" type="text/javascript" charset="utf-8"></script>
+{% else %}
+  <script src="static/shared/js/jquery-1.4.1.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/shared/js/jquery-ui-1.7.custom.min.js" type="text/javascript" charset="utf-8"></script>
+{% endif %}
+
+<!-- Rhizosphere libraries -->
+{% if debug %}
+  <script src="static/lib/js/rhizo.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.log.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.base.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.meta.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/extra/rhizo.meta.extra.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.layout.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.layout.tree.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.model.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.model.loader.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.autorender.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.gviz.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.ui.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.ui.gui.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.ui.component.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/lib/js/rhizo.bootstrap.js" type="text/javascript" charset="utf-8"></script>
+{% else %}
+  <script src="static/lib/js/pack/rhizo.pack.js" type="text/javascript" charset="utf-8"></script>
+{% endif %}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rhizosphere : Multisphere</title>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    {% include "rhizo_head.html" %}
+    <style>
+      * {
+        font-family: sans-serif;
+      }
+
+      H1 {
+        margin: 0.2em 0;
+        padding: 0;
+        font-size: 1.2em;
+      }
+
+      P.tagline {
+        margin: 0 0 0.2em 0;
+        color: #999;
+        font-size: 0.8em;
+      }
+
+      .bluelight {
+        color: #6b90da;
+      }
+
+      .rhizo-multi {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><span class="bluelight">Multi</span>sphere</h1>
+    <p class="tagline">
+      Multiple Rhizosphere instances in a single webpage.<br />
+      No IFrames. Rhizosphere library loaded only once. Each instance lives in its own scope.
+    </p>
+    <div id="rhizo-first" class="rhizo-multi"></div>
+    <div id="rhizo-second" class="rhizo-multi"></div>
+    <div id="rhizo-third" class="rhizo-multi"></div>
+
+    <script type="text/javascript" charset="utf-8">
+      if (typeof google != 'undefined') {
+        google.load('visualization', '1');
+        google.setOnLoadCallback(function() {});
+      }
+
+      $(document).ready(function() {
+        var divs = ['#rhizo-first', '#rhizo-second', '#rhizo-third'];
+        var samples = ['sample/picasa.js', 'sample/bugs.js', 'sample/books.js' ];
+        for (var i = 0; i < divs.length; i++) {
+          new rhizo.bootstrap.Bootstrap($(divs[i]), {miniLayout: true}).go(samples[i]);
+        }
+      });
+    </script>
+  </body>
+</html>
