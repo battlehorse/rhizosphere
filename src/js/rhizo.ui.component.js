@@ -113,10 +113,8 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
 
 rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
   var dragDelta = {
-    top: this.viewport_.offset().top +
-         this.universe_.offset().top,
-    left: this.viewport_.offset().left +
-          this.universe_.offset().left
+    top: this.universe_.offset().top,
+    left: this.universe_.offset().left
   };
 
   this.scroll_trigger_.hide();
@@ -138,11 +136,43 @@ rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
       this.universe_.data("top0", offset.top).data("left0", offset.left);
     }, this),
     drag: jQuery.proxy(function(ev, ui) {
-      var offset = this.universe_.offset();
-      var dragTop = ui.position.top +
-                    this.universe_.data("top0") - dragDelta.top;
-      var dragLeft = ui.position.left +
-                     this.universe_.data("left0") - dragDelta.left;
+      // Computes where to reposition the universe pane from the delta movement
+      // of the drag helper.
+      //
+      // S---------------------------->
+      // |
+      // |
+      // |   R---------------------
+      // |   |   U-----
+      // |   |   |
+      // |   |   |  U'-----
+      // |   |   |  | U''----
+      // |   |   |  | |
+      // \/
+      //
+      // S: screen. Top left corner is at 0,0
+      // R: Rhizosphere visualization bounding box.
+      // U: Universe position at Rhizosphere initialiation time. The Viewport
+      //    (Universe parent node) shares the same top-left corner.
+      //    'dragDelta' points to these coordinates.
+      // U': Universe position at drag start time. {top0, left0} coordinates
+      //     point to this.
+      // U'': Current (during dragging) Universe position.
+      //
+      // The drag helper always start at U, so:
+      // ui.offset.top - dragDelta.top = overall drag distance from the
+      //     beginning of the drag.
+      // this.universe_.data("top0") - dragDelta.top = Distance between
+      //     the Viewport and the Universe position at the beginning of the
+      //     drag.
+      //
+      // Hence 'dragTop' and 'dragLeft' measure the distance between the
+      // position the Universe should be dragged to and the Viewport corner.
+      //
+      var dragTop = ui.offset.top +
+                    this.universe_.data("top0") - 2*dragDelta.top;
+      var dragLeft = ui.offset.left +
+                     this.universe_.data("left0") - 2*dragDelta.left;
 
       this.universe_.
           css('top', dragTop).css('bottom', -dragTop).
