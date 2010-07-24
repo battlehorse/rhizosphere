@@ -103,7 +103,7 @@ rhizo.model.loader.GoogleSpreadsheet.prototype.handleQueryResponse_ =
                                                this.globalOptions_);
 
   this.bootstrapper_.deploy({
-    'renderer': initilizer.renderer,
+    'renderer': initializer.renderer,
     'metamodel': initializer.metamodel,
     'models': initializer.models});
 };
