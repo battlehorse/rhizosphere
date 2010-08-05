@@ -280,6 +280,7 @@ DIV.ui-selected {
   margin: 2px;
   cursor: pointer;
   z-index: 50;
+  overflow: hidden;
 }
 
 .rhizo-model .dim {
