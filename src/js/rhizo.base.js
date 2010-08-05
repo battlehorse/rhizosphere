@@ -218,6 +218,7 @@ rhizo.Project.prototype.initializeModel_ = function(model) {
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
   var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
+  var options = $.extend({}, opt_options, this.options_);
 
   // Update the name of the current engine.
   if (opt_layoutEngineName) {
@@ -231,7 +232,8 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
 
   if (lastLayoutEngine && lastLayoutEngine.cleanup) {
     // cleanup previous layout engine.
-    lastLayoutEngine.cleanup(lastLayoutEngine == layoutEngine);
+    lastLayoutEngine.cleanup(lastLayoutEngine == layoutEngine,
+                             options);
   }
 
   this.logger_.info('laying out...');
@@ -247,7 +249,7 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
                       nonFilteredModels,
                       this.modelsMap_,
                       this.metaModel_,
-                      opt_options);
+                      options);
 };
 
 rhizo.Project.prototype.filter = function(key, value) {

@@ -212,7 +212,7 @@ rhizo.layout.TreeLayout.prototype.toString = function() {
   return "Tree";
 };
 
-rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine) {
+rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, opt_options) {
   if (this.treePainter_) {
     this.treePainter_.cleanup_();
   }

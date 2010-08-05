@@ -116,7 +116,7 @@ rhizo.layout.FlowLayout.prototype.overrideDetailControls = function(
   this.reverseCheckbox_ = reverseCheckbox;
 };
 
-rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine) {
+rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine, opt_options) {
   this.top = this.left = 5;
 };
 
@@ -268,8 +268,8 @@ rhizo.layout.BucketLayout.prototype.details = function() {
            append(this.reverseCheckbox_);
 };
 
-rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine) {
-  this.internalFlowLayout_.cleanup(sameEngine);
+rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, opt_options) {
+  this.internalFlowLayout_.cleanup(sameEngine, opt_options);
   $.each(this.bucketHeaders_, function() { this.remove(); });
   this.bucketHeaders_ = [];
 };
