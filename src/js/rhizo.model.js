@@ -57,6 +57,7 @@ rhizo.model.kickstart = function(model, project, renderer, opt_options) {
       model.unwrap(), // rendered expects the naked model
       model.expanded, // initial expansion status, dictated by the SuperModel
       opt_options);
+  naked_render.addClass('rhizo-naked-render');
 
   // wrap the rendering into a DIV shell
   var rendering = $('<div class="rhizo-model"></div>');
