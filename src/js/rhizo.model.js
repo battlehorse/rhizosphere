@@ -24,6 +24,8 @@ rhizo.model.SuperModel = function(model, opt_selected, opt_filtered) {
   this.filters_ = {}; // a map of filter status, one for each model key
   this.rendering = null;
   this.expanded = false; // whether the rendering is expanded or not
+
+  this.renderingRescaler = null;
 };
 
 rhizo.model.SuperModel.prototype.unwrap = function() {
@@ -52,16 +54,19 @@ rhizo.model.SuperModel.prototype.resetFilter = function(key) {
   delete this.filters_[key];
 };
 
+rhizo.model.SuperModel.prototype.rescaleRendering = function(width, height) {
+  this.renderingRescaler.rescale(
+    $('.rhizo-naked-render', this.rendering),
+    width, height);
+};
+
 rhizo.model.kickstart = function(model, project, renderer, opt_options) {
-  var naked_render = renderer.render(
+  var rendering = $('<div class="rhizo-model"></div>');
+  rhizo.ui.reRender(
+      renderer, rendering,
       model.unwrap(), // rendered expects the naked model
       model.expanded, // initial expansion status, dictated by the SuperModel
       opt_options);
-  naked_render.addClass('rhizo-naked-render');
-
-  // wrap the rendering into a DIV shell
-  var rendering = $('<div class="rhizo-model"></div>');
-  rendering.append(naked_render);
 
   // Add the maximize icon, if the renderer supports expansion
   if (rhizo.ui.expandable(renderer, opt_options)) {
@@ -73,6 +78,11 @@ rhizo.model.kickstart = function(model, project, renderer, opt_options) {
 
   // enrich the super model
   model.rendering = rendering;
+  if (typeof(renderer.rescale) == 'function') {
+    model.renderingRescaler = renderer;
+  } else {
+    model.renderingRescaler = new rhizo.ui.defaultRenderingRescaler();
+  }
 
   rendering.data("id", model.id);
   rendering.dblclick(function() {

@@ -117,16 +117,34 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
       model.expanded = !model.expanded;
 
       // re-render
-      var naked_render = renderer.render(
-          model.unwrap(), // rendered expects the naked model
-          model.expanded,
-          opt_options);
-      naked_render.addClass('rhizo-naked-render');                                     
-
-      // replace the old rendering
-      model.rendering.css('z-index', model.expanded ? 60 : 50);
-      model.rendering.children(':not(.rhizo-expand-model)').remove();
-      model.rendering.append(naked_render);
+      rhizo.ui.reRender(renderer,
+                        model.rendering, model.unwrap(), model.expanded,
+                        opt_options);
     });
   }
+};
+
+rhizo.ui.reRender = function(renderer,
+                             rendering,
+                             /* naked */ model,
+                             expanded,
+                             opt_options) {
+  // re-render. rendered expects the naked model.
+  var naked_render = renderer.render(model, expanded, opt_options);
+  naked_render.addClass('rhizo-naked-render');                                     
+  
+  // replace the old rendering
+  rendering.css('z-index', expanded ? 60 : 50);
+  rendering.children(':not(.rhizo-expand-model)').remove();
+  rendering.append(naked_render);    
+};
+
+rhizo.ui.defaultRenderingRescaler = function() {};
+
+rhizo.ui.defaultRenderingRescaler.prototype.rescale = function(naked_render,
+                                                               width,
+                                                               height) {
+  // TODO(battlehorse): should rescaling be animated?
+  naked_render.width(width - naked_render.outerWidth(true) + naked_render.width());
+  naked_render.height(height - naked_render.outerHeight(true) + naked_render.height());
 };
