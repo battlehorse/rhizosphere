@@ -48,14 +48,13 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
 
     // Define a non-animated move() function
     jQuery.fn.extend({
-      move: function(top, left, opt_bottom, opt_right) {
+      move: function(top, left, opt_extras) {
         $(this).css('top', top);
         $(this).css('left', left);
-        if (opt_bottom != null) {
-          $(this).css('bottom', opt_bottom);
-        }
-        if (opt_right != null) {
-          $(this).css('right', opt_right);
+        if (opt_extras) {
+          for (var csskey in opt_extras) {
+            $(this).css(csskey, opt_extras[csskey]);
+          }
         }
       }
     });
@@ -63,23 +62,19 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
   } else {
     // Define a move() function that discards animations if needed.
     jQuery.fn.extend({
-      move: function(top, left, opt_bottom, opt_right) {
+      move: function(top, left, opt_extras) {
         if (jQuery.fx.off) {
           $(this).css('top', top);
           $(this).css('left', left);
-          if (opt_bottom != null) {
-            $(this).css('bottom', opt_bottom);
-          }
-          if (opt_right != null) {
-            $(this).css('right', opt_right);
+          if (opt_extras) {
+            for (var csskey in opt_extras) {
+              $(this).css(csskey, opt_extras[csskey]);
+            }
           }
         } else {
           var movement = {'top': top, 'left': left};
-          if (opt_bottom != null) {
-            movement['bottom'] = opt_bottom;
-          }
-          if (opt_right != null) {
-            movement['right'] = opt_right;
+          if (opt_extras) {
+            jQuery.extend(movement, opt_extras);            
           }
           $(this).animate(movement, 1000);
         }
@@ -126,7 +121,7 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
           model.unwrap(), // rendered expects the naked model
           model.expanded,
           opt_options);
-
+      naked_render.addClass('rhizo-naked-render');                                     
 
       // replace the old rendering
       model.rendering.css('z-index', model.expanded ? 60 : 50);

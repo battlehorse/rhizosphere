@@ -217,24 +217,27 @@ rhizo.Project.prototype.initializeModel_ = function(model) {
 };
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
-  var layoutEngine = this.layoutEngines_[this.curLayoutName_];
-  if (layoutEngine && layoutEngine.cleanup) {
-    layoutEngine.cleanup();  // cleanup previous layout engine.
-  }
+  var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
 
   // Update the name of the current engine.
   if (opt_layoutEngineName) {
     this.curLayoutName_ = opt_layoutEngineName;
   }
-  layoutEngine = this.layoutEngines_[this.curLayoutName_];
+  var layoutEngine = this.layoutEngines_[this.curLayoutName_];
   if (!layoutEngine) {
     this.logger_.error("Invalid layout engine:" + this.curLayoutName_);    
     return;
   }
+
+  if (lastLayoutEngine && lastLayoutEngine.cleanup) {
+    // cleanup previous layout engine.
+    lastLayoutEngine.cleanup(lastLayoutEngine == layoutEngine);
+  }
+
   this.logger_.info('laying out...');
 
   // reset panning
-  this.gui_.universe.move(0, 0, 0, 0);
+  this.gui_.universe.move(0, 0, {'bottom': 0, 'right': 0});
 
   // layout only non filtered models
   var nonFilteredModels = jQuery.grep(this.models_, function(model) {
