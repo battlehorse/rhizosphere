@@ -4825,12 +4825,19 @@ var renderer = {
     } else {
       var container = $("<div style='padding: 5px;background-color:" + priorities[model.pri] + "'></div>");
       $("<p style='font-weight: bold; font-size: 10px; color: #999'></p>").text(model.type).appendTo(container);
-      $("<p style='float:left; font-size: 15px; font-weight:bold'></p>").text(model.id).appendTo(container);
-      $("<p style='font-size:10px; max-width: 100px; overflow:hidden'></p>").text(model.summary).appendTo(container);
+      $("<p style='font-size: 15px; font-weight:bold;'></p>").text(model.id).appendTo(container);
+      $("<p style='font-size:10px; width: 100px; overflow:hidden'></p>").text(model.summary).appendTo(container);
       return container;      
     }
   },
-  expandable: true
+  expandable: function(opt_options) {
+    // expansion is enabled only in the mini layout.
+    if (opt_options && opt_options.miniLayout) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 };
 
 var minStars = 100;
