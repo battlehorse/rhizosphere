@@ -13,7 +13,10 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
-// RHIZODEP=rhizo.layout
+
+// RHIZODEP=rhizo.layout,rhizo.ui
+// Dependency on rhizo.ui is for rhizo.ui.reRender.
+
 namespace("rhizo.layout");
 namespace("rhizo.layout.treemap");
 
