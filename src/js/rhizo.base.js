@@ -226,7 +226,7 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
   }
   var layoutEngine = this.layoutEngines_[this.curLayoutName_];
   if (!layoutEngine) {
-    this.logger_.error("Invalid layout engine:" + this.curLayoutName_);    
+    this.logger_.error("Invalid layout engine:" + this.curLayoutName_);
     return;
   }
 
