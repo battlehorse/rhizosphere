@@ -74,7 +74,7 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         } else {
           var movement = {'top': top, 'left': left};
           if (opt_extras) {
-            jQuery.extend(movement, opt_extras);            
+            jQuery.extend(movement, opt_extras);
           }
           $(this).animate(movement, 1000);
         }
@@ -131,12 +131,12 @@ rhizo.ui.reRender = function(renderer,
                              opt_options) {
   // re-render. rendered expects the naked model.
   var naked_render = renderer.render(model, expanded, opt_options);
-  naked_render.addClass('rhizo-naked-render');                                     
-  
+  naked_render.addClass('rhizo-naked-render');
+
   // replace the old rendering
   rendering.css('z-index', expanded ? 60 : 50);
   rendering.children(':not(.rhizo-expand-model)').remove();
-  rendering.append(naked_render);    
+  rendering.append(naked_render);
 };
 
 rhizo.ui.defaultRenderingRescaler = function() {};
