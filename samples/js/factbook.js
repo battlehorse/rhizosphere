@@ -32,17 +32,20 @@
 
   // TODO(battlehorse): Logarithmic ranges cannot handle a minRange == 0, so here we
   // hack in a minValue of 1.
+  var logMeta = new rhizo.meta.LogarithmRangeKind();
+   logMeta.toHumanLabel_ = rhizo.ui.toHumanLabel;
+   
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: 'Name'},
-    internetUsers: { kind: rhizo.meta.Kind.LOGARITHMRANGE, label: 'Internet Users',
+    internetUsers: { kind: logMeta, label: 'Internet Users',
                      min: 1, max: 300000000 },
-    population: { kind: rhizo.meta.Kind.LOGARITHMRANGE, label: 'Population',
+    population: { kind: logMeta, label: 'Population',
                   min: 1, max: 1400000000},
     birthRate: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Birth Rate',
                  min: 0, max: 55.0},
-    oilConsumption: { kind: rhizo.meta.Kind.LOGARITHMRANGE, label: 'Oil Consumption',
+    oilConsumption: { kind: logMeta, label: 'Oil Consumption',
                       min: 1, max: 20000000},
-    gdp: { kind: rhizo.meta.Kind.LOGARITHMRANGE, label: 'GDP per capita',
+    gdp: { kind: logMeta, label: 'GDP per capita',
            min: 1, max: 130000}
   };
 
