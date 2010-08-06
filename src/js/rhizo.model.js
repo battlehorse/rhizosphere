@@ -54,10 +54,11 @@ rhizo.model.SuperModel.prototype.resetFilter = function(key) {
   delete this.filters_[key];
 };
 
-rhizo.model.SuperModel.prototype.rescaleRendering = function(width, height) {
-  this.renderingRescaler.rescale(
+rhizo.model.SuperModel.prototype.rescaleRendering = function(
+    width, height, opt_failure_callback) {
+  return this.renderingRescaler.rescale(
     $('.rhizo-naked-render', this.rendering),
-    width, height);
+    width, height, opt_failure_callback);
 };
 
 rhizo.model.kickstart = function(model, project, renderer, opt_options) {

@@ -246,54 +246,67 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
     currentSlice.addNode(node);
 
   }
-  if (numModelsToHide > 0) {
-    this.project_.alignVisibility();
-  }
   if (slices.length > 0) {
     this.managedModels_ = {};
-    this.draw_(container, slices, colorRange);
+    numModelsToHide += this.draw_(container, slices, colorRange);
+  }
+  if (numModelsToHide > 0) {
+    this.project_.alignVisibility();
   }
 };
 
 rhizo.layout.TreeMapLayout.prototype.draw_ = function(container, slices, colorRange) {
+  var numModelsToHide = 0;
   for (var i = 0; i < slices.length; i++) {
-    this.drawSlice_(container, slices[i], colorRange);
+    numModelsToHide += this.drawSlice_(container, slices[i], colorRange);
   }
+  return numModelsToHide;
 };
 
 rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container, slice, colorRange) {
+  var numModelsToHide = 0;
   var t = slice.anchorPoint().y;
   var l = slice.anchorPoint().x;
   for (var i = 0; i < slice.nodes().length; i++) {
     var length = slice.nodes()[i].area() / slice.span();
     var model = slice.nodes()[i].model();
-    this.managedModels_[model.id] = model;
-
-    if (colorRange) {
-      var colorVal = parseFloat(model.unwrap()[colorRange.meta]);
-      if (!isNaN(colorVal)) {
-        model.rendering.css('backgroundColor',
-                            this.getBackgroundColor_(colorVal,
-                                                     colorRange));
+    
+    if (Math.round(length) == 0 || Math.round(slice.span()) == 0) {
+      // Hide items that are too small to be displayed on screen
+      model.filter('__treemap__');
+      numModelsToHide++;
+    } else {
+      var renderingSize = {};
+      if (slice.direction() == rhizo.layout.treemap.TreeMapDirection.HOR) {
+        renderingSize['width'] = Math.round(length);
+        renderingSize['height'] = Math.round(slice.span());
+      } else {
+        renderingSize['width'] = Math.round(slice.span());
+        renderingSize['height'] = Math.round(length);
+      }
+      if (!model.rescaleRendering(renderingSize['width'], renderingSize['height'])) {
+        model.filter('__treemap__');
+        numModelsToHide++;
+      } else {
+        this.managedModels_[model.id] = model;
+        if (colorRange) {
+          var colorVal = parseFloat(model.unwrap()[colorRange.meta]);
+          if (!isNaN(colorVal)) {
+            model.rendering.css('backgroundColor',
+                                this.getBackgroundColor_(colorVal,
+                                                         colorRange));
+          }
+        }
+        model.rendering.move(Math.round(t), Math.round(l));        
       }
     }
-
-    var renderingSize = {};
-    if (slice.direction() == rhizo.layout.treemap.TreeMapDirection.HOR) {
-      renderingSize['width'] = Math.round(length);
-      renderingSize['height'] = Math.round(slice.span());
-    } else {
-      renderingSize['width'] = Math.round(slice.span());
-      renderingSize['height'] = Math.round(length);
-    }
-    model.rescaleRendering(renderingSize['width'], renderingSize['height']);
-    model.rendering.move(Math.round(t), Math.round(l));
     if (slice.direction() == rhizo.layout.treemap.TreeMapDirection.HOR) {
       l += length;
     } else {
       t += length;
     }
   }
+  return numModelsToHide;
 };
 
 rhizo.layout.TreeMapLayout.prototype.getBackgroundColor_ = function(colorVal,

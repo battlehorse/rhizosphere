@@ -143,8 +143,17 @@ rhizo.ui.defaultRenderingRescaler = function() {};
 
 rhizo.ui.defaultRenderingRescaler.prototype.rescale = function(naked_render,
                                                                width,
-                                                               height) {
+                                                               height,
+                                                               opt_failure_callback) {
   // TODO(battlehorse): should rescaling be animated?
-  naked_render.width(width - naked_render.outerWidth(true) + naked_render.width());
-  naked_render.height(height - naked_render.outerHeight(true) + naked_render.height());
+  width = width - naked_render.outerWidth(true) + naked_render.width();
+  height = height - naked_render.outerHeight(true) + naked_render.height();
+  if (width > 0 && height > 0) {
+    naked_render.width(width).height(height);
+    return true;
+  }
+  if (opt_failure_callback) {
+    opt_failure_callback();
+  }
+  return false;
 };
