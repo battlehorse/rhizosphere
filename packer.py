@@ -108,18 +108,18 @@ def ReadCommandLineFlags():
                     help='Path to the JS Compiler jar file.'
                     'Defaults to ./compiler.jar')
   parser.add_option('-d', '--directory',
-                    dest='dir', default='.',
+                    dest='dir', default='./src',
                     help='Directory containing the files to compile.'
-                    'Defaults to the current directory. Will look only for'
+                    'Defaults to the src/ directory. Will look only for'
                     'files matching the pattern "rhizo.*js"')
   parser.add_option('--graphviz',
                     action='store_true', dest='graphviz', default=False,
                     help='Builds a DOT graph of the dependencies instead of '
                     'compiling. Defaults to false.')
   parser.add_option('-o', '--output_directory',
-                    dest='output_directory', default='./src/js/pack',
+                    dest='output_directory', default='./lib/js',
                     help='Output directory where to put generated files.'
-                    'Defaults to ./src/js/pack/')
+                    'Defaults to ./lib/js/')
   parser.add_option('--java',
                     dest='java', default='java',
                     help='Path to the java binary (JavaSE 6 minimum).'
@@ -140,8 +140,6 @@ def AddRhizoFiles(rhizo_files, dirname, names):
   """
   if '.hg' in names:
     names.remove('.hg')
-  if 'pack' in names:
-    names.remove('pack')
   rhizo_files.extend(
       [os.path.join(dirname, name)
           for name in names if re.match('rhizo.*\\.js', name)])
