@@ -66,7 +66,8 @@
         arMaster: prefs.getString('arMaster'),
         arSize: prefs.getString('arSize'),
         arColor: prefs.getString('arColor'),
-        arNumFields: prefs.getInt('arNumFields')
+        arNumFields: prefs.getInt('arNumFields'),
+        allowSourcesFromUrl: false
       };
 
       _IG_RegisterOnloadHandler(loadVisualizationAPI);

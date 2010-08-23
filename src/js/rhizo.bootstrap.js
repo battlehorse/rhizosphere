@@ -54,13 +54,14 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
 
   // Open the models' source...
   var source = opt_resource;
-  if (!source) {
-    var regex = new RegExp('source=(.*)$');
+  if (!source && this.options_.allowSourcesFromUrl) {
+    var regex = new RegExp('(source|src)=([^&]+)');
     var results = regex.exec(document.location.href);
-    if (!results || !results[1]) {
+    debugger;
+    if (!results || !results[2]) {
       this.project_.logger().error("Unable to identify datasource from location");
     } else {
-      source = unescape(results[1]);
+      source = unescape(results[2]);
     }
   }
 
@@ -73,7 +74,7 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
 rhizo.bootstrap.Bootstrap.prototype.deploy = function(payload) {
   this.project_.setMetaModel(payload.metamodel);
   this.project_.setRenderer(payload.renderer);
-  
+
   this.template_.renderDynamic(this.options_);
   this.template_.activateDynamic(this.options_);
 
