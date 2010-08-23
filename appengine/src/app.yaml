@@ -22,6 +22,10 @@ handlers:
 # Static files. Exclude static/samples/js since it is served by the
 # sample handler.
 
+- url: /static/src/(.*?)/(.*)
+  static_files: static/src/\1/\2
+  upload: static/src/(.*?)/(.*)
+
 - url: /static/lib/(.*?)/(.*)
   static_files: static/lib/\1/\2
   upload: static/lib/(.*?)/(.*)
