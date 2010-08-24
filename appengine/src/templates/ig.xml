@@ -36,8 +36,8 @@
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 
     <!-- JQuery specific libraries -->
-    <script src="{{ hostname }}/static/shared/js/jquery-1.4.1.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.7.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/shared/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.4.custom.min.js" type="text/javascript" charset="utf-8"></script>
     <!-- Rhizosphere libraries -->
     <script src="{{ hostname }}/static/src/js/rhizo.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.log.js" type="text/javascript" charset="utf-8"></script>
