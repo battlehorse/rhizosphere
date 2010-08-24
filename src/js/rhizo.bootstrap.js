@@ -57,7 +57,6 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   if (!source && this.options_.allowSourcesFromUrl) {
     var regex = new RegExp('(source|src)=([^&]+)');
     var results = regex.exec(document.location.href);
-    debugger;
     if (!results || !results[2]) {
       this.project_.logger().error("Unable to identify datasource from location");
     } else {
