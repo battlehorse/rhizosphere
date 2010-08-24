@@ -206,6 +206,7 @@ A, .rhizo-header A:visited {
   width: 32px;
   height: 32px;
   cursor: pointer;
+  z-index: 80;
 }
 
 .rhizo-scroll-overlay {
