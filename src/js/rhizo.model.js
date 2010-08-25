@@ -25,7 +25,9 @@ rhizo.model.SuperModel = function(model, opt_selected, opt_filtered) {
   this.rendering = null;
   this.expanded = false; // whether the rendering is expanded or not
 
-  this.renderingRescaler = null;
+  this.rendererRescaler_ = null;
+  this.rendererStyleChanger_ = null;
+  this.cachedDimensions_ = {};
 };
 
 rhizo.model.SuperModel.prototype.unwrap = function() {
@@ -54,12 +56,62 @@ rhizo.model.SuperModel.prototype.resetFilter = function(key) {
   delete this.filters_[key];
 };
 
+rhizo.model.SuperModel.prototype.setRendererRescaler = function(rescaler) {
+  this.rendererRescaler_ = rescaler;
+};
+
 rhizo.model.SuperModel.prototype.rescaleRendering = function(
     width, height, opt_failure_callback) {
-  return this.renderingRescaler.rescale(
-    $('.rhizo-naked-render', this.rendering),
-    width, height, opt_failure_callback);
+  // The rendering is guaranteed to be marginless and paddingless, with a
+  // 1px border (unless someone tampers the .rhizo-model class), so we
+  // programmatically know that internal dimensions need to be resized
+  // to a smaller extent (exactly 2px less).
+  //
+  // If internal width/height falls to 0px we bail out.
+  if (width <= 2 || height <= 2) {
+    if (opt_failure_callback) {
+      opt_failure_callback();
+    }
+    return false;
+  }
+  // TODO(battlehorse): should rescaling be animated?
+  this.rendering.width(width - 2).height(height - 2);
+  if (this.rendererRescaler_) {
+    // Give the original model renderer a chance to rescale the naked render,
+    // if a rescaler has been defined.
+    //
+    // Like this method, the rescaler too receives outer dimensions.
+    this.rendererRescaler_(width - 2, height - 2);
+  }
+  return true;
 };
+
+rhizo.model.SuperModel.prototype.setRendererStyleChanger = function(
+    styleChanger) {
+  this.rendererStyleChanger_ = styleChanger;
+};
+
+rhizo.model.SuperModel.prototype.changeStyle = function(props) {
+  if (this.rendererStyleChanger_) {
+    this.rendererStyleChanger_(props);
+  } else {
+    this.rendering.children('.rhizo-naked-render').css(props);
+  }
+};
+
+rhizo.model.SuperModel.prototype.refreshCachedDimensions = function() {
+  if (this.rendering) {
+    this.cachedDimensions_ = {
+      width: this.rendering.width(),
+      height: this.rendering.height()
+    };
+  }
+};
+
+rhizo.model.SuperModel.prototype.getCachedDimensions = function() {
+  return this.cachedDimensions_;
+};
+
 
 rhizo.model.kickstart = function(model, project, renderer, opt_options) {
   var rendering = $('<div class="rhizo-model"></div>');
@@ -80,9 +132,10 @@ rhizo.model.kickstart = function(model, project, renderer, opt_options) {
   // enrich the super model
   model.rendering = rendering;
   if (typeof(renderer.rescale) == 'function') {
-    model.renderingRescaler = renderer;
-  } else {
-    model.renderingRescaler = new rhizo.ui.defaultRenderingRescaler();
+    model.setRendererRescaler(renderer.rescale);
+  }
+  if (typeof(renderer.changeStyle) == 'function') {
+    model.setRendererStyleChanger(renderer.changeStyle);
   }
 
   rendering.data("id", model.id);

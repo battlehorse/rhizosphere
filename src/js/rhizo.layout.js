@@ -94,17 +94,17 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
 
   // layout supermodels
   for (var i = 0, len = supermodels.length; i < len; i++) {
-    var r = $(supermodels[i].rendering);
-    lineHeight = Math.max(lineHeight, r.height());
+    var modelDims = supermodels[i].getCachedDimensions();
+    lineHeight = Math.max(lineHeight, modelDims.height);
 
-    if (this.left + r.width() > maxWidth) {
+    if (this.left + modelDims.width > maxWidth) {
       this.left = 5;
       this.top += lineHeight + 5;
-      lineHeight = r.height();
+      lineHeight = modelDims.height;
     }
 
-    r.move(this.top, this.left);
-    this.left += r.width() + 5;
+    supermodels[i].rendering.move(this.top, this.left);
+    this.left += modelDims.width + 5;
   }
   // adjust top after last line
   this.top += lineHeight;
@@ -146,14 +146,16 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(container,
   if (opt_options && opt_options.filter) {
     return; // re-layouting because of filtering doesn't affect the layout
   }
-  var maxWidth = Math.round(container.width()*0.3) ;
-  var maxHeight = Math.round(container.height()*0.3);
+  var containerWidth = container.width();
+  var containerHeight = container.height();
+  var maxWidth = Math.round(containerWidth*0.3) ;
+  var maxHeight = Math.round(containerHeight*0.3);
 
   for (var i = 0, len = supermodels.length; i < len; i++) {
     var r = $(supermodels[i].rendering);
-    var top = Math.round(container.height() / 3 +
+    var top = Math.round(containerHeight / 3 +
                          Math.random()*maxHeight*2 - maxHeight);
-    var left = Math.round(container.width() / 3 +
+    var left = Math.round(containerWidth / 3 +
                           Math.random()*maxWidth*2 - maxWidth);
 
     r.move(top, left);

@@ -166,11 +166,16 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                         opt_options);
     }
   }
-  // Map container dimensions to the area defined by areaMeta.
+  // Pointer to the container were new treemap nodes are added to. Initially
+  // maps to the entire available rendering area.
   var remainderContainer = {
     width: container.width(),
     height: container.height()
   };
+
+  // Compute the ratio between the treemap area as defined by the dimension we
+  // are treemapping along and the available pixel region as defined by the
+  // container we will render into.
   var areaRatio = container.width() * container.height() * 1.0 / area;
 
   var slices = [];
@@ -270,7 +275,7 @@ rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container, slice, col
   for (var i = 0; i < slice.nodes().length; i++) {
     var length = slice.nodes()[i].area() / slice.span();
     var model = slice.nodes()[i].model();
-    
+
     if (Math.round(length) == 0 || Math.round(slice.span()) == 0) {
       // Hide items that are too small to be displayed on screen
       model.filter('__treemap__');
@@ -292,12 +297,12 @@ rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container, slice, col
         if (colorRange) {
           var colorVal = parseFloat(model.unwrap()[colorRange.meta]);
           if (!isNaN(colorVal)) {
-            model.rendering.css('backgroundColor',
-                                this.getBackgroundColor_(colorVal,
-                                                         colorRange));
+            model.changeStyle({backgroundColor:
+                               this.getBackgroundColor_(colorVal,
+                                                        colorRange)});
           }
         }
-        model.rendering.move(Math.round(t), Math.round(l));        
+        model.rendering.move(Math.round(t), Math.round(l));
       }
     }
     if (slice.direction() == rhizo.layout.treemap.TreeMapDirection.HOR) {
