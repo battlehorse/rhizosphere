@@ -46,7 +46,7 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
     // Disable all animations
     jQuery.fx.off = true;
 
-    // Define a non-animated move() function
+    // Define non-animated move(), fadeIn() and fadeOut() functions
     jQuery.fn.extend({
       move: function(top, left, opt_extras) {
         $(this).css('top', top);
@@ -56,11 +56,18 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
             $(this).css(csskey, opt_extras[csskey]);
           }
         }
+      },
+      fadeIn: function() {
+        $(this).css('display', 'block');
+      },
+      fadeOut: function() {
+        $(this).css('display', 'none');
       }
     });
 
   } else {
-    // Define a move() function that discards animations if needed.
+    // Define move(), fadeIn() and fadeOut() functions that discards animations
+    // if needed.
     jQuery.fn.extend({
       move: function(top, left, opt_extras) {
         if (jQuery.fx.off) {
@@ -76,7 +83,21 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
           if (opt_extras) {
             jQuery.extend(movement, opt_extras);
           }
-          $(this).animate(movement, 1000);
+          $(this).animate(movement, 400);
+        }
+      },
+      fadeIn: function() {
+        if (jQuery.fx.off) {
+          $(this).css('display', 'block');
+        } else {
+          $(this).animate({'opacity': 'show'}, 400);
+        }
+      },
+      fadeOut: function() {
+        if (jQuery.fx.off) {
+          $(this).css('display', 'none');
+        } else {
+          $(this).animate({'opacity': 'hide'}, 400);
         }
       }
     });
