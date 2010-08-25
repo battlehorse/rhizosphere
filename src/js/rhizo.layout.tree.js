@@ -16,17 +16,20 @@
 
 /*
   The whole TreeLayout depends on the following classes:
-  - TreeLayout: the layout itself. It builds the tree structure out of the supermodels
-    and, for every root found, draws a tree. Trees are stacked from left to right, top to bottom,
-    hence this class uses the 'traditional' set of positioning coordinates (top, left, width, height).
+  - TreeLayout: the layout itself. It builds the tree structure out of the
+    supermodels and, for every root found, draws a tree. Trees are stacked from
+    left to right, top to bottom, hence this class uses the 'traditional' set of
+    positioning coordinates (top, left, width, height).
 
-  - TreeNode: a simple datastructure representing a node in the tree. It is used also to store some
-    rendering information about the node, such as the bounding rectangle which can contain the rendering
-    of the node itself and all its children
+  - TreeNode: a simple datastructure representing a node in the tree. It is used
+    also to store some rendering information about the node, such as the
+    bounding rectangle which can contain the rendering of the node itself and
+    all its children
 
-  - TreePainter: the class responsible for drawing each tree (aka, each set of nodes connected to a single
-    root). Since trees can be rendered both vertically and horizontally, the TreePainter uses
-    and abstract set of coordinates :
+  - TreePainter: the class responsible for drawing each tree (aka, each set of
+    nodes connected to a single root). Since trees can be rendered both
+    vertically and horizontally, the TreePainter uses and abstract set of
+    coordinates :
     * gd: the growing direction
     * od: the opposite direction
     Siblings are appended to the layout following the growing direction.
@@ -35,8 +38,10 @@
     Hence, in a horizontal tree, _gd_ is left to right and _od_ is top to bottom.
     In a vertical tree, _gd_ is top to bottom and _od_ is left to right.
 
-    Using this abstract set of coordinates allows the TreePainter to re-use the same rendering code.
-    Utility methods are provided to convert between the 'physical' and 'abstract' coordinate set.
+    Using this abstract set of coordinates allows the TreePainter to re-use the
+    same rendering code.
+    Utility methods are provided to convert between the 'physical' and
+    'abstract' coordinate set.
 */
 
 // RHIZODEP=rhizo.layout
@@ -63,7 +68,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
   // detect parent
   var parentKey = this.metaModelKeySelector_.val();
   if (!meta[parentKey]) {
-    this.project_.logger().error("parentKey attribute does not match any property");
+    this.project_.logger().error(
+      "parentKey attribute does not match any property");
     return;
   }
   this.project_.logger().info("Creating tree by " + parentKey);
@@ -77,11 +83,14 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
     var maxHeight = 0;
     for (var id in roots) { // for each root found
 
-      // calculate the bounding rectangle for the whole tree, in gd-od coordinates
-      var unrotatedBoundingRect = this.treePainter_.calculateBoundingRect_(roots[id]);
+      // calculate the bounding rectangle for the whole tree,
+      // in gd-od coordinates
+      var unrotatedBoundingRect =
+          this.treePainter_.calculateBoundingRect_(roots[id]);
 
       // flip the bounding rectangle back to physical coordinates
-      var boundingRect = this.treePainter_.toAbsoluteCoords_(unrotatedBoundingRect);
+      var boundingRect =
+          this.treePainter_.toAbsoluteCoords_(unrotatedBoundingRect);
 
       // 'return carriage' if needed
       if (drawingOffset.left + boundingRect.w > container.width()) {
@@ -89,8 +98,11 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
         drawingOffset.top += maxHeight + (maxHeight > 0 ? 5 : 0);
       }
 
-      // Flip the drawing offset back into the gd-od coordinate set and draw the tree.
-      this.treePainter_.draw_(container, roots[id], this.treePainter_.toRelativeCoords_(drawingOffset));
+      // Flip the drawing offset back into the gd-od coordinate set
+      // and draw the tree.
+      this.treePainter_.draw_(
+          container, roots[id],
+          this.treePainter_.toRelativeCoords_(drawingOffset));
 
       // update offset positions
       drawingOffset.left += boundingRect.w;
@@ -117,7 +129,8 @@ rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels,
                                                         parentKey) {
   var globalNodesMap = {};
   for (var i = 0, l = supermodels.length; i < l; i++) {
-    globalNodesMap[supermodels[i].id] = new rhizo.layout.TreeNode(supermodels[i]);
+    globalNodesMap[supermodels[i].id] =
+        new rhizo.layout.TreeNode(supermodels[i]);
   }
 
   var roots = {};
@@ -135,14 +148,16 @@ rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels,
       while(true) {
         if (localNodesMap[model.id]) {
           // cycle detected
-          throw new rhizo.layout.TreeCycleException("Tree is invalid: cycle detected");
+          throw new rhizo.layout.TreeCycleException(
+              "Tree is invalid: cycle detected");
         }
         localNodesMap[model.id] = model;
         globalNodesMap[model.id].validated = true;
 
-        var parentSuperModel = this.findFirstVisibleParent_(allmodels,
-                                                            allmodels[model[parentKey]],
-                                                            parentKey);
+        var parentSuperModel = this.findFirstVisibleParent_(
+            allmodels,
+            allmodels[model[parentKey]],
+            parentKey);
         if (parentSuperModel) {
           var parentModel = parentSuperModel.unwrap();
           globalNodesMap[parentModel.id].addChild(globalNodesMap[model.id]);
@@ -160,14 +175,16 @@ rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels,
 
 
 /**
- * From a given model, returns the first non-filtered model in the tree hierarchy defined
- * according to parentKey. If the given model itself is not filtered, it is returned without
- * further search. If a cycle is detected while traversing filtered parents, an exception is raised.
+ * From a given model, returns the first non-filtered model in the tree
+ * hierarchy defined according to parentKey. If the given model itself is not
+ * filtered, it is returned without further search. If a cycle is detected while
+ * traversing filtered parents, an exception is raised.
  *
  * @param {Object} allmodels a map associating model ids to SuperModel instances.
  *     currently known to the project.
  * @param {rhizo.model.SuperModel} superParent the model to start the search from.
- * @param {string} parentKey the name of the model attribute that defines the parent-child relationship.
+ * @param {string} parentKey the name of the model attribute that defines the
+ *     parent-child relationship.
  * @private
  */
 rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(allmodels,
@@ -181,7 +198,8 @@ rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(allmodels,
   while (superParent.isFiltered()) {
     if (localNodesMap[superParent.id]) {
       // cycle detected
-      throw new rhizo.layout.TreeCycleException("Tree is invalid: hidden cycle detected");
+      throw new rhizo.layout.TreeCycleException(
+          "Tree is invalid: hidden cycle detected");
     }
     localNodesMap[superParent.id] = superParent;
 
@@ -220,8 +238,8 @@ rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, opt_options) {
 
 
 /*
-  The whole class depends on coordinate transformation between screen width-height
-  into the gd-od coordinates.
+  The whole class depends on coordinate transformation between screen
+  width-height into the gd-od coordinates.
 
   +--------> width/left
   |
@@ -234,16 +252,17 @@ rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, opt_options) {
            \/                   \/
           gd                    od
 
-  This class adopts two different layout variations when rendered vertically rather
-  than horizontally.
+  This class adopts two different layout variations when rendered vertically
+  rather than horizontally.
 
-  When rendered vertically, each parent will always be above, or at the same (physical or, equivalently, gd)
-  height as the highest of its children. In this way, it looks like childrens are hanging under the parents.
+  When rendered vertically, each parent will always be above, or at the same
+  (physical or, equivalently, gd) height as the highest of its children.
+  In this way, it looks like childrens are hanging under the parents.
   This is called the 'packed' layout.
 
-  When rendered horizontally, each parent will be positioned evenly in the middle along the 
-  (phyisical, or, equivalently gd) width of the area occupied by all its children. It this way, the tree
-  appears to be balanced.
+  When rendered horizontally, each parent will be positioned evenly in the
+  middle along the (phyisical, or, equivalently gd) width of the area occupied
+  by all its children. It this way, the tree appears to be balanced.
   This is called the 'even' layout.
 */
 /**
@@ -269,27 +288,29 @@ rhizo.layout.TreePainter = function(vertical) {
 }
 
 /**
- * Given a rendering, which is a DOM block element with physical coordinates,
- * return its size in the growing direction
+ * Given the dimensions of a rendering, which is a DOM block element with
+ * physical coordinates, return its size in the growing direction.
  *
- * @param {Element} rendering a block element that represents a model rendering
+ * @param {Object.<string, Number>} renderingDims a map describing the
+ *     dimensions (width, height) of a model rendering.
  * @returns {number} its dimension in the gd axis
  * @private
  */
-rhizo.layout.TreePainter.prototype.gd_ = function(rendering) {
-  return this.vertical_ ? rendering.height() : rendering.width();
+rhizo.layout.TreePainter.prototype.gd_ = function(renderingDims) {
+  return this.vertical_ ? renderingDims.height : renderingDims.width;
 };
 
 /**
- * Given a rendering, which is a DOM block element with physical coordinates,
- * return its size in the opposite direction
+ * Given the dimensions of a rendering, which is a DOM block element with
+ * physical coordinates, return its size in the opposite direction.
  *
- * @param {Element} rendering a block element that represents a model rendering
+ * @param {Object.<string, Number>} rendering a map describing the
+ *     dimensions (width, height) of a model rendering.
  * @returns {number} its dimension in the od axis
  * @private
  */
-rhizo.layout.TreePainter.prototype.od_ = function(rendering) {
-  return this.vertical_ ? rendering.width() : rendering.height();
+rhizo.layout.TreePainter.prototype.od_ = function(renderingDims) {
+  return this.vertical_ ? renderingDims.width : renderingDims.height;
 };
 
 /**
@@ -313,32 +334,36 @@ rhizo.layout.TreePainter.prototype.toRelativeCoords_ = function(offset) {
 };
 
 /**
- * Given a rendering, it returns the gd-od coordinate of its center, assuming it is 
- * positioned in 'packed' layout.
+ * Given the dimensions of a rendering, it returns the gd-od coordinate of its
+ * center, assuming it is positioned in 'packed' layout.
  * @private
  */
-rhizo.layout.TreePainter.prototype.packedCenter_ = function(offset, rendering) {
+rhizo.layout.TreePainter.prototype.packedCenter_ = function(offset,
+                                                            renderingDims) {
   return {
-    gd: offset.gd + 5 + this.gd_(rendering)/2,
-    od: offset.od + this.od_(rendering)/2
+    gd: offset.gd + 5 + this.gd_(renderingDims)/2,
+    od: offset.od + this.od_(renderingDims)/2
   };
 };
 
 /**
- * Given a rendering, it returns the gd-od coordinate of its center, assuming it is
- * positioned in 'even' layout.
+ * Given the dimensions of a rendering, it returns the gd-od coordinate of its
+ * center, assuming it is positioned in 'even' layout.
  * @private
  */
-rhizo.layout.TreePainter.prototype.evenCenter_ = function(offset, rendering, boundingRect) {
+rhizo.layout.TreePainter.prototype.evenCenter_ = function(offset,
+                                                          renderingDims,
+                                                          boundingRect) {
   return {
     gd: offset.gd + boundingRect.gd / 2,
-    od: offset.od + 5 + this.od_(rendering)/2
+    od: offset.od + 5 + this.od_(renderingDims)/2
   };
 };
 
 
 /**
- * For every node, recursively calculate its bounding rectangle, in gd-od coordinates.
+ * For every node, recursively calculate its bounding rectangle,
+ * in gd-od coordinates.
  *
  * @param {rhizo.layout.TreeNode} treenode the node
  * @private
@@ -351,24 +376,32 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
     childsArea.od = Math.max(childsArea.od, childRect.od);
   }
 
-  var r = treenode.superModel.rendering;
+  var dims = treenode.superModel.getCachedDimensions();
 
   // enrich the treenode with rendering info
   treenode.boundingRect =
-    { od: this.od_(r) + childsArea.od + 25, // 20 px padding between node and childs, 5 px padding for the whole rect
-      gd: Math.max(this.gd_(r), childsArea.gd) + 5};
+    {
+      // 20 px padding between node and childs, 5 px padding for the whole rect
+      od: this.od_(dims) + childsArea.od + 25,
+      gd: Math.max(this.gd_(dims), childsArea.gd) + 5};
 
   return treenode.boundingRect;
 };
 
 /**
- * Recursively draw every node and, if the node is not a root, the connectors to its
- * parent. This method differentiates between the packed and even layouting within the tree.
+ * Recursively draw every node and, if the node is not a root, the connectors to
+ * its parent. This method differentiates between the packed and even layouting
+ * within the tree.
  *
  * @private
  */
-rhizo.layout.TreePainter.prototype.draw_ = function(container, treenode, offset, parentOffset, parentNode) {
-  var r = $(treenode.superModel.rendering);
+rhizo.layout.TreePainter.prototype.draw_ = function(container,
+                                                    treenode,
+                                                    offset,
+                                                    parentOffset,
+                                                    parentNode) {
+  var r = treenode.superModel.rendering;
+  var dims = treenode.superModel.getCachedDimensions();
 
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
@@ -378,17 +411,21 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container, treenode, offset,
     // draw connector if needed
     if (parentOffset != null) {
       this.drawConnector_(container,
-        this.packedCenter_(offset, r),
-        this.packedCenter_(parentOffset, parentNode.superModel.rendering));
+        this.packedCenter_(offset, dims),
+        this.packedCenter_(parentOffset,
+                           parentNode.superModel.getCachedDimensions()));
     }
   } else {
-    r.move(offset.od + 5, offset.gd + (treenode.boundingRect.gd - this.gd_(r))/2);
+    r.move(offset.od + 5,
+           offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
 
     // draw connector if needed
     if (parentOffset != null) {
       this.drawConnector_(container,
-        this.evenCenter_(offset, r, treenode.boundingRect),
-        this.evenCenter_(parentOffset, parentNode.superModel.rendering, parentNode.boundingRect));    
+        this.evenCenter_(offset, dims, treenode.boundingRect),
+        this.evenCenter_(parentOffset,
+                         parentNode.superModel.getCachedDimensions(),
+                         parentNode.boundingRect));
     }
   }
 
@@ -398,7 +435,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container, treenode, offset,
     var childNode = treenode.childs[childId];
 
     var childOffset = {
-      od: offset.od + this.od_(r) + 20,
+      od: offset.od + this.od_(dims) + 20,
       gd: progressiveGd
     };
     this.draw_(container, childNode, childOffset, offset, treenode);
@@ -408,29 +445,36 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container, treenode, offset,
 
 
 /**
- * Draws a connector between a node and its parent. A connector is always composed of two segments.
+ * Draws a connector between a node and its parent. A connector is always
+ * composed of two segments.
  * A segment along the gd axis and a segment along the od axis.
  *
  * @param curCenter the gd-od coordinate of the center of the current node
  * @param parentCenter the gd-od coordinate of the center of its parent node
  * @private
  */
-rhizo.layout.TreePainter.prototype.drawConnector_ = function(container, curCenter, parentCenter) {
-  var gdconnector = $("<div class='rhizo-tree-connector' />");
-  gdconnector
-    .css('position', 'absolute')
-    .css(this.gdName_, Math.min(curCenter.gd, parentCenter.gd))
-    .css(this.odName_, parentCenter.od)
-    .css(this.odLength_, 2)
-    .css(this.gdLength_, Math.abs(parentCenter.gd - curCenter.gd));
+rhizo.layout.TreePainter.prototype.drawConnector_ = function(container,
+                                                             curCenter,
+                                                             parentCenter) {
+  var gdCssAttrs = {position: 'absolute'};
+  gdCssAttrs[this.gdName_] = Math.min(curCenter.gd, parentCenter.gd);
+  gdCssAttrs[this.odName_] = parentCenter.od;
+  gdCssAttrs[this.odLength_] = 2;
+  gdCssAttrs[this.gdLength_] = Math.abs(parentCenter.gd - curCenter.gd);
 
-  var odconnector = $("<div class='rhizo-tree-connector' />");
-  odconnector
-    .css('position', 'absolute')
-    .css(this.gdName_, curCenter.gd)
-    .css(this.odName_, parentCenter.od)
-    .css(this.gdLength_, 2)
-    .css(this.odLength_, Math.abs(parentCenter.od - curCenter.od));
+  var gdconnector = $('<div />', {
+                        'class': 'rhizo-tree-connector',
+                        css: gdCssAttrs});
+
+  var odCssAttrs = {position: 'absolute'};
+  odCssAttrs[this.gdName_] = curCenter.gd;
+  odCssAttrs[this.odName_] = parentCenter.od;
+  odCssAttrs[this.gdLength_] = 2;
+  odCssAttrs[this.odLength_] = Math.abs(parentCenter.od - curCenter.od);
+
+  var odconnector = $('<div />', {
+                        'class': 'rhizo-tree-connector',
+                        css: odCssAttrs});
 
   this.connectors_.push(gdconnector);
   this.connectors_.push(odconnector);

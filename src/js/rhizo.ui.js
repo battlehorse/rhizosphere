@@ -49,13 +49,7 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
     // Define non-animated move(), fadeIn() and fadeOut() functions
     jQuery.fn.extend({
       move: function(top, left, opt_extras) {
-        $(this).css('top', top);
-        $(this).css('left', left);
-        if (opt_extras) {
-          for (var csskey in opt_extras) {
-            $(this).css(csskey, opt_extras[csskey]);
-          }
-        }
+        $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
       },
       fadeIn: function() {
         $(this).css('display', 'block');
@@ -71,19 +65,9 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
     jQuery.fn.extend({
       move: function(top, left, opt_extras) {
         if (jQuery.fx.off) {
-          $(this).css('top', top);
-          $(this).css('left', left);
-          if (opt_extras) {
-            for (var csskey in opt_extras) {
-              $(this).css(csskey, opt_extras[csskey]);
-            }
-          }
+          $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
         } else {
-          var movement = {'top': top, 'left': left};
-          if (opt_extras) {
-            jQuery.extend(movement, opt_extras);
-          }
-          $(this).animate(movement, 400);
+          $(this).animate(jQuery.extend({top: top, left: left}, opt_extras));
         }
       },
       fadeIn: function() {
@@ -154,27 +138,10 @@ rhizo.ui.reRender = function(renderer,
   var naked_render = renderer.render(model, expanded, opt_options);
   naked_render.addClass('rhizo-naked-render');
 
-  // replace the old rendering
+  // keep expanded items above the others.
   rendering.css('z-index', expanded ? 60 : 50);
+
+  // replace the old rendering
   rendering.children(':not(.rhizo-expand-model)').remove();
   rendering.append(naked_render);
-};
-
-rhizo.ui.defaultRenderingRescaler = function() {};
-
-rhizo.ui.defaultRenderingRescaler.prototype.rescale = function(naked_render,
-                                                               width,
-                                                               height,
-                                                               opt_failure_callback) {
-  // TODO(battlehorse): should rescaling be animated?
-  width = width - naked_render.outerWidth(true) + naked_render.width();
-  height = height - naked_render.outerHeight(true) + naked_render.height();
-  if (width > 0 && height > 0) {
-    naked_render.width(width).height(height);
-    return true;
-  }
-  if (opt_failure_callback) {
-    opt_failure_callback();
-  }
-  return false;
 };

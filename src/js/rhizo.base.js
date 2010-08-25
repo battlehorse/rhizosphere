@@ -69,8 +69,13 @@ rhizo.Project.prototype.addModels_ = function(models) {
   }
 
   this.buildModelsMap_();
+  // TODO(battlehorse): temporarily keep these 2 loops separate to be able to
+  // profile to impact of each one separately.
   for (var i = this.models_.length-1; i >= 0; i--) {
     this.initializeModel_(this.models_[i]);
+  }
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    this.models_[i].refreshCachedDimensions();
   }
   return true;
 };

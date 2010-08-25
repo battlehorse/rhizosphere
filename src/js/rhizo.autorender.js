@@ -153,7 +153,7 @@ rhizo.autorender.AR.prototype.getColorClass_ = function(value,
 
 rhizo.autorender.AR.prototype.renderSingleModelKey_ = function(key, value) {
   var html = [];
-  html.push('<p><span class="dim">');
+  html.push('<p><span class="rhizo-autorender-label">');
   html.push(this.metamodel_[key].label);
   html.push('</span>: ');
   html.push(value);
