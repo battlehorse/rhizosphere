@@ -125,6 +125,7 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
       rhizo.ui.reRender(renderer,
                         model.rendering, model.unwrap(), model.expanded,
                         opt_options);
+      model.refreshCachedDimensions();
     });
   }
 };
@@ -139,7 +140,11 @@ rhizo.ui.reRender = function(renderer,
   naked_render.addClass('rhizo-naked-render');
 
   // keep expanded items above the others.
-  rendering.css('z-index', expanded ? 60 : 50);
+  // Remove any rescaling that might have been applied to the rendering.
+  rendering.css({'z-index': expanded ? '60' : '',
+                 width: '',
+                 height: ''});
+
 
   // replace the old rendering
   rendering.children(':not(.rhizo-expand-model)').remove();
