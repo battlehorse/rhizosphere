@@ -108,6 +108,29 @@ rhizo.layout.treemap.TreeMapSlice.prototype.anchorPoint = function() {
   return this.anchorPoint_;
 };
 
+/**
+ * A wrapper around a supermodel managed (i.e. actively laid out) by
+ * TreeMapLayout.
+ * 
+ * Since TreeMapLayout actively alters the rendering of the models it lays out,
+ * we need to keep track of the ones we are currently managing, to be able to
+ * restore them to their original shape/color once.
+ * 
+ * @param {rhizo.model.SuperModel} model The model to wrap.
+ * @constructor
+ */
+rhizo.layout.treemap.ManagedModel = function(model) {
+  this.model_ = model;
+  this.originalDimensions_ = jQuery.extend({}, model.getCachedDimensions());
+  this.originalBackground_ = model.nakedCss('background-color');
+};
+
+rhizo.layout.treemap.ManagedModel.prototype.restoreAll = function() {
+  this.model_.setNakedCss({backgroundColor: this.originalBackground_});
+  this.model_.rescaleRendering(this.originalDimensions_.width,
+                               this.originalDimensions_.height);
+};
+
 rhizo.layout.TreeMapLayout = function(project) {
   this.project_ = project;
   this.areaSelector_ = null;
@@ -123,11 +146,31 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                                                        allmodels,
                                                        meta,
                                                        opt_options) {
+  // The list of managed models is preserved through multiple consequent
+  // applications of the TreeMapLayout:
+  // - when two TreeMapLayouts are applied consequently only the delta of models
+  //   between the two is restored (removed from managed models) or added to the
+  //   set.
+  // - when a TreeMapLayout is replaced by a different one, all managed models
+  //   are restored (see cleanup()).
+  // - when a TreeMapLayout replaces a previous (different) layout, the set of
+  //   managed models is initially null and populated during the layout
+  //   operation.
   if (this.managedModels_) {
+    var survivingModelIds = {};
     for (var i = 0; i < supermodels.length; i++) {
-      delete this.managedModels_[supermodels[i].id];
+      survivingModelIds[supermodels[i].id] = true;
     }
-    this.restoreSizesAndColors_(this.managedModels_, opt_options);
+    var restorableModels = {};
+    for (var modelId in this.managedModels_) {
+      if (!(modelId in survivingModelIds)) {
+        restorableModels[modelId] = this.managedModels_[modelId];
+      }
+    }
+    this.restoreSizesAndColors_(restorableModels, opt_options);
+    for (var modelId in restorableModels) {
+      delete this.managedModels_[modelId];
+    }
   }
 
   var areaMeta = this.areaSelector_.val();
@@ -164,6 +207,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
       rhizo.ui.reRender(this.project_.renderer(),
                         model.rendering, model.unwrap(), model.expanded,
                         opt_options);
+      model.refreshCachedDimensions();
     }
   }
   // Pointer to the container were new treemap nodes are added to. Initially
@@ -252,7 +296,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
 
   }
   if (slices.length > 0) {
-    this.managedModels_ = {};
+    this.managedModels_ = this.managedModels_ || {};
     numModelsToHide += this.draw_(container, slices, colorRange);
   }
   if (numModelsToHide > 0) {
@@ -289,15 +333,19 @@ rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container, slice, col
         renderingSize['width'] = Math.round(slice.span());
         renderingSize['height'] = Math.round(length);
       }
+      if (!(model.id in this.managedModels_)) {
+        this.managedModels_[model.id] =
+            new rhizo.layout.treemap.ManagedModel(model);        
+      }
       if (!model.rescaleRendering(renderingSize['width'], renderingSize['height'])) {
         model.filter('__treemap__');
+        delete this.managedModels_[model.id];
         numModelsToHide++;
       } else {
-        this.managedModels_[model.id] = model;
         if (colorRange) {
           var colorVal = parseFloat(model.unwrap()[colorRange.meta]);
           if (!isNaN(colorVal)) {
-            model.changeStyle({backgroundColor:
+            model.setNakedCss({backgroundColor:
                                this.getBackgroundColor_(colorVal,
                                                         colorRange)});
           }
@@ -327,8 +375,7 @@ rhizo.layout.TreeMapLayout.prototype.getBackgroundColor_ = function(colorVal,
   return 'rgb(' + Math.round(outputColor.r) + ',' +
       Math.round(outputColor.g) + ',' +
       Math.round(outputColor.b) + ')';
-
-}
+};
 
 rhizo.layout.TreeMapLayout.prototype.getRemainderContainer_ = function(
     remainderContainer, slice) {
@@ -354,16 +401,10 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine,
   this.project_.alignVisibility();
 };
 
-rhizo.layout.TreeMapLayout.prototype.restoreSizesAndColors_ = function(modelsMap,
-                                                                       opt_options) {
-  for (var modelId in modelsMap) {
-    var model = modelsMap[modelId];
-    model.rendering.css('backgroundColor', '');
-    rhizo.ui.reRender(this.project_.renderer(),
-                      model.rendering,
-                      model.unwrap(),
-                      model.expanded,
-                      opt_options);
+rhizo.layout.TreeMapLayout.prototype.restoreSizesAndColors_ = function(
+    managedModelsMap, opt_options) {
+  for (var modelId in managedModelsMap) {
+    managedModelsMap[modelId].restoreAll();
   }
 };
 

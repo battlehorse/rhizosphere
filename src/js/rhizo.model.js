@@ -74,6 +74,8 @@ rhizo.model.SuperModel.prototype.rescaleRendering = function(
     }
     return false;
   }
+  this.cachedDimensions_ = {width: width, height: height};
+
   // TODO(battlehorse): should rescaling be animated?
   this.rendering.width(width - 2).height(height - 2);
   if (this.rendererRescaler_) {
@@ -91,12 +93,22 @@ rhizo.model.SuperModel.prototype.setRendererStyleChanger = function(
   this.rendererStyleChanger_ = styleChanger;
 };
 
-rhizo.model.SuperModel.prototype.changeStyle = function(props) {
+rhizo.model.SuperModel.prototype.setNakedCss = function(props) {
+  if (typeof props != 'object') {
+    throw 'setNakedCss() expects a map of properties.';
+  }
   if (this.rendererStyleChanger_) {
     this.rendererStyleChanger_(props);
   } else {
     this.rendering.children('.rhizo-naked-render').css(props);
   }
+};
+
+rhizo.model.SuperModel.prototype.nakedCss = function(propName) {
+  if (typeof propName != 'string') {
+    throw 'nakedCss() expects a string of the property to access.';
+  }
+  return this.rendering.children('.rhizo-naked-render').css(propName);
 };
 
 rhizo.model.SuperModel.prototype.refreshCachedDimensions = function() {
