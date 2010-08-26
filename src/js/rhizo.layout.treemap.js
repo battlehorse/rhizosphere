@@ -304,7 +304,9 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   }
 };
 
-rhizo.layout.TreeMapLayout.prototype.draw_ = function(container, slices, colorRange) {
+rhizo.layout.TreeMapLayout.prototype.draw_ = function(container,
+                                                      slices,
+                                                      colorRange) {
   var numModelsToHide = 0;
   for (var i = 0; i < slices.length; i++) {
     numModelsToHide += this.drawSlice_(container, slices[i], colorRange);
@@ -312,7 +314,9 @@ rhizo.layout.TreeMapLayout.prototype.draw_ = function(container, slices, colorRa
   return numModelsToHide;
 };
 
-rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container, slice, colorRange) {
+rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container,
+                                                           slice,
+                                                           colorRange) {
   var numModelsToHide = 0;
   var t = slice.anchorPoint().y;
   var l = slice.anchorPoint().x;
