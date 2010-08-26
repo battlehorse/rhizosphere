@@ -204,10 +204,9 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
     if (model.expanded) {
       // Revert expanded items, since it messes up with treemapping.
       model.expanded = !model.expanded;
-      rhizo.ui.reRender(this.project_.renderer(),
-                        model.rendering, model.unwrap(), model.expanded,
+      rhizo.ui.reRender(model, 
+                        this.project_.renderer(),
                         opt_options);
-      model.refreshCachedDimensions();
     }
   }
   // Pointer to the container were new treemap nodes are added to. Initially

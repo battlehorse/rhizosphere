@@ -55,13 +55,14 @@ rhizo.Project.prototype.deploy = function(opt_models) {
     this.finalizeUI_();
   }
   this.logger_.info("*** Ready!");
+  console.timeEnd('fullSequence');
 };
 
 rhizo.Project.prototype.addModels_ = function(models) {
   // wrap each model into a SuperModel
-  this.models_ = jQuery.map(models, function(model) {
-    return new rhizo.model.SuperModel(model);
-  });
+  for (var i = 0; i < models.length; i++) {
+    this.models_[i] = new rhizo.model.SuperModel(models[i], this.renderer_);
+  }
 
   // model loading and rendering
   if (!this.checkModels_()) {
@@ -69,21 +70,21 @@ rhizo.Project.prototype.addModels_ = function(models) {
   }
 
   this.buildModelsMap_();
-  // TODO(battlehorse): temporarily keep these 2 loops separate to be able to
-  // profile to impact of each one separately.
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    this.initializeModel_(this.models_[i]);
-  }
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    this.models_[i].refreshCachedDimensions();
-  }
   return true;
 };
 
 rhizo.Project.prototype.finalizeUI_ = function() {
-  // Once the models are rendered, bind events that require rendered
-  // DOM elements to be present, such as the maximize icon.
-  rhizo.ui.initExpandable(this, this.renderer_, this.options_);
+  console.time('initializeRenderings');
+  if (!this.initializeRenderings_()) {
+    return;
+  }
+  console.timeEnd('initializeRenderings');
+
+  console.time('refreshCachedDimensions');
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    this.models_[i].refreshCachedDimensions();
+  }
+  console.timeEnd('refreshCachedDimensions');
 
   // We manually disable animations for the initial layout (the browser is
   // already busy creating the whole dom).
@@ -206,22 +207,59 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
   }
 };
 
-rhizo.Project.prototype.initializeModel_ = function(model) {
-  var rendering = rhizo.model.kickstart(model,
-                                        this,
-                                        this.renderer_,
-                                        this.options_);
+rhizo.Project.prototype.initializeRenderings_ = function() {
+  var allRenderings = [];
+  for (var i = 0;  i < this.models_.length; i++) {
+    rhizo.ui.render(this.models_[i], this.renderer_, allRenderings,
+                    this.options_);
+  }
+  if (allRenderings.length == 0) {
+    this.logger_.error("No renderings.");
+    return false;
+  }
 
-  // initial positioning in the DOM and layout
-  $(rendering).css("position", "absolute")
-              .css("top", 0)
-              .css("left", 0)
-              .css("display", "none");
+  var numModels = this.models_.length;
+  if (typeof allRenderings[0] == 'string') {
+    // The project renderer returns raw strings.
+    //
+    // We concatenate everything together and add it to the DOM in a single
+    // pass. We then identify back all the single renderings and bind them
+    // to the model they belong to.
+    this.gui_.universe.append(allRenderings.join(''));
+    this.gui_.universe.find('.rhizo-model').each(jQuery.proxy(
+        function(renderingIdx, rendering) {
+          var model = this.models_[renderingIdx];
+          model.rendering = $(rendering);
+        }, this));
+  } else {
+    // The project renderer returns jQuery objects.
+    //
+    // We append them to the DOM one at a time and assign them to their model.
+    for (var i = 0; i < this.models_.length; i++) {
+      this.models_[i].rendering = allRenderings[i];
+      allRenderings[i].appendTo(this.gui_.universe);
+    }
+  }
+  
+  // Sanity check
+  var renderings = this.gui_.universe.find('.rhizo-model');
+  if (renderings.length != this.models_.length) {
+    this.logger_.error('The number of renderings and models differ: ' +
+                       renderings.length + ' vs ' + this.models_.length);
+    return false;
+  }
 
-  this.gui_.universe.append(rendering);
+  // Decorate each rendering.
+  rhizo.ui.decorateRendering(renderings,
+                             this.models_,
+                             this,
+                             this.renderer_,
+                             this.options_);
+  return true;
 };
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
+  console.time('layout');
   var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
   var options = $.extend({}, opt_options, this.options_);
 
@@ -255,6 +293,7 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
                       this.modelsMap_,
                       this.metaModel_,
                       options);
+  console.timeEnd('layout');
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
@@ -288,6 +327,8 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // adjust the number of currently shown models.
   // This number affects performance choices.
   // Fade out is done _before_ changing performance settings
+  console.time('alignvisibility');
+  console.time('fadeout');
   var numShownModels = 0;
   for (var i = this.models_.length-1; i >=0; i--) {
     if (this.models_[i].isFiltered()) {
@@ -296,6 +337,7 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
       numShownModels += 1;
     }
   }
+  console.timeEnd('fadeout');
 
   if (!opt_delayCount) {
     jQuery.fx.off = this.options_.noAnims || numShownModels > 200;
@@ -304,11 +346,14 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // fade in all the affected elements according to current filter status
   // fade in is done _after_ changing performance settings, unless explicit
   // delay has been requested.
+  console.time('fadeIn');
   for (var i = this.models_.length-1; i >= 0; i--) {
     if (!this.models_[i].isFiltered()) {
       this.models_[i].rendering.fadeIn();
     }
   }
+  console.timeEnd('fadeIn');
+  console.timeEnd('alignvisibility');
 
   if (opt_delayCount) {
     jQuery.fx.off = this.options_.noAnims || numShownModels > 200;

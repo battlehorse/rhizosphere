@@ -261,6 +261,7 @@ DIV.ui-selected {
 .rhizo-expand-model {
   background: #fff url('../img/maximize.gif') no-repeat top left;
   position: absolute;
+  visibility: hidden;
   top: 2px;
   right: 2px;
   width: 13px;
@@ -281,6 +282,16 @@ DIV.ui-selected {
   cursor: pointer;
   z-index: 50;
   overflow: hidden;
+  position: absolute;
+
+  /* Models are hidden/show using 'visibility' rather than 'display' to be able
+     to compute their offsetWidth / offsetHeight even when hidden. */
+  visibility: hidden;
+  opacity: 0;
+}
+
+.rhizo-model-expanded {
+  z-index: 60;
 }
 
 .rhizo-naked-render {

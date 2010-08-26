@@ -18,6 +18,7 @@
 namespace('rhizo.bootstrap');
 
 rhizo.bootstrap.Bootstrap = function(container, opt_options) {
+  console.time('fullSequence');
   this.container_ = container;
   this.options_ = { selectfilter: '.rhizo-model:visible' };
   if (opt_options) {

@@ -52,10 +52,10 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
       },
       fadeIn: function() {
-        $(this).css('display', 'block');
+        $(this).css('visibility', 'visible');
       },
       fadeOut: function() {
-        $(this).css('display', 'none');
+        $(this).css('visibility', 'hidden');
       }
     });
 
@@ -67,27 +67,118 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         if (jQuery.fx.off) {
           $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
         } else {
-          $(this).animate(jQuery.extend({top: top, left: left}, opt_extras));
+          $(this).animate(
+            jQuery.extend({top: top, left: left}, opt_extras),
+            {duration: 400, queue: false});
         }
       },
       fadeIn: function() {
         if (jQuery.fx.off) {
-          $(this).css('display', 'block');
+          $(this).css({visibility: 'visible', opacity: 1.0});
         } else {
-          $(this).animate({'opacity': 'show'}, 400);
+          $(this).css('visibility', 'visible').animate({opacity: 1}, 400);
         }
       },
       fadeOut: function() {
         if (jQuery.fx.off) {
-          $(this).css('display', 'none');
+          $(this).css({visibility: 'hidden', opacity: 0.0});
         } else {
-          $(this).animate({'opacity': 'hide'}, 400);
+          $(this).animate({opacity: 0.0}, 
+                          {duration: 400,
+                           complete: function() {
+                             $(this).css('visibility', 'hidden'); }
+                          });
         }
       }
     });
   }
 };
 
+rhizo.ui.render = function(model, renderer, allRenderings, opt_options) {
+  var naked_render = renderer.render(model.unwrap(),
+                                     model.expanded,
+                                     opt_options);
+  if (typeof naked_render == 'string') {
+    allRenderings.push('<div class="rhizo-model">');
+    allRenderings.push(naked_render);
+    allRenderings.push('</div>');
+  } else {
+    // Assume it's a jQuery object.
+    var rendering = $('<div class="rhizo-model"></div>');
+    rendering.append(naked_render);
+    allRenderings.push(rendering);
+  }
+};
+
+rhizo.ui.reRender = function(model, 
+                             renderer,
+                             opt_options) {
+  // re-render. rendered expects the naked model.
+  // Must wrap in $() in case renderer returns raw strings.
+  var naked_render = $(renderer.render(model.unwrap(),
+                                       model.expanded,
+                                       opt_options));
+  naked_render.addClass('rhizo-naked-render');
+
+  // keep expanded items above the others.
+  // Remove any rescaling that might have been applied to the rendering.
+  model.rendering.toggleClass('rhizo-model-expanded', model.expanded).css(
+      {width: '', height: ''});
+
+  // replace the old rendering
+  model.rendering.children(':not(.rhizo-expand-model)').remove();
+  model.rendering.append(naked_render);
+  model.refreshCachedDimensions();
+};
+
+rhizo.ui.decorateRendering = function(renderings,
+                                      models,
+                                      project,
+                                      renderer,
+                                      opt_options) {
+  var expander;
+  var expandable = rhizo.ui.expandable(renderer, opt_options);
+  if (expandable) {
+    expander = $('<div class="rhizo-expand-model"></div>');
+  }
+  renderings.each(function(idx) {
+    // Bind the model id to each rendering
+    $(this).data('id', models[idx].id);
+
+    // Set the initial z-index depending on expansion status.
+    if (models[idx].expanded) {
+      $(this).addClass('rhizo-model-expanded');
+    }
+
+    // Add the maximize icon, if the renderer supports expansion
+    if (expandable) {
+      var clonedExpander = expander.clone();
+      clonedExpander.data("id", models[idx].id);
+      $(this).append(clonedExpander);
+    }
+  });
+
+  // Bind expandable events.
+  if (expandable) {
+    rhizo.ui.initExpandable(project, renderer, opt_options);
+  }
+
+  // The following ops are applied to all renderings at once.
+  // Mark the naked render.
+  renderings.children(':first-child').addClass('rhizo-naked-render');
+
+  // Enable doubleclick selection.
+  renderings.dblclick(function() {
+    if (project.isSelected($(this).data("id"))) {
+      project.unselect($(this).data("id"));
+    } else {
+      project.select($(this).data("id"));
+    }
+  });
+
+  // Enable dragging.
+  rhizo.ui.initDraggable(renderings, project);
+};
 
 rhizo.ui.expandable = function(renderer, opt_options) {
   if (typeof(renderer.expandable) == 'boolean') {
@@ -108,9 +199,9 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
     // register the hover effect to show/hide the expand icon
     $('.rhizo-model').hover(
       function() {
-        $(this).children('.rhizo-expand-model').css('display', '');
+        $(this).children('.rhizo-expand-model').css('visibility', 'visible');
       }, function() {
-        $(this).children('.rhizo-expand-model').css('display', 'none');
+        $(this).children('.rhizo-expand-model').css('visibility', 'hidden');
       });
 
     // register the expand icon handler
@@ -122,31 +213,78 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
       model.expanded = !model.expanded;
 
       // re-render
-      rhizo.ui.reRender(renderer,
-                        model.rendering, model.unwrap(), model.expanded,
+      rhizo.ui.reRender(model,
+                        renderer,
                         opt_options);
-      model.refreshCachedDimensions();
     });
   }
 };
 
-rhizo.ui.reRender = function(renderer,
-                             rendering,
-                             /* naked */ model,
-                             expanded,
-                             opt_options) {
-  // re-render. rendered expects the naked model.
-  var naked_render = renderer.render(model, expanded, opt_options);
-  naked_render.addClass('rhizo-naked-render');
+rhizo.ui.initDraggable = function(rendering, project) {
+  rendering.draggable({
+    opacity: 0.7,
+    cursor: 'pointer',
+    zIndex: 10000,
+    distance: 3,
+    start: function(ev, ui) {
+      project.toggleSelection('disable');
+      // used by droppable feature
+      ui.helper.data(
+          "dropTop0",
+          parseInt(ui.helper.css("top"),10));
+      ui.helper.data(
+          "dropLeft0",
+          parseInt(ui.helper.css("left"),10));
 
-  // keep expanded items above the others.
-  // Remove any rescaling that might have been applied to the rendering.
-  rendering.css({'z-index': expanded ? '60' : '',
-                 width: '',
-                 height: ''});
+      // figure out all the initial positions for the selected elements
+      // and store them.
+      if (project.isSelected(ui.helper.data("id"))) {
+        var all_selected = project.allSelected();
+        for (var id in all_selected) {
+          var selected_rendering = all_selected[id].rendering;
+          selected_rendering.data(
+            "top0",
+            parseInt(selected_rendering.css("top"),10) -
+              parseInt(ui.helper.css("top"),10));
+          selected_rendering.data(
+            "left0",
+            parseInt(selected_rendering.css("left"),10) -
+              parseInt(ui.helper.css("left"),10));
 
-
-  // replace the old rendering
-  rendering.children(':not(.rhizo-expand-model)').remove();
-  rendering.append(naked_render);
+          // used by droppable feature
+          selected_rendering.data("dropTop0",
+                                  parseInt(selected_rendering.css("top"),10));
+          selected_rendering.data("dropLeft0",
+                                  parseInt(selected_rendering.css("left"),10));
+        }
+      }
+    },
+    drag: function(ev, ui) {
+      var drag_helper_id = ui.helper.data("id");
+      if (project.isSelected(drag_helper_id)) {
+        var all_selected = project.allSelected();
+        for (var id in all_selected) {
+          if (id != drag_helper_id) {
+            all_selected[id].rendering.css(
+                'top',
+                all_selected[id].rendering.data("top0") + ui.position.top);
+            all_selected[id].rendering.css(
+                'left',
+                all_selected[id].rendering.data("left0") + ui.position.left);
+          }
+        }
+      }
+    },
+    stop: function(ev, ui) {
+      project.toggleSelection('enable');
+      if (project.isSelected(ui.helper.data("id"))) {
+        var all_selected = project.allSelected();
+        for (var id in all_selected) {
+          all_selected[id].rendering.removeData("top0");
+          all_selected[id].rendering.removeData("left0");
+        }
+      }
+    },
+    refreshPositions: false
+  });  
 };
