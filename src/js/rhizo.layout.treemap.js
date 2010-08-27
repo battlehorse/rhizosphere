@@ -29,6 +29,8 @@ namespace("rhizo.layout.treemap");
 //
 // TODO(battlehorse): This layout does not support nesting and hierarchies yet.
 //
+// TODO(battlehorse): Should offer the possibility to color items via a
+// logarithmic scale.
 
 rhizo.layout.treemap.TreeMapNode = function(supermodel, areaMeta, areaRatio) {
   this.model_ = supermodel;
@@ -108,11 +110,11 @@ rhizo.layout.treemap.TreeMapSlice.prototype.anchorPoint = function() {
 /**
  * A wrapper around a supermodel managed (i.e. actively laid out) by
  * TreeMapLayout.
- * 
+ *
  * Since TreeMapLayout actively alters the rendering of the models it lays out,
  * we need to keep track of the ones we are currently managing, to be able to
  * restore them to their original shape/color once.
- * 
+ *
  * @param {rhizo.model.SuperModel} model The model to wrap.
  * @constructor
  */
@@ -122,16 +124,22 @@ rhizo.layout.treemap.ManagedModel = function(model) {
   this.originalBackground_ = model.nakedCss('background-color');
 };
 
-rhizo.layout.treemap.ManagedModel.prototype.restoreAll = function() {
-  this.model_.setNakedCss({backgroundColor: this.originalBackground_});
-  this.model_.rescaleRendering(this.originalDimensions_.width,
-                               this.originalDimensions_.height);
+rhizo.layout.treemap.ManagedModel.prototype.restore = function(restoreSizes,
+                                                               restoreColors) {
+  if (restoreColors) {
+    this.model_.setNakedCss({backgroundColor: this.originalBackground_});
+  }
+  if (restoreSizes) {
+    this.model_.rescaleRendering(this.originalDimensions_.width,
+                                 this.originalDimensions_.height);
+  }
 };
 
 rhizo.layout.TreeMapLayout = function(project) {
   this.project_ = project;
   this.areaSelector_ = null;
   this.colorSelector_ = null;
+  this.prevColorMeta_ = '';
   this.managedModels_ = null;
 
   this.colorMin_ = {r: 237, g: 76, b: 95};
@@ -143,6 +151,9 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                                                        allmodels,
                                                        meta,
                                                        opt_options) {
+  var areaMeta = this.areaSelector_.val();
+  var colorMeta = this.colorSelector_.val();
+
   // The list of managed models is preserved through multiple consequent
   // applications of the TreeMapLayout:
   // - when two TreeMapLayouts are applied consequently only the delta of models
@@ -164,15 +175,17 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
         restorableModels[modelId] = this.managedModels_[modelId];
       }
     }
-    this.restoreSizesAndColors_(restorableModels, opt_options);
+    this.restore_(restorableModels, true, true);
     for (var modelId in restorableModels) {
       delete this.managedModels_[modelId];
     }
+
+    if (this.prevColorMeta_ != '' && colorMeta == '') {
+      this.restore_(this.managedModels_, /*sizes=*/ false, /*colors=*/ true);
+    }
   }
 
-  var areaMeta = this.areaSelector_.val();
-  var colorMeta = this.colorSelector_.val();
-
+  this.prevColorMeta_ = colorMeta;
   var area = 0.0;
   var colorRange = null;
   if (colorMeta.length > 0) {
@@ -201,7 +214,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
     if (model.expanded) {
       // Revert expanded items, since it messes up with treemapping.
       model.expanded = !model.expanded;
-      rhizo.ui.reRender(model, 
+      rhizo.ui.reRender(model,
                         this.project_.renderer(),
                         opt_options);
     }
@@ -335,7 +348,7 @@ rhizo.layout.TreeMapLayout.prototype.drawSlice_ = function(container,
       }
       if (!(model.id in this.managedModels_)) {
         this.managedModels_[model.id] =
-            new rhizo.layout.treemap.ManagedModel(model);        
+            new rhizo.layout.treemap.ManagedModel(model);
       }
       if (!model.rescaleRendering(renderingSize['width'], renderingSize['height'])) {
         model.filter('__treemap__');
@@ -394,17 +407,18 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine,
   // Restore all models to their original sizes, if we are moving to a different
   // layout engine.
   if (!sameEngine) {
-    this.restoreSizesAndColors_(this.managedModels_, opt_options);
+    this.restore_(this.managedModels_, true, true);
     this.managedModels_ = null;
   }
   this.project_.resetAllFilter('__treemap__');
   this.project_.alignVisibility();
 };
 
-rhizo.layout.TreeMapLayout.prototype.restoreSizesAndColors_ = function(
-    managedModelsMap, opt_options) {
+rhizo.layout.TreeMapLayout.prototype.restore_ = function(managedModelsMap,
+                                                         restoreSizes,
+                                                         restoreColors) {
   for (var modelId in managedModelsMap) {
-    managedModelsMap[modelId].restoreAll();
+    managedModelsMap[modelId].restore(restoreSizes, restoreColors);
   }
 };
 
