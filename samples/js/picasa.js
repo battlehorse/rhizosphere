@@ -49,7 +49,7 @@
   var renderer = {
     render: function(model, expanded, opt_options) {
       if (!expanded) {
-        var container = $("<div style='padding: 5px'></div>");
+        var container = $("<div class='rhizo-sample'></div>");
         var img = $("<img src='" + model.thumbnail.url +
                     "' width='" + model.thumbnail.width +
                     "' height='" + model.thumbnail.height +
@@ -60,7 +60,7 @@
           '</b></p>').appendTo(container);
         return container;
       } else {
-        return $("<div style='padding: 5px'>" +
+        return $("<div class='rhizo-sample'>" +
                  "<p style='font-size:10px'>" +
                  'by <b>' +  model.author + '</b></p>' +
                  '<p>' + model.summary + '</p>' +

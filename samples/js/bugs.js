@@ -4816,14 +4816,14 @@ var renderer = {
   render: function(model, expanded, opt_options) {
     var mini = opt_options && opt_options.miniLayout;
     if (mini && !expanded) {
-      var container = $("<div style='padding: 3px;background-color:" + priorities[model.pri] + "'></div>");
+      var container = $("<div class='rhizo-sample' style='background-color:" + priorities[model.pri] + "'></div>");
       var p = $("<p style='font-size: 10px;'></p>");
       $("<span style='color: #999'></span>").text(model.type).appendTo(p);
       $("<span style='font-weight: bold'></span>").text(model.id).appendTo(p);      
       p.appendTo(container);
       return container;
     } else {
-      var container = $("<div style='padding: 5px;background-color:" + priorities[model.pri] + "'></div>");
+      var container = $("<div class='rhizo-sample' style='background-color:" + priorities[model.pri] + "'></div>");
       $("<p style='font-weight: bold; font-size: 10px; color: #999'></p>").text(model.type).appendTo(container);
       $("<p style='font-size: 15px; font-weight:bold;'></p>").text(model.id).appendTo(container);
       $("<p style='font-size:10px; width: 100px; overflow:hidden'></p>").text(model.summary).appendTo(container);

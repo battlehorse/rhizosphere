@@ -294,19 +294,19 @@ DIV.ui-selected {
   z-index: 60;
 }
 
-.rhizo-naked-render {
+.rhizo-model .rhizo-autorender-label {
+  color: #666;
+  font-size: 11px;
+}
+
+.rhizo-autorender {
   color: #000;
   font-size: 12px;
   width: 100%;
   height: 100%;
 }
 
-.rhizo-naked-render .rhizo-autorender-label {
-  color: #666;
-  font-size: 11px;
-}
-
-.rhizo-naked-render P {
+.rhizo-autorender P {
   margin: 0;
   padding: 0;
 }
@@ -540,4 +540,18 @@ DIV.ui-selected {
    dragging is in progress. */
 .ui-state-disabled {
   opacity: 1; filter:Alpha(Opacity=1);
+}
+
+/* Styles used only by Rhizosphere samples */
+.rhizo-sample {
+  color: #000;
+  font-size: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+}
+
+.rhizo-sample P {
+  margin: 0;
+  padding: 0;
 }

@@ -316,7 +316,7 @@
   var renderer = {
     render: function(model, expanded, opt_options) {
       if (opt_options && opt_options.miniLayout) {
-        return $("<div style='padding: 3px'>" + 
+        return $("<div class='rhizo-sample'>" + 
                  "<p style='font-size:10px'><b><span style='color:" +
                  this.getElectionColor(model) + "'>"+ 
                  model.name + "</span></b><br />" +
@@ -324,7 +324,7 @@
                  "</div>");
       } else {
         var html = [];
-        html.push("<div style='padding: 3px'>");
+        html.push("<div class='rhizo-sample'>");
         html.push("<p style='font-size:10px'>");
         if (model.kind == 'State' || model.kind == 'Country') {
           html.push("<img src='static/samples/img/usa_flags/" + 

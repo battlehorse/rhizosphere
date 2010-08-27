@@ -51,10 +51,8 @@
 
   var renderer = {
     render: function(model, expanded, opt_options) {
-      return $("<div style='padding: 3px'>" +
-               "<p style='font-size: 12px'><b>" +
-               model.name +
-               "</b></p></div>");
+      return $("<div class='rhizo-sample'>" +
+               "<p><b>" + model.name + "</b></p></div>");
     }
   };
 
