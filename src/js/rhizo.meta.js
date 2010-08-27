@@ -421,7 +421,7 @@ rhizo.meta.sortBy = function(key, kind, opt_reverse) {
       return (firstModel[key] < secondModel[key] ? -1 :
               firstModel[key] > secondModel[key] ? 1 : 0)*reverse;
     }
-  }
+  };
 };
 
 rhizo.meta.sortByKind = function(kind, opt_reverse) {
@@ -434,7 +434,7 @@ rhizo.meta.sortByKind = function(kind, opt_reverse) {
       return (firstValue < secondValue ? -1 : 
 	      firstValue > secondValue ? 1 : 0)*reverse;
     }
-  }
+  };
 };
 
 rhizo.meta.Kind = {
