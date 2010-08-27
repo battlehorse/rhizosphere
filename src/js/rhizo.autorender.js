@@ -198,13 +198,13 @@ rhizo.autorender.AR.prototype.render = function(model,
   }
 
   if (miniLayout && !expanded) {
-    return $("<div class='" + colorClass + "'>" +
+    return $("<div class='rhizo-autorender " + colorClass + "'>" +
              "<span class='" + fontClass + "'>" +
              model[this.masterField_] + "</span>" +
              "</div>");
   } else {
     html = [];
-    html.push("<div class='" + colorClass + "'>");
+    html.push("<div class='rhizo-autorender " + colorClass + "'>");
     html.push("<span class='" + fontClass + "'>" +
               model[this.masterField_] + "</span>");
 
@@ -232,7 +232,7 @@ rhizo.autorender.AR.prototype.render = function(model,
         html.push(this.renderSingleModelKey_(key, model[key]));
       }
     }
-    html.push("</div>")
+    html.push("</div>");
     return $(html.join(''));
   }
 };

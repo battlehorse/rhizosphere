@@ -140,7 +140,7 @@
 
   var renderer = {
     render: function(model) {
-      return $("<div style='padding: 5px'>" + 
+      return $("<div class='rhizo-sample'>" + 
                "<p style='white-space: nowrap; overflow:hidden'>" +
                "<img src='" + model.img + "' align='left' width='75px'>" + 
                "<b>" + model.title + "</b><br />" +

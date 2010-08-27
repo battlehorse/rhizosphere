@@ -58,13 +58,13 @@
   var renderer = {
     render: function(model, expanded, opt_options) {
       if (opt_options && opt_options.miniLayout) {
-        return $("<div style='padding: 3px'>" +
+        return $("<div class='rhizo-sample'>" +
                  "<p style='font-size:10px'><b><span style='color:" +
                  (model.male ? "blue" : "pink") + "'>"+
                  model.name + "</span></b></p>" +
                  "</div>");
       } else {
-        return $("<div style='padding: 5px'>" +
+        return $("<div class='rhizo-sample'>" +
                  "<p><b><span style='color:" +
                  (model.male ? "blue" : "pink") + "'>"+
                  model.name + "</span></b></p>" +
