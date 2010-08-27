@@ -121,7 +121,7 @@ rhizo.layout.treemap.TreeMapSlice.prototype.anchorPoint = function() {
  */
 rhizo.layout.treemap.ManagedModel = function(model) {
   this.model_ = model;
-  this.originalDimensions_ = jQuery.extend({}, model.getCachedDimensions());
+  this.originalDimensions_ = jQuery.extend({}, model.getDimensions());
   this.originalBackground_ = model.nakedCss('background-color');
 };
 

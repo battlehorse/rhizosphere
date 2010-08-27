@@ -61,7 +61,8 @@ rhizo.Project.prototype.deploy = function(opt_models) {
 rhizo.Project.prototype.addModels_ = function(models) {
   // wrap each model into a SuperModel
   for (var i = 0; i < models.length; i++) {
-    this.models_[i] = new rhizo.model.SuperModel(models[i], this.renderer_);
+    this.models_[i] = new rhizo.model.SuperModel(models[i],
+                                                 this.renderer_);
   }
 
   // model loading and rendering
@@ -78,9 +79,16 @@ rhizo.Project.prototype.finalizeUI_ = function() {
     return;
   }
 
+  // Detect whether SuperModels should cache dimensions. If so, do an initial
+  // caching pass.
   console.time('refreshCachedDimensions');
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    this.models_[i].refreshCachedDimensions();
+  var cacheDimensions = rhizo.ui.canCacheDimensions(this.renderer_,
+                                                    this.options_);
+  if (cacheDimensions) {
+    for (var i = this.models_.length-1; i >= 0; i--) {
+      this.models_[i].setDimensionCaching(cacheDimensions);
+      this.models_[i].refreshCachedDimensions();
+    }
   }
   console.timeEnd('refreshCachedDimensions');
 

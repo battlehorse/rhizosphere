@@ -74,7 +74,8 @@
                  (model.hobbies.length > 0 ? model.hobbies : "Nothing") + "<p>" +
                  "</div>");
       }
-    }
+    },
+    cacheDimensions: true
   };
 
   // uncomment to try the autorenderer here, either with or

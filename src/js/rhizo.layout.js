@@ -94,7 +94,7 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
 
   // layout supermodels
   for (var i = 0, len = supermodels.length; i < len; i++) {
-    var modelDims = supermodels[i].getCachedDimensions();
+    var modelDims = supermodels[i].getDimensions();
     lineHeight = Math.max(lineHeight, modelDims.height);
 
     if (this.left + modelDims.width > maxWidth) {

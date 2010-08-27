@@ -376,7 +376,7 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
     childsArea.od = Math.max(childsArea.od, childRect.od);
   }
 
-  var dims = treenode.superModel.getCachedDimensions();
+  var dims = treenode.superModel.getDimensions();
 
   // enrich the treenode with rendering info
   treenode.boundingRect =
@@ -401,7 +401,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
                                                     parentOffset,
                                                     parentNode) {
   var r = treenode.superModel.rendering;
-  var dims = treenode.superModel.getCachedDimensions();
+  var dims = treenode.superModel.getDimensions();
 
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
@@ -413,7 +413,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
       this.drawConnector_(container,
         this.packedCenter_(offset, dims),
         this.packedCenter_(parentOffset,
-                           parentNode.superModel.getCachedDimensions()));
+                           parentNode.superModel.getDimensions()));
     }
   } else {
     r.move(offset.od + 5,
@@ -424,7 +424,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
       this.drawConnector_(container,
         this.evenCenter_(offset, dims, treenode.boundingRect),
         this.evenCenter_(parentOffset,
-                         parentNode.superModel.getCachedDimensions(),
+                         parentNode.superModel.getDimensions(),
                          parentNode.boundingRect));
     }
   }
@@ -510,7 +510,7 @@ rhizo.layout.TreeNode.prototype.addChild = function(treenode) {
 rhizo.layout.TreeCycleException = function(message) {
   this.message = message;
   this.name = "TreeCycleException";
-}
+};
 
 rhizo.layout.TreeCycleException.prototype.toString = function() {
   return this.name + ": " + this.message;
