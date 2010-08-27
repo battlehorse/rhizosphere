@@ -105,6 +105,33 @@ rhizo.ui.component.Viewport.prototype.render = function(container, gui, opt_opti
 };
 
 rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
+  this.scroll_overlay_.draggable({
+    helper: function() {
+      return $("<div />").appendTo(gui.viewport);
+    },
+    start: function(ev, ui) {
+      var position = gui.universe.position();
+      gui.universe.data("top0", position.top).data("left0", position.left);
+    },
+    drag: function(ev, ui) {
+      // Computes where to reposition the universe pane from the delta movement
+      // of the drag helper.
+      //
+      // - gui.universe.data({top0, left0}) points to the relative position of
+      //   the universe (in respect to the viewport) at the start of the drag
+      //   movement.
+      // - ui.position.{top,left} points to the relative position of the drag
+      //   helper (in respect to the viewport) at the current instant.
+      var dragTop = ui.position.top + gui.universe.data("top0");
+      var dragLeft = ui.position.left + gui.universe.data("left0");
+
+      gui.universe.
+          css('top', dragTop).css('bottom', -dragTop).
+          css('left', dragLeft).css('right', -dragLeft);
+    },
+    refreshPositions: false
+  });
+
   this.scroll_trigger_.click(
       jQuery.proxy(rhizo.ui.component.Viewport.prototype.startScroll_, this));
   this.scroll_done_.click(
@@ -112,11 +139,6 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
 };
 
 rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
-  var dragDelta = {
-    top: this.universe_.offset().top,
-    left: this.universe_.offset().left
-  };
-
   this.scroll_trigger_.hide();
   this.scroll_overlay_.css({
       'left': this.viewport_.css('left'),
@@ -126,60 +148,6 @@ rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
       'z-index': 99,
       'display': ''
     });
-
-  this.scroll_overlay_.draggable({
-    helper: function() {
-      return $("<div />");
-    },
-    start: jQuery.proxy(function(ev, ui) {
-      var offset = this.universe_.offset();
-      this.universe_.data("top0", offset.top).data("left0", offset.left);
-    }, this),
-    drag: jQuery.proxy(function(ev, ui) {
-      // Computes where to reposition the universe pane from the delta movement
-      // of the drag helper.
-      //
-      // S---------------------------->
-      // |
-      // |
-      // |   R---------------------
-      // |   |   U-----
-      // |   |   |
-      // |   |   |  U'-----
-      // |   |   |  | U''----
-      // |   |   |  | |
-      // \/
-      //
-      // S: screen. Top left corner is at 0,0
-      // R: Rhizosphere visualization bounding box.
-      // U: Universe position at Rhizosphere initialiation time. The Viewport
-      //    (Universe parent node) shares the same top-left corner.
-      //    'dragDelta' points to these coordinates.
-      // U': Universe position at drag start time. {top0, left0} coordinates
-      //     point to this.
-      // U'': Current (during dragging) Universe position.
-      //
-      // The drag helper always start at U, so:
-      // ui.offset.top - dragDelta.top = overall drag distance from the
-      //     beginning of the drag.
-      // this.universe_.data("top0") - dragDelta.top = Distance between
-      //     the Viewport and the Universe position at the beginning of the
-      //     drag.
-      //
-      // Hence 'dragTop' and 'dragLeft' measure the distance between the
-      // position the Universe should be dragged to and the Viewport corner.
-      //
-      var dragTop = ui.offset.top +
-                    this.universe_.data("top0") - 2*dragDelta.top;
-      var dragLeft = ui.offset.left +
-                     this.universe_.data("left0") - 2*dragDelta.left;
-
-      this.universe_.
-          css('top', dragTop).css('bottom', -dragTop).
-          css('left', dragLeft).css('right', -dragLeft);
-    }, this),
-    refreshPositions: false
-  });
 };
 
 rhizo.ui.component.Viewport.prototype.stopScroll_ = function() {
