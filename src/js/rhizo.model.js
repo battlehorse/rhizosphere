@@ -23,6 +23,7 @@ rhizo.model.SuperModel = function(model, renderer, opt_selected, opt_filtered) {
   this.selected = opt_selected || false;
   this.filters_ = {}; // a map of filter status, one for each model key
   this.rendering = null;
+  this.naked_render = null;
   this.expanded = false; // whether the rendering is expanded or not
 
   this.cachedDimensions_ = {};
@@ -101,7 +102,7 @@ rhizo.model.SuperModel.prototype.setNakedCss = function(props) {
   if (this.rendererStyleChanger_) {
     this.rendererStyleChanger_(props);
   } else {
-    this.rendering.children('.rhizo-naked-render').css(props);
+    this.naked_render.css(props);
   }
 };
 
@@ -109,15 +110,11 @@ rhizo.model.SuperModel.prototype.nakedCss = function(propName) {
   if (typeof propName != 'string') {
     throw 'nakedCss() expects a string of the property to access.';
   }
-  return this.rendering.children('.rhizo-naked-render').css(propName);
+  return this.naked_render.css(propName);
 };
 
 rhizo.model.SuperModel.prototype.refreshCachedDimensions = function() {
   if (this.rendering) {
-    // this.cachedDimensions_ = {
-    //   width: this.rendering.width(),
-    //   height: this.rendering.height()
-    // };
     this.cachedDimensions_ = {
       width: this.rendering.get(0).offsetWidth,
       height: this.rendering.get(0).offsetHeight
@@ -125,6 +122,12 @@ rhizo.model.SuperModel.prototype.refreshCachedDimensions = function() {
   }
 };
 
+/**
+ * @return {Object.<string, number>} The cached dimensions of this model
+ *     rendering. The returned object has a 'width' and 'height' property
+ *     that map to the outer dimensions (incl. border and such) of the
+ *     rendering.
+ */
 rhizo.model.SuperModel.prototype.getCachedDimensions = function() {
   return this.cachedDimensions_;
 };
