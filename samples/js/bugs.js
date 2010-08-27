@@ -4837,7 +4837,8 @@ var renderer = {
     } else {
       return false;
     }
-  }
+  },
+  cacheDimensions: true
 };
 
 var minStars = 100;

@@ -47,6 +47,9 @@ rhizo.autorender.AR = function(metamodel,
   this.numfields_ = typeof(opt_numfields) == 'undefined' ? 
       5 : 
       Math.max(opt_numfields, autoShownFields);
+
+  // An autorender can always have its dimensions cached.
+  this.cacheDimensions = true;
 };
 
 rhizo.autorender.AR.prototype.getSizeRange = function() {

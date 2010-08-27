@@ -41,6 +41,21 @@ rhizo.ui.toHumanLabel = function(value) {
   }
 };
 
+rhizo.ui.canCacheDimensions = function(renderer, opt_options) {
+  var canCacheDimensions = false;
+
+  // Renderer setting.
+  if (renderer.cacheDimensions) {
+    canCacheDimensions = renderer.cacheDimensions;
+  }
+  
+  // Project-level override.
+  if (opt_options && opt_options.cacheDimensions) {
+    canCacheDimensions = opt_options.cacheDimensions;
+  }
+  return canCacheDimensions;
+};
+
 rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
   if (opt_disableAllAnims) {
     // Disable all animations

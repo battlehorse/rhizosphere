@@ -61,7 +61,8 @@
       return "<div  class='rhizo-sample' style='background-color: rgb(150, 150, " +
         backgroundColor +
         ")' ><p>" + model.id + "</p></div>";
-    }
+    },
+    cacheDimensions: true
   };
 
   {{ jsonp_callback }}({

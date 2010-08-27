@@ -53,7 +53,8 @@
     render: function(model, expanded, opt_options) {
       return $("<div class='rhizo-sample'>" +
                "<p><b>" + model.name + "</b></p></div>");
-    }
+    },
+    cacheDimensions: true
   };
 
   var countries = [];
