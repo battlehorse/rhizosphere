@@ -342,13 +342,15 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   console.time('alignvisibility');
   console.time('fadeout');
   var numShownModels = 0;
+  var renderingsToFade = [];
   for (var i = this.models_.length-1; i >=0; i--) {
     if (this.models_[i].isFiltered()) {
-      this.models_[i].rendering.fadeOut();
+      renderingsToFade.push(this.models_[i].rendering.get(0));
     } else {
       numShownModels += 1;
     }
   }
+  $(renderingsToFade).fadeOut();
   console.timeEnd('fadeout');
 
   if (!opt_delayCount) {
@@ -359,11 +361,13 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // fade in is done _after_ changing performance settings, unless explicit
   // delay has been requested.
   console.time('fadeIn');
+  renderingsToFade = [];
   for (var i = this.models_.length-1; i >= 0; i--) {
     if (!this.models_[i].isFiltered()) {
-      this.models_[i].rendering.fadeIn();
+      renderingsToFade.push(this.models_[i].rendering.get(0));
     }
   }
+  $(renderingsToFade).fadeIn();
   console.timeEnd('fadeIn');
   console.timeEnd('alignvisibility');
 
