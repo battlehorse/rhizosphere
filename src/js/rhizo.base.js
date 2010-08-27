@@ -74,11 +74,9 @@ rhizo.Project.prototype.addModels_ = function(models) {
 };
 
 rhizo.Project.prototype.finalizeUI_ = function() {
-  console.time('initializeRenderings');
   if (!this.initializeRenderings_()) {
     return;
   }
-  console.timeEnd('initializeRenderings');
 
   console.time('refreshCachedDimensions');
   for (var i = this.models_.length-1; i >= 0; i--) {
@@ -208,16 +206,19 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 };
 
 rhizo.Project.prototype.initializeRenderings_ = function() {
+  console.time('fetchRenderings');
   var allRenderings = [];
   for (var i = 0;  i < this.models_.length; i++) {
     rhizo.ui.render(this.models_[i], this.renderer_, allRenderings,
                     this.options_);
   }
+  console.timeEnd('fetchRenderings');
   if (allRenderings.length == 0) {
     this.logger_.error("No renderings.");
     return false;
   }
 
+  console.time('attachHTML');
   var numModels = this.models_.length;
   if (typeof allRenderings[0] == 'string') {
     // The project renderer returns raw strings.
@@ -230,6 +231,7 @@ rhizo.Project.prototype.initializeRenderings_ = function() {
         function(renderingIdx, rendering) {
           var model = this.models_[renderingIdx];
           model.rendering = $(rendering);
+          model.naked_render = model.rendering.children();
         }, this));
   } else {
     // The project renderer returns jQuery objects.
@@ -237,9 +239,11 @@ rhizo.Project.prototype.initializeRenderings_ = function() {
     // We append them to the DOM one at a time and assign them to their model.
     for (var i = 0; i < this.models_.length; i++) {
       this.models_[i].rendering = allRenderings[i];
+      this.models_[i].naked_render = this.models_[i].rendering.children();
       allRenderings[i].appendTo(this.gui_.universe);
     }
   }
+  console.timeEnd('attachHTML');
   
   // Sanity check
   var renderings = this.gui_.universe.find('.rhizo-model');

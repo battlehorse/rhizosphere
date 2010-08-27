@@ -118,7 +118,7 @@ rhizo.ui.reRender = function(model,
   var naked_render = $(renderer.render(model.unwrap(),
                                        model.expanded,
                                        opt_options));
-  naked_render.addClass('rhizo-naked-render');
+  model.naked_render = naked_render;
 
   // keep expanded items above the others.
   // Remove any rescaling that might have been applied to the rendering.
@@ -141,6 +141,7 @@ rhizo.ui.decorateRendering = function(renderings,
   if (expandable) {
     expander = $('<div class="rhizo-expand-model"></div>');
   }
+  console.time('decorateExpandable');
   renderings.each(function(idx) {
     // Bind the model id to each rendering
     $(this).data('id', models[idx].id);
@@ -162,12 +163,11 @@ rhizo.ui.decorateRendering = function(renderings,
   if (expandable) {
     rhizo.ui.initExpandable(project, renderer, opt_options);
   }
+  console.timeEnd('decorateExpandable');
 
   // The following ops are applied to all renderings at once.
-  // Mark the naked render.
-  renderings.children(':first-child').addClass('rhizo-naked-render');
-
   // Enable doubleclick selection.
+  console.time('decorateSelection');
   renderings.dblclick(function() {
     if (project.isSelected($(this).data("id"))) {
       project.unselect($(this).data("id"));
@@ -175,9 +175,15 @@ rhizo.ui.decorateRendering = function(renderings,
       project.select($(this).data("id"));
     }
   });
+  console.timeEnd('decorateSelection');
 
   // Enable dragging.
-  rhizo.ui.initDraggable(renderings, project);
+  console.time('decorateDraggable');
+  window.setTimeout(
+    function() {
+      rhizo.ui.initDraggable(renderings, project);      
+    }, 10);
+  console.timeEnd('decorateDraggable');
 };
 
 rhizo.ui.expandable = function(renderer, opt_options) {
@@ -226,6 +232,7 @@ rhizo.ui.initDraggable = function(rendering, project) {
     cursor: 'pointer',
     zIndex: 10000,
     distance: 3,
+    addClasses: false,
     start: function(ev, ui) {
       project.toggleSelection('disable');
       // used by droppable feature
