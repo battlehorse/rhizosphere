@@ -29,9 +29,6 @@ namespace("rhizo.layout.treemap");
 //
 // TODO(battlehorse): This layout does not support nesting and hierarchies yet.
 //
-// TODO(battlehorse): Some layout artifacts and overflowing occur, probably due
-// to rounding errors, when the areas to display become too small (below 1x1 pixel?).
-//
 
 rhizo.layout.treemap.TreeMapNode = function(supermodel, areaMeta, areaRatio) {
   this.model_ = supermodel;
