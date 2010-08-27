@@ -178,12 +178,12 @@ rhizo.ui.decorateRendering = function(renderings,
   console.timeEnd('decorateSelection');
 
   // Enable dragging.
-  console.time('decorateDraggable');
+  // This may take some time, especially for thousands of models, so we do
+  // this in a timeout callback, to give the UI the possibility to refresh.
   window.setTimeout(
     function() {
       rhizo.ui.initDraggable(renderings, project);      
-    }, 10);
-  console.timeEnd('decorateDraggable');
+    }, 100);
 };
 
 rhizo.ui.expandable = function(renderer, opt_options) {
@@ -227,6 +227,7 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
 };
 
 rhizo.ui.initDraggable = function(rendering, project) {
+  console.time('decorateDraggable');
   rendering.draggable({
     opacity: 0.7,
     cursor: 'pointer',
@@ -294,4 +295,5 @@ rhizo.ui.initDraggable = function(rendering, project) {
     },
     refreshPositions: false
   });  
+  console.timeEnd('decorateDraggable');
 };
