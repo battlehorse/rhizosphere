@@ -55,7 +55,6 @@ rhizo.Project.prototype.deploy = function(opt_models) {
     this.finalizeUI_();
   }
   this.logger_.info("*** Ready!");
-  console.timeEnd('fullSequence');
 };
 
 rhizo.Project.prototype.addModels_ = function(models) {
@@ -81,7 +80,6 @@ rhizo.Project.prototype.finalizeUI_ = function() {
 
   // Detect whether SuperModels should cache dimensions. If so, do an initial
   // caching pass.
-  console.time('refreshCachedDimensions');
   var cacheDimensions = rhizo.ui.canCacheDimensions(this.renderer_,
                                                     this.options_);
   if (cacheDimensions) {
@@ -90,7 +88,6 @@ rhizo.Project.prototype.finalizeUI_ = function() {
       this.models_[i].refreshCachedDimensions();
     }
   }
-  console.timeEnd('refreshCachedDimensions');
 
   // We manually disable animations for the initial layout (the browser is
   // already busy creating the whole dom).
@@ -214,19 +211,16 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 };
 
 rhizo.Project.prototype.initializeRenderings_ = function() {
-  console.time('fetchRenderings');
   var allRenderings = [];
   for (var i = 0;  i < this.models_.length; i++) {
     rhizo.ui.render(this.models_[i], this.renderer_, allRenderings,
                     this.options_);
   }
-  console.timeEnd('fetchRenderings');
   if (allRenderings.length == 0) {
     this.logger_.error("No renderings.");
     return false;
   }
 
-  console.time('attachHTML');
   var numModels = this.models_.length;
   if (typeof allRenderings[0] == 'string') {
     // The project renderer returns raw strings.
@@ -251,8 +245,7 @@ rhizo.Project.prototype.initializeRenderings_ = function() {
       allRenderings[i].appendTo(this.gui_.universe);
     }
   }
-  console.timeEnd('attachHTML');
-  
+
   // Sanity check
   var renderings = this.gui_.universe.find('.rhizo-model');
   if (renderings.length != this.models_.length) {
@@ -271,7 +264,6 @@ rhizo.Project.prototype.initializeRenderings_ = function() {
 };
 
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
-  console.time('layout');
   var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
   var options = $.extend({}, opt_options, this.options_);
 
@@ -305,7 +297,6 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
                       this.modelsMap_,
                       this.metaModel_,
                       options);
-  console.timeEnd('layout');
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
@@ -339,8 +330,6 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // adjust the number of currently shown models.
   // This number affects performance choices.
   // Fade out is done _before_ changing performance settings
-  console.time('alignvisibility');
-  console.time('fadeout');
   var numShownModels = 0;
   var renderingsToFade = [];
   for (var i = this.models_.length-1; i >=0; i--) {
@@ -351,7 +340,6 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
     }
   }
   $(renderingsToFade).fadeOut();
-  console.timeEnd('fadeout');
 
   if (!opt_delayCount) {
     jQuery.fx.off = this.options_.noAnims || numShownModels > 200;
@@ -360,7 +348,6 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
   // fade in all the affected elements according to current filter status
   // fade in is done _after_ changing performance settings, unless explicit
   // delay has been requested.
-  console.time('fadeIn');
   renderingsToFade = [];
   for (var i = this.models_.length-1; i >= 0; i--) {
     if (!this.models_[i].isFiltered()) {
@@ -368,8 +355,6 @@ rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
     }
   }
   $(renderingsToFade).fadeIn();
-  console.timeEnd('fadeIn');
-  console.timeEnd('alignvisibility');
 
   if (opt_delayCount) {
     jQuery.fx.off = this.options_.noAnims || numShownModels > 200;
