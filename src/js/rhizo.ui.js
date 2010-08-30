@@ -48,7 +48,7 @@ rhizo.ui.canCacheDimensions = function(renderer, opt_options) {
   if (renderer.cacheDimensions) {
     canCacheDimensions = renderer.cacheDimensions;
   }
-  
+
   // Project-level override.
   if (opt_options && opt_options.cacheDimensions) {
     canCacheDimensions = opt_options.cacheDimensions;
@@ -98,7 +98,7 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         if (jQuery.fx.off) {
           $(this).css({visibility: 'hidden', opacity: 0.0});
         } else {
-          $(this).animate({opacity: 0.0}, 
+          $(this).animate({opacity: 0.0},
                           {duration: 400,
                            complete: function() {
                              $(this).css('visibility', 'hidden'); }
@@ -125,7 +125,7 @@ rhizo.ui.render = function(model, renderer, allRenderings, opt_options) {
   }
 };
 
-rhizo.ui.reRender = function(model, 
+rhizo.ui.reRender = function(model,
                              renderer,
                              opt_options) {
   // re-render. rendered expects the naked model.
@@ -156,7 +156,6 @@ rhizo.ui.decorateRendering = function(renderings,
   if (expandable) {
     expander = $('<div class="rhizo-expand-model"></div>');
   }
-  console.time('decorateExpandable');
   renderings.each(function(idx) {
     // Bind the model id to each rendering
     $(this).data('id', models[idx].id);
@@ -178,11 +177,9 @@ rhizo.ui.decorateRendering = function(renderings,
   if (expandable) {
     rhizo.ui.initExpandable(project, renderer, opt_options);
   }
-  console.timeEnd('decorateExpandable');
 
   // The following ops are applied to all renderings at once.
   // Enable doubleclick selection.
-  console.time('decorateSelection');
   renderings.dblclick(function() {
     if (project.isSelected($(this).data("id"))) {
       project.unselect($(this).data("id"));
@@ -190,14 +187,13 @@ rhizo.ui.decorateRendering = function(renderings,
       project.select($(this).data("id"));
     }
   });
-  console.timeEnd('decorateSelection');
 
   // Enable dragging.
   // This may take some time, especially for thousands of models, so we do
   // this in a timeout callback, to give the UI the possibility to refresh.
   window.setTimeout(
     function() {
-      rhizo.ui.initDraggable(renderings, project);      
+      rhizo.ui.initDraggable(renderings, project);
     }, 100);
 };
 
@@ -242,7 +238,6 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
 };
 
 rhizo.ui.initDraggable = function(rendering, project) {
-  console.time('decorateDraggable');
   rendering.draggable({
     opacity: 0.7,
     cursor: 'pointer',
@@ -309,6 +304,5 @@ rhizo.ui.initDraggable = function(rendering, project) {
       }
     },
     refreshPositions: false
-  });  
-  console.timeEnd('decorateDraggable');
+  });
 };
