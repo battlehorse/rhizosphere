@@ -76,8 +76,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
 
   try {
     // builds the tree model and also checks for validity
-    var roots = new rhizo.layout.Treeifier(parentKey).buildTree(supermodels,
-                                                                allmodels);
+    var roots = new rhizo.layout.Treeifier(parentKey).buildTree(
+        supermodels, allmodels).childs;
 
     var drawingOffset = { left: 0, top: 0 };
 

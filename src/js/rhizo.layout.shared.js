@@ -60,8 +60,8 @@ rhizo.layout.Treeifier = function(parentKey) {
  * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
  *     model ids to SuperModel instances, for all models currently known to the
  *     project.
- * @return {Object.<string, rhizo.layout.TreeNode>} A map mapping model ids to
- *     rhizo.layout.TreeNode wrappers for all the tree roots that were found.
+ * @return {rhizo.layout.TreeNode} the root TreeNode (that has no model
+ *     attached) that contains the models treeification.
  */
 rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
                                                       allmodels) {
@@ -71,7 +71,7 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
         new rhizo.layout.TreeNode(supermodels[i]);
   }
 
-  var roots = {};
+  var root = new rhizo.layout.TreeNode();
 
   // supermodels contains only the _visible_ models, while allmodels contains
   // all the known models.
@@ -100,14 +100,13 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
           globalNodesMap[parentModel.id].addChild(globalNodesMap[model.id]);
           model = parentSuperModel.unwrap();
         } else {
-          roots[model.id] = globalNodesMap[model.id];
+          root.addChild(globalNodesMap[model.id]);
           break;
         }
       }
     }
   }
-
-  return roots;
+  return root;
 };
 
 /**
@@ -150,14 +149,21 @@ rhizo.layout.Treeifier.prototype.findFirstVisibleParent_ = function(allmodels,
 /**
  * A class that represents a node in the tree and wraps the superModel
  * it contains.
+ * @param {rhizo.model.SuperModel} opt_superModel The model this tree node
+ *     wraps. If unspecified, this node is assumed to be the root of the tree.
+ *     
  * @constructor
  */
-rhizo.layout.TreeNode = function(superModel, childs) {
-  this.superModel = superModel;
-  this.id = superModel.id;
-  this.childs = childs || {};
+rhizo.layout.TreeNode = function(opt_superModel) {
+  this.superModel = opt_superModel;
+  this.id = null;
+  if (opt_superModel) {
+    this.id = opt_superModel.id;    
+  }
+  this.childs = {};
   this.traversed_ = false;
   this.numChilds = 0;
+  this.is_root = this.id == null;
 };
 
 rhizo.layout.TreeNode.prototype.addChild = function(treenode) {
@@ -165,6 +171,17 @@ rhizo.layout.TreeNode.prototype.addChild = function(treenode) {
     this.childs[treenode.id] = treenode;
     this.numChilds++;
   }
+};
+
+/**
+ * @returns {Array.<rhizo.layout.TreeNode>} The immediate childs of this node.
+ */
+rhizo.layout.TreeNode.prototype.childsAsArray = function() {
+  var models = [];
+  for (var modelId in this.childs) {
+    models.push(this.childs[modelId]);
+  }
+  return models;
 };
 
 /**
