@@ -319,11 +319,11 @@ rhizo.Project.prototype.filter = function(key, value) {
     this.resetAllFilter(key);
   }
 
-  // hide/show filtered elements
-  this.alignVisibility();
-
   // after filtering some elements, perform layout again
   this.layout(null, { filter: true});
+
+  // hide/show filtered elements
+  this.alignVisibility();
 };
 
 rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
