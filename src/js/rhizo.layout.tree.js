@@ -76,7 +76,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
 
   try {
     // builds the tree model and also checks for validity
-    var roots = this.buildTree_(supermodels, allmodels, parentKey);
+    var roots = new rhizo.layout.Treeifier(parentKey).buildTree(supermodels,
+                                                                allmodels);
 
     var drawingOffset = { left: 0, top: 0 };
 
@@ -116,101 +117,6 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
     }
 
   }
-};
-
-/**
- * Builds a hierarchical structure of TreeNodes. Raises exceptions
- * if cycles are found within the tree. Deals automatically with "filtered"
- * parts of the tree
- * @private
- */
-rhizo.layout.TreeLayout.prototype.buildTree_ = function(supermodels,
-                                                        allmodels,
-                                                        parentKey) {
-  var globalNodesMap = {};
-  for (var i = 0, l = supermodels.length; i < l; i++) {
-    globalNodesMap[supermodels[i].id] =
-        new rhizo.layout.TreeNode(supermodels[i]);
-  }
-
-  var roots = {};
-
-  // supermodels contains only the _visible_ models, while allmodels contains
-  // all the known models.
-  for (var i = 0, l = supermodels.length; i < l; i++) {
-    if (!globalNodesMap[supermodels[i].unwrap().id].validated) {
-
-      // we never encountered the node before. Start navigating
-      // this branch upward, paying attention to cycles
-      var localNodesMap = {};
-      var model = supermodels[i].unwrap();
-
-      while(true) {
-        if (localNodesMap[model.id]) {
-          // cycle detected
-          throw new rhizo.layout.TreeCycleException(
-              "Tree is invalid: cycle detected");
-        }
-        localNodesMap[model.id] = model;
-        globalNodesMap[model.id].validated = true;
-
-        var parentSuperModel = this.findFirstVisibleParent_(
-            allmodels,
-            allmodels[model[parentKey]],
-            parentKey);
-        if (parentSuperModel) {
-          var parentModel = parentSuperModel.unwrap();
-          globalNodesMap[parentModel.id].addChild(globalNodesMap[model.id]);
-          model = parentSuperModel.unwrap();
-        } else {
-          roots[model.id] = globalNodesMap[model.id];
-          break;
-        }
-      }
-    }
-  }
-
-  return roots;
-};
-
-
-/**
- * From a given model, returns the first non-filtered model in the tree
- * hierarchy defined according to parentKey. If the given model itself is not
- * filtered, it is returned without further search. If a cycle is detected while
- * traversing filtered parents, an exception is raised.
- *
- * @param {Object} allmodels a map associating model ids to SuperModel instances.
- *     currently known to the project.
- * @param {rhizo.model.SuperModel} superParent the model to start the search from.
- * @param {string} parentKey the name of the model attribute that defines the
- *     parent-child relationship.
- * @private
- */
-rhizo.layout.TreeLayout.prototype.findFirstVisibleParent_ = function(allmodels,
-                                                                     superParent,
-                                                                     parentKey) {
-  if (!superParent) {
-    return null;
-  }
-
-  var localNodesMap = {};
-  while (superParent.isFiltered()) {
-    if (localNodesMap[superParent.id]) {
-      // cycle detected
-      throw new rhizo.layout.TreeCycleException(
-          "Tree is invalid: hidden cycle detected");
-    }
-    localNodesMap[superParent.id] = superParent;
-
-    superParent = allmodels[superParent.unwrap()[parentKey]];
-    if (!superParent) {
-      // we reached an hidden root.
-      return null;
-    }
-  }
-
-  return superParent;
 };
 
 rhizo.layout.TreeLayout.prototype.details = function() {
@@ -487,34 +393,6 @@ rhizo.layout.TreePainter.prototype.cleanup_ = function() {
   this.connectors_ = [];
 };
 
-
-/**
- * A class that represents a node in the tree and wraps the superModel
- * it contains.
- * @constructor
- */
-rhizo.layout.TreeNode = function(superModel, childs) {
-  this.superModel = superModel;
-  this.id = superModel.id;
-  this.childs = childs || {};
-  this.validated = false;
-};
-
-rhizo.layout.TreeNode.prototype.addChild = function(treenode) {
-  if (!this.childs[treenode.id]) {
-    this.childs[treenode.id] = treenode;
-  }
-};
-
-
-rhizo.layout.TreeCycleException = function(message) {
-  this.message = message;
-  this.name = "TreeCycleException";
-};
-
-rhizo.layout.TreeCycleException.prototype.toString = function() {
-  return this.name + ": " + this.message;
-};
 
 // register the treelayout in the global layouts list
 rhizo.layout.layouts.tree = rhizo.layout.TreeLayout;
