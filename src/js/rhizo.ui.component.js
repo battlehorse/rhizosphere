@@ -145,7 +145,7 @@ rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
       'top': this.viewport_.css('top'),
       'width': this.viewport_.width(),
       'height': this.viewport_.height(),
-      'z-index': 99,
+      'z-index': 1200,
       'display': ''
     });
 };
