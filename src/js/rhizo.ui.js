@@ -67,10 +67,10 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
       },
       fadeIn: function() {
-        $(this).css('visibility', 'visible');
+        $(this).css({visibility: 'visible', opacity: 1.0});
       },
       fadeOut: function() {
-        $(this).css('visibility', 'hidden');
+        $(this).css({visibility: 'hidden', opacity: 0.0});
       }
     });
 
@@ -91,7 +91,7 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         if (jQuery.fx.off) {
           $(this).css({visibility: 'visible', opacity: 1.0});
         } else {
-          $(this).css('visibility', 'visible').animate({opacity: 1}, 400);
+          $(this).css('visibility', 'visible').animate({opacity: 1.0}, 400);
         }
       },
       fadeOut: function() {
