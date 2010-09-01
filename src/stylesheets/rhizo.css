@@ -206,7 +206,7 @@ A, .rhizo-header A:visited {
   width: 32px;
   height: 32px;
   cursor: pointer;
-  z-index: 80;
+  z-index: 1000;
 }
 
 .rhizo-scroll-overlay {
@@ -291,7 +291,7 @@ DIV.ui-selected {
 }
 
 .rhizo-model-expanded {
-  z-index: 60;
+  z-index: 200;
 }
 
 .rhizo-model .rhizo-autorender-label {
@@ -369,7 +369,7 @@ DIV.ui-selected {
 .rhizo-bottom-bar {
   position: absolute;
   bottom: 2%;
-  z-index: 100;
+  z-index: 1300;
   background-color: #fff;
   border: 1px solid #7aa5d6;
   margin: 0 0 0 4px;
@@ -443,7 +443,7 @@ DIV.ui-selected {
   padding: 2px;
   font-size: 10px;
   font-weight: normal;
-  z-index: 90;
+  z-index: 1100;
 }
 
 .rhizo-bottom-bar .rhizo-layout-extra-options {
@@ -515,7 +515,7 @@ DIV.ui-selected {
 /* Progress bar */
 .rhizo-progressbar-panel {
   position: absolute;
-  z-index: 1000;
+  z-index: 5000;
   -webkit-box-shadow: 5px 5px 5px #aaa;
   -moz-box-shadow: 5px 5px 5px #aaa;
   margin: 5px;
