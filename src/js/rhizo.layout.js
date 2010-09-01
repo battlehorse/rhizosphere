@@ -36,25 +36,8 @@ To define a new layout:
 - update the rhizo.layout.layouts structure
 */
 
-// RHIZODEP=rhizo.log,rhizo.meta
+// RHIZODEP=rhizo.log,rhizo.meta,rhizo.layout.shared
 namespace("rhizo.layout");
-
-/**
- * Creates a dropdown control that enumerates all the metaModel keys.
- * @param {rhizo.Project} project
- * @param {string} className
- * @return {Element} the jquery-enhanced HTML dropdown control
- */
-rhizo.layout.metaModelKeySelector = function(project, className) {
-  var select = $("<select class='" + className + "' />");
-  if (project && project.metaModel()) {
-    for (key in project.metaModel()) {
-      select.append("<option value='" + key + "'>" +
-                    project.metaModel()[key].label + "</option>");
-    }
-  }
-  return select;
-};
 
 rhizo.layout.NoLayout = function(unused_project) {};
 

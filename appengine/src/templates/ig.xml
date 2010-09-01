@@ -44,6 +44,7 @@
     <script src="{{ hostname }}/static/src/js/rhizo.base.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.meta.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/extra/rhizo.meta.extra.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/src/js/rhizo.layout.shared.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.layout.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.layout.tree.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.layout.treemap.js" type="text/javascript" charset="utf-8"></script>
