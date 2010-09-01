@@ -436,20 +436,20 @@ rhizo.layout.treemap.TreeMapSlice.prototype.draw = function(backupManager,
       continue;
     }
     var span = Math.round(this.span());
-    var length = Math.round(node.area() / this.span());
+    var length = node.area() / this.span();
 
-    if (length == 0 || span == 0) {
+    if (Math.round(length) == 0 || span == 0) {
       // Hide items that are too small to be displayed on screen
       node.hide();
       numHiddenModels++;
     } else {
       var renderingSize = {};
       if (this.direction_ == rhizo.layout.treemap.TreeMapDirection.HOR) {
-        renderingSize['width'] = length;
+        renderingSize['width'] = Math.round(length);
         renderingSize['height'] = span;
       } else {
         renderingSize['width'] = span;
-        renderingSize['height'] = length;
+        renderingSize['height'] = Math.round(length);
       }
       var isNewBackup = backupManager.backup(node.model());
       if (!node.resize(renderingSize['width'], renderingSize['height'])) {
@@ -834,24 +834,33 @@ rhizo.layout.TreeMapLayout.prototype.computeColorRange_ = function(treeNode,
 
 rhizo.layout.TreeMapLayout.prototype.colorTree_ = function(treeNode,
                                                            colorRange) {
-  if (treeNode.is_root || !treeNode.treemapnode.isHidden()) {
-    if (treeNode.numChilds > 0) {
-      // Recurse
-      for (var modelId in treeNode.childs) {
-        this.colorTree_(treeNode.childs[modelId], colorRange);
-      }
-      if (!treeNode.is_root) {
-        treeNode.treemapnode.color(colorRange.colorGroup);
-      }
-
-    } else if (!treeNode.is_root) {
-      // visible leaf node.
-
-      // We can safely color with no backup: These are all visible models, hence
-      // a backup has already been created for them.
-      treeNode.treemapnode.colorWeighted(colorRange);
-    }
+  if (!treeNode.is_root && treeNode.treemapnode.isHidden()) {
+    return false;
   }
+ 
+  // Node is visible
+  if (treeNode.numChilds > 0) {
+    var hasVisibleChilds = false;
+    for (var modelId in treeNode.childs) {
+      // Recurse
+      hasVisibleChilds = this.colorTree_(
+          treeNode.childs[modelId], colorRange) || hasVisibleChilds;
+    }
+    if (!treeNode.is_root) {
+      if (hasVisibleChilds) {
+        treeNode.treemapnode.color(colorRange.colorGroup);        
+      } else {
+        treeNode.treemapnode.colorWeighted(colorRange);
+      }
+    }
+  } else if (!treeNode.is_root) {
+    // visible leaf node.
+    
+    // We can safely color with no backup: These are all visible models, hence
+    // a backup has already been created for them.
+    treeNode.treemapnode.colorWeighted(colorRange);
+  }
+  return true;
 };
 
 /**
