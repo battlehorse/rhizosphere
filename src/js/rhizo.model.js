@@ -89,7 +89,6 @@ rhizo.model.SuperModel.prototype.rescaleRendering = function(
   }
   this.cachedDimensions_ = {width: width, height: height};
 
-  // TODO(battlehorse): should rescaling be animated?
   this.rendering.width(width - 2).height(height - 2);
   if (this.rendererRescaler_) {
     // Give the original model renderer a chance to rescale the naked render,
