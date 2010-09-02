@@ -179,8 +179,14 @@ rhizo.ui.decorateRendering = function(renderings,
   }
 
   // The following ops are applied to all renderings at once.
-  // Enable doubleclick selection.
-  renderings.dblclick(function() {
+  // Enable click selection.
+  renderings.click(function(ev) {
+    if ($(this).data("dragging")) {
+      // A spurious click event always fires after a drag event, which we
+      // ignore.
+      $(this).removeData("dragging");
+      return;
+    }
     if (project.isSelected($(this).data("id"))) {
       project.unselect($(this).data("id"));
     } else {
@@ -222,7 +228,8 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
       });
 
     // register the expand icon handler
-    $('.rhizo-expand-model').click(function() {
+    $('.rhizo-expand-model').click(function(ev) {
+      ev.stopPropagation();
       var id = $(this).data('id');
       var model = project.model(id);
 
@@ -245,7 +252,8 @@ rhizo.ui.initDraggable = function(rendering, project) {
     distance: 3,
     addClasses: false,
     start: function(ev, ui) {
-      project.toggleSelection('disable');
+      ui.helper.data("dragging", true);
+      project.gui().toggleSelection('disable');
       // used by droppable feature
       ui.helper.data(
           "dropTop0",
@@ -294,7 +302,7 @@ rhizo.ui.initDraggable = function(rendering, project) {
       }
     },
     stop: function(ev, ui) {
-      project.toggleSelection('enable');
+      project.gui().toggleSelection('enable');
       if (project.isSelected(ui.helper.data("id"))) {
         var all_selected = project.allSelected();
         for (var id in all_selected) {
