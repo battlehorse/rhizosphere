@@ -33,6 +33,13 @@ To define a new layout:
   If your layout creates data structures or UI components that
   have to be cleaned up
 
+- implement the dependentModels() function (optional)
+  If your layout establish specific relationships between models (this may be
+  the case, for example, of hierarchical layouts that define parent-child
+  relationships between models). Rhizosphere may use the information about
+  dependent models to tweak the way other aspects work, such as selection
+  management.
+
 - update the rhizo.layout.layouts structure
 */
 

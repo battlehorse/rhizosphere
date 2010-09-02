@@ -485,6 +485,7 @@ rhizo.layout.TreeMapLayout = function(project) {
 
   this.prevColorMeta_ = '';
   this.backupManager_ = new rhizo.layout.treemap.ModelBackupManager();
+  this.globalNodesMap_ = {};
 };
 
 rhizo.layout.TreeMapLayout.prototype.layout = function(container,
@@ -511,10 +512,11 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   // Identify whether we are rendering nested treemaps or just a flat one with
   // no hierarchy.
   var treeRoot;
+  this.globalNodesMap_ = {};
   if (parentKey.length > 0) {
     try {
       treeRoot = new rhizo.layout.Treeifier(parentKey).buildTree(
-          supermodels, allmodels);
+          supermodels, allmodels, this.globalNodesMap_);
     } catch(e) {
       if (e.name == "TreeCycleException") {
         this.project_.logger().error(e);
@@ -601,6 +603,19 @@ rhizo.layout.TreeMapLayout.prototype.details = function() {
       append(" Parent: ").
       append(this.parentKeySelector_);
 };
+
+rhizo.layout.TreeMapLayout.prototype.dependentModels = function(modelId) {
+  var extension = [];
+  var treeNode = this.globalNodesMap_[modelId];
+  if (treeNode) {
+    treeNode.deepChildsAsArray(extension);
+    for (var i = extension.length-1; i >= 0; i--) {
+      extension[i] = extension[i].id;
+    }
+  }
+  return extension;
+};
+
 
 rhizo.layout.TreeMapLayout.prototype.toString = function() {
   return "TreeMap";

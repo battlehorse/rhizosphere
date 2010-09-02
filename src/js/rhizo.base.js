@@ -143,27 +143,36 @@ rhizo.Project.prototype.resetAllFilter = function(key) {
 };
 
 rhizo.Project.prototype.select = function(id) {
-  var supermodel = this.model(id);
-  this.selectionMap_[id] = supermodel;
-  supermodel.selected = true;
-  supermodel.rendering.addClass('ui-selected');
-
-  this.logger_.info("Selected " + supermodel);
+  var ids = this.extendSelection_(id);
+  for (var i = ids.length-1; i >=0; i--) {
+    var supermodel = this.model(ids[i]);
+    this.selectionMap_[ids[i]] = supermodel;
+    supermodel.selected = true;
+    supermodel.rendering.addClass('ui-selected');
+  }
 };
 
 rhizo.Project.prototype.unselect = function(id) {
+  var ids = this.extendSelection_(id);
+  for (var i = ids.length-1; i >=0; i--) {
+    this.unselectInternal_(ids[i]);
+  }
+};
+
+rhizo.Project.prototype.unselectAll = function() {
+  // We don't have to care about selection extension when unselecting
+  // everything.
+  for (id in this.selectionMap_) {
+    this.unselectInternal_(id);
+  }
+};
+
+rhizo.Project.prototype.unselectInternal_ = function(id) {
   var supermodel = this.model(id);
   this.selectionMap_[id] = null;
   delete this.selectionMap_[id];
   supermodel.selected = false;
   supermodel.rendering.removeClass('ui-selected');
-  this.logger_.info("Unselected " + supermodel);
-};
-
-rhizo.Project.prototype.unselectAll = function() {
-  for (id in this.selectionMap_) {
-    this.unselect(id);
-  }
 };
 
 rhizo.Project.prototype.isSelected = function(id) {
@@ -182,12 +191,23 @@ rhizo.Project.prototype.allUnselected = function() {
 };
 
 /**
-   Enables or disables models selection.
-
-   @param {string} status either 'enable' or 'disable'
+ * If the current layout supports it, ask it to extend a model selection.
+ * The layout may be aware of relationships between models (such as hierarchies)
+ * so that selecting a model should trigger the selection of dependent ones.
+ *
+ * @param {string} id The id of the model whose selection state changed.
+ * @return {Array.<string>} An array of model ids (including the input one) that
+ *     are dependent on the input one.
+ * @private
  */
-rhizo.Project.prototype.toggleSelection = function(status) {
-  this.gui_.viewport.selectable(status);
+rhizo.Project.prototype.extendSelection_ = function(id) {
+  var layoutEngine = this.layoutEngines_[this.curLayoutName_];
+  if (layoutEngine.dependentModels) {
+    var idsToSelect = layoutEngine.dependentModels(id);
+    idsToSelect.push(id);
+    return idsToSelect;
+  }
+  return [id];
 };
 
 rhizo.Project.prototype.checkModels_ = function() {

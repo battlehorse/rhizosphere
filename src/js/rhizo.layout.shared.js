@@ -60,12 +60,15 @@ rhizo.layout.Treeifier = function(parentKey) {
  * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
  *     model ids to SuperModel instances, for all models currently known to the
  *     project.
+ * @param {Object.<string, rhizo.layout.TreeNode>?} opt_globalNodesMap an
+ *     optional map that will accumulate all TreeNodes, keyed by model id.
  * @return {rhizo.layout.TreeNode} the root TreeNode (that has no model
  *     attached) that contains the models treeification.
  */
 rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
-                                                      allmodels) {
-  var globalNodesMap = {};
+                                                      allmodels,
+                                                      opt_globalNodesMap) {
+  var globalNodesMap = opt_globalNodesMap || {};
   for (var i = 0, l = supermodels.length; i < l; i++) {
     globalNodesMap[supermodels[i].id] =
         new rhizo.layout.TreeNode(supermodels[i]);
@@ -185,6 +188,18 @@ rhizo.layout.TreeNode.prototype.childsAsArray = function() {
 };
 
 /**
+ * Deep find all the children of this node and appends them to the given array.
+ * @param {Array.<rhizo.layout.TreeNode>} childs Array into which accumulate
+ *     this node children.
+ */
+rhizo.layout.TreeNode.prototype.deepChildsAsArray = function(childs) {
+  for (var modelId in this.childs) {
+    childs.push(this.childs[modelId]);
+    this.childs[modelId].deepChildsAsArray(childs);
+  }
+};
+
+/**
  * An exception raised when cycles are encountered when treeifing a list of
  * SuperModels.
  * @constructor
@@ -199,4 +214,3 @@ rhizo.layout.TreeCycleException = function(message) {
 rhizo.layout.TreeCycleException.prototype.toString = function() {
   return this.name + ": " + this.message;
 };
-
