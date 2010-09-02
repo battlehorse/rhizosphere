@@ -53,6 +53,12 @@ rhizo.layout.TreeLayout = function(project) {
   this.project_ = project;
   this.directionSelector_ = null;
   this.metaModelKeySelector_ = null;
+
+  /**
+   * @type {Object.<string, rhizo.layout.TreeNode>}
+   * @private
+   */
+  this.globalNodesMap_ = null;
 };
 
 rhizo.layout.TreeLayout.prototype.layout = function(container,
@@ -76,8 +82,9 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
 
   try {
     // builds the tree model and also checks for validity
+    this.globalNodesMap_ = {};
     var roots = new rhizo.layout.Treeifier(parentKey).buildTree(
-        supermodels, allmodels).childs;
+        supermodels, allmodels, this.globalNodesMap_).childs;
 
     var drawingOffset = { left: 0, top: 0 };
 
@@ -140,6 +147,18 @@ rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, opt_options) {
   if (this.treePainter_) {
     this.treePainter_.cleanup_();
   }
+};
+
+rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
+  var extension = [];
+  var treeNode = this.globalNodesMap_[modelId];
+  if (treeNode) {
+    treeNode.deepChildsAsArray(extension);
+    for (var i = extension.length-1; i >= 0; i--) {
+      extension[i] = extension[i].id;
+    }
+  }
+  return extension;
 };
 
 
