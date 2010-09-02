@@ -624,23 +624,19 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_optio
 
         var actionName = ui.draggable.text();
 
-        var left = ui.absolutePosition.left - offset.left;
+        var left = ui.offset.left - offset.left;
         if ((left + 200) > rightBorder) {
           left = rightBorder - 210;
         }
 
-        var top = ui.absolutePosition.top - offset.top;
+        var top = ui.offset.top - offset.top;
         if ((top + 200) > bottomBorder) {
           top = bottomBorder - 210;
         }
 
         var dropbox = $("<div class='rhizo-droppable-action'>" +
                         "Drop your items here to perform:<br />" +
-                        actionName  +"</div>")
-          .css('position', 'absolute')
-          .css('top', top)
-          .css('left', left)
-          .css('display', 'none');
+                        actionName  +"</div>").css({top: top, left: left});
 
         gui.universe.append(dropbox);
         dropbox.fadeIn();

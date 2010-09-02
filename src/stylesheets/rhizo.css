@@ -79,6 +79,9 @@ A, .rhizo-header A:visited {
   height: 200px;
   color: #7aa5d6;
   font-size: 12px;
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
 }
 
 
