@@ -56,10 +56,10 @@ rhizo.ui.canCacheDimensions = function(renderer, opt_options) {
   return canCacheDimensions;
 };
 
-rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
+rhizo.ui.performanceTuning = function(gui, opt_disableAllAnims) {
   if (opt_disableAllAnims) {
     // Disable all animations
-    jQuery.fx.off = true;
+    gui.disableFx(true);
 
     // Define non-animated move(), fadeIn() and fadeOut() functions
     jQuery.fn.extend({
@@ -79,7 +79,7 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
     // if needed.
     jQuery.fn.extend({
       move: function(top, left, opt_extras) {
-        if (jQuery.fx.off) {
+        if (gui.noFx) {
           $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
         } else {
           $(this).animate(
@@ -88,14 +88,14 @@ rhizo.ui.performanceTuning = function(opt_disableAllAnims) {
         }
       },
       fadeIn: function() {
-        if (jQuery.fx.off) {
+        if (gui.noFx) {
           $(this).css({visibility: 'visible', opacity: 1.0});
         } else {
           $(this).css('visibility', 'visible').animate({opacity: 1.0}, 400);
         }
       },
       fadeOut: function() {
-        if (jQuery.fx.off) {
+        if (gui.noFx) {
           $(this).css({visibility: 'hidden', opacity: 0.0});
         } else {
           $(this).animate({opacity: 0.0},

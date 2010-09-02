@@ -91,13 +91,14 @@ rhizo.Project.prototype.finalizeUI_ = function() {
 
   // We manually disable animations for the initial layout (the browser is
   // already busy creating the whole dom).
-  jQuery.fx.off = true;
+  this.gui_.disableFx(true);
 
   // laying out models
   this.layout(this.curLayoutName_);
 
   // showing elements and re-aligning animation settings
-  this.alignVisibility(true);
+  this.alignVisibility();
+  this.alignFx();
 };
 
 rhizo.Project.prototype.model = function(id) {
@@ -338,6 +339,7 @@ rhizo.Project.prototype.filter = function(key, value) {
     // reset filter
     this.resetAllFilter(key);
   }
+  this.alignFx();
 
   // after filtering some elements, perform layout again
   this.layout(null, { filter: true});
@@ -346,37 +348,47 @@ rhizo.Project.prototype.filter = function(key, value) {
   this.alignVisibility();
 };
 
-rhizo.Project.prototype.alignVisibility = function(opt_delayCount) {
-  // adjust the number of currently shown models.
-  // This number affects performance choices.
-  // Fade out is done _before_ changing performance settings
-  var numShownModels = 0;
-  var renderingsToFade = [];
-  for (var i = this.models_.length-1; i >=0; i--) {
-    if (this.models_[i].isFiltered()) {
-      renderingsToFade.push(this.models_[i].rendering.get(0));
-    } else {
-      numShownModels += 1;
-    }
-  }
-  $(renderingsToFade).fadeOut();
-
-  if (!opt_delayCount) {
-    jQuery.fx.off = this.options_.noAnims || numShownModels > 200;
-  }
-
-  // fade in all the affected elements according to current filter status
-  // fade in is done _after_ changing performance settings, unless explicit
-  // delay has been requested.
-  renderingsToFade = [];
+/**
+ * Enables or disables project-wide animations.
+ * 
+ * The decision is based on the number of models the browser has to manipulate
+ * (move, hide, show, rescale ...). This includes:
+ * - models that are currently visible,
+ * - 'unfiltered' models (i.e. number of models that will be visible once
+ *   alignVisibility() is invoked).
+ * 
+ * If either number is too high, animations are disabled.
+ */
+rhizo.Project.prototype.alignFx = function() {
+  var numUnfilteredModels = 0;
+  var numVisibleModels = 0;
   for (var i = this.models_.length-1; i >= 0; i--) {
     if (!this.models_[i].isFiltered()) {
-      renderingsToFade.push(this.models_[i].rendering.get(0));
+      numUnfilteredModels++;
+    }
+    if (this.models_[i].visible) {
+      numVisibleModels++;
     }
   }
-  $(renderingsToFade).fadeIn();
+  this.gui_.disableFx(this.options_.noAnims ||
+                      numUnfilteredModels > 200 ||
+                      numVisibleModels > 200);
+};
 
-  if (opt_delayCount) {
-    jQuery.fx.off = this.options_.noAnims || numShownModels > 200;
+rhizo.Project.prototype.alignVisibility = function() {
+  var renderingsToFadeOut = [];
+  var renderingsToFadeIn = [];
+  for (var i = this.models_.length-1; i >=0; i--) {
+    if (this.models_[i].isFiltered()) {
+      if (this.models_[i].visible) {
+        renderingsToFadeOut.push(this.models_[i].rendering.get(0)); 
+        this.models_[i].visible = false;
+      }
+    } else if (!this.models_[i].visible) {
+      renderingsToFadeIn.push(this.models_[i].rendering.get(0));
+      this.models_[i].visible = true;      
+    }
   }
+  $(renderingsToFadeOut).fadeOut();
+  $(renderingsToFadeIn).fadeIn();
 };
