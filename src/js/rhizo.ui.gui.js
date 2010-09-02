@@ -60,3 +60,11 @@ rhizo.ui.gui.GUI.prototype.addComponent = function(component_key, component) {
 rhizo.ui.gui.GUI.prototype.getComponent = function(component_key) {
   return this.componentsMap_[component_key];
 };
+
+/**
+ * Enables or disables models selection.
+ * @param {string} status Either 'enable' or 'disable'
+ */
+rhizo.ui.gui.GUI.prototype.toggleSelection = function(status) {
+  this.viewport.selectable(status);
+};

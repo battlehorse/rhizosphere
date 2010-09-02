@@ -645,8 +645,8 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_optio
         gui.universe.append(dropbox);
         dropbox.fadeIn();
         dropbox.draggable({
-          start: function() { project.toggleSelection('disable'); },
-          stop: function() { project.toggleSelection('enable'); }
+          start: function() { project.gui().toggleSelection('disable'); },
+          stop: function() { project.gui().toggleSelection('enable'); }
         });
         dropbox.droppable({
           accept: '.rhizo-model',
