@@ -52,7 +52,7 @@ rhizo.layout.NoLayout.prototype.layout = function(container,
                                                   supermodels,
                                                   allmodels,
                                                   meta,
-                                                  opt_options) {};
+                                                  options) {};
 
 rhizo.layout.NoLayout.prototype.toString = function() {
   return "-";
@@ -70,7 +70,7 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
                                                     supermodels,
                                                     allmodels,
                                                     meta,
-                                                    opt_options) {
+                                                    options) {
   var maxWidth = container.width();
   var lineHeight = 0;
 
@@ -106,7 +106,7 @@ rhizo.layout.FlowLayout.prototype.overrideDetailControls = function(
   this.reverseCheckbox_ = reverseCheckbox;
 };
 
-rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine, opt_options) {
+rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine, options) {
   this.top = this.left = 5;
 };
 
@@ -132,8 +132,8 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(container,
                                                         supermodels,
                                                         allmodels,
                                                         meta,
-                                                        opt_options) {
-  if (opt_options && opt_options.filter) {
+                                                        options) {
+  if (options.filter) {
     return; // re-layouting because of filtering doesn't affect the layout
   }
   var containerWidth = container.width();
@@ -168,7 +168,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
                                                       supermodels,
                                                       allmodels,
                                                       meta,
-                                                      opt_options) {
+                                                      options) {
   var reverse = this.reverseCheckbox_.is(":checked");
 
   // detect bucket
@@ -226,7 +226,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
                                     buckets[bucketKey],
                                     allmodels,
                                     meta,
-                                    opt_options);
+                                    options);
 
     // re-position for next bucket
     this.internalFlowLayout_.top += 10;
@@ -260,8 +260,8 @@ rhizo.layout.BucketLayout.prototype.details = function() {
            append(this.reverseCheckbox_);
 };
 
-rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, opt_options) {
-  this.internalFlowLayout_.cleanup(sameEngine, opt_options);
+rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, options) {
+  this.internalFlowLayout_.cleanup(sameEngine, options);
   $.each(this.bucketHeaders_, function() { this.remove(); });
   this.bucketHeaders_ = [];
 };
