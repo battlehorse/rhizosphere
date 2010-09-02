@@ -63,7 +63,7 @@ rhizo.layout.treemap.TreeMapDirection = {
 rhizo.layout.treemap.ModelBackupManager = function() {
 
   /**
-   * @type {Object.<string, rhizo.layout.treemap.ModelBackup}
+   * @type {Object.<string, rhizo.layout.treemap.ModelBackup>}
    * @private
    */
   this.modelBackups_ = {};
