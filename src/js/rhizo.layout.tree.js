@@ -65,7 +65,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
                                                     supermodels,
                                                     allmodels,
                                                     meta,
-                                                    opt_options) {
+                                                    options) {
 
   // detect rendering direction
   var vertical = this.directionSelector_.val() == 'ver';
@@ -143,7 +143,7 @@ rhizo.layout.TreeLayout.prototype.toString = function() {
   return "Tree";
 };
 
-rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, opt_options) {
+rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, options) {
   if (this.treePainter_) {
     this.treePainter_.cleanup_();
   }

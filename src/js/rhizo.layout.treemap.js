@@ -486,13 +486,21 @@ rhizo.layout.TreeMapLayout = function(project) {
   this.prevColorMeta_ = '';
   this.backupManager_ = new rhizo.layout.treemap.ModelBackupManager();
   this.globalNodesMap_ = {};
+
+  // Number of models that have been hidden specifically by this layout because
+  // their area would be too small for display.
+  this.numHiddenModels_ = 0;
+
+  // Whether the layout has changed the filtered status of some models, but
+  // their visibility hasn't been aligned yet.
+  this.dirtyVisibility_ = false;
 };
 
 rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                                                        supermodels,
                                                        allmodels,
                                                        meta,
-                                                       opt_options) {
+                                                       options) {
   var areaMeta = this.areaSelector_.val();
   var colorMeta = this.colorSelector_.val();
   var parentKey = this.parentKeySelector_.val();
@@ -505,8 +513,8 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   this.prevColorMeta_ = colorMeta;
 
   // Revert expanded models.
-  if (rhizo.ui.expandable(this.project_.renderer(), opt_options)) {
-    this.revertExpandedModels_(supermodels, opt_options);
+  if (rhizo.ui.expandable(this.project_.renderer(), options)) {
+    this.revertExpandedModels_(supermodels, options);
   }
 
   // Identify whether we are rendering nested treemaps or just a flat one with
@@ -546,10 +554,10 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   };
 
   // Actual layout occurs here.
-  var numHiddenModels = this.layoutNestedMap_(boundingRect,
-                                              treeRoot,
-                                              {x:0, y:0},
-                                              /* deepness */ 0);
+  this.numHiddenModels_ = this.layoutNestedMap_(boundingRect,
+                                                treeRoot,
+                                                {x:0, y:0},
+                                                /* deepness */ 0);
 
   // Treemap coloring (if needed).
   // Color ranges are determined by sampling values from:
@@ -570,20 +578,36 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
 
   // Align visibility because of models that the layout may have decided to
   // hide (whose area is too small to display).
-  if (numHiddenModels > 0) {
-    this.project_.alignVisibility();
+  if (this.numHiddenModels_ > 0 || this.dirtyVisibility_) {
+    this.dirtyVisiblity_ = false;
+    if (!options.filter) {
+      // We are leaving this layout and we're not in the context of a filter
+      // operation. We have to force visibility alignment here.
+      this.project_.alignVisibility();
+    }
   }
 };
 
-rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine,
-                                                        opt_options) {
+rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
   // Restore all models to their original sizes, if we are moving to a different
   // layout engine.
   if (!sameEngine) {
     this.backupManager_.restoreAll();
   }
-  this.project_.resetAllFilter('__treemap__');
-  this.project_.alignVisibility();
+
+  if (this.numHiddenModels_ > 0) {
+    // There were hidden models, reset their filter.
+    this.project_.resetAllFilter('__treemap__');
+    this.numHiddenModels_ = 0;
+
+    if (sameEngine) {
+      this.dirtyVisibility_ = true;  // defer visibility alignment.
+    } else if (!options.filter) {
+      // We are leaving this layout and we're not in the context of a filter
+      // operation. We have to force visibility alignment here.
+      this.project_.alignVisibility();
+    }
+  }
 };
 
 rhizo.layout.TreeMapLayout.prototype.details = function() {
@@ -887,7 +911,7 @@ rhizo.layout.TreeMapLayout.prototype.colorTree_ = function(treeNode,
  * @private
  */
 rhizo.layout.TreeMapLayout.prototype.revertExpandedModels_ = function(
-      supermodels, opt_options) {
+      supermodels, options) {
   for (var i = supermodels.length-1; i >= 0; i--) {
     var model = supermodels[i];
     if (model.expanded) {
@@ -896,7 +920,7 @@ rhizo.layout.TreeMapLayout.prototype.revertExpandedModels_ = function(
       model.expanded = !model.expanded;
       rhizo.ui.reRender(model,
                         this.project_.renderer(),
-                        opt_options);
+                        options);
     }
   }
 };
