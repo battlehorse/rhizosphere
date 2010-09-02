@@ -399,8 +399,8 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
       countFiltered++;
     }
     // after filtering some elements, perform layout again
-    project.alignVisibility();
     project.layout(null, { filter: true});
+    project.alignVisibility();
     project.unselectAll();
     this.resetButton_.
         removeAttr("disabled").
@@ -411,8 +411,8 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
   this.resetButton_.click(function(ev) {
     project.resetAllFilter("__selection__");
     // after filtering some elements, perform layout again
-    project.alignVisibility();
     project.layout(null, { filter: true});
+    project.alignVisibility();
     $(this).attr("disabled","disabled").text("Reset");
   });
 };
