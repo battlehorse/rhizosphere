@@ -50,7 +50,7 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   this.project_.chromeReady();
 
   // Disable animations and other performance tunings if needed.
-  rhizo.ui.performanceTuning(this.options_.noAnims);
+  rhizo.ui.performanceTuning(gui, this.options_.noAnims);
 
   // Open the models' source...
   var source = opt_resource;

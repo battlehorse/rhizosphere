@@ -43,6 +43,10 @@ rhizo.ui.gui.GUI = function(container) {
   // In addition to the mandatory components, defined above, a GUI can have
   // extra components attached to it.
   this.componentsMap_ = {};
+
+  // Dictates whether animations are enabled or not.
+  this.noFx = false;
+  jQuery.fx.off = false;
 };
 
 rhizo.ui.gui.GUI.prototype.setViewport = function(viewport) {
@@ -67,4 +71,9 @@ rhizo.ui.gui.GUI.prototype.getComponent = function(component_key) {
  */
 rhizo.ui.gui.GUI.prototype.toggleSelection = function(status) {
   this.viewport.selectable(status);
+};
+
+rhizo.ui.gui.GUI.prototype.disableFx = function(disabled) {
+  this.noFx = disabled;
+  jQuery.fx.off = disabled;
 };

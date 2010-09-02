@@ -384,6 +384,7 @@ rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, 
 };
 
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, opt_options) {
+  //TODO(battlehorse): consolidate this filtering operations inside Project.
   this.selectButton_.click(jQuery.proxy(function(ev) {
     var countSelected = 0;
     for (var id in project.allSelected()) { countSelected++; };
@@ -398,7 +399,9 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
       allUnselected[id].filter("__selection__"); // hard-coded keyword
       countFiltered++;
     }
+
     // after filtering some elements, perform layout again
+    project.alignFx();
     project.layout(null, { filter: true});
     project.alignVisibility();
     project.unselectAll();
@@ -410,6 +413,7 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
 
   this.resetButton_.click(function(ev) {
     project.resetAllFilter("__selection__");
+    project.alignFx();
     // after filtering some elements, perform layout again
     project.layout(null, { filter: true});
     project.alignVisibility();

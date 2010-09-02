@@ -25,6 +25,7 @@ rhizo.model.SuperModel = function(model, renderer) {
   this.rendering = null;
   this.naked_render = null;
   this.expanded = false; // whether the rendering is expanded or not
+  this.visible = false;  // whether the rendering is visible or not
 
   this.cacheDimensions_ = false;
   this.cachedDimensions_ = {};
