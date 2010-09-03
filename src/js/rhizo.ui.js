@@ -32,6 +32,8 @@ rhizo.ui.toHumanLabel = function(value) {
     var order = rhizo.util.orderOfMagnitude(value);
     if (order < 0) {
       return value.toFixed(-order);
+    } else if (order < 3) {
+      return value;
     }
     var si = parseInt(order / 3, 10);
     var label = labels[si] || ''; // the or is for out-of-scale values
