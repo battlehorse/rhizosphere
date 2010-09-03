@@ -39,7 +39,7 @@ A, .rhizo-header A:visited {
   top: 0;
   width: 295px;
   border: 1px solid #7aa5d6;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 /* Actions */
@@ -60,7 +60,7 @@ A, .rhizo-header A:visited {
 
 .rhizo-action {
   border: 1px solid #7aa5d6;
-  font-size: 12px;
+  font-size: 11px;
   margin-bottom: 5px;
   background-color: #fff;
   height: 40px;
@@ -78,7 +78,7 @@ A, .rhizo-header A:visited {
   width: 200px;
   height: 200px;
   color: #7aa5d6;
-  font-size: 12px;
+  font-size: 11px;
   position: absolute;
   opacity: 0;
   visibility: hidden;
@@ -92,7 +92,7 @@ A, .rhizo-header A:visited {
   right: 5px;
   width: 120px;
   height: 98%;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .rhizo-console-header {
@@ -136,7 +136,7 @@ A, .rhizo-header A:visited {
 .rhizo-console-contents {
   border: 1px solid #7aa5d6;
   border-top-width: 0px;
-  font-size: 11px;
+  font-size: 10px;
   height: 400px;
   overflow: hidden;
   background-color: #e5ecf9;
@@ -188,7 +188,7 @@ A, .rhizo-header A:visited {
 }
 
 .rhizo-bucket-header {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   border-bottom: 1px solid #7aa5d6;
   width: 200px;
@@ -299,12 +299,12 @@ DIV.ui-selected {
 
 .rhizo-model .rhizo-autorender-label {
   color: #666;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .rhizo-autorender {
   color: #000;
-  font-size: 12px;
+  font-size: 11px;
   width: 100%;
   height: 100%;
 }
@@ -351,7 +351,7 @@ DIV.ui-selected {
 
 /* Minirender tweaks */
 .rhizo-miniRender .rhizo-bucket-header {
-  font-size: 11px;
+  font-size: 12px;
   margin-bottom: 3px;
   width: 160px;
 }
@@ -386,7 +386,7 @@ DIV.ui-selected {
 .rhizo-bottom-bar A {
   color: #7aa5d6;
   text-decoration: none;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .rhizo-bottom-bar A:hover {
@@ -413,7 +413,7 @@ DIV.ui-selected {
 }
 
 .rhizo-bottom-bar .rhizo-floating-panel H1 {
-  font-size: 18px;
+  font-size: 14px;
   margin: 0;
   padding: 0;
   color: #7aa5d6;
@@ -427,7 +427,7 @@ DIV.ui-selected {
 
 
 .rhizo-bottom-bar .rhizo-bucket-header {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: bold;
   border-bottom: 1px solid #7aa5d6;
   width: 160px;
@@ -444,7 +444,7 @@ DIV.ui-selected {
   height: 6em;
   width: 99%;
   padding: 2px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: normal;
   z-index: 1100;
 }
@@ -455,7 +455,7 @@ DIV.ui-selected {
 
 .rhizo-bottom-bar .rhizo-filter {
   margin-top: 5px;
-  font-size: 10px;
+  font-size: 11px;
   background-color: #fff;
   height: 100%; /* width/height are necessary for safari, otherwise it clips rendering */
   width: 100%;
@@ -465,7 +465,6 @@ DIV.ui-selected {
   overflow: hidden;
 }
 
-<<<<<<< local
 .rhizo-bottom-bar .rhizo-filter-container SELECT {
   max-width: 190px;
 }
@@ -535,7 +534,7 @@ DIV.ui-selected {
 .rhizo-progressbar-text {
   text-align: center;
   color: #7aa5d6;
-  font-size: 12px;
+  font-size: 11px;
   margin-bottom: 5px;
 }
 
@@ -548,7 +547,7 @@ DIV.ui-selected {
 /* Styles used only by Rhizosphere samples */
 .rhizo-sample {
   color: #000;
-  font-size: 12px;
+  font-size: 11px;
   width: 100%;
   height: 100%;
   padding: 3px;
