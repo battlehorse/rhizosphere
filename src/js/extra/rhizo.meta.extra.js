@@ -107,7 +107,7 @@ rhizo.meta.DecimalRangeKind.prototype.toModelScale_ = function(filterValue) {
 };
 
 rhizo.meta.DecimalRangeKind.prototype.toFilterScale_ = function(modelValue) {
-  return parseInt(modelValue * this.scale_, 10);
+  return Math.round(modelValue * this.scale_);
 };
 
 rhizo.meta.DecimalRangeKind.prototype.toHumanLabel_ =
@@ -141,7 +141,7 @@ rhizo.meta.LogarithmRangeKind.prototype.toModelScale_ = function(filterValue) {
 };
 
 rhizo.meta.LogarithmRangeKind.prototype.toFilterScale_ = function(modelValue) {
-  return parseInt(rhizo.util.log10_(modelValue) * this.scale_, 10);
+  return Math.round(rhizo.util.log10_(modelValue) * this.scale_);
 };
 
 rhizo.meta.LogarithmRangeKind.prototype.toHumanLabel_ =
