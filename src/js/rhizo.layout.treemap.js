@@ -231,7 +231,7 @@ rhizo.layout.treemap.TreeMapNode.prototype.hide = function() {
 /**
  * Moves this node model rendering to the given {top, left} coordinates, with
  * respect to the overall container that contains the whole treemap layout.
- * 
+ *
  * Also alters the rendering z-index for treemap nesting.
  */
 rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) {
@@ -272,7 +272,7 @@ rhizo.layout.treemap.TreeMapNode.prototype.assignColorRange = function(colorRang
 /**
  * Computes the available area within this node available for nesting treemap
  * nodes that are child of this one.
- * 
+ *
  * Returns a bounding rectangle of zero area is there is not enough space to
  * render nested elements.
  */
@@ -490,10 +490,6 @@ rhizo.layout.TreeMapLayout = function(project) {
   // Number of models that have been hidden specifically by this layout because
   // their area would be too small for display.
   this.numHiddenModels_ = 0;
-
-  // Whether the layout has changed the filtered status of some models, but
-  // their visibility hasn't been aligned yet.
-  this.dirtyVisibility_ = false;
 };
 
 rhizo.layout.TreeMapLayout.prototype.layout = function(container,
@@ -528,7 +524,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
     } catch(e) {
       if (e.name == "TreeCycleException") {
         this.project_.logger().error(e);
-        return;
+        return false;
       } else {
         throw e;
       }
@@ -576,16 +572,9 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
     this.colorTree_(treeRoot, colorRange);
   }
 
-  // Align visibility because of models that the layout may have decided to
-  // hide (whose area is too small to display).
-  if (this.numHiddenModels_ > 0 || this.dirtyVisibility_) {
-    this.dirtyVisiblity_ = false;
-    if (!options.filter) {
-      // We are leaving this layout and we're not in the context of a filter
-      // operation. We have to force visibility alignment here.
-      this.project_.alignVisibility();
-    }
-  }
+  // If the layout decided to hide some models, mark visibility as dirty to
+  // force a realignment after layout.
+  return this.numHiddenModels_ > 0;
 };
 
 rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
@@ -596,18 +585,13 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
   }
 
   if (this.numHiddenModels_ > 0) {
-    // There were hidden models, reset their filter.
+    // There were hidden models, reset their filter and mark visibility as
+    // dirty to force visibility alignment.
     this.project_.resetAllFilter('__treemap__');
     this.numHiddenModels_ = 0;
-
-    if (sameEngine) {
-      this.dirtyVisibility_ = true;  // defer visibility alignment.
-    } else if (!options.filter) {
-      // We are leaving this layout and we're not in the context of a filter
-      // operation. We have to force visibility alignment here.
-      this.project_.alignVisibility();
-    }
+    return true;
   }
+  return false;
 };
 
 rhizo.layout.TreeMapLayout.prototype.details = function() {
@@ -650,7 +634,7 @@ rhizo.layout.TreeMapLayout.prototype.toString = function() {
  * 'treeRoot'. Each level is laid out before moving to the next (deeper) one,
  * since every level needs bounding rectangles and anchoring information from
  * the above one.
- * 
+ *
  * @param {rhizo.layout.TreeNode} treeRoot
  * @return {number} The number of models that this layout wants to hide because
  *     their pixel area is too small to properly display on screen.
@@ -838,7 +822,7 @@ rhizo.layout.TreeMapLayout.prototype.computeNestedAreas_ = function(treeNode,
 /**
  * Recursively computes the minimum and maximum models' values for the coloring
  * attribute, to be able to later map this range into an RGB color range.
- * 
+ *
  * The only nodes that participate in coloring are a) visible leaf nodes and
  * b) visible non-leaf nodes whose children are all hidden.
  *
@@ -863,10 +847,10 @@ rhizo.layout.TreeMapLayout.prototype.computeColorRange_ = function(treeNode,
     }
     if (!hasVisibleChilds) {
       treeNode.treemapnode.assignColorRange(colorRange);
-    }    
+    }
   } else if (!treeNode.is_root) {
     // visible leaf node.
-    treeNode.treemapnode.assignColorRange(colorRange);    
+    treeNode.treemapnode.assignColorRange(colorRange);
   }
   return true;
 };
@@ -876,7 +860,7 @@ rhizo.layout.TreeMapLayout.prototype.colorTree_ = function(treeNode,
   if (!treeNode.is_root && treeNode.treemapnode.isHidden()) {
     return false;
   }
- 
+
   // Node is visible
   if (treeNode.numChilds > 0) {
     var hasVisibleChilds = false;
@@ -887,14 +871,14 @@ rhizo.layout.TreeMapLayout.prototype.colorTree_ = function(treeNode,
     }
     if (!treeNode.is_root) {
       if (hasVisibleChilds) {
-        treeNode.treemapnode.color(colorRange.colorGroup);        
+        treeNode.treemapnode.color(colorRange.colorGroup);
       } else {
         treeNode.treemapnode.colorWeighted(colorRange);
       }
     }
   } else if (!treeNode.is_root) {
     // visible leaf node.
-    
+
     // We can safely color with no backup: These are all visible models, hence
     // a backup has already been created for them.
     treeNode.treemapnode.colorWeighted(colorRange);

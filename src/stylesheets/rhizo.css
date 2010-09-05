@@ -173,9 +173,19 @@ A, .rhizo-header A:visited {
  font-size: 14px;
  font-weight: bold;
  padding-bottom: 2px;
- margin: 5px 0;
+ margin: 5px 0 0 0;
  border-top: 1px solid #7aa5d6;
  background-color: #e5ecf9;
+}
+
+.rhizo-autocommit-panel {
+  background-color: rgb(238, 242, 251);
+  padding: 2px 0;
+  margin: 0;
+}
+
+.rhizo-autocommit-panel BUTTON {
+  float: right;
 }
 
 .rhizo-filter {
@@ -459,6 +469,20 @@ DIV.ui-selected {
   background-color: #fff;
   height: 100%; /* width/height are necessary for safari, otherwise it clips rendering */
   width: 100%;
+}
+
+.rhizo-bottom-bar .rhizo-autocommit-panel {
+  background-color: #fff;
+}
+
+.rhizo-bottom-bar .rhizo-autocommit-panel BUTTON {
+  float: none;
+  margin: 0 5px;
+}
+
+.rhizo-bottom-bar .rhizo-autocommit-link {
+  float: right;
+  margin-right: 3px;
 }
 
 .rhizo-bottom-bar .rhizo-filter-container {

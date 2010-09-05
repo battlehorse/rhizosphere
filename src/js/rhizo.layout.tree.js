@@ -76,7 +76,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
   if (!meta[parentKey]) {
     this.project_.logger().error(
       "parentKey attribute does not match any property");
-    return;
+    return false;
   }
   this.project_.logger().info("Creating tree by " + parentKey);
 
@@ -122,8 +122,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
     } else {
       throw e;
     }
-
   }
+  return false;
 };
 
 rhizo.layout.TreeLayout.prototype.details = function() {
@@ -147,6 +147,7 @@ rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, options) {
   if (this.treePainter_) {
     this.treePainter_.cleanup_();
   }
+  return false;
 };
 
 rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {

@@ -19,6 +19,16 @@
 namespace("rhizo.ui");
 
 /**
+ * Defines the visibility states that models can have.
+ * @enum {number}
+ */
+rhizo.ui.Visibility = {
+  HIDDEN: 0,  // model filtered, filter is committed.
+  GREY: 1,    // model filterer, filter is not committed yet.
+  VISIBLE: 2  // model unfiltered, visible.
+};
+
+/**
    Converts a value to an human-readable label. If the value is not numeric,
    it is returned untouched. If it is numeric the following logic applies:
      0: is returned untouched,
@@ -73,6 +83,9 @@ rhizo.ui.performanceTuning = function(gui, opt_disableAllAnims) {
       },
       fadeOut: function() {
         $(this).css({visibility: 'hidden', opacity: 0.0});
+      },
+      greyOut: function() {
+        $(this).css('opacity', 0.2);
       }
     });
 
@@ -106,9 +119,28 @@ rhizo.ui.performanceTuning = function(gui, opt_disableAllAnims) {
                              $(this).css('visibility', 'hidden'); }
                           });
         }
+      },
+      greyOut: function() {
+        if (gui.noFx) {
+          $(this).css('opacity', 0.2);
+        } else {
+          $(this).animate({opacity: 0.2}, 400);
+        }
       }
     });
   }
+
+  jQuery.fn.extend({
+    fadeTo: function(target_vis) {
+      if (target_vis == rhizo.ui.Visibility.HIDDEN) {
+        this.fadeOut();
+      } else if (target_vis == rhizo.ui.Visibility.VISIBLE) {
+        this.fadeIn();
+      } else {  // rhizo.ui.Visibility.GREY
+        this.greyOut();
+      }
+    }
+  });
 };
 
 rhizo.ui.render = function(model, renderer, allRenderings, opt_options) {

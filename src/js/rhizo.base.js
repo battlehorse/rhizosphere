@@ -24,6 +24,7 @@ rhizo.Project = function(gui, opt_options) {
   this.selectionMap_ = {};
   this.options_ = opt_options || {};
   this.gui_ = gui;
+  this.filterAutocommit_ = true;
 
   if (rhizo.nativeConsoleExists()) {
     this.logger_ = new rhizo.NativeLogger();
@@ -93,11 +94,10 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   // already busy creating the whole dom).
   this.gui_.disableFx(true);
 
-  // laying out models
-  this.layout(this.curLayoutName_);
+  // laying out models and re-aligning elements' visibility
+  this.layout(this.curLayoutName_, {forcealign: true});
 
-  // showing elements and re-aligning animation settings
-  this.alignVisibility();
+  // re-aligning animation settings
   this.alignFx();
 };
 
@@ -141,6 +141,24 @@ rhizo.Project.prototype.resetAllFilter = function(key) {
   for (var i = this.models_.length-1; i >= 0; i--) {
     this.models_[i].resetFilter(key);
   }
+};
+
+rhizo.Project.prototype.enableFilterAutocommit = function(enable) {
+  this.filterAutocommit_ = enable;
+  if (this.filterAutocommit_) {
+    // If there are any greyed models when auto-filtering is re-enabled, we
+    // commit the filter.
+    for (var i = this.models_.length-1; i >= 0; i--) {
+      if (this.models_[i].visibility == rhizo.ui.Visibility.GREY) {
+        this.commitFilter();
+        break;
+      }
+    }
+  }
+};
+
+rhizo.Project.prototype.isFilterAutocommit = function() {
+  return this.filterAutocommit_;
 };
 
 rhizo.Project.prototype.select = function(id) {
@@ -298,10 +316,11 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
     return;
   }
 
+  var dirty = false;
   if (lastLayoutEngine && lastLayoutEngine.cleanup) {
     // cleanup previous layout engine.
-    lastLayoutEngine.cleanup(lastLayoutEngine == layoutEngine,
-                             options);
+    dirty = lastLayoutEngine.cleanup(
+        lastLayoutEngine == layoutEngine, options) || dirty;
   }
 
   this.logger_.info('laying out...');
@@ -313,11 +332,14 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
   var nonFilteredModels = jQuery.grep(this.models_, function(model) {
     return !model.isFiltered();
   });
-  layoutEngine.layout(this.gui_.universe,
-                      nonFilteredModels,
-                      this.modelsMap_,
-                      this.metaModel_,
-                      options);
+  dirty = layoutEngine.layout(this.gui_.universe,
+                              nonFilteredModels,
+                              this.modelsMap_,
+                              this.metaModel_,
+                              options) || dirty;
+  if (dirty || options.forcealign) {
+    this.alignVisibility_();
+  }
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
@@ -341,22 +363,42 @@ rhizo.Project.prototype.filter = function(key, value) {
   }
   this.alignFx();
 
-  // after filtering some elements, perform layout again
-  this.layout(null, { filter: true});
+  if (this.filterAutocommit_) {
+    // after filtering some elements, perform layout again
+    this.commitFilter();
+  } else {
+    // Even if we are not autocommiting the filter, we are force to do so if
+    // items that were completely hidden now become visible and must be
+    // repositioned.
+    var forceLayout = false;
+    for (var i = this.models_.length-1; i >=0; i--) {
+      if (!this.models_[i].isFiltered() &&
+          this.models_[i].visibility == rhizo.ui.Visibility.HIDDEN) {
+        forceLayout = true;
+        break;
+      }
+    }
+    if (!forceLayout) {
+      this.alignVisibility_(rhizo.ui.Visibility.GREY);
+    } else {
+      this.commitFilter();
+    }
+  }
+};
 
-  // hide/show filtered elements
-  this.alignVisibility();
+rhizo.Project.prototype.commitFilter = function() {
+  this.layout(null, {filter: true, forcealign: true});
 };
 
 /**
  * Enables or disables project-wide animations.
- * 
+ *
  * The decision is based on the number of models the browser has to manipulate
  * (move, hide, show, rescale ...). This includes:
  * - models that are currently visible,
  * - 'unfiltered' models (i.e. number of models that will be visible once
- *   alignVisibility() is invoked).
- * 
+ *   alignVisibility_() is invoked).
+ *
  * If either number is too high, animations are disabled.
  */
 rhizo.Project.prototype.alignFx = function() {
@@ -366,7 +408,7 @@ rhizo.Project.prototype.alignFx = function() {
     if (!this.models_[i].isFiltered()) {
       numUnfilteredModels++;
     }
-    if (this.models_[i].visible) {
+    if (this.models_[i].visibility >= rhizo.ui.Visibility.GREY) {
       numVisibleModels++;
     }
   }
@@ -375,20 +417,34 @@ rhizo.Project.prototype.alignFx = function() {
                       numVisibleModels > 200);
 };
 
-rhizo.Project.prototype.alignVisibility = function() {
+/**
+ * @param {rhizo.ui.Visibility?} opt_filtered_visibility An optional visibility
+ *     level that filtered items should have. The default is
+ *     rhizo.ui.Visibility.HIDDEN.
+ * @private
+ */
+rhizo.Project.prototype.alignVisibility_ = function(opt_filtered_visibility) {
+  var vis = rhizo.ui.Visibility;
+  var filtered_visibility = opt_filtered_visibility || vis.HIDDEN;
+
+  var forceLayout = false;
   var renderingsToFadeOut = [];
   var renderingsToFadeIn = [];
   for (var i = this.models_.length-1; i >=0; i--) {
     if (this.models_[i].isFiltered()) {
-      if (this.models_[i].visible) {
-        renderingsToFadeOut.push(this.models_[i].rendering.get(0)); 
-        this.models_[i].visible = false;
+      if (this.models_[i].visibility > filtered_visibility) {
+        renderingsToFadeOut.push(this.models_[i].rendering.get(0));
+        this.models_[i].visibility = filtered_visibility;
       }
-    } else if (!this.models_[i].visible) {
+    } else if (this.models_[i].visibility <= filtered_visibility) {
+      // Items that were completely hidden must be repositioned.
+      forceLayout = forceLayout || this.models_[i].visibility == vis.HIDDEN;
       renderingsToFadeIn.push(this.models_[i].rendering.get(0));
-      this.models_[i].visible = true;      
+      this.models_[i].visibility = vis.VISIBLE;
     }
   }
-  $(renderingsToFadeOut).fadeOut();
-  $(renderingsToFadeIn).fadeIn();
+  $(renderingsToFadeOut).fadeTo(filtered_visibility);
+  $(renderingsToFadeIn).fadeTo(vis.VISIBLE);
+
+  return forceLayout;
 };
