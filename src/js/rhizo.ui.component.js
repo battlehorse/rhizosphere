@@ -346,7 +346,9 @@ rhizo.ui.component.Layout.prototype.activate = function(project, gui, opt_option
   });
 
   this.submit_.click(jQuery.proxy(function() {
-    project.layout(this.layoutSelector_.val());
+    // TODO(battlehorse): forceAlign should be true only if there are
+    // uncommitted filters (i.e. GREY models).
+    project.layout(this.layoutSelector_.val(), {forcealign:true});
   }, this));
 };
 
@@ -402,8 +404,7 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
 
     // after filtering some elements, perform layout again
     project.alignFx();
-    project.layout(null, { filter: true});
-    project.alignVisibility();
+    project.layout(null, {filter: true, forcealign: true});
     project.unselectAll();
     this.resetButton_.
         removeAttr("disabled").
@@ -415,8 +416,7 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
     project.resetAllFilter("__selection__");
     project.alignFx();
     // after filtering some elements, perform layout again
-    project.layout(null, { filter: true});
-    project.alignVisibility();
+    project.layout(null, {filter: true, forcealign: true});
     $(this).attr("disabled","disabled").text("Reset");
   });
 };
@@ -488,6 +488,7 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
 
   this.nextFilter_ = null;
   this.prevFilter_ = null;
+  this.hideLink_ = null;
   if (options.miniLayout) {
     this.filterPanel_.addClass('rhizo-floating-panel').css('display', 'none');
 
@@ -495,7 +496,21 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
       appendTo(this.filterPanel_);
     this.prevFilter_ = $('<span />', {'class': 'rhizo-prev-filter', title: 'Previous filter'}).
       appendTo(this.filterPanel_);
+    this.hideLink_ = $('<a />', {'href': '#', 'class': 'rhizo-autocommit-link'}).text('Apply').
+      appendTo(this.filterPanel_);
+    if (project.isFilterAutocommit()) {
+      this.hideLink_.css('display', 'none');
+    }
   }
+
+  var autocommitPanel = $('<div />', {'class': 'rhizo-filter rhizo-autocommit-panel'}).
+      appendTo(this.filterPanel_);
+  this.autocommit_ = $('<input />', {type: 'checkbox',
+                                     checked: project.isFilterAutocommit()}).
+    appendTo(autocommitPanel);
+  $('<span>Autocommit</span>').appendTo(autocommitPanel);
+  this.hideButton_ = $('<button />', {disabled: project.isFilterAutocommit()}).
+      text('Apply filters').appendTo(autocommitPanel);
 
   var first = true;
   var metaModel = project.metaModel();
@@ -536,6 +551,31 @@ rhizo.ui.component.Filters.prototype.activate = function(project, gui, opt_optio
         current.css('display', 'none');
         prev.css('display', '');
       }
+    });
+  }
+
+  this.autocommit_.click(jQuery.proxy(function(ev) {
+    var checked = $(ev.target).is(':checked');
+    if (checked) {
+      this.hideButton_.attr('disabled', 'disabled');
+      if (this.hideLink_) {
+        this.hideLink_.css('display', 'none');
+      }
+    } else {
+      this.hideButton_.removeAttr('disabled');
+      if (this.hideLink_) {
+        this.hideLink_.css('display', '');
+      }
+    }
+    project.enableFilterAutocommit(checked);
+  }, this));
+
+  this.hideButton_.click(function() {
+    project.commitFilter();
+  });
+  if (this.hideLink_) {
+    this.hideLink_.click(function() {
+      project.commitFilter();
     });
   }
 };
