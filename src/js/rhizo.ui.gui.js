@@ -47,6 +47,8 @@ rhizo.ui.gui.GUI = function(container) {
   // Dictates whether animations are enabled or not.
   this.noFx = false;
   jQuery.fx.off = false;
+
+  this.selectionModeOn_ = false;
 };
 
 rhizo.ui.gui.GUI.prototype.setViewport = function(viewport) {
@@ -66,11 +68,23 @@ rhizo.ui.gui.GUI.prototype.getComponent = function(component_key) {
 };
 
 /**
- * Enables or disables models selection.
- * @param {string} status Either 'enable' or 'disable'
+ * @return {boolean} Whether the viewport is in selection mode or not.
  */
-rhizo.ui.gui.GUI.prototype.toggleSelection = function(status) {
-  this.viewport.selectable(status);
+rhizo.ui.gui.GUI.prototype.isSelectionModeOn = function() {
+  return this.selectionModeOn_;
+};
+
+/**
+ * Toggles the viewport between selection mode and panning mode (the default),
+ * which determines how mouse drag operations will be interpreted.
+ */
+rhizo.ui.gui.GUI.prototype.toggleSelectionMode = function() {
+  this.selectionModeOn_ = !this.selectionModeOn_;
+  var selectable_status = this.selectionModeOn_ ? 'enable' : 'disable';
+  var draggable_status = this.selectionModeOn_ ? 'disable' : 'enable';
+  this.viewport.selectable(selectable_status).
+      draggable(draggable_status).
+      toggleClass('rhizo-selection-mode');
 };
 
 rhizo.ui.gui.GUI.prototype.disableFx = function(disabled) {

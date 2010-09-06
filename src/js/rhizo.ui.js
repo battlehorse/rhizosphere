@@ -287,7 +287,6 @@ rhizo.ui.initDraggable = function(rendering, project) {
     addClasses: false,
     start: function(ev, ui) {
       ui.helper.data("dragging", true);
-      project.gui().toggleSelection('disable');
       // used by droppable feature
       ui.helper.data(
           "dropTop0",
@@ -336,7 +335,6 @@ rhizo.ui.initDraggable = function(rendering, project) {
       }
     },
     stop: function(ev, ui) {
-      project.gui().toggleSelection('enable');
       if (project.isSelected(ui.helper.data("id"))) {
         var all_selected = project.allSelected();
         for (var id in all_selected) {
