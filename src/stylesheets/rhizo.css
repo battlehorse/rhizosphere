@@ -211,33 +211,6 @@ A, .rhizo-header A:visited {
 }
 
 /* Endless desktop, Panning and scrolling */
-.rhizo-scroll-trigger {
-  background: transparent url(../img/scroll_small.png) no-repeat top left;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
-  z-index: 1000;
-}
-
-.rhizo-scroll-overlay {
-  background: transparent url(../img/scroll_big.png) no-repeat center center;
-  position: absolute;
-  z-index: -1;
-}
-
-.rhizo-scroll-done {
-  position: absolute;
-  bottom: 5px;
-  margin: 0 auto;
-  font-size: 120%;
-  left: 0;
-  right: 0;
-  width: 100px;
-}
-
 .rhizo-viewport {
   position: absolute;
   background-color: #e5ecf9;
@@ -268,6 +241,32 @@ DIV.ui-selected {
   background-color: #F796FF;
   border-color: #7E18AC;
   border-width: 2px;
+}
+
+.rhizo-selection-trigger {
+  background: transparent url(../img/select.png) no-repeat top left;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.rhizo-selection-trigger:hover {
+  background-color: yellow;
+  cursor: pointer;
+}
+
+.rhizo-selection-mode .rhizo-selection-trigger {
+  background-color: yellow;
+}
+
+.rhizo-selection-mode {
+  background-color: #d9f2db !important;
+  border: 1px solid #8fd19e !important;
+  cursor: crosshair !important;
 }
 
 /* Model rendering */
@@ -366,16 +365,8 @@ DIV.ui-selected {
   width: 160px;
 }
 
-.rhizo-miniRender .rhizo-scroll-trigger {
+.rhizo-miniRender .rhizo-selection-trigger {
   top: 0;
-}
-
-.rhizo-miniRender .rhizo-scroll-overlay {
-  background-position: center 30%;
-}
-
-.rhizo-miniRender .rhizo-scroll-done {
-  bottom: 30px;
 }
 
 /* miniRender Bottombar */

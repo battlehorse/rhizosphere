@@ -85,19 +85,8 @@ rhizo.ui.component.Viewport.prototype.render = function(container, gui, opt_opti
   gui.setViewport(this.viewport_);
   gui.setUniverse(this.universe_);
 
-  this.scroll_trigger_ = $('<div/>', {
-      'class': 'rhizo-scroll-trigger',
-      title: 'Click to pan around'
-    }).appendTo(this.viewport_);
-
-  this.scroll_overlay_ = $('<div />', {'class': 'rhizo-scroll-overlay'}).
-      css('display', 'none').appendTo(container);
-  this.scroll_done_ = $('<button />', {'class': 'rhizo-scroll-done'}).text('Done');
-  $('<div />').append(this.scroll_done_).appendTo(this.scroll_overlay_);
-
   if (options.miniLayout) {
     this.viewport_.addClass('rhizo-miniRender');
-    this.scroll_overlay_.addClass('rhizo-miniRender');
   } else {
     // shrink the viewport
     this.viewport_.css('left',300).css('right', 5);
@@ -105,7 +94,7 @@ rhizo.ui.component.Viewport.prototype.render = function(container, gui, opt_opti
 };
 
 rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
-  this.scroll_overlay_.draggable({
+  gui.viewport.draggable({
     helper: function() {
       return $("<div />").appendTo(gui.viewport);
     },
@@ -124,6 +113,14 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
       //   helper (in respect to the viewport) at the current instant.
       var dragTop = ui.position.top + gui.universe.data("top0");
       var dragLeft = ui.position.left + gui.universe.data("left0");
+      
+      var snapDistance = 15;
+      if (Math.abs(ui.position.left) <= snapDistance) {
+        dragLeft = gui.universe.data("left0");
+      }
+      if (Math.abs(dragLeft) <= 15) {
+        dragLeft = 0;
+      }
 
       gui.universe.
           css('top', dragTop).css('bottom', -dragTop).
@@ -131,31 +128,6 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
     },
     refreshPositions: false
   });
-
-  this.scroll_trigger_.click(
-      jQuery.proxy(rhizo.ui.component.Viewport.prototype.startScroll_, this));
-  this.scroll_done_.click(
-      jQuery.proxy(rhizo.ui.component.Viewport.prototype.stopScroll_, this));
-};
-
-rhizo.ui.component.Viewport.prototype.startScroll_ = function() {
-  this.scroll_trigger_.hide();
-  this.scroll_overlay_.css({
-      'left': this.viewport_.css('left'),
-      'top': this.viewport_.css('top'),
-      'width': this.viewport_.width(),
-      'height': this.viewport_.height(),
-      'z-index': 1200,
-      'display': ''
-    });
-};
-
-rhizo.ui.component.Viewport.prototype.stopScroll_ = function() {
-  this.scroll_overlay_.css({
-      'z-index': -1,
-      'display': 'none'
-    });
-  this.scroll_trigger_.show();
 };
 
 rhizo.ui.component.MiniToolbar = function() {};
@@ -375,6 +347,11 @@ rhizo.ui.component.SelectionManager.prototype.render = function(container, proje
   if (options.miniLayout) {
     this.selectionPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
+
+  this.selection_trigger_ = $('<div />', {
+      'class': 'rhizo-selection-trigger',
+      'title': 'Start selecting items'}).appendTo(gui.viewport);
+
   this.selectButton_ = $('<button />').text('Work on selected items only');
   this.resetButton_ = $('<button />', {disabled: 'disabled'}).text('Reset');
   this.selectionPanel_.append(this.selectButton_).append(this.resetButton_);
@@ -439,7 +416,17 @@ rhizo.ui.component.SelectionManager.prototype.isOnEmptySpace_ = function(evt) {
 
 rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     function(project, gui, opt_options) {
+  this.selection_trigger_.click(function() {
+    project.gui().toggleSelectionMode();
+    if (project.gui().isSelectionModeOn()) {
+      $(this).attr('title', 'Stop selecting items');
+    } else {
+      $(this).attr('title', 'Start selecting items');
+    }
+  });
+
   gui.viewport.selectable({
+    disabled: true,  // initially disabled.
     selected: function(ev, ui) {
       var selected_id = $(ui.selected).data("id");
       if (selected_id) {
@@ -459,12 +446,11 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     distance: 1
   });
 
-  var that = this;
-  gui.viewport.click(function(ev, ui) {
-    if (that.isOnEmptySpace_(ev)) {
+  gui.viewport.click(jQuery.proxy(function(ev, ui) {
+    if (this.isOnEmptySpace_(ev)) {
       project.unselectAll();
     }
-  });
+  }, this));
 };
 
 
@@ -684,10 +670,7 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_optio
 
         gui.universe.append(dropbox);
         dropbox.fadeIn();
-        dropbox.draggable({
-          start: function() { project.gui().toggleSelection('disable'); },
-          stop: function() { project.gui().toggleSelection('enable'); }
-        });
+        dropbox.draggable();
         dropbox.droppable({
           accept: '.rhizo-model',
           drop: function(ev, ui) {
