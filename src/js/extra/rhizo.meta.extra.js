@@ -114,13 +114,17 @@ rhizo.meta.DecimalRangeKind.prototype.toHumanLabel_ =
   rhizo.meta.RangeKind.prototype.toHumanLabel_;
 
 /**
-   LogarithmRangeKind meta: A specialized filter that can render range sliders
-   according to a Log10 scale.
-   This filter reuses what provided by the DecimalRangeKind filter.
-*/
-rhizo.meta.LogarithmRangeKind = function(opt_precision) {
+ *  LogarithmRangeKind meta: A specialized filter that can render range sliders
+ *  according to a Log10 scale.
+ *  This filter reuses what provided by the DecimalRangeKind filter.
+ *  
+ *  If opt_oneplus is true, then the transformation it applies is Log10(1+x) 
+ *  rather than Log10(x) (useful if your dataset has values that start from 0).
+ */
+rhizo.meta.LogarithmRangeKind = function(opt_precision, opt_oneplus) {
   this.precision_ = opt_precision || 2;
   this.scale_ = Math.pow(10, this.precision_);
+  this.oneplus_ = !!opt_oneplus;
 };
 
 rhizo.meta.LogarithmRangeKind.prototype.renderFilter =
@@ -137,10 +141,13 @@ rhizo.meta.LogarithmRangeKind.prototype.cluster =
 
 rhizo.meta.LogarithmRangeKind.prototype.toModelScale_ = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
-  return parseFloat(Math.pow(10, filterValue / this.scale_).toFixed(this.precision_));
+  var delta = this.oneplus_ ? -1 : 0;
+  return parseFloat(
+    Math.pow(10, filterValue / this.scale_).toFixed(this.precision_)) +  delta;
 };
 
 rhizo.meta.LogarithmRangeKind.prototype.toFilterScale_ = function(modelValue) {
+  modelValue = this.oneplus_ ? modelValue+1 : modelValue;
   return Math.round(rhizo.util.log10_(modelValue) * this.scale_);
 };
 
