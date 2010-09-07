@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.ui,rhizo.ui.gui
+// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.jquery,rhizo.ui.gui
 namespace('rhizo.bootstrap');
 
 rhizo.bootstrap.Bootstrap = function(container, opt_options) {
@@ -36,6 +36,17 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   // Create the GUI.
   var gui = new rhizo.ui.gui.GUI(this.container_);
+  if (this.options_.noAnims) {
+    gui.disableFx(true);
+  }
+
+  // Extends jQuery with all the additional behaviors required by Rhizosphere
+  // Disable animations and other performance tunings if needed.
+  // 
+  // TODO(battlehorse): this must happen at the global level, and not locally
+  // for every single visualization.
+  // See http://code.google.com/p/rhizosphere/issues/detail?id=68.
+  rhizo.jquery.init(gui, this.options_.noAnims);
 
   // Create the project.
   this.project_ = new rhizo.Project(gui, this.options_);
@@ -48,9 +59,6 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   this.template_.activateChrome(this.options_);
 
   this.project_.chromeReady();
-
-  // Disable animations and other performance tunings if needed.
-  rhizo.ui.performanceTuning(gui, this.options_.noAnims);
 
   // Open the models' source...
   var source = opt_resource;
