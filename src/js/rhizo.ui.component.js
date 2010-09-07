@@ -122,11 +122,15 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
         dragLeft = 0;
       }
 
-      gui.universe.
-          css('top', dragTop).css('bottom', -dragTop).
-          css('left', dragLeft).css('right', -dragLeft);
+      gui.moveUniverse({top: dragTop, left: dragLeft});
     },
     refreshPositions: false
+  });
+
+  // Mousewheel (or trackpad) based panning.
+  $(gui.viewport).mousewheel(
+    function (evt, deltaX, deltaY) {
+      gui.panUniverse(deltaY, deltaX, evt.timeStamp);
   });
 };
 
