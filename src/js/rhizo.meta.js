@@ -25,6 +25,10 @@ To define a new meta-type:
 - implement the survivesFilter() function.
   This verifies if a model value matches the filter or not
 
+- implement the isNumeric() function.
+  This tells whether the kind of data this filter is applied to are numeric
+  or not (i.e. can be used in arithmetic computations).
+
 - implement the cluster() function (optional).
   Defines how grouping works for this type
 
@@ -66,6 +70,10 @@ rhizo.meta.StringKind.prototype.cluster = function(modelValue) {
            label: modelValue.toUpperCase().charAt(0) };
 };
 
+rhizo.meta.StringKind.prototype.isNumeric = function() {
+  return false;
+};
+
 /* NumberKind meta */
 rhizo.meta.NumberKind = function() {};
 
@@ -104,6 +112,11 @@ rhizo.meta.NumberKind.prototype.cluster = function(modelValue) {
   return { key: lowRange,
            label: lowRange.toString() + " - " + hiRange.toString() };
 };
+
+rhizo.meta.NumberKind.prototype.isNumeric = function() {
+  return true;
+};
+
 
 /* DateKind meta */
 rhizo.meta.DateKind = function(opt_clusterby) {
@@ -185,6 +198,10 @@ rhizo.meta.DateKind.prototype.cluster = function(modelValue) {
       label: modelValue.getFullYear() + '-' + this.monthMap_[modelValue.getMonth()] + '-' + modelValue.getDate()
     };   
   }
+};
+
+rhizo.meta.DateKind.prototype.isNumeric = function() {
+  return false;
 };
 
 rhizo.meta.DateKind.prototype.addZero_ = function(value) {
@@ -269,6 +286,9 @@ rhizo.meta.RangeKind.prototype.compare =
 rhizo.meta.RangeKind.prototype.cluster =
     rhizo.meta.NumberKind.prototype.cluster;
 
+rhizo.meta.RangeKind.prototype.isNumeric =
+    rhizo.meta.NumberKind.prototype.isNumeric;
+
 /**
    Converts a value as returned from the slider into a value in the model range.
    This method, and the subsequent one, are particularly useful when the range
@@ -335,6 +355,10 @@ rhizo.meta.BooleanKind.prototype.compare = function(firstValue, secondValue) {
   return firstValue ? (secondValue ? 0 : -1) : (secondValue ? 1 : 0);
 };
 
+rhizo.meta.BooleanKind.prototype.isNumeric = function() {
+  return false;
+};
+
 /* CategoryKind meta */
 rhizo.meta.CategoryKind = function() {};
 
@@ -397,7 +421,9 @@ rhizo.meta.CategoryKind.prototype.compare = function(firstValue, secondValue) {
   return firstValue.length - secondValue.length;
 };
 
-
+rhizo.meta.CategoryKind.prototype.isNumeric = function() {
+  return false;
+};
 
 /* Utility functions */
 

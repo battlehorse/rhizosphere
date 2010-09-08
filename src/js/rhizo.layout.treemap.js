@@ -479,9 +479,12 @@ rhizo.layout.treemap.TreeMapSlice.prototype.draw = function(backupManager,
 rhizo.layout.TreeMapLayout = function(project) {
   this.project_ = project;
 
+  this.numericKeys_ = [];
   this.areaSelector_ = null;
   this.colorSelector_ = null;
+
   this.parentKeySelector_ = null;
+  this.parentKeys_ = [];
 
   this.prevColorMeta_ = '';
   this.backupManager_ = new rhizo.layout.treemap.ModelBackupManager();
@@ -492,6 +495,19 @@ rhizo.layout.TreeMapLayout = function(project) {
   this.numHiddenModels_ = 0;
 };
 
+rhizo.layout.TreeMapLayout.prototype.verifyMetaModel = function(meta) {
+  for (var key in meta) {
+    if (!!meta[key].isParent) {
+      this.parentKeys_.push(key);
+    }
+    if (meta[key].kind.isNumeric()) {
+      this.numericKeys_.push(key);
+    }
+  }
+
+  return this.numericKeys_.length > 0;
+};
+
 rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                                                        supermodels,
                                                        allmodels,
@@ -499,7 +515,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                                                        options) {
   var areaMeta = this.areaSelector_.val();
   var colorMeta = this.colorSelector_.val();
-  var parentKey = this.parentKeySelector_.val();
+  var parentKey = this.parentKeySelector_ ? this.parentKeySelector_.val() : '';
 
   // Restore models that are no longer part of the treemap.
   // Keep track of the last coloring key used, in case we have to restore remove
@@ -595,21 +611,31 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
 };
 
 rhizo.layout.TreeMapLayout.prototype.details = function() {
+  var details = $('<div />');
+
   this.areaSelector_ = rhizo.layout.metaModelKeySelector(
-    this.project_, 'rhizo-treemaplayout-area');
+    this.project_, 'rhizo-treemaplayout-area', function(key, meta) {
+      return meta.kind.isNumeric();
+    });
   this.colorSelector_ = rhizo.layout.metaModelKeySelector(
-    this.project_, 'rhizo-treemaplayout-color');
+    this.project_, 'rhizo-treemaplayout-color', function(key, meta) {
+      return meta.kind.isNumeric();
+    });
   this.colorSelector_.append("<option value='' selected>-</option>");
-  this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
-    this.project_, 'rhizo-treemaplayout-parentKey');
-  this.parentKeySelector_.append("<option value='' selected>-</option>");
-  return $("<div />").
-      append("Area: ").
-      append(this.areaSelector_).
-      append(" Color:").
-      append(this.colorSelector_).
-      append(" Parent: ").
-      append(this.parentKeySelector_);
+  details.append("Area: ").append(this.areaSelector_).
+      append(" Color:").append(this.colorSelector_);
+
+  if (this.parentKeys_.length > 0) {
+    this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
+      this.project_, 'rhizo-treemaplayout-parentKey', function(key, meta) {
+        return !!meta.isParent;
+      });
+    this.parentKeySelector_.append("<option value='' selected>-</option>");    
+
+    details.append(" Parent: ").append(this.parentKeySelector_);
+  }
+
+  return details;
 };
 
 rhizo.layout.TreeMapLayout.prototype.dependentModels = function(modelId) {

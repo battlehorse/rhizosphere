@@ -25,14 +25,19 @@ namespace("rhizo.layout");
  * Creates a dropdown control that enumerates all the metaModel keys.
  * @param {rhizo.Project} project
  * @param {string} className
+ * @param {function(string, Object):boolean} opt_matcher Optional function to
+ *     decide whether to include a given metaModel key in the selector.
+ *     Receives as parametes the key itself and the associated metamodel entry.
  * @return {Element} the jquery-enhanced HTML dropdown control
  */
-rhizo.layout.metaModelKeySelector = function(project, className) {
+rhizo.layout.metaModelKeySelector = function(project, className, opt_matcher) {
   var select = $("<select class='" + className + "' />");
   if (project && project.metaModel()) {
-    for (key in project.metaModel()) {
-      select.append("<option value='" + key + "'>" +
-                    project.metaModel()[key].label + "</option>");
+    for (var key in project.metaModel()) {
+      if (!opt_matcher || opt_matcher(key, project.metaModel()[key])) {
+        select.append("<option value='" + key + "'>" +
+                      project.metaModel()[key].label + "</option>");        
+      }
     }
   }
   return select;
