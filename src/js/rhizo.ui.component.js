@@ -53,13 +53,13 @@ rhizo.ui.component.Progress.prototype.destroy_ = function() {
 rhizo.ui.component.Logo = function() {};
 
 rhizo.ui.component.Logo.prototype.getPanel = function() {
-  return this.headerPanel_;
+  return this.logoPanel_;
 };
 
 rhizo.ui.component.Logo.prototype.render = function(container, gui, opt_options) {
   var options = opt_options || {};
   gui.addComponent('rhizo.ui.component.Logo', this);
-  this.headerPanel_ = $('<div />', {'class': 'rhizo-header'}).html(
+  this.logoPanel_ = $('<div />', {'class': 'rhizo-logo'}).html(
       '<h1>Rhizosphere</h1><p>' +
       'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2010<br />' +
       '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
@@ -69,7 +69,7 @@ rhizo.ui.component.Logo.prototype.render = function(container, gui, opt_options)
       '</p>').appendTo(container);
 
   if (options.touchLayout) {
-    this.headerPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+    this.logoPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 };
 
@@ -84,13 +84,6 @@ rhizo.ui.component.Viewport.prototype.render = function(container, gui, opt_opti
   // Update the GUI object.
   gui.setViewport(this.viewport_);
   gui.setUniverse(this.universe_);
-
-  if (options.touchLayout) {
-    this.viewport_.addClass('rhizo-miniRender');
-  } else {
-    // shrink the viewport
-    this.viewport_.css('left',300).css('right', 5);
-  }
 };
 
 rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
@@ -134,9 +127,9 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, opt_options) {
   });
 };
 
-rhizo.ui.component.MiniToolbar = function() {};
+rhizo.ui.component.TouchToolbar = function() {};
 
-rhizo.ui.component.MiniToolbar.prototype.render = function(container, project, gui, opt_options) {
+rhizo.ui.component.TouchToolbar.prototype.render = function(container, project, gui, opt_options) {
   var span = $('<span />').appendTo(container);
   this.resizeLink_ = $('<a/>', {href: '#', title: 'Maximize', 'class': 'rhizo-maximize-icon'}).
     appendTo(span);
@@ -161,13 +154,13 @@ rhizo.ui.component.MiniToolbar.prototype.render = function(container, project, g
   }
 };
 
-rhizo.ui.component.MiniToolbar.prototype.createLink_ = function(text, className, container) {
-  var span = $('<span />', {'class': 'rhizo-filters-header'}).appendTo(container);
+rhizo.ui.component.TouchToolbar.prototype.createLink_ = function(text, className, container) {
+  var span = $('<span />', {'class': 'rhizo-section-header'}).appendTo(container);
   var link = $('<a/>', {href:  '#', title: text, 'class': className}).text(text).appendTo(span);
   return link;
 };
 
-rhizo.ui.component.MiniToolbar.prototype.activate = function(project, gui, opt_options) {
+rhizo.ui.component.TouchToolbar.prototype.activate = function(project, gui, opt_options) {
   this.resizeLink_.click(function() {
     self.resizeTo(1000, 700);
     self.location.reload();
@@ -179,10 +172,10 @@ rhizo.ui.component.MiniToolbar.prototype.activate = function(project, gui, opt_o
       jQuery.each(this.components_, function(j, comp) {
         if (comp == currentComponent) {
           $(comp.panel).toggle();
-          $(comp.link).toggleClass('rhizo-filter-open');
+          $(comp.link).toggleClass('rhizo-section-open');
         } else {
           $(comp.panel).css('display', 'none');
-          $(comp.link).removeClass('rhizo-filter-open');
+          $(comp.link).removeClass('rhizo-section-open');
         }
       });
       return false;
@@ -272,7 +265,7 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
   var options = opt_options || {};
 
   if (!options.touchLayout) {
-    $('<div />', {'class': 'rhizo-filters-header'}).
+    $('<div />', {'class': 'rhizo-section-header'}).
         text('Display').
         appendTo(container);
   }
@@ -340,7 +333,7 @@ rhizo.ui.component.SelectionManager.prototype.render = function(container, proje
   var options = opt_options || {};
 
   if (!options.touchLayout) {
-    $('<div />', {'class': 'rhizo-filters-header'}).
+    $('<div />', {'class': 'rhizo-section-header'}).
         text('Selection').
         appendTo(container);
   }
@@ -469,7 +462,7 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   var options = opt_options || {};
 
   if (!options.touchLayout) {
-    $('<div />', {'class': 'rhizo-filters-header'}).
+    $('<div />', {'class': 'rhizo-section-header'}).
         text('Filters').
         appendTo(container);
   }
@@ -493,7 +486,9 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
     }
   }
 
-  var autocommitPanel = $('<div />', {'class': 'rhizo-filter rhizo-autocommit-panel'}).
+  var autocommitPanel = $('<div />',
+                          {'class': 'rhizo-filter ' +
+                                    'rhizo-autocommit-panel'}).
       appendTo(this.filterPanel_);
   this.autocommit_ = $('<input />', {type: 'checkbox',
                                      checked: project.isFilterAutocommit()}).
@@ -502,16 +497,11 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   this.hideButton_ = $('<button />', {disabled: project.isFilterAutocommit()}).
       text('Apply filters').appendTo(autocommitPanel);
 
-  var first = true;
   var metaModel = project.metaModel();
   for (key in metaModel) {
     var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
     if (options.touchLayout) {
-      if (first) {
-        first = false;
-      } else {
-        filter.css('display', 'none');
-      }
+      filter.css('display', 'none');
     }
     this.filterPanel_.append(filter);
   }
@@ -590,7 +580,7 @@ rhizo.ui.component.Legend.prototype.render = function(container, project, gui, o
   }
 
   if (!options.touchLayout) {
-    $('<div />', {'class': 'rhizo-filters-header'}).
+    $('<div />', {'class': 'rhizo-section-header'}).
     text('Legend').
     appendTo(container);
   }
@@ -638,7 +628,8 @@ rhizo.ui.component.Actions = function() {};
 
 rhizo.ui.component.Actions.prototype.render = function(container, project, gui, opt_options) {
   var actionsContainer = $('<div />', {'class': 'rhizo-actions'}).
-    append($("<h1 />").text('Actions')).appendTo(container);
+    append($('<div />', {'class': 'rhizo-section-header'}).text('Actions')).
+    appendTo(container);
 
   // Create 2 sample actions
   for (var i = 0; i < 2; i++) {
@@ -721,11 +712,14 @@ rhizo.ui.component.TouchTemplate = function(project) {
     SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(),
     FILTERS: new rhizo.ui.component.Filters(),
     LEGEND: new rhizo.ui.component.Legend(),
-    MINITOOLBAR: new rhizo.ui.component.MiniToolbar()
+    TOUCHTOOLBAR: new rhizo.ui.component.TouchToolbar()
   };
 };
 
 rhizo.ui.component.TouchTemplate.prototype.renderChrome = function(opt_options) {
+  this.gui_.container.addClass('rhizo');
+  this.gui_.container.addClass('rhizo-touch-template');
+
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
@@ -760,7 +754,7 @@ rhizo.ui.component.TouchTemplate.prototype.renderDynamic = function(opt_options)
   }
 
   // All other components must be in place before creating the toolbar.
-  this.components_.MINITOOLBAR.render(this.bottomBar_, this.project_, this.gui_, opt_options);
+  this.components_.TOUCHTOOLBAR.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(48, 'Toolbar created.');
 };
 
@@ -770,7 +764,7 @@ rhizo.ui.component.TouchTemplate.prototype.activateDynamic = function(opt_option
   this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
   this.components_.FILTERS.activate(this.project_, this.gui_, opt_options);
   this.components_.LEGEND.activate(this.project_, this.gui_, opt_options);
-  this.components_.MINITOOLBAR.activate(this.project_, this.gui_, opt_options);
+  this.components_.TOUCHTOOLBAR.activate(this.project_, this.gui_, opt_options);
   this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 
@@ -800,6 +794,8 @@ rhizo.ui.component.StandardTemplate = function(project) {
 };
 
 rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(opt_options) {
+  this.gui_.container.addClass('rhizo');
+
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
