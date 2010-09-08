@@ -26,7 +26,9 @@
   <UserPref name="arColor" display_name="Advanced: as Color, use" required="false" datatype="string" />
   <Content type="html" view="home,profile,canvas,default"><![CDATA[
     <link rel="stylesheet" href="{{ hostname }}/static/shared/stylesheets/jquery-ui-1.7.custom.css" type="text/css" media="screen" charset="utf-8">
+    <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/base.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
+    <link rel="stylesheet" href="{{ hostname }}/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
 
     <div id="rhizo-pangea">
     </div>

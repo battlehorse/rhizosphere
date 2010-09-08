@@ -1,91 +1,75 @@
-/* Global settings */
-BODY {
-  margin: 0;
-  font-family: sans-serif;
+/******************
+  Global settings
+ *****************/
+.rhizo {
   color: #000;
 }
 
-A:hover {
+/* Manual tweak on jQuery UI styles, otherwise rhizo-viewport looks funny while
+   dragging is in progress. */
+.rhizo .ui-state-disabled {
+  opacity: 1; filter:Alpha(Opacity=1);
+}
+
+.rhizo A, .rhizo A:visited {
+  color: #7aa5d6;
+}
+
+.rhizo A:hover {
   background-color: #e5ecf9;
 }
 
-A, .rhizo-header A:visited {
-  color: #7aa5d6;
-}
-
-/* Header */
-.rhizo-header {
-  padding: 5px 0 0 5px;
-}
-
-.rhizo-header H1 {
-  font-size: 28px;
-  margin: 0;
-  padding: 0;
-  color: #7aa5d6;
-}
-
-.rhizo-header P {
-  font-size: 11px;
-  margin: 0;
-  padding: 0;
-}
-
-/* Admin interface */
-.rhizo-left {
-  position: absolute;
-  background: #fff url(../img/background.png) no-repeat top left;
-  left: 0;
-  top: 0;
-  width: 295px;
-  border: 1px solid #7aa5d6;
-  font-size: 11px;
-}
-
-/* Actions */
-.rhizo-actions {
-  margin-top: 5px;
-}
-
-.rhizo-actions H1 {
+/******************
+  Section headers
+ *****************/
+.rhizo-section-header {
   font-variant: small-caps;
   text-align: center;
   font-size: 14px;
   font-weight: bold;
   padding-bottom: 2px;
-  margin: 5px 0;
+  margin: 5px 0 0 0;
   border-top: 1px solid #7aa5d6;
   background-color: #e5ecf9;
 }
 
-.rhizo-action {
-  border: 1px solid #7aa5d6;
-  font-size: 11px;
-  margin-bottom: 5px;
+.rhizo-bottom-bar .rhizo-section-header {
+  border-width: 0;
   background-color: #fff;
-  height: 40px;
-  padding-top: 20px;
-  text-align: center;
+  font-variant: normal;
+  padding: 0;
+  margin: 0 3px 0 0;
+  font-size: 22px;
 }
 
-.rhizo-action:hover {
-  cursor: pointer;
+/* When inside a bottom-bar */
+.rhizo-bottom-bar .rhizo-section-header A {
+  text-decoration: none;
 }
 
-.rhizo-droppable-action {
-  border: 1px solid #7aa5d6;
-  background-color: #fff;
-  width: 200px;
-  height: 200px;
-  color: #7aa5d6;
-  font-size: 11px;
+.rhizo-bottom-bar .rhizo-section-header A:hover {
+  color: #000;
+  background-color: transparent;
+}
+
+.rhizo-bottom-bar .rhizo-section-header A.rhizo-section-open {
+  color: #000;
+}
+
+/******************
+  Panels
+ *****************/
+.rhizo-left {
   position: absolute;
-  opacity: 0;
-  visibility: hidden;
+  background: #fff url(../img/background.png) no-repeat top left;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 295px;
+  border-right: 1px solid #7aa5d6;
+  font-size: 11px;
 }
 
-
-/* Console */
 .rhizo-right {
   position: absolute;
   top: 0;
@@ -95,37 +79,13 @@ A, .rhizo-header A:visited {
   font-size: 12px;
 }
 
-.rhizo-console-header {
-  border: 1px solid #7aa5d6;
-  min-height: 20px;
-  padding: 3px 0 0 5px;
-  font-variant: small-caps;
-  background-color: #fff;
-}
-
-.rhizo-console-close {
-  float: right;
-  border: 2px solid #7aa5d6;
-  font-family: sans-serif;
-  color: #7aa5d6;
-  width: 12px;
-  height: 12px;
-  margin-right: 2px;
-  text-align: center;
-}
-
-.rhizo-console-close:hover {
-  background-color: #e5ecf9;
-  color: #7aa5d6;
-  cursor: pointer;
-}
-
 .rhizo-right-pop {
   position: absolute;
   top: 0;
   right: 0;
+  bottom: 0;
   width: 5px;
-  height: 100%;
+  border-left: 1px solid #7aa5d6;
   background-color: #fff;
 }
 
@@ -133,68 +93,58 @@ A, .rhizo-header A:visited {
   background: rgb(167, 237, 193) url(../img/hide-arrow.gif) no-repeat center center;
 }
 
-.rhizo-console-contents {
-  border: 1px solid #7aa5d6;
-  border-top-width: 0px;
-  font-size: 10px;
-  height: 400px;
-  overflow: hidden;
-  background-color: #e5ecf9;
-  clear: right;
-  display: none;
-}
-
-.rhizo-console-contents P {
-  margin: 1px 0;
-  padding: 0;
-  background-color: #e5ecf9;
-}
-
-.rhizo-console-contents P.rhizo-log-error {
-  background-color: #ff9999;
-}
-
-.rhizo-console-contents P.rhizo-log-warning {
-  background-color: #ffff99;
-}
-
-/* Filters and buckets tweaks */
-.rhizo-slider-moving {
-  color: blue;
-}
-
-.ui-slider {
-  margin: 5px 10px 0 5px;
-}
-
-.rhizo-filters-header {
- font-variant: small-caps;
- text-align: center;
- font-size: 14px;
- font-weight: bold;
- padding-bottom: 2px;
- margin: 5px 0 0 0;
- border-top: 1px solid #7aa5d6;
- background-color: #e5ecf9;
-}
-
-.rhizo-autocommit-panel {
-  background-color: rgb(238, 242, 251);
-  padding: 2px 0;
+.rhizo-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  z-index: 1300;
+  background-color: #fff;
+  border-top: 1px solid #7aa5d6;
   margin: 0;
+  padding: 0;
+  height: 26px;
+  font-size: 22px;
+  width: 100%;
 }
 
-.rhizo-autocommit-panel BUTTON {
-  float: right;
+/******************
+  Floating Panels
+ *****************/
+.rhizo-floating-panel {
+  position: absolute;
+  border-top: 1px solid #7aa5d6;
+  border-bottom: 1px solid #7aa5d6;
+  background-color: #fff;
+  bottom: 28px;
+  left: 0px;
+  height: 6em;
+  width: 100%;
+  padding: 5px 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: normal;
+  z-index: 1100;
 }
 
-.rhizo-filter {
-  margin-bottom: 5px;
-  padding-left: 5px;
+/******************
+  Viewport, universe and layout-related tweaks
+ *****************/
+.rhizo-viewport {
+  position: absolute;
+  background-color: #e5ecf9;
+  top: 0;
+  left: 295px;
+  right: 5px;
+  bottom: 0;
+  overflow: hidden;
 }
 
-.rhizo-filter-container SELECT {
-  max-width: 250px;
+.rhizo-universe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+/*  border: 1px dotted #000;*/ /* uncomment this to debug endless desktop */
 }
 
 .rhizo-bucket-header {
@@ -210,34 +160,160 @@ A, .rhizo-header A:visited {
   background-color: #7aa5d6;
 }
 
-/* Endless desktop, Panning and scrolling */
-.rhizo-viewport {
+/******************
+  Progress bar
+ *****************/
+.rhizo-progressbar-panel {
   position: absolute;
-  background-color: #e5ecf9;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  z-index: 5000;
+  -webkit-box-shadow: 5px 5px 5px #aaa;
+  -moz-box-shadow: 5px 5px 5px #aaa;
+  margin: 5px;
+  width: 300px;
+  height: 100px;
   border: 1px solid #7aa5d6;
+  background-color: #fff;
+}
+
+.rhizo-progressbar {
+  margin: 5px 10px;
+}
+
+.rhizo-progressbar-text {
+  text-align: center;
+  color: #7aa5d6;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+/******************
+  Logo section
+ *****************/
+.rhizo-logo {
+  padding: 0;
+}
+
+.rhizo-left .rhizo-logo {
+  padding-left: 5px;
+}
+
+.rhizo-logo H1 {
+  font-size: 28px;
+  margin: 0;
+  padding: 0;
+  color: #7aa5d6;
+}
+
+.rhizo-logo P {
+  font-size: 11px;
+  margin: 0;
+  padding: 0;
+}
+
+/******************
+  Filters, and related tweaks
+ *****************/
+.rhizo-filter {
+  margin-bottom: 5px;
+  padding-left: 5px;
+}
+
+.rhizo-filter-container SELECT {
+  max-width: 250px;
+}
+
+.rhizo-slider-moving {
+  color: blue;
+}
+
+.rhizo-slider  {
+  margin: 5px 10px 0 5px;
+}
+
+/* When inside a floating panel */
+.rhizo-floating-panel .rhizo-layout-extra-options {
+  margin-top: 3px;
+}
+
+.rhizo-floating-panel .rhizo-filter {
+  margin-top: 5px;
+  background-color: #fff;
+  /* width/height are necessary for safari, otherwise it clips rendering */
+  height: 100%;
+  width: 95%;
+}
+
+.rhizo-floating-panel .rhizo-filter-container {
   overflow: hidden;
 }
 
-.rhizo-universe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-/*  border: 1px dotted #000;*/ /* uncomment this to debug endless desktop */
+.rhizo-floating-panel .rhizo-filter-container SELECT {
+  max-width: 190px;
 }
 
-/* Selection management */
-DIV.ui-selecting {
+.rhizo-floating-panel .rhizo-next-filter {
+  background: transparent url('../img/next_filter.gif') no-repeat top left;
+  float: right;
+  width: 12px;
+  height: 13px;
+  margin-right: 3px;
+}
+
+.rhizo-floating-panel .rhizo-next-filter:hover {
+  background: transparent url('../img/next_filter-hover.gif') no-repeat top left;
+  cursor: pointer;
+}
+
+.rhizo-floating-panel .rhizo-prev-filter {
+  background: transparent url('../img/prev_filter.gif') no-repeat top left;
+  float: right;
+  width: 12px;
+  height: 13px;
+  margin-right: 3px;
+}
+
+.rhizo-floating-panel .rhizo-prev-filter:hover {
+  background: transparent url('../img/prev_filter-hover.gif') no-repeat top left;
+  cursor: pointer;
+}
+
+/******************
+  Filter autocommit selector
+ *****************/
+.rhizo-autocommit-panel {
+  background-color: rgb(238, 242, 251);
+  padding: 2px 0;
+  margin: 0;
+}
+
+.rhizo-autocommit-panel BUTTON {
+  float: right;
+}
+
+/* When inside a floating panel */
+.rhizo-floating-panel .rhizo-autocommit-panel {
+  background-color: transparent;
+}
+
+.rhizo-floating-panel .rhizo-autocommit-panel BUTTON {
+  float: none;
+  margin: 0 5px;
+}
+
+.rhizo-floating-panel .rhizo-autocommit-link {
+  float: right;
+  margin-right: 3px;
+}
+
+/******************
+  Selection management
+ *****************/
+.rhizo DIV.ui-selecting {
   background-color: #F796FF;
   border-color: #7E18AC;
 }
 
-DIV.ui-selected {
+.rhizo DIV.ui-selected {
   background-color: #F796FF;
   border-color: #7E18AC;
   border-width: 2px;
@@ -269,7 +345,96 @@ DIV.ui-selected {
   cursor: crosshair !important;
 }
 
-/* Model rendering */
+/******************
+  Actions
+ *****************/
+.rhizo-actions {
+  margin-top: 5px;
+}
+
+.rhizo-action {
+  border: 1px solid #7aa5d6;
+  font-size: 11px;
+  margin-top: 5px;
+  background-color: #fff;
+  height: 40px;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.rhizo-action:hover {
+  cursor: pointer;
+}
+
+.rhizo-droppable-action {
+  border: 1px solid #7aa5d6;
+  background-color: #fff;
+  width: 200px;
+  height: 200px;
+  color: #7aa5d6;
+  font-size: 11px;
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/******************
+  Console
+ *****************/
+.rhizo-console-header {
+  border: 1px solid #7aa5d6;
+  border-top: 0px;
+  min-height: 20px;
+  padding: 3px 0 0 5px;
+  font-variant: small-caps;
+  background-color: #fff;
+}
+
+.rhizo-console-close {
+  float: right;
+  border: 2px solid #7aa5d6;
+  font-family: sans-serif;
+  color: #7aa5d6;
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+  text-align: center;
+}
+
+.rhizo-console-close:hover {
+  background-color: #e5ecf9;
+  color: #7aa5d6;
+  cursor: pointer;
+}
+
+.rhizo-console-contents {
+  border: 1px solid #7aa5d6;
+  border-top-width: 0px;
+  font-size: 10px;
+  height: 400px;
+  overflow: hidden;
+  background-color: #e5ecf9;
+  clear: right;
+  display: none;
+}
+
+.rhizo-console-contents P {
+  margin: 1px 0;
+  padding: 0;
+  background-color: #e5ecf9;
+}
+
+.rhizo-console-contents P.rhizo-log-error {
+  background-color: #ff9999;
+}
+
+.rhizo-console-contents P.rhizo-log-warning {
+  background-color: #ffff99;
+}
+
+/******************
+  Model rendering
+ *****************/
 .rhizo-expand-model {
   background: #fff url('../img/maximize.gif') no-repeat top left;
   position: absolute;
@@ -306,11 +471,9 @@ DIV.ui-selected {
   z-index: 200;
 }
 
-.rhizo-model .rhizo-autorender-label {
-  color: #666;
-  font-size: 10px;
-}
-
+/******************
+  Autorendering and Legend
+ *****************/
 .rhizo-autorender {
   color: #000;
   font-size: 11px;
@@ -318,12 +481,16 @@ DIV.ui-selected {
   height: 100%;
 }
 
+.rhizo-autorender .rhizo-autorender-label {
+  color: #666;
+  font-size: 10px;
+}
+
 .rhizo-autorender P {
   margin: 0;
   padding: 0;
 }
 
-/* Legend */
 .rhizo-legend-size {
   margin-bottom: 5px;
 }
@@ -332,7 +499,6 @@ DIV.ui-selected {
   margin-bottom: 5px;
 }
 
-/* autoRender options */
 .ar-fon-0t { font-weight: bold; font-size: 10px;}
 .ar-fon-1t { font-weight: bold; font-size: 12px;}
 .ar-fon-2t { font-weight: bold; font-size: 14px;}
@@ -358,158 +524,9 @@ DIV.ui-selected {
   border: 1px solid #7aa5d6;
 }
 
-/* Minirender tweaks */
-.rhizo-miniRender .rhizo-bucket-header {
-  font-size: 12px;
-  margin-bottom: 3px;
-  width: 160px;
-}
-
-.rhizo-miniRender .rhizo-selection-trigger {
-  top: 0;
-}
-
-/* miniRender Bottombar */
-.rhizo-bottom-bar {
-  position: absolute;
-  bottom: 2%;
-  z-index: 1300;
-  background-color: #fff;
-  border: 1px solid #7aa5d6;
-  margin: 0 0 0 4px;
-  padding: 0;
-  height: 20px;
-  width: 95%;
-  -webkit-box-shadow: 2px 2px 2px #aaa;
-  -moz-box-shadow: 2px 2px 2px #aaa;
-}
-
-.rhizo-bottom-bar A {
-  color: #7aa5d6;
-  text-decoration: none;
-  font-size: 11px;
-}
-
-.rhizo-bottom-bar A:hover {
-  color: #000;
-  background-color: transparent;
-}
-
-.rhizo-bottom-bar H1 A:hover {
-  text-decoration: none;
-  background-color: transparent;
-  color: #0167cd;
-}
-
-.rhizo-bottom-bar .rhizo-filters-header {
-  border-width: 0;
-  background-color: #fff;
-  font-variant: normal;
-  padding: 0;
-  margin-right: 3px;
-}
-
-.rhizo-bottom-bar A.rhizo-filter-open {
-  color: #000;
-}
-
-.rhizo-bottom-bar .rhizo-floating-panel H1 {
-  font-size: 14px;
-  margin: 0;
-  padding: 0;
-  color: #7aa5d6;
-}
-
-.rhizo-bottom-bar .rhizo-floating-panel P {
-  font-size: 11px;
-  margin: 0;
-  padding: 0;
-}
-
-
-.rhizo-bottom-bar .rhizo-bucket-header {
-  font-size: 12px;
-  font-weight: bold;
-  border-bottom: 1px solid #7aa5d6;
-  width: 160px;
-  margin-bottom: 3px;
-  color: blue;
-}
-
-.rhizo-bottom-bar .rhizo-floating-panel {
-  position: absolute;
-  border: 1px solid #7aa5d6;
-  background-color: #fff;
-  bottom: 2.2em;
-  left: 0px;
-  height: 6em;
-  width: 99%;
-  padding: 2px;
-  font-size: 11px;
-  font-weight: normal;
-  z-index: 1100;
-}
-
-.rhizo-bottom-bar .rhizo-layout-extra-options {
-  margin-top: 3px;
-}
-
-.rhizo-bottom-bar .rhizo-filter {
-  margin-top: 5px;
-  font-size: 11px;
-  background-color: #fff;
-  height: 100%; /* width/height are necessary for safari, otherwise it clips rendering */
-  width: 100%;
-}
-
-.rhizo-bottom-bar .rhizo-autocommit-panel {
-  background-color: #fff;
-}
-
-.rhizo-bottom-bar .rhizo-autocommit-panel BUTTON {
-  float: none;
-  margin: 0 5px;
-}
-
-.rhizo-bottom-bar .rhizo-autocommit-link {
-  float: right;
-  margin-right: 3px;
-}
-
-.rhizo-bottom-bar .rhizo-filter-container {
-  overflow: hidden;
-}
-
-.rhizo-bottom-bar .rhizo-filter-container SELECT {
-  max-width: 190px;
-}
-
-.rhizo-bottom-bar .rhizo-next-filter {
-  background: transparent url('../img/next_filter.gif') no-repeat top left;
-  float: right;
-  width: 12px;
-  height: 13px;
-  margin-right: 3px;
-}
-
-.rhizo-bottom-bar .rhizo-next-filter:hover {
-  background: transparent url('../img/next_filter-hover.gif') no-repeat top left;
-  cursor: pointer;
-}
-
-.rhizo-bottom-bar .rhizo-prev-filter {
-  background: transparent url('../img/prev_filter.gif') no-repeat top left;
-  float: right;
-  width: 12px;
-  height: 13px;
-  margin-right: 3px;
-}
-
-.rhizo-bottom-bar .rhizo-prev-filter:hover {
-  background: transparent url('../img/prev_filter-hover.gif') no-repeat top left;
-  cursor: pointer;
-}
-
+/***************************
+  Bottom-bar widgets
+***************************/
 .rhizo-bottom-bar .rhizo-maximize-icon {
   background: #fff url('../img/maximize.gif') no-repeat top left;
   margin: 3px;
@@ -525,50 +542,27 @@ DIV.ui-selected {
 
 .rhizo-bottom-bar .rhizo-link-help {
   float: right;
-  padding-top: 5px;
+  padding: 0;
   margin: 0 3px;
 }
 
-/* Progress bar */
-.rhizo-progressbar-panel {
-  position: absolute;
-  z-index: 5000;
-  -webkit-box-shadow: 5px 5px 5px #aaa;
-  -moz-box-shadow: 5px 5px 5px #aaa;
-  margin: 5px;
-  width: 300px;
-  height: 100px;
-  border: 1px solid #7aa5d6;
-  background-color: #fff;
+/***************************
+  Touch template tweaks
+***************************/
+
+/* Viewport, universe and layout-related tweaks */
+.rhizo-touch-template .rhizo-viewport {
+  left: 0;
+  right: 0;
 }
 
-.rhizo-progressbar {
-  margin: 5px 10px;
+.rhizo-touch-template .rhizo-bucket-header {
+  font-size: 12px;
+  margin-bottom: 3px;
+  width: 160px;
 }
 
-.rhizo-progressbar-text {
-  text-align: center;
-  color: #7aa5d6;
-  font-size: 11px;
-  margin-bottom: 5px;
-}
-
-/* Manual tweak on jQuery UI styles, otherwise rhizo-viewport looks funny while
-   dragging is in progress. */
-.ui-state-disabled {
-  opacity: 1; filter:Alpha(Opacity=1);
-}
-
-/* Styles used only by Rhizosphere samples */
-.rhizo-sample {
-  color: #000;
-  font-size: 11px;
-  width: 100%;
-  height: 100%;
-  padding: 3px;
-}
-
-.rhizo-sample P {
-  margin: 0;
-  padding: 0;
+/* Selection management */
+.rhizo-touch-template .rhizo-selection-trigger {
+  top: 0;
 }
