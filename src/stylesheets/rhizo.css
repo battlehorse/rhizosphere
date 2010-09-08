@@ -333,12 +333,12 @@ DIV.ui-selected {
 }
 
 /* autoRender options */
-.ar-fon-0m { font-weight: bold; font-size: 10px;}
-.ar-fon-1m { font-weight: bold; font-size: 12px;}
-.ar-fon-2m { font-weight: bold; font-size: 14px;}
-.ar-fon-3m { font-weight: bold; font-size: 16px;}
-.ar-fon-4m { font-weight: bold; font-size: 18px;}
-.ar-fon-5m { font-weight: bold; font-size: 20px;}
+.ar-fon-0t { font-weight: bold; font-size: 10px;}
+.ar-fon-1t { font-weight: bold; font-size: 12px;}
+.ar-fon-2t { font-weight: bold; font-size: 14px;}
+.ar-fon-3t { font-weight: bold; font-size: 16px;}
+.ar-fon-4t { font-weight: bold; font-size: 18px;}
+.ar-fon-5t { font-weight: bold; font-size: 20px;}
 
 .ar-fon-0 { font-weight: bold; font-size: 12px;}
 .ar-fon-1 { font-weight: bold; font-size: 14px;}
@@ -347,12 +347,12 @@ DIV.ui-selected {
 .ar-fon-4 { font-weight: bold; font-size: 20px;}
 .ar-fon-5 { font-weight: bold; font-size: 22px;}
 
-.ar-col-0m, .ar-col-0 { padding: 3px; background-color: #fff;}
-.ar-col-1m, .ar-col-1 { padding: 3px; background-color: #F9FCCA;}
-.ar-col-2m, .ar-col-2 { padding: 3px; background-color: #E7FCCA;}
-.ar-col-3m, .ar-col-3 { padding: 3px; background-color: #D5FCCA;}
-.ar-col-4m, .ar-col-4 { padding: 3px; background-color: #C3FCCA;}
-.ar-col-5m, .ar-col-5 { padding: 3px; background-color: #B1FCCA;}
+.ar-col-0t, .ar-col-0 { padding: 3px; background-color: #fff;}
+.ar-col-1t, .ar-col-1 { padding: 3px; background-color: #F9FCCA;}
+.ar-col-2t, .ar-col-2 { padding: 3px; background-color: #E7FCCA;}
+.ar-col-3t, .ar-col-3 { padding: 3px; background-color: #D5FCCA;}
+.ar-col-4t, .ar-col-4 { padding: 3px; background-color: #C3FCCA;}
+.ar-col-5t, .ar-col-5 { padding: 3px; background-color: #B1FCCA;}
 
 .ar-col-legend {
   border: 1px solid #7aa5d6;

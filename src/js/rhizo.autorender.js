@@ -133,25 +133,25 @@ rhizo.autorender.AR.prototype.locateMinMax_ = function(models, key) {
 
 rhizo.autorender.AR.prototype.getClass_ = function(value,
                                                    range,
-                                                   miniLayout,
+                                                   touchLayout,
                                                    identifier) {
   // 0 to 5 scale
   var size = parseInt(((value - range.min) / (range.max - range.min))*5.0, 10);
-  return 'ar-' + identifier + '-' + size.toString() + (miniLayout ? 'm' : '');
+  return 'ar-' + identifier + '-' + size.toString() + (touchLayout ? 't' : '');
 };
 
 
 rhizo.autorender.AR.prototype.getFontClass_ = function(value,
                                                        range,
-                                                       miniLayout,
+                                                       touchLayout,
                                                        master) {
-  return this.getClass_(value, range, miniLayout, 'fon');
+  return this.getClass_(value, range, touchLayout, 'fon');
 };
 
 rhizo.autorender.AR.prototype.getColorClass_ = function(value,
                                                         range,
-                                                        miniLayout) {
-  return this.getClass_(value, range, miniLayout, 'col');
+                                                        touchLayout) {
+  return this.getClass_(value, range, touchLayout, 'col');
 };
 
 rhizo.autorender.AR.prototype.renderSingleModelKey_ = function(key, value) {
@@ -167,40 +167,40 @@ rhizo.autorender.AR.prototype.renderSingleModelKey_ = function(key, value) {
 /**
   Detects whether the renderings produced by this renderer can be expanded
   or not. 
-  If it is in miniLayout mode:
+  If it is in touchLayout mode:
     then only the masterField is shown and expandable is true if there are
     additional fields.
-  If it is NOT in miniLayout mode:
+  If it is NOT in touchLayout mode:
     then expandable is true if there are more fields, in addition to the
     ones are already shown (numfields_) plus the masterField (that is always
     shown).
  */
 rhizo.autorender.AR.prototype.expandable = function(opt_options) {
-  var miniLayout = opt_options && opt_options.miniLayout;
-  var threshold = miniLayout ? 1 :  this.numfields_ + 1;
+  var touchLayout = opt_options && opt_options.touchLayout;
+  var threshold = touchLayout ? 1 :  this.numfields_ + 1;
   return this.metamodelFields_ > threshold;
 };
 
 rhizo.autorender.AR.prototype.render = function(model, 
                                                 expanded, 
                                                 opt_options) {
-  var miniLayout = opt_options && opt_options.miniLayout;
+  var touchLayout = opt_options && opt_options.touchLayout;
 
-  var colorClass = 'ar-col-0' + (miniLayout ? 'm' : '');
+  var colorClass = 'ar-col-0' + (touchLayout ? 't' : '');
   if (this.colorField_) {
     colorClass = this.getColorClass_(model[this.colorField_],
                                      this.colorRange_,
-                                     miniLayout);
+                                     touchLayout);
   }
 
-  var fontClass = 'ar-fon-0' + (miniLayout ? 'm' : '');
+  var fontClass = 'ar-fon-0' + (touchLayout ? 't' : '');
   if (this.sizeField_) {
     fontClass = this.getFontClass_(model[this.sizeField_],
                                    this.sizeRange_,
-                                   miniLayout);
+                                   touchLayout);
   }
 
-  if (miniLayout && !expanded) {
+  if (touchLayout && !expanded) {
     return $("<div class='rhizo-autorender " + colorClass + "'>" +
              "<span class='" + fontClass + "'>" +
              model[this.masterField_] + "</span>" +

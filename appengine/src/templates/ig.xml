@@ -63,7 +63,7 @@
 
       var prefs = new _IG_Prefs();
       var globalOptions = {
-        autoSize: true,
+        autoTemplate: true,
         noAnims: !prefs.getBool('useAnims'),
         arDefaults: prefs.getBool('arDefaults'),
         arMaster: prefs.getString('arMaster'),

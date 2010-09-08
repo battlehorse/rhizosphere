@@ -23,12 +23,15 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
   if (opt_options) {
     $.extend(this.options_, opt_options);
   }
-  if (this.options_.autoSize) {
-    // Autosizing has been requested to identify the template to use.
-    if ($(document).width() >= 600 && $(document).height() >= 250) {
-      this.options_.miniLayout = false;
+  if (this.options_.autoTemplate && this.options_.touchLayout === undefined) {
+    // Use the userAgent string to decide the best template to use.
+    // At the moment, we only enable the touch-oriented interface when we
+    // recognize an iPad is being used.
+    var ua = navigator.userAgent;
+    if (ua.toLowerCase().indexOf('ipad') != -1) {
+      this.options_.touchLayout = true;
     } else {
-      this.options_.miniLayout = true;
+      this.options_.touchLayout = false;
     }
   }
 };
@@ -52,8 +55,8 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   this.project_ = new rhizo.Project(gui, this.options_);
 
   // Get the minimum chrome up and running.
-  this.template_ = this.options_.miniLayout ?
-      new rhizo.ui.component.MiniTemplate(this.project_) :
+  this.template_ = this.options_.touchLayout ?
+      new rhizo.ui.component.TouchTemplate(this.project_) :
       new rhizo.ui.component.StandardTemplate(this.project_);
   this.template_.renderChrome(this.options_);
   this.template_.activateChrome(this.options_);

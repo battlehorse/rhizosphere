@@ -24,8 +24,15 @@
       }
 
       $(document).ready(function() {
+        var options = {
+          autoTemplate: true,
+          allowSourcesFromUrl: true
+          {% if touch %}
+          ,touchLayout: true
+          {% endif %}
+        };
         var bootstrapper = new rhizo.bootstrap.Bootstrap(
-            $('#rhizo-pangea'), {autoSize: true, allowSourcesFromUrl: true});
+            $('#rhizo-pangea'), options);
         bootstrapper.go();
       });
     </script>
