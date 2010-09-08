@@ -68,7 +68,7 @@ rhizo.ui.component.Logo.prototype.render = function(container, gui, opt_options)
       'style="font-weight:bold; text-decoration: underline">I Need Help!</a>' +
       '</p>').appendTo(container);
 
-  if (options.miniLayout) {
+  if (options.touchLayout) {
     this.headerPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 };
@@ -85,7 +85,7 @@ rhizo.ui.component.Viewport.prototype.render = function(container, gui, opt_opti
   gui.setViewport(this.viewport_);
   gui.setUniverse(this.universe_);
 
-  if (options.miniLayout) {
+  if (options.touchLayout) {
     this.viewport_.addClass('rhizo-miniRender');
   } else {
     // shrink the viewport
@@ -271,7 +271,7 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
   gui.addComponent('rhizo.ui.component.Layout', this);
   var options = opt_options || {};
 
-  if (!options.miniLayout) {
+  if (!options.touchLayout) {
     $('<div />', {'class': 'rhizo-filters-header'}).
         text('Display').
         appendTo(container);
@@ -280,7 +280,7 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
   this.layoutPanel_ = $('<div />').appendTo(container);
   this.layoutOptions_ = $('<div />', {'class': 'rhizo-layout-extra-options'}).appendTo(this.layoutPanel_);
 
-  if (options.miniLayout) {
+  if (options.touchLayout) {
     this.layoutPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 
@@ -339,7 +339,7 @@ rhizo.ui.component.SelectionManager.prototype.render = function(container, proje
 
   var options = opt_options || {};
 
-  if (!options.miniLayout) {
+  if (!options.touchLayout) {
     $('<div />', {'class': 'rhizo-filters-header'}).
         text('Selection').
         appendTo(container);
@@ -348,7 +348,7 @@ rhizo.ui.component.SelectionManager.prototype.render = function(container, proje
   this.selectionPanel_ = $('<div />', {'class': 'rhizo-selection'}).
       appendTo(container);
 
-  if (options.miniLayout) {
+  if (options.touchLayout) {
     this.selectionPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 
@@ -468,7 +468,7 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   gui.addComponent('rhizo.ui.component.Filters', this);
   var options = opt_options || {};
 
-  if (!options.miniLayout) {
+  if (!options.touchLayout) {
     $('<div />', {'class': 'rhizo-filters-header'}).
         text('Filters').
         appendTo(container);
@@ -479,7 +479,7 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   this.nextFilter_ = null;
   this.prevFilter_ = null;
   this.hideLink_ = null;
-  if (options.miniLayout) {
+  if (options.touchLayout) {
     this.filterPanel_.addClass('rhizo-floating-panel').css('display', 'none');
 
     this.nextFilter_ = $('<span />', {'class': 'rhizo-next-filter', title: 'Next filter'}).
@@ -506,7 +506,7 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   var metaModel = project.metaModel();
   for (key in metaModel) {
     var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
-    if (options.miniLayout) {
+    if (options.touchLayout) {
       if (first) {
         first = false;
       } else {
@@ -589,7 +589,7 @@ rhizo.ui.component.Legend.prototype.render = function(container, project, gui, o
     colorRange = project.renderer().getColorRange();
   }
 
-  if (!options.miniLayout) {
+  if (!options.touchLayout) {
     $('<div />', {'class': 'rhizo-filters-header'}).
     text('Legend').
     appendTo(container);
@@ -597,7 +597,7 @@ rhizo.ui.component.Legend.prototype.render = function(container, project, gui, o
 
   this.legendPanel_ = $('<div />', {'class': "rhizo-legend-panel"}).appendTo(container);
 
-  if (options.miniLayout) {
+  if (options.touchLayout) {
     this.legendPanel_.addClass('rhizo-floating-panel').css('display', 'none');
   }
 
@@ -708,7 +708,7 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, opt_optio
   }
 };
 
-rhizo.ui.component.MiniTemplate = function(project) {
+rhizo.ui.component.TouchTemplate = function(project) {
   this.project_ = project;
   this.gui_ = project.gui();
   this.components_ = {
@@ -725,7 +725,7 @@ rhizo.ui.component.MiniTemplate = function(project) {
   };
 };
 
-rhizo.ui.component.MiniTemplate.prototype.renderChrome = function(opt_options) {
+rhizo.ui.component.TouchTemplate.prototype.renderChrome = function(opt_options) {
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, opt_options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
@@ -735,13 +735,13 @@ rhizo.ui.component.MiniTemplate.prototype.renderChrome = function(opt_options) {
   this.progress_.update(25, 'All static UI created.');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.activateChrome = function(opt_options) {
+rhizo.ui.component.TouchTemplate.prototype.activateChrome = function(opt_options) {
   this.progress_.update(26, 'Activating static UI...');
   this.components_.VIEWPORT.activate(this.gui_, opt_options);
   this.progress_.update(33, 'Loading models...');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) {
+rhizo.ui.component.TouchTemplate.prototype.renderDynamic = function(opt_options) {
   this.progress_.update(34, 'Creating dynamic controls...');
   this.components_.LAYOUT.render(this.bottomBar_, this.project_, this.gui_, opt_options);
   this.progress_.update(36, 'Layout engine created.');
@@ -764,7 +764,7 @@ rhizo.ui.component.MiniTemplate.prototype.renderDynamic = function(opt_options) 
   this.progress_.update(48, 'Toolbar created.');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options) {
+rhizo.ui.component.TouchTemplate.prototype.activateDynamic = function(opt_options) {
   this.progress_.update(51, 'Activating dynamic controls...');
   this.components_.LAYOUT.activate(this.project_, this.gui_, opt_options);
   this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, opt_options);
@@ -774,7 +774,7 @@ rhizo.ui.component.MiniTemplate.prototype.activateDynamic = function(opt_options
   this.progress_.update(66, 'Rhizosphere controls are ready.');
 };
 
-rhizo.ui.component.MiniTemplate.prototype.done = function() {
+rhizo.ui.component.TouchTemplate.prototype.done = function() {
   this.progress_.update(100, 'Rhizosphere ready!');
 };
 

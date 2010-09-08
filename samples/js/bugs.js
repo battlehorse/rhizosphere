@@ -4814,8 +4814,8 @@ for (var i = 0; i < limit; i++) {
 
 var renderer = {
   render: function(model, expanded, opt_options) {
-    var mini = opt_options && opt_options.miniLayout;
-    if (mini && !expanded) {
+    var touch = opt_options && opt_options.touchLayout;
+    if (touch && !expanded) {
       var container = $("<div class='rhizo-sample' style='background-color:" + priorities[model.pri] + "'></div>");
       var p = $("<p style='font-size: 10px;'></p>");
       $("<span style='color: #999'></span>").text(model.type).appendTo(p);
@@ -4831,8 +4831,8 @@ var renderer = {
     }
   },
   expandable: function(opt_options) {
-    // expansion is enabled only in the mini layout.
-    if (opt_options && opt_options.miniLayout) {
+    // expansion is enabled only in the touch layout.
+    if (opt_options && opt_options.touchLayout) {
       return true;
     } else {
       return false;

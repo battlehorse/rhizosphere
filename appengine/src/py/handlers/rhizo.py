@@ -13,7 +13,10 @@ class RhizoHandler(webapp.RequestHandler):
 
     def get(self):
         debug = self.request.get('d', '0') == '1'
-        template_values = {'debug': debug}
+        touch = self.request.get('t', False)
+        if touch == '0':
+          touch = False
+        template_values = {'debug': debug, 'touch': touch}
         path = os.path.join(os.path.dirname(__file__),
                             '../../templates%s' % self.request.path)
         self.response.out.write(template.render(path, template_values))

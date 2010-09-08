@@ -76,13 +76,14 @@
         'sample/bugs.js',
         'sample/usa.js' ];
 
-      function go(js_file, mini_id, debug_id) {
+      function go(js_file, touch_id, debug_id) {
         var url = 'rhizo.html?d=' +
             (document.getElementById(debug_id).checked ? '1' : '0') +
+            '&t=' +
+            (document.getElementById(touch_id).checked ? '1' : '0') +
             '&source=' + js_file;
         var windowName = 'rhizosphere';
-        var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
-        windowFeatures += (document.getElementById(mini_id).checked ? "height=300,width=350" : "height=700, width=1000");
+        var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height=700,width=1000';
         window.open(url, windowName, windowFeatures);
         return false;
       }
@@ -104,10 +105,10 @@
           }
         });
         $('.try-rhizosphere-link').click(function() {
-          go(carousel_js_file, 'mini', 'debug');
+          go(carousel_js_file, 'touch', 'debug');
         });
         $('#try-your-own').submit(function() {
-          return go($('#source').val(), 'try-your-own-mini', 'try-your-own-debug');
+          return go($('#source').val(), 'try-your-own-touch', 'try-your-own-debug');
         });
         $('#try-learn').click(function() {
           $('#try-learn-contents').show('fast');
@@ -175,12 +176,12 @@
             </a>
           </li>
         </ul>
-        <div style="float:right; height: 100px; margin-right: 40px; padding-top: 10px">
+        <div style="float:right; height: 100px; margin: 0 40px 0 5px; padding-top: 10px">
           <a href="#" class="try-rhizosphere-link">
             <img src="static/welcome/img/try.png" alt="Try Rhizosphere" border="0">
           </a><br />
-          <label for="mini" class="smaller">Mini layout</label>
-          <input type="checkbox" name="mini" id="mini" >
+          <label for="touch" class="smaller">Touch layout</label>
+          <input type="checkbox" name="touch" id="touch" >
           <label for="debug" class="smaller">Debug mode</label>
           <input type="checkbox" name="debug" id="debug">
         </div>
@@ -265,8 +266,8 @@
                     </td>
                   </tr><tr valign="top">
                     <td>
-                      <input type="checkbox" name="try-your-own-mini" id="try-your-own-mini" >
-                      <label for="try-your-own-mini" class="smaller">Mini layout</label><br />
+                      <input type="checkbox" name="try-your-own-touch" id="try-your-own-touch" >
+                      <label for="try-your-own-touch" class="smaller">Touch layout</label><br />
                       <input type="checkbox" name="try-your-own-debug" id="try-your-own-debug">
                       <label for="try-your-own-debug" class="smaller">Debug Mode</label>
                     </td><td>
