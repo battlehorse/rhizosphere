@@ -54,6 +54,8 @@ rhizo.layout.TreeLayout = function(project) {
   this.directionSelector_ = null;
   this.metaModelKeySelector_ = null;
 
+  this.parentKeys_ = [];
+
   /**
    * @type {Object.<string, rhizo.layout.TreeNode>}
    * @private
@@ -61,24 +63,36 @@ rhizo.layout.TreeLayout = function(project) {
   this.globalNodesMap_ = null;
 };
 
+rhizo.layout.TreeLayout.prototype.verifyMetaModel = function(meta) {
+  for (var key in meta) {
+    if (!!meta[key].isParent) {
+      this.parentKeys_.push(key);
+    }
+  }
+  return this.parentKeys_.length > 0;
+};
+
 rhizo.layout.TreeLayout.prototype.layout = function(container,
                                                     supermodels,
                                                     allmodels,
                                                     meta,
                                                     options) {
+  // detect parent
+  var parentKey;
+  if (this.parentKeys_.length == 0) {
+    this.project_.logger().error(
+        'Unable to identify parent-child relationships');
+    return false;
+  } else if (this.parentKeys_.length == 1) {
+    parentKey = this.parentKeys_[0];
+  } else {
+    parentKey = this.metaModelKeySelector_.val();
+  }
+  this.project_.logger().info("Creating tree by " + parentKey);
 
   // detect rendering direction
   var vertical = this.directionSelector_.val() == 'ver';
   this.treePainter_ = new rhizo.layout.TreePainter(vertical);
-
-  // detect parent
-  var parentKey = this.metaModelKeySelector_.val();
-  if (!meta[parentKey]) {
-    this.project_.logger().error(
-      "parentKey attribute does not match any property");
-    return false;
-  }
-  this.project_.logger().info("Creating tree by " + parentKey);
 
   try {
     // builds the tree model and also checks for validity
@@ -127,16 +141,26 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
 };
 
 rhizo.layout.TreeLayout.prototype.details = function() {
+  var details = $("<div />");
+  if (this.parentKeys_.length == 0) {
+    details.append("No parent-child relationships exist");
+    return details;
+  }
+
+  details.append(" arrange ");
   this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
   this.directionSelector_.append("<option value='hor'>Horizontally</option>");
   this.directionSelector_.append("<option value='ver'>Vertically</option>");
+  details.append(this.directionSelector_);
 
-  this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_, 'rhizo-treelayout-parentKey');
-
-  return $("<div />").append(this.directionSelector_).
-                      append(" arrange by: ").
-                      append(this.metaModelKeySelector_);
+  if (this.parentKeys_.length > 1) {
+    this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
+      this.project_, 'rhizo-treelayout-parentKey', function(key, meta) {
+        return !!meta.isParent;
+      });
+    details.append(" by ").append(this.metaModelKeySelector_);
+  }
+  return details;
 };
 
 rhizo.layout.TreeLayout.prototype.toString = function() {

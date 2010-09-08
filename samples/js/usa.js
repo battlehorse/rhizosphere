@@ -310,7 +310,7 @@
             multiple: true },
     election: {kind: rhizo.meta.Kind.CATEGORY, label: "Elections",
                categories: elections },
-    hierarchy: { kind: rhizo.meta.Kind.STRING, label: "Hierarchy" }
+    hierarchy: { kind: rhizo.meta.Kind.STRING, label: "Hierarchy", isParent: true}
   };
 
   var renderer = {

@@ -25,6 +25,11 @@ To define a new layout:
 - implement the toString() function
   This returns the layout name for display purposes
 
+- implement the verifyMetaModel() function (optional)
+  This verifies the current project metaModel and decides whether it
+  contains the right kinds for this layout to work. If not implemented, it is
+  assumed the layout can work with the current metamodel.
+
 - implement the details() function (optional)
   This renders a piece of UI you can use to collect extra options
   for your layout

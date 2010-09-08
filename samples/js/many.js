@@ -47,7 +47,7 @@
   var metamodel = {
     id: { kind: rhizo.meta.Kind.NUMBER, label: "Id" },
     stringid: { kind: rhizo.meta.Kind.STRING, label: "Id (String)" },
-    parentId: { kind: rhizo.meta.Kind.NUMBER, label: "Parent Id" }
+    parentId: { kind: rhizo.meta.Kind.NUMBER, label: "Parent Id", isParent: true}
   };
 
   // Note that the renderer returns raw strings instead of jQuery objects.

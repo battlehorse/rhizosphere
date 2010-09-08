@@ -31,16 +31,6 @@ rhizo.Project = function(gui, opt_options) {
   } else {
     this.logger_ = new rhizo.NoOpLogger();
   }
-
-  this.initializeLayoutEngines_();
-};
-
-rhizo.Project.prototype.initializeLayoutEngines_ = function() {
-  this.curLayoutName_ = 'flow'; // default layout engine
-  this.layoutEngines_ = {};
-  for (var layoutName in rhizo.layout.layouts) {
-    this.layoutEngines_[layoutName] = new rhizo.layout.layouts[layoutName](this);
-  }
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -48,6 +38,25 @@ rhizo.Project.prototype.chromeReady = function() {
   // logging console.
   if (this.gui_.getComponent('rhizo.ui.component.Console')) {
     this.logger_ = new rhizo.Logger(this.gui_);
+  }
+};
+
+rhizo.Project.prototype.metaReady = function() {
+  this.initializeLayoutEngines_();
+};
+
+rhizo.Project.prototype.initializeLayoutEngines_ = function() {
+  this.curLayoutName_ = 'flow'; // default layout engine
+  this.layoutEngines_ = {};
+  for (var layoutName in rhizo.layout.layouts) {
+    var engine = new rhizo.layout.layouts[layoutName](this);
+    var enableEngine = true;
+    if (engine.verifyMetaModel && !engine.verifyMetaModel(this.metaModel_)) {
+      enableEngine = false;
+    }
+    if (enableEngine) {
+      this.layoutEngines_[layoutName] = engine;
+    }
   }
 };
 

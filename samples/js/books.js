@@ -164,10 +164,6 @@
     }
   };
 
-  // hack to remove the tree layout in this demo
-  // TODO(battlehorse): This disrupts multisphere isolation.
-  delete rhizo.layout.layouts.tree;
-
   {{ jsonp_callback }}({
       'renderer': renderer,
       'metamodel': metamodel,

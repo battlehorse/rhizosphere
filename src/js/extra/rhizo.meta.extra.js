@@ -71,6 +71,10 @@ rhizo.meta.DecimalKind.prototype.cluster = function(modelValue) {
                   rhizo.ui.toHumanLabel(hiRange) };
 };
 
+rhizo.meta.DecimalKind.prototype.isNumeric = function() {
+  return true;
+};
+
 
 /**
    DecimalRangeKind meta: A specialized filter that can render range sliders
@@ -100,6 +104,9 @@ rhizo.meta.DecimalRangeKind.prototype.compare =
 
 rhizo.meta.DecimalRangeKind.prototype.cluster =
     rhizo.meta.DecimalKind.prototype.cluster;
+
+rhizo.meta.DecimalRangeKind.prototype.isNumeric =
+    rhizo.meta.DecimalKind.prototype.isNumeric;
 
 rhizo.meta.DecimalRangeKind.prototype.toModelScale_ = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
@@ -138,6 +145,9 @@ rhizo.meta.LogarithmRangeKind.prototype.compare =
 
 rhizo.meta.LogarithmRangeKind.prototype.cluster =
     rhizo.meta.DecimalRangeKind.prototype.cluster;
+
+rhizo.meta.LogarithmRangeKind.prototype.isNumeric =
+    rhizo.meta.DecimalRangeKind.prototype.isNumeric;
 
 rhizo.meta.LogarithmRangeKind.prototype.toModelScale_ = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
@@ -181,6 +191,10 @@ rhizo.meta.StringArrayKind.prototype.survivesFilter =
 rhizo.meta.StringArrayKind.prototype.cluster = function(modelValue) {
   return { key: "undefined",
            label: "Clustering unsupported for this datatype." };
+};
+
+rhizo.meta.StringArrayKind.prototype.isNumeric = function() {
+  return false;
 };
 
 

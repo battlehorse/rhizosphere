@@ -82,6 +82,8 @@ rhizo.bootstrap.Bootstrap.prototype.deploy = function(payload) {
   this.project_.setMetaModel(payload.metamodel);
   this.project_.setRenderer(payload.renderer);
 
+  this.project_.metaReady();
+
   this.template_.renderDynamic(this.options_);
   this.template_.activateDynamic(this.options_);
 
