@@ -68,7 +68,7 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
     if (!results || !results[2]) {
       this.project_.logger().error("Unable to identify datasource from location");
     } else {
-      source = unescape(results[2]);
+      source = decodeURIComponent(results[2]);
     }
   }
 
