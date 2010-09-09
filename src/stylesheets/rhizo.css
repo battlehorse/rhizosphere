@@ -552,18 +552,18 @@
 ***************************/
 
 /* Viewport, universe and layout-related tweaks */
-.rhizo-bottom-template .rhizo-viewport {
+.rhizo-template-bottom .rhizo-viewport {
   left: 0;
   right: 0;
 }
 
-.rhizo-bottom-template .rhizo-bucket-header {
+.rhizo-template-bottom .rhizo-bucket-header {
   font-size: 12px;
   margin-bottom: 3px;
   width: 160px;
 }
 
 /* Selection management */
-.rhizo-bottom-template .rhizo-selection-trigger {
+.rhizo-template-bottom .rhizo-selection-trigger {
   top: 0;
 }
