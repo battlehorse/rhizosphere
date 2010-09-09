@@ -68,10 +68,10 @@ rhizo.ui.canCacheDimensions = function(renderer, opt_options) {
   return canCacheDimensions;
 };
 
-rhizo.ui.render = function(model, renderer, allRenderings, opt_options) {
+rhizo.ui.render = function(model, renderer, allRenderings, renderingHints) {
   var naked_render = renderer.render(model.unwrap(),
                                      model.expanded,
-                                     opt_options);
+                                     renderingHints);
   if (typeof naked_render == 'string') {
     allRenderings.push('<div class="rhizo-model">');
     allRenderings.push(naked_render);
@@ -84,14 +84,12 @@ rhizo.ui.render = function(model, renderer, allRenderings, opt_options) {
   }
 };
 
-rhizo.ui.reRender = function(model,
-                             renderer,
-                             opt_options) {
+rhizo.ui.reRender = function(model, renderer, renderingHints) {
   // re-render. rendered expects the naked model.
   // Must wrap in $() in case renderer returns raw strings.
   var naked_render = $(renderer.render(model.unwrap(),
                                        model.expanded,
-                                       opt_options));
+                                       renderingHints));
   model.naked_render = naked_render;
 
   // keep expanded items above the others.
@@ -106,12 +104,12 @@ rhizo.ui.reRender = function(model,
 };
 
 rhizo.ui.decorateRendering = function(renderings,
-                                      models,
-                                      project,
-                                      renderer,
-                                      opt_options) {
+                                       models,
+                                       project,
+                                       renderer,
+                                       renderingHints) {
   var expander;
-  var expandable = rhizo.ui.expandable(renderer, opt_options);
+  var expandable = rhizo.ui.expandable(renderer, renderingHints);
   if (expandable) {
     expander = $('<div class="rhizo-expand-model"></div>');
   }
@@ -134,7 +132,7 @@ rhizo.ui.decorateRendering = function(renderings,
 
   // Bind expandable events.
   if (expandable) {
-    rhizo.ui.initExpandable(project, renderer, opt_options);
+    rhizo.ui.initExpandable(project, renderer, renderingHints);
   }
 
   // The following ops are applied to all renderings at once.
@@ -162,11 +160,11 @@ rhizo.ui.decorateRendering = function(renderings,
     }, 100);
 };
 
-rhizo.ui.expandable = function(renderer, opt_options) {
+rhizo.ui.expandable = function(renderer, renderingHints) {
   if (typeof(renderer.expandable) == 'boolean') {
     return renderer.expandable;
   } else if (typeof(renderer.expandable) == 'function') {
-    return renderer.expandable(opt_options);
+    return renderer.expandable(renderingHints);
   } else {
     return false;
   }
@@ -176,8 +174,8 @@ rhizo.ui.expandable = function(renderer, opt_options) {
   Wires the expansion listeners to the rendering expansion icons,
   if the renderer supports expansion.
  */
-rhizo.ui.initExpandable = function(project, renderer, opt_options) {
-  if (rhizo.ui.expandable(renderer, opt_options)) {
+rhizo.ui.initExpandable = function(project, renderer, renderingHints) {
+  if (rhizo.ui.expandable(renderer, renderingHints)) {
     // register the hover effect to show/hide the expand icon
     $('.rhizo-model').hover(
       function() {
@@ -198,7 +196,7 @@ rhizo.ui.initExpandable = function(project, renderer, opt_options) {
       // re-render
       rhizo.ui.reRender(model,
                         renderer,
-                        opt_options);
+                        renderingHints);
     });
   }
 };

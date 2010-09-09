@@ -262,7 +262,7 @@ rhizo.Project.prototype.initializeRenderings_ = function() {
   var allRenderings = [];
   for (var i = 0;  i < this.models_.length; i++) {
     rhizo.ui.render(this.models_[i], this.renderer_, allRenderings,
-                    this.options_);
+                    this.gui_.allRenderingHints());
   }
   if (allRenderings.length == 0) {
     this.logger_.error("No renderings.");
@@ -307,7 +307,7 @@ rhizo.Project.prototype.initializeRenderings_ = function() {
                              this.models_,
                              this,
                              this.renderer_,
-                             this.options_);
+                             this.gui_.allRenderingHints());
   return true;
 };
 

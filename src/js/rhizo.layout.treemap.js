@@ -525,7 +525,8 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   this.prevColorMeta_ = colorMeta;
 
   // Revert expanded models.
-  if (rhizo.ui.expandable(this.project_.renderer(), options)) {
+  if (rhizo.ui.expandable(this.project_.renderer(),
+                          this.project_.gui().allRenderingHints())) {
     this.revertExpandedModels_(supermodels, options);
   }
 
@@ -930,7 +931,7 @@ rhizo.layout.TreeMapLayout.prototype.revertExpandedModels_ = function(
       model.expanded = !model.expanded;
       rhizo.ui.reRender(model,
                         this.project_.renderer(),
-                        options);
+                        this.project_.gui().allRenderingHints());
     }
   }
 };

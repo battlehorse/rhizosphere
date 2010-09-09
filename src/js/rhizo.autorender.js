@@ -133,25 +133,25 @@ rhizo.autorender.AR.prototype.locateMinMax_ = function(models, key) {
 
 rhizo.autorender.AR.prototype.getClass_ = function(value,
                                                    range,
-                                                   touchLayout,
+                                                   renderingHints,
                                                    identifier) {
   // 0 to 5 scale
   var size = parseInt(((value - range.min) / (range.max - range.min))*5.0, 10);
-  return 'ar-' + identifier + '-' + size.toString() + (touchLayout ? 't' : '');
+  return 'ar-' + identifier + '-' + size.toString() + (renderingHints.small ? 'm' : '');
 };
 
 
 rhizo.autorender.AR.prototype.getFontClass_ = function(value,
                                                        range,
-                                                       touchLayout,
+                                                       renderingHints,
                                                        master) {
-  return this.getClass_(value, range, touchLayout, 'fon');
+  return this.getClass_(value, range, renderingHints, 'fon');
 };
 
 rhizo.autorender.AR.prototype.getColorClass_ = function(value,
                                                         range,
-                                                        touchLayout) {
-  return this.getClass_(value, range, touchLayout, 'col');
+                                                        renderingHints) {
+  return this.getClass_(value, range, renderingHints, 'col');
 };
 
 rhizo.autorender.AR.prototype.renderSingleModelKey_ = function(key, value) {
@@ -167,40 +167,37 @@ rhizo.autorender.AR.prototype.renderSingleModelKey_ = function(key, value) {
 /**
   Detects whether the renderings produced by this renderer can be expanded
   or not. 
-  If it is in touchLayout mode:
+  If the rendering is small (via renderingHints)
     then only the masterField is shown and expandable is true if there are
     additional fields.
-  If it is NOT in touchLayout mode:
+  If the rendering is not small
     then expandable is true if there are more fields, in addition to the
     ones are already shown (numfields_) plus the masterField (that is always
     shown).
  */
-rhizo.autorender.AR.prototype.expandable = function(opt_options) {
-  var touchLayout = opt_options && opt_options.touchLayout;
-  var threshold = touchLayout ? 1 :  this.numfields_ + 1;
+rhizo.autorender.AR.prototype.expandable = function(renderingHints) {
+  var threshold = renderingHints.small ? 1 :  this.numfields_ + 1;
   return this.metamodelFields_ > threshold;
 };
 
 rhizo.autorender.AR.prototype.render = function(model, 
                                                 expanded, 
-                                                opt_options) {
-  var touchLayout = opt_options && opt_options.touchLayout;
-
-  var colorClass = 'ar-col-0' + (touchLayout ? 't' : '');
+                                                renderingHints) {
+  var colorClass = 'ar-col-0' + (renderingHints.small ? 'm' : '');
   if (this.colorField_) {
     colorClass = this.getColorClass_(model[this.colorField_],
                                      this.colorRange_,
-                                     touchLayout);
+                                     renderingHints);
   }
 
-  var fontClass = 'ar-fon-0' + (touchLayout ? 't' : '');
+  var fontClass = 'ar-fon-0' + (renderingHints.small ? 'm' : '');
   if (this.sizeField_) {
     fontClass = this.getFontClass_(model[this.sizeField_],
                                    this.sizeRange_,
-                                   touchLayout);
+                                   renderingHints);
   }
 
-  if (touchLayout && !expanded) {
+  if (renderingHints.small && !expanded) {
     return $("<div class='rhizo-autorender " + colorClass + "'>" +
              "<span class='" + fontClass + "'>" +
              model[this.masterField_] + "</span>" +
@@ -215,7 +212,7 @@ rhizo.autorender.AR.prototype.render = function(model,
     if (this.sizeField_) {
       html.push(this.renderSingleModelKey_(this.sizeField_,
                                            model[this.sizeField_]));
-      count++
+      count++;
     }
 
     if (this.colorField_ && this.colorField_ != this.sizeField_) {

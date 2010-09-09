@@ -47,7 +47,7 @@
 
   // Renderer definition
   var renderer = {
-    render: function(model, expanded, opt_options) {
+    render: function(model, expanded, renderingHints) {
       if (!expanded) {
         var container = $("<div class='rhizo-sample'></div>");
         var img = $("<img src='" + model.thumbnail.url +

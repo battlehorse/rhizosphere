@@ -50,7 +50,7 @@
   };
 
   var renderer = {
-    render: function(model, expanded, opt_options) {
+    render: function(model, expanded, renderingHints) {
       return $("<div class='rhizo-sample'>" +
                "<p><b>" + model.name + "</b></p></div>");
     },
