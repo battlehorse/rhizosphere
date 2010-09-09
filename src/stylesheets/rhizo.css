@@ -38,8 +38,8 @@
   background-color: #fff;
   font-variant: normal;
   padding: 0;
-  margin: 0 3px 0 0;
-  font-size: 22px;
+  margin: 0 5px;
+  font-size: 11px;
 }
 
 /* When inside a bottom-bar */
@@ -100,9 +100,9 @@
   background-color: #fff;
   border-top: 1px solid #7aa5d6;
   margin: 0;
-  padding: 0;
-  height: 26px;
-  font-size: 22px;
+  padding: 4px 0 0 0;
+  height: 18px;
+  font-size: 11px;
   width: 100%;
 }
 
@@ -114,13 +114,13 @@
   border-top: 1px solid #7aa5d6;
   border-bottom: 1px solid #7aa5d6;
   background-color: #fff;
-  bottom: 28px;
+  bottom: 25px;
   left: 0px;
   height: 6em;
   width: 100%;
   padding: 5px 0;
   margin: 0;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: normal;
   z-index: 1100;
 }
@@ -249,6 +249,7 @@
 
 .rhizo-floating-panel .rhizo-filter-container SELECT {
   max-width: 190px;
+  font-size: 10px;
 }
 
 .rhizo-floating-panel .rhizo-next-filter {
@@ -303,6 +304,7 @@
 .rhizo-floating-panel .rhizo-autocommit-link {
   float: right;
   margin-right: 3px;
+  text-decoration: none;
 }
 
 /******************
@@ -499,12 +501,12 @@
   margin-bottom: 5px;
 }
 
-.ar-fon-0t { font-weight: bold; font-size: 10px;}
-.ar-fon-1t { font-weight: bold; font-size: 12px;}
-.ar-fon-2t { font-weight: bold; font-size: 14px;}
-.ar-fon-3t { font-weight: bold; font-size: 16px;}
-.ar-fon-4t { font-weight: bold; font-size: 18px;}
-.ar-fon-5t { font-weight: bold; font-size: 20px;}
+.ar-fon-0m { font-weight: bold; font-size: 10px;}
+.ar-fon-1m { font-weight: bold; font-size: 12px;}
+.ar-fon-2m { font-weight: bold; font-size: 14px;}
+.ar-fon-3m { font-weight: bold; font-size: 16px;}
+.ar-fon-4m { font-weight: bold; font-size: 18px;}
+.ar-fon-5m { font-weight: bold; font-size: 20px;}
 
 .ar-fon-0 { font-weight: bold; font-size: 12px;}
 .ar-fon-1 { font-weight: bold; font-size: 14px;}
@@ -513,12 +515,12 @@
 .ar-fon-4 { font-weight: bold; font-size: 20px;}
 .ar-fon-5 { font-weight: bold; font-size: 22px;}
 
-.ar-col-0t, .ar-col-0 { padding: 3px; background-color: #fff;}
-.ar-col-1t, .ar-col-1 { padding: 3px; background-color: #F9FCCA;}
-.ar-col-2t, .ar-col-2 { padding: 3px; background-color: #E7FCCA;}
-.ar-col-3t, .ar-col-3 { padding: 3px; background-color: #D5FCCA;}
-.ar-col-4t, .ar-col-4 { padding: 3px; background-color: #C3FCCA;}
-.ar-col-5t, .ar-col-5 { padding: 3px; background-color: #B1FCCA;}
+.ar-col-0m, .ar-col-0 { padding: 3px; background-color: #fff;}
+.ar-col-1m, .ar-col-1 { padding: 3px; background-color: #F9FCCA;}
+.ar-col-2m, .ar-col-2 { padding: 3px; background-color: #E7FCCA;}
+.ar-col-3m, .ar-col-3 { padding: 3px; background-color: #D5FCCA;}
+.ar-col-4m, .ar-col-4 { padding: 3px; background-color: #C3FCCA;}
+.ar-col-5m, .ar-col-5 { padding: 3px; background-color: #B1FCCA;}
 
 .ar-col-legend {
   border: 1px solid #7aa5d6;
@@ -529,7 +531,7 @@
 ***************************/
 .rhizo-bottom-bar .rhizo-maximize-icon {
   background: #fff url('../img/maximize.gif') no-repeat top left;
-  margin: 3px;
+  padding: 0 3px;
   width: 13px;
   height: 12px;
   float: right;
@@ -543,26 +545,26 @@
 .rhizo-bottom-bar .rhizo-link-help {
   float: right;
   padding: 0;
-  margin: 0 3px;
+  margin: 0 5px;
 }
 
 /***************************
-  Touch template tweaks
+  Bottom template tweaks
 ***************************/
 
 /* Viewport, universe and layout-related tweaks */
-.rhizo-touch-template .rhizo-viewport {
+.rhizo-bottom-template .rhizo-viewport {
   left: 0;
   right: 0;
 }
 
-.rhizo-touch-template .rhizo-bucket-header {
+.rhizo-bottom-template .rhizo-bucket-header {
   font-size: 12px;
   margin-bottom: 3px;
   width: 160px;
 }
 
 /* Selection management */
-.rhizo-touch-template .rhizo-selection-trigger {
+.rhizo-bottom-template .rhizo-selection-trigger {
   top: 0;
 }
