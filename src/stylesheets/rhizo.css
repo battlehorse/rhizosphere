@@ -243,13 +243,12 @@
   width: 95%;
 }
 
-.rhizo-floating-panel .rhizo-filter-container {
+.rhizo-floating-panel.rhizo-filter-container {
   overflow: hidden;
 }
 
-.rhizo-floating-panel .rhizo-filter-container SELECT {
-  max-width: 190px;
-  font-size: 10px;
+.rhizo-floating-panel.rhizo-filter-container SELECT {
+  max-height: 190px;
 }
 
 .rhizo-floating-panel .rhizo-next-filter {
