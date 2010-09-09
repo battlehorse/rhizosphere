@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
 
-    <div id="rhizo-pangea">
+    <div id="rhizo-pangea" style="position: absolute; top: 0; bottom: 0; right: 0; left: 0;">
     </div>
     <!-- Scripts section -->
 
@@ -65,7 +65,6 @@
 
       var prefs = new _IG_Prefs();
       var globalOptions = {
-        autoTemplate: true,
         noAnims: !prefs.getBool('useAnims'),
         arDefaults: prefs.getBool('arDefaults'),
         arMaster: prefs.getString('arMaster'),

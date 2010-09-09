@@ -55,7 +55,12 @@
         var divs = ['#rhizo-first', '#rhizo-second', '#rhizo-third'];
         var samples = ['sample/picasa.js', 'sample/bugs.js', 'sample/books.js' ];
         for (var i = 0; i < divs.length; i++) {
-          new rhizo.bootstrap.Bootstrap($(divs[i]), {touchLayout: true}).go(samples[i]);
+          new rhizo.bootstrap.Bootstrap(
+              $(divs[i]),
+              {forceTemplate: 'bottom',
+               forcePlatform: 'default',
+               forceDevice: 'default'
+              }).go(samples[i]);
         }
       });
     </script>

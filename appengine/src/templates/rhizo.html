@@ -6,7 +6,7 @@
     {% include "rhizo_head.html" %}
   </head>
   <body>
-    <div id="rhizo-pangea">
+    <div id="rhizo-pangea" style="position: absolute; top: 0; bottom: 0; right: 0; left: 0;">
     </div>
 
     <script type="text/javascript" charset="utf-8">
@@ -25,10 +25,10 @@
 
       $(document).ready(function() {
         var options = {
-          autoTemplate: true,
           allowSourcesFromUrl: true
-          {% if touch %}
-          ,touchLayout: true
+          {% if mobile %}
+          ,forcePlatform: 'mobile'
+          ,forceDevice: 'ipad'
           {% endif %}
         };
         var bootstrapper = new rhizo.bootstrap.Bootstrap(
