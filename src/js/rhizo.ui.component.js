@@ -719,7 +719,7 @@ rhizo.ui.component.BottomTemplate = function(project) {
 };
 
 rhizo.ui.component.BottomTemplate.prototype.renderChrome = function(options) {
-  this.gui_.container.addClass('rhizo-bottom-template');
+  this.gui_.container.addClass('rhizo-template-bottom');
 
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
@@ -795,7 +795,7 @@ rhizo.ui.component.StandardTemplate = function(project) {
 };
 
 rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(options) {
-  this.gui_.container.addClass('rhizo-default-template');
+  this.gui_.container.addClass('rhizo-template-default');
 
   this.components_.VIEWPORT.render(this.gui_.container, this.gui_, options);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
