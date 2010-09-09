@@ -56,8 +56,8 @@
   };
 
   var renderer = {
-    render: function(model, expanded, opt_options) {
-      if (opt_options && opt_options.touchLayout) {
+    render: function(model, expanded, renderingHints) {
+      if (renderingHints.small) {
         return $("<div class='rhizo-sample'>" +
                  "<p style='font-size:10px'><b><span style='color:" +
                  (model.male ? "blue" : "pink") + "'>"+
