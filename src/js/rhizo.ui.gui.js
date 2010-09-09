@@ -21,16 +21,24 @@ namespace("rhizo.ui.gui");
 /*
   A GUI is a collection of UI Components. A GUI is built by a Template.
 */
-rhizo.ui.gui.GUI = function(container) {
+rhizo.ui.gui.GUI = function(container, platform, device) {
+  // The target platform we are rendering onto (e.g.: 'mobile').
+  this.platform_ = platform;
+
+  // The specific device we are targeting (e.g.: 'ipad').
+  this.device_ = device;
 
   // A JQuery object pointing to the DOM element that contains the whole
   // Rhizosphere instance.
   this.container = container;
+  this.is_small_container_ = false;
+  this.initContainer_();
 
   // The universe component is the container for all the models managed
   // by Rhizosphere. A universe must always exist in a Rhizosphere
   // visualization.
   this.universe = null;
+  this.universeTargetPosition_ = {top: 0, left: 0};
 
   // The viewport component defines which part of the universe is visible to
   // the user. The universe may be bigger than the current visible area,
@@ -48,8 +56,16 @@ rhizo.ui.gui.GUI = function(container) {
   this.noFx = false;
 
   this.selectionModeOn_ = false;
+};
 
-  this.universeTargetPosition_ = {top: 0, left: 0};
+rhizo.ui.gui.GUI.prototype.initContainer_ = function() {
+  // Enable device-specific and platform-specific styles.
+  this.container.
+      addClass('rhizo').
+      addClass('rhizo-device-' + this.device_).
+      addClass('rhizo-platform-' + this.platform_);  
+  this.is_small_container_ = this.container.width() < 600 ||
+      this.container.height() < 250;
 };
 
 rhizo.ui.gui.GUI.prototype.setViewport = function(viewport) {
@@ -66,6 +82,28 @@ rhizo.ui.gui.GUI.prototype.addComponent = function(component_key, component) {
 
 rhizo.ui.gui.GUI.prototype.getComponent = function(component_key) {
   return this.componentsMap_[component_key];
+};
+
+/**
+ * @return {boolean} Whether the GUI is 'small' (in terms of pixel area).
+ *     Renderers might use this hint to customize the renderings they produce.
+ */
+rhizo.ui.gui.GUI.prototype.isSmall = function() {
+  return this.is_small_container_;
+};
+
+/**
+ * @return {boolean} Are we running on a mobile device?
+ */
+rhizo.ui.gui.GUI.prototype.isMobile = function() {
+  return this.platform_ == 'mobile';
+};
+
+rhizo.ui.gui.GUI.prototype.allRenderingHints = function() {
+  return {
+    small: this.isSmall(),
+    mobile: this.isMobile()
+  };
 };
 
 /**

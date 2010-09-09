@@ -23,22 +23,59 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
   if (opt_options) {
     $.extend(this.options_, opt_options);
   }
-  if (this.options_.autoTemplate && this.options_.touchLayout === undefined) {
-    // Use the userAgent string to decide the best template to use.
-    // At the moment, we only enable the touch-oriented interface when we
-    // recognize an iPad is being used.
-    var ua = navigator.userAgent;
-    if (ua.toLowerCase().indexOf('ipad') != -1) {
-      this.options_.touchLayout = true;
-    } else {
-      this.options_.touchLayout = false;
-    }
+};
+
+/**
+ * Identify the platform and device we are running onto.
+ * @private
+ */
+rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
+  if (this.options_.forcePlatform && this.options_.forceDevice) {
+    return {platform: this.options_.forcePlatform,
+            device: this.options_.forceDevice};
   }
+  var ua = navigator.userAgent;
+  if (ua.toLowerCase().indexOf('ipad') != -1) {
+    return {plaftorm: 'mobile', device: 'ipad'};
+  }
+  return {platform: 'default', device: 'default'};
+};
+
+/**
+ * Identifies the best template to use for the visualization.
+ * @param {rhizo.ui.gui.GUI} gui
+ * @return {function(rhizo.Project):Object} A constructor for the template to
+ *     use. 
+ * @private
+ */
+rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui) {
+  var templateCtors = {
+    'bottom' : rhizo.ui.component.BottomTemplate,
+    'default': rhizo.ui.component.StandardTemplate
+  };
+
+  if (this.options_.forceTemplate &&
+      this.options_.forceTemplate in templateCtors)
+  if (this.options_.forceTemplate) {
+    return templateCtors[this.options_.forceTemplate];
+  }
+
+  // No specific template has been forced. Select a specific one based on
+  // document size and target platform.
+  if (gui.isMobile() || gui.isSmall()) {
+    return templateCtors['bottom'];
+  }
+  return templateCtors['default'];
 };
 
 rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
+  // Identify the target platform and device we are running onto.
+  var platformDevice = this.identifyPlatformAndDevice_();  
+
   // Create the GUI.
-  var gui = new rhizo.ui.gui.GUI(this.container_);
+  var gui = new rhizo.ui.gui.GUI(this.container_,
+                                 platformDevice.platform,
+                                 platformDevice.device);
   if (this.options_.noAnims) {
     gui.disableFx(true);
   }
@@ -54,10 +91,11 @@ rhizo.bootstrap.Bootstrap.prototype.go = function(opt_resource) {
   // Create the project.
   this.project_ = new rhizo.Project(gui, this.options_);
 
+  // Identify the target device and template to use.
+  var templateCtor = this.identifyTemplate_(gui);
+  this.template_ = new templateCtor(this.project_);
+
   // Get the minimum chrome up and running.
-  this.template_ = this.options_.touchLayout ?
-      new rhizo.ui.component.TouchTemplate(this.project_) :
-      new rhizo.ui.component.StandardTemplate(this.project_);
   this.template_.renderChrome(this.options_);
   this.template_.activateChrome(this.options_);
 
