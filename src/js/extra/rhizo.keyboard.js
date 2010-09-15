@@ -18,7 +18,7 @@
  * @fileoverview Onscreen keyboard based on HTML5 canvas, useful when
  * Rhizosphere is used on a keyboard-less touchscreen.
  * 
- * Implementation inspired by the online virtual keyboard by Josuha Koo
+ * Implementation inspired by the online virtual keyboard by Joshua Koo
  * (zz85nus@gmail.com, http://lab4games.net/zz85/blog). See
  * http://www.lab4games.net/zz85/blog/2010/02/06/online-virtual-keyboard-with-canvas-and-javascript/
  * 
