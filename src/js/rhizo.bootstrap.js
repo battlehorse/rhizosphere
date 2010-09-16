@@ -36,7 +36,7 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
   }
   var ua = navigator.userAgent;
   if (ua.toLowerCase().indexOf('ipad') != -1) {
-    return {plaftorm: 'mobile', device: 'ipad'};
+    return {platform: 'mobile', device: 'ipad'};
   }
   return {platform: 'default', device: 'default'};
 };
