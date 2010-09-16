@@ -124,6 +124,19 @@ rhizo.ui.gui.GUI.prototype.toggleSelectionMode = function() {
   this.viewport.selectable(selectable_status).
       draggable(draggable_status).
       toggleClass('rhizo-selection-mode');
+
+  // If a BottomBar exists, ask it to make the SelectionManager component
+  // visible whenever we are in selection mode.
+  var bottomBar = this.getComponent('rhizo.ui.component.BottomBar');
+  if (bottomBar) {
+    bottomBar.toggleComponent('rhizo.ui.component.SelectionManager',
+                              this.selectionModeOn_); 
+  }
+
+  var selManager = this.getComponent('rhizo.ui.component.SelectionManager');
+  if (selManager) {
+    selManager.toggleSelectionTrigger(this.selectionModeOn_);
+  }
 };
 
 rhizo.ui.gui.GUI.prototype.disableFx = function(disabled) {

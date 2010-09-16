@@ -129,13 +129,22 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, options) {
 rhizo.ui.component.BottomBar = function() {};
 
 rhizo.ui.component.BottomBar.prototype.render = function(container, project, gui, options) {
+  gui.addComponent('rhizo.ui.component.BottomBar', this);
   var span = $('<span />').appendTo(container);
   this.resizeLink_ = $('<a/>', {href: '#', title: 'Maximize', 'class': 'rhizo-maximize-icon'}).
     appendTo(span);
 
   this.components_ = [
     {component: 'rhizo.ui.component.Layout', title: 'Display', 'class': ''},
-    {component: 'rhizo.ui.component.SelectionManager', title: 'Selection', 'class': ''},
+    {component: 'rhizo.ui.component.SelectionManager', title: 'Selection', 'class': '',
+     callback: function(gui, isActive) {
+       if (gui.isSelectionModeOn() != isActive) {
+         // Selection mode is not enable, but the selection panel is active,
+         // or viceversa.
+         gui.toggleSelectionMode();
+       }
+     }
+    },
     {component: 'rhizo.ui.component.Filters', title: 'Filters', 'class': ''},
     {component: 'rhizo.ui.component.Legend', title: 'Legend', 'class': ''},
     {component: 'rhizo.ui.component.Logo', title: '?', 'class': 'rhizo-link-help'}
@@ -176,12 +185,28 @@ rhizo.ui.component.BottomBar.prototype.activate = function(project, gui, options
           $(comp.panel).css('display', 'none');
           $(comp.clickable).removeClass('rhizo-section-open');
         }
+        if (comp.callback) {
+          comp.callback(gui, $(comp.clickable).hasClass('rhizo-section-open'));
+        }
       });
       return false;
     }, this));
   }, this));
 };
 
+rhizo.ui.component.BottomBar.prototype.toggleComponent = function(component_id,
+                                                                  active) {
+  for (var i = 0; i < this.components_.length; i++) {
+    if (this.components_[i].component == component_id) {
+      var currentActive = this.components_[i].clickable.hasClass(
+          'rhizo-section-open');
+      if (currentActive != active) {
+        this.components_[i].clickable.click();
+      }
+      break;
+    }
+  }
+};
 
 rhizo.ui.component.Console = function() {};
 
@@ -415,11 +440,6 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     function(project, gui, options) {
   this.selection_trigger_.click(function() {
     project.gui().toggleSelectionMode();
-    if (project.gui().isSelectionModeOn()) {
-      $(this).attr('title', 'Stop selecting items');
-    } else {
-      $(this).attr('title', 'Start selecting items');
-    }
   });
 
   gui.viewport.selectable({
@@ -450,6 +470,12 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
   }, this));
 };
 
+rhizo.ui.component.SelectionManager.prototype.toggleSelectionTrigger =
+    function(selectionModeOn) {
+ this.selection_trigger_.attr(
+     'title',
+     selectionModeOn ? 'Stop selecting items' : 'Start selecting items');
+};
 
 rhizo.ui.component.Filters = function(floating) {
   this.floating_ = floating;
