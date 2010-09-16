@@ -55,14 +55,13 @@
                     "' height='" + model.thumbnail.height +
                     "' />").appendTo(container);
         cvi_instant.add(img.get(0), {tilt: model.tilt});
-        $("<p style='font-size:10px'>by <b>" +
+        $("<p style='font-size:0.9em'>by <b>" +
           model.author +
           '</b></p>').appendTo(container);
         return container;
       } else {
         return $("<div class='rhizo-sample'>" +
-                 "<p style='font-size:10px'>" +
-                 'by <b>' +  model.author + '</b></p>' +
+                 '<p>by <b>' +  model.author + '</b></p>' +
                  '<p>' + model.summary + '</p>' +
                  "</div>");
       }
