@@ -77,9 +77,13 @@
 
       function go(js_file, simulate_id, debug_id) {
         var simulate = document.getElementById(simulate_id).value;
+        var forceParams = '';
+        if (simulate == 'mobile') {
+          forceParams = '&forcePlatform=mobile&forceDevice=ipad';
+        }
         var url = 'rhizo.html?d=' +
             (document.getElementById(debug_id).checked ? '1' : '0') +
-            '&simulate=' + simulate +
+            forceParams +
             '&source=' + js_file;
         var windowName = 'rhizosphere';
         var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
