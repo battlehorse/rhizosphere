@@ -146,17 +146,17 @@ rhizo.ui.component.BottomBar.prototype.render = function(container, project, gui
       return gui.getComponent(c.component) ? true : false;
     });
   for (var i = 0; i < this.components_.length; i++) {
-    this.components_[i].link = this.createLink_(this.components_[i].title,
-                                                this.components_[i]['class'],
-                                                container);
+    this.components_[i].clickable = this.createLink_(this.components_[i].title,
+                                                     this.components_[i]['class'],
+                                                     container);
     this.components_[i].panel = gui.getComponent(this.components_[i].component).getPanel();
   }
 };
 
 rhizo.ui.component.BottomBar.prototype.createLink_ = function(text, className, container) {
-  var span = $('<span />', {'class': 'rhizo-section-header'}).appendTo(container);
-  var link = $('<a/>', {href:  '#', title: text, 'class': className}).text(text).appendTo(span);
-  return link;
+  var div = $('<div />', {'class': 'rhizo-section-header'}).appendTo(container);
+  var link = $('<a/>', {href:  'javascript:;', title: text, 'class': className}).text(text).appendTo(div);
+  return div;
 };
 
 rhizo.ui.component.BottomBar.prototype.activate = function(project, gui, options) {
@@ -167,14 +167,14 @@ rhizo.ui.component.BottomBar.prototype.activate = function(project, gui, options
   });
 
   jQuery.each(this.components_, jQuery.proxy(function(i, currentComponent) {
-    currentComponent.link.click(jQuery.proxy(function() {
+    currentComponent.clickable.click(jQuery.proxy(function() {
       jQuery.each(this.components_, function(j, comp) {
         if (comp == currentComponent) {
           $(comp.panel).toggle();
-          $(comp.link).toggleClass('rhizo-section-open');
+          $(comp.clickable).toggleClass('rhizo-section-open');
         } else {
           $(comp.panel).css('display', 'none');
-          $(comp.link).removeClass('rhizo-section-open');
+          $(comp.clickable).removeClass('rhizo-section-open');
         }
       });
       return false;
