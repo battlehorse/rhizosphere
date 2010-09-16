@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Rhizosphere</title>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
     {% include "rhizo_head.html" %}
   </head>
   <body>
@@ -26,9 +26,14 @@
       $(document).ready(function() {
         var options = {
           allowSourcesFromUrl: true
-          {% if mobile %}
-          ,forcePlatform: 'mobile'
-          ,forceDevice: 'ipad'
+          {% if forceTemplate %}
+          ,forceTemplate: '{{forceTemplate}}'
+          {% endif %}
+          {% if forcePlatform %}
+          ,forcePlatform: '{{forcePlatform}}'
+          {% endif %}
+          {% if forceDevice %}
+          ,forceDevice: '{{forceDevice}}'
           {% endif %}
         };
         var bootstrapper = new rhizo.bootstrap.Bootstrap(
