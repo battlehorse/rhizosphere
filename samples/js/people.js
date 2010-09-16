@@ -59,7 +59,7 @@
     render: function(model, expanded, renderingHints) {
       if (renderingHints.small) {
         return $("<div class='rhizo-sample'>" +
-                 "<p style='font-size:10px'><b><span style='color:" +
+                 "<p><b><span style='color:" +
                  (model.male ? "blue" : "pink") + "'>"+
                  model.name + "</span></b></p>" +
                  "</div>");

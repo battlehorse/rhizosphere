@@ -4816,16 +4816,16 @@ var renderer = {
   render: function(model, expanded, renderingHints) {
     if (renderingHints.small && !expanded) {
       var container = $("<div class='rhizo-sample' style='background-color:" + priorities[model.pri] + "'></div>");
-      var p = $("<p style='font-size: 10px;'></p>");
+      var p = $("<p />");
       $("<span style='color: #999'></span>").text(model.type).appendTo(p);
       $("<span style='font-weight: bold'></span>").text(model.id).appendTo(p);      
       p.appendTo(container);
       return container;
     } else {
       var container = $("<div class='rhizo-sample' style='background-color:" + priorities[model.pri] + "'></div>");
-      $("<p style='font-weight: bold; font-size: 10px; color: #999'></p>").text(model.type).appendTo(container);
-      $("<p style='font-size: 15px; font-weight:bold;'></p>").text(model.id).appendTo(container);
-      $("<p style='font-size:10px; width: 100px; overflow:hidden'></p>").text(model.summary).appendTo(container);
+      $("<p style='font-weight: bold; color: #999'></p>").text(model.type).appendTo(container);
+      $("<p style='font-size: 1.2em; font-weight:bold;'></p>").text(model.id).appendTo(container);
+      $("<p style='width: 100px; overflow:hidden'></p>").text(model.summary).appendTo(container);
       return container;      
     }
   },

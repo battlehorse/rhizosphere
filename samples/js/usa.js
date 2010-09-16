@@ -317,7 +317,7 @@
     render: function(model, expanded, renderingHints) {
       if (renderingHints.small) {
         return $("<div class='rhizo-sample'>" + 
-                 "<p style='font-size:10px'><b><span style='color:" +
+                 "<p><b><span style='color:" +
                  this.getElectionColor(model) + "'>"+ 
                  model.name + "</span></b><br />" +
                  "<span class='dim'>" + model.kind + "</span></p>" +
@@ -325,7 +325,7 @@
       } else {
         var html = [];
         html.push("<div class='rhizo-sample'>");
-        html.push("<p style='font-size:10px'>");
+        html.push("<p>");
         if (model.kind == 'State' || model.kind == 'Country') {
           html.push("<img src='static/samples/img/usa_flags/" + 
                     model.imgName + "' width='50px' align='left' >");
