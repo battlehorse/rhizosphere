@@ -502,9 +502,11 @@ rhizo.ui.component.Filters.prototype.render = function(container, project, gui, 
   if (this.floating_) {
     this.filterPanel_.addClass('rhizo-floating-panel').css('display', 'none');
 
-    this.nextFilter_ = $('<span />', {'class': 'rhizo-next-filter', title: 'Next filter'}).
+    this.nextFilter_ = $('<div />', {'class': 'rhizo-next-filter', title: 'Next filter'}).
+      text('>').
       appendTo(this.filterPanel_);
-    this.prevFilter_ = $('<span />', {'class': 'rhizo-prev-filter', title: 'Previous filter'}).
+    this.prevFilter_ = $('<div />', {'class': 'rhizo-prev-filter', title: 'Previous filter'}).
+      text('<').
       appendTo(this.filterPanel_);
     this.hideLink_ = $('<a />', {'href': '#', 'class': 'rhizo-autocommit-link'}).text('Apply').
       appendTo(this.filterPanel_);

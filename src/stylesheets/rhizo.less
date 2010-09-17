@@ -24,6 +24,7 @@
 /* Controls */
 @primary-control: #2e4987;
 @secondary-control: #6a7eac;
+@inverted-control: #fff;
 
 /* Links */
 @primary-link: #20c;
@@ -178,7 +179,7 @@
   border-top: 1px solid @border-color;
   border-bottom: 1px solid @border-color;
   background-color: @background;
-  bottom: 2em;
+  bottom: 2.4em;
   left: 0px;
   height: 6em;
   width: 100%;
@@ -304,10 +305,9 @@
   margin-top: 0;
   padding: 0 4px;
   border: 0;
-  background-color: #fff;
   /* width/height are necessary for safari, otherwise it clips rendering */
   height: 100%;
-  width: 95%;
+  width: 80%;
   clear: left;
 }
 
@@ -319,30 +319,48 @@
   max-height: 190px;
 }
 
-.rhizo-floating-panel .rhizo-next-filter {
-  background: transparent url('../img/next_filter.gif') no-repeat top left;
-  float: right;
-  width: 12px;
-  height: 13px;
-  margin-right: 3px;
-}
-
-.rhizo-floating-panel .rhizo-next-filter:hover {
-  background: transparent url('../img/next_filter-hover.gif') no-repeat top left;
-  cursor: pointer;
-}
-
+.rhizo-floating-panel .rhizo-next-filter,
 .rhizo-floating-panel .rhizo-prev-filter {
-  background: transparent url('../img/prev_filter.gif') no-repeat top left;
   float: right;
-  width: 12px;
-  height: 13px;
-  margin-right: 3px;
+  border-radius: 2px;
+  border: 1px solid @secondary-control;
+  color: @secondary-control;
+  background-color: @background;
+  font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  margin-right: 5px;
+  padding: 0.1em 0.3em;
+  -webkit-box-shadow: 1px 1px 2px @dark-background;
 }
 
+.rhizo-floating-panel .rhizo-next-filter:hover,
 .rhizo-floating-panel .rhizo-prev-filter:hover {
-  background: transparent url('../img/prev_filter-hover.gif') no-repeat top left;
+  background-color: @secondary-control;
+  color: @inverted-control;
   cursor: pointer;
+}
+
+/* When inside a touch (iPad) device */
+.rhizo-device-ipad .rhizo-next-filter {
+  float: right;
+  font-size: 2em;
+  padding-top: 1em;
+  height: 1.9em;
+}
+
+.rhizo-device-ipad .rhizo-prev-filter {
+  float: left;
+  font-size: 2em;
+  padding-top: 1em;
+  height: 1.9em;
+  margin-right: 0;
+  margin-left: 5px;
+}
+
+.rhizo-device-ipad .rhizo-filter {
+  position: absolute;
+  left: 3em;
 }
 
 /******************
@@ -375,13 +393,32 @@
 
 .rhizo-floating-panel .rhizo-autocommit-link {
   float: right;
-  margin-right: 3px;
+  margin-right: 5px;
   text-decoration: none;
   color: @secondary-control;
+  font-size: 1.1em;
+  padding-top: 0.1em;
 }
 
 .rhizo-floating-panel .rhizo-autocommit-link:hover {
   color: @primary-control;
+  text-decoration: underline;
+}
+
+.rhizo-device-ipad .rhizo-autocommit-link {
+  border-radius: 2px;
+  height: 3.2em;
+  padding: 2.2em 0.5em 0 0.5em;
+  border: 1px solid @secondary-control;
+  color: @secondary-control;
+  background-color: @background;
+  -webkit-box-shadow: 1px 1px 2px @dark-background;
+}
+
+.rhizo-device-ipad .rhizo-autocommit-link:hover {
+  text-decoration: none;
+  background-color: @secondary-control;
+  color: @inverted-control;
 }
 
 /******************
