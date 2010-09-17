@@ -54,6 +54,7 @@
 .rhizo {
   color: @normal-text;
   font-size: 0.8em;
+  overflow: hidden;
 }
 
 .rhizo.rhizo-device-ipad {
@@ -547,20 +548,35 @@
 }
 
 /******************
+  Icons
+ *****************/
+.rhizo-maximize-icon {
+  display: block;
+  border: 1px solid @primary-control;
+  border-top: 4px solid @primary-control;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/******************
   Model rendering
  *****************/
 .rhizo-expand-model {
-  background: @background url('../img/maximize.gif') no-repeat top left;
+  background-color: rgba(255, 255, 255, 0.6);
   position: absolute;
   visibility: hidden;
   top: 2px;
   right: 2px;
-  width: 13px;
-  height: 12px;
 }
 
 .rhizo-expand-model:hover {
-  background: @background url('../img/maximize-hover.gif') no-repeat top left;
+  border-color: @secondary-control;
+}
+
+.rhizo-device-ipad .ui-selected .rhizo-expand-model {
+  visibility: visible !important;
+  opacity: 0.6;
 }
 
 /* Note: if you alter this class borders, margins and paddings, you also
@@ -643,16 +659,19 @@
   Bottom-bar widgets
 ***************************/
 .rhizo-bottom-bar .rhizo-maximize-icon {
-  background: transparent url('../img/maximize.gif') no-repeat top left;
-  padding: 0 3px;
-  width: 13px;
-  height: 12px;
-  float: right;
+  border: 1px solid @primary-chrome-text;
+  border-top: 4px solid @primary-chrome-text;
+  display: inline-block;
+  position: absolute;
+  right: 5px;
 }
 
 .rhizo-bottom-bar .rhizo-maximize-icon:hover {
-  background: transparent url('../img/maximize-hover.gif') no-repeat top left;
-  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.rhizo-platform-mobile .rhizo-bottom-bar .rhizo-maximize-icon {
+  display: none;
 }
 
 .rhizo-bottom-bar .rhizo-link-help {

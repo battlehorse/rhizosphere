@@ -130,9 +130,7 @@ rhizo.ui.component.BottomBar = function() {};
 
 rhizo.ui.component.BottomBar.prototype.render = function(container, project, gui, options) {
   gui.addComponent('rhizo.ui.component.BottomBar', this);
-  var span = $('<span />').appendTo(container);
-  this.resizeLink_ = $('<a/>', {href: '#', title: 'Maximize', 'class': 'rhizo-maximize-icon'}).
-    appendTo(span);
+  this.resizeLink_ = $('<a/>', {'class': 'rhizo-maximize-icon', href: 'javascript:;', title: 'Maximize'}).appendTo(container);
 
   this.components_ = [
     {component: 'rhizo.ui.component.Layout', title: 'Display', 'class': ''},
