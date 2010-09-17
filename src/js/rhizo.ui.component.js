@@ -249,7 +249,7 @@ rhizo.ui.component.RightBar = function() {};
 rhizo.ui.component.RightBar.prototype.render = function(container, gui, options) {
   gui.addComponent('rhizo.ui.component.RightBar', this);
 
-  this.toggle_ = $('<div />', {'class': 'rhizo-right-pop'}).appendTo(container);
+  this.toggle_ = $('<div />', {'class': 'rhizo-right-pop'}).html('&#x25c2;').appendTo(container);
   this.rightBar_ = $('<div />', {'class': 'rhizo-right'}).css('display', 'none').
       appendTo(container);
 };
@@ -257,12 +257,12 @@ rhizo.ui.component.RightBar.prototype.render = function(container, gui, options)
 rhizo.ui.component.RightBar.prototype.activate = function(gui, options) {
   this.toggle_.click(jQuery.proxy(function() {
     if (this.rightBar_.is(":visible")) {
-      this.toggle_.css('right', 0);
+      this.toggle_.css('right', 0).html('&#x25c2;');
       gui.viewport.css('right', 5);
       this.rightBar_.css('display', 'none');
     } else {
       gui.viewport.css('right', 135);
-      this.toggle_.css('right', 130);
+      this.toggle_.css('right', 130).html('&#x25b8;');
       this.rightBar_.css('display', '');
     }
   }, this));
