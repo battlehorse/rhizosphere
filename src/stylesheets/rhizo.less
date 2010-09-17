@@ -142,6 +142,7 @@
   right: 5px;
   width: 120px;
   height: 98%;
+  z-index: 300;
 }
 
 .rhizo-right-pop {
@@ -152,11 +153,15 @@
   width: 5px;
   border-left: 1px solid @border-color;
   background-color: @background;
+  color: @primary-control;
+  padding: 50% 0;
+  z-index:300;
 }
 
 .rhizo-right-pop:hover {
-  background: @primary-chrome url(../img/hide-arrow.gif) no-repeat center center;
+  background-color: @primary-chrome;
   background-image: -webkit-gradient(linear, 0 0, 100% 0, from(@primary-chrome), to(@secondary-chrome));
+  color: @primary-chrome-text;
 }
 
 .rhizo-bottom-bar {
