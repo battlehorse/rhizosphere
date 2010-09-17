@@ -26,6 +26,18 @@ function namespace(ns) {
   }
 }
 
+namespace("rhizo");
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ */
+rhizo.inherits = function(childCtor, parentCtor) {
+  function tempCtor() {};
+  tempCtor.prototype = parentCtor.prototype;
+  childCtor.prototype = new tempCtor();
+  childCtor.prototype.constructor = childCtor;
+};
+
 namespace("rhizo.util");
 
 rhizo.util.LOG_E_10 = Math.log(10);
