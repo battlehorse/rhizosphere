@@ -111,7 +111,8 @@ rhizo.ui.decorateRendering = function(renderings,
   var expander;
   var expandable = rhizo.ui.expandable(renderer, renderingHints);
   if (expandable) {
-    expander = $('<div class="rhizo-expand-model"></div>');
+    expander = $('<div />', 
+                 {'class': 'rhizo-expand-model rhizo-maximize-icon'});
   }
   renderings.each(function(idx) {
     // Bind the model id to each rendering
