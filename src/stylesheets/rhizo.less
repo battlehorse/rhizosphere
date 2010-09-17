@@ -1,7 +1,7 @@
 // -*- mode: CSS;-*-
 
 /******************
-  Colors
+  LESS Colors
  *****************/
 
 /* Background colors */
@@ -47,6 +47,45 @@
 @font-logo-color: @secondary-chrome;
 @font-action-dropped-color: @secondary-link;
 
+/******************
+  LESS mixins
+ *****************/
+
+.gradient (@fromcolor, @tocolor) {
+  background-color: @fromcolor;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@fromcolor), to(@tocolor));
+  background-image: -moz-linear-gradient(-90deg, @fromcolor, @tocolor);
+}
+
+.horgradient (@fromcolor, @tocolor) {
+  background-color: @fromcolor;
+  background-image: -webkit-gradient(linear, 0 0, 100% 0, from(@fromcolor), to(@tocolor));
+  background-image: -moz-linear-gradient(@fromcolor, @tocolor);
+}
+
+
+.importantgradient(@fromcolor, @tocolor) {
+  background-color: @fromcolor !important;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@fromcolor), to(@tocolor)) !important;
+  background-image: -moz-linear-gradient(-90deg, @fromcolor, @tocolor) !important;
+}
+
+.shadow(@dx, @dy, @blur, @color) {
+  -webkit-box-shadow: @dx @dy @blur @color;
+  -moz-box-shadow: @dx @dy @blur @color;
+  box-shadow: @dx @dy @blur @color;
+}
+
+.noshadow {
+  -webkit-box-shadow: 0 0 0;
+  -moz-box-shadow: 0 0 0;
+  box-shadow: 0 0 0;
+}
+
+.rounded_corners(@radius) {
+  -moz-border-radius: @radius;
+  border-radius: @radius;
+}
 
 /******************
   Global settings
@@ -82,10 +121,9 @@
   padding-bottom: 2px;
   margin: 5px 0 4px 0;
   border-top: 1px solid @border-color;
-  background-color: @primary-chrome;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@primary-chrome), to(@secondary-chrome));
+  .gradient(@primary-chrome, @secondary-chrome);
   color: @primary-chrome-text;
-  -webkit-box-shadow: 0 2px 5px @dark-background;
+  .shadow(0, 2px, 5px, @dark-background);
 }
 
 .rhizo-bottom-bar .rhizo-section-header {
@@ -97,12 +135,11 @@
   margin: 0;
   height: 1.5em;
   display: inline;
-  -webkit-box-shadow: 0 0;
+  .noshadow;
 }
 
 .rhizo-bottom-bar .rhizo-section-header:hover {
-  background-color: @secondary-chrome;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@secondary-chrome), to(@dark-secondary-chrome));
+  .gradient(@secondary-chrome, @dark-secondary-chrome);
 }
 
 /* When inside a bottom-bar */
@@ -117,8 +154,7 @@
 
 .rhizo-bottom-bar .rhizo-section-open,
 .rhizo-bottom-bar .rhizo-section-open:hover {
-  background-color: @secondary-chrome !important;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@dark-secondary-chrome), to(@secondary-chrome)) !important;
+  .importantgradient(@dark-secondary-chrome, @secondary-chrome);
 }
 
 /******************
@@ -132,7 +168,7 @@
   bottom: 0;
   width: 295px;
   border-right: 1px solid @border-color;
-  -webkit-box-shadow: 0 1px 5px @dark-secondary-chrome;
+  .shadow(0, 1px, 5px, @dark-secondary-chrome);
   z-index: 300;
 }
 
@@ -159,8 +195,7 @@
 }
 
 .rhizo-right-pop:hover {
-  background-color: @primary-chrome;
-  background-image: -webkit-gradient(linear, 0 0, 100% 0, from(@primary-chrome), to(@secondary-chrome));
+  .horgradient(@primary-chrome, @secondary-chrome);
   color: @primary-chrome-text;
 }
 
@@ -168,9 +203,8 @@
   position: absolute;
   bottom: 0;
   z-index: 1300;
-  background-color: @primary-chrome;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@primary-chrome), to(@secondary-chrome));
-  -webkit-box-shadow: 0 -1px 5px @dark-secondary-chrome;
+  .gradient(@primary-chrome, @secondary-chrome);
+  .shadow(0, -1px, 5px, @dark-secondary-chrome);
   margin: 0;
   padding: 4px 0;
   height: 1.5em;
@@ -200,8 +234,7 @@
  *****************/
 .rhizo-viewport {
   position: absolute;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@secondary-background), to(@dark-secondary-background));
-  background-color: @secondary-background;
+  .gradient(@secondary-background, @dark-secondary-background);
   top: 0;
   left: 295px;
   right: 5px;
@@ -237,8 +270,7 @@
 .rhizo-progressbar-panel {
   position: absolute;
   z-index: 5000;
-  -webkit-box-shadow: 5px 5px 5px @dark-secondary-background;
-  -moz-box-shadow: 5px 5px 5px @dark-secondary-background;
+  .shadow(5px, 5px, 5px, @dark-secondary-background);
   margin: 5px;
   width: 300px;
   height: 100px;
@@ -262,6 +294,7 @@
 .rhizo-logo {
   padding: 0;
   background-image: -webkit-gradient(linear, 0 0, 50 100, from(@secondary-background), to(@background));
+  background-image: -moz-linear-gradient(-45deg, @secondary-background, @background);
 }
 
 .rhizo-left .rhizo-logo {
@@ -295,7 +328,7 @@
 
 .rhizo-slider-moving {
   background-color: @warning-background;
-  border-radius: 3px;
+  .rounded_corners(3px);
 }
 
 .rhizo-slider  {
@@ -328,7 +361,7 @@
 .rhizo-floating-panel .rhizo-next-filter,
 .rhizo-floating-panel .rhizo-prev-filter {
   float: right;
-  border-radius: 2px;
+  .rounded_corners(2px);
   border: 1px solid @secondary-control;
   color: @secondary-control;
   background-color: @background;
@@ -337,7 +370,7 @@
   text-align: center;
   margin-right: 5px;
   padding: 0.1em 0.3em;
-  -webkit-box-shadow: 1px 1px 2px @dark-background;
+  .shadow(1px, 1px, 2px, @dark-background);
 }
 
 .rhizo-floating-panel .rhizo-next-filter:hover,
@@ -373,12 +406,11 @@
   Filter autocommit selector
  *****************/
 .rhizo-autocommit-panel {
-  background-color: @secondary-background;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@secondary-background), to(@dark-secondary-background));
+  .gradient(@secondary-background, @dark-secondary-background);
   padding: 2px 0;
   margin: 0 0 4px 0;
   height: 2.5em;
-  -webkit-box-shadow: 0px 2px 5px @dark-background;
+  .shadow(0, 2px, 5px, @dark-background);
 }
 
 .rhizo-autocommit-panel BUTTON {
@@ -389,7 +421,7 @@
 .rhizo-floating-panel .rhizo-autocommit-panel {
   background-color: transparent;
   background-image: none;
-  -webkit-box-shadow: 0 0;
+  .noshadow;
 }
 
 .rhizo-floating-panel .rhizo-autocommit-panel BUTTON {
@@ -412,13 +444,13 @@
 }
 
 .rhizo-device-ipad .rhizo-autocommit-link {
-  border-radius: 2px;
+  .rounded_corners(2px);
   height: 3.2em;
   padding: 2.2em 0.5em 0 0.5em;
   border: 1px solid @secondary-control;
   color: @secondary-control;
   background-color: @background;
-  -webkit-box-shadow: 1px 1px 2px @dark-background;
+  .shadow(1px, 1px, 2px, @dark-background);
 }
 
 .rhizo-device-ipad .rhizo-autocommit-link:hover {
@@ -457,8 +489,14 @@
   width: 32px;
   height: 32px;
   -webkit-property: width, height;
+  -moz-transition-property: width, height;
+  -o-transition-property: width, height;
   -webkit-transition-timing-function: ease-in-out;
+  -moz-transition-timing-function: ease-in-out;
+  -o-transition-timing-function: ease-in-out;
   -webkit-transition-duration: 0.3s;
+  -moz-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
 }
 
 .rhizo-device-ipad .rhizo-selection-trigger {
@@ -476,8 +514,7 @@
 }
 
 .rhizo-selection-mode {
-  background-color: @alternate-secondary-background !important;
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@alternate-secondary-background), to(@dark-alternate-secondary-background)) !important;
+  .importantgradient(@alternate-secondary-background, @dark-alternate-secondary-background);
   cursor: crosshair !important;
 }
 
@@ -490,7 +527,7 @@
 
 .rhizo-action {
   border: 1px solid @border-color;
-  border-radius: 3px;
+  .rounded_corners(3px);
   margin-top: 5px;
   background-color: @model-background;
   height: 40px;
@@ -504,7 +541,7 @@
 
 .rhizo-droppable-action {
   border: 1px solid @border-color;
-  border-radius: 3px;
+  .rounded_corners(3px);
   background-color: @model-background;
   width: 200px;
   height: 200px;
@@ -512,7 +549,7 @@
   position: absolute;
   opacity: 0;
   visibility: hidden;
-  -webkit-box-shadow: 1px 1px 2px @dark-secondary-background;
+  .shadow(1px, 1px, 2px, @dark-secondary-background);
 }
 
 /******************
@@ -575,7 +612,7 @@
   border-top: 4px solid @primary-control;
   width: 14px;
   height: 10px;
-  border-radius: 2px;
+  .rounded_corners(2px);
 }
 
 /******************
@@ -602,7 +639,7 @@
    have to fix the assumptions in rhizo.model.SuperModel.rescaleRendering. */
 .rhizo-model {
   border: 1px solid @border-color;
-  border-radius: 3px;
+  .rounded_corners(3px);
   background-color: @model-background;
   margin: 0;
   padding: 0;
@@ -610,7 +647,7 @@
   z-index: 50;
   overflow: hidden;
   position: absolute;
-  -webkit-box-shadow: 1px 1px 2px @dark-secondary-background;
+  .shadow(1px, 1px, 2px, @dark-secondary-background);
 
   /* Models are hidden/show using 'visibility' rather than 'display' to be able
      to compute their offsetWidth / offsetHeight even when hidden. */
