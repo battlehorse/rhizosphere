@@ -47,6 +47,9 @@
 @font-logo-color: @secondary-chrome;
 @font-action-dropped-color: @secondary-link;
 
+@keyboard-background: @background;
+@keyboard-border-color: @dark-background;
+
 /******************
   LESS mixins
  *****************/
@@ -761,15 +764,13 @@
 ***************************/
 
 .rhizo-keyboard {
-    border: solid 2px #666;
+    border: solid 2px @keyboard-border-color;
     padding: 5px;
     position: absolute;
     left: 100px;
     top: 100px;
-    -moz-border-radius: 15px;
-    -webkit-border-radius: 15px;
-    background:#fff;
-    -moz-opacity:0.8;
+    .rounded_corners(15px);
+    background: @keyboard-background;
     opacity: 0.8 !important;
     width: 670px;
     height: 250px;
