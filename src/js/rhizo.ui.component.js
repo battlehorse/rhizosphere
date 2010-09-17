@@ -513,7 +513,7 @@ rhizo.ui.component.Filters.prototype.activate = function(project, gui, options) 
   // Here we only need to activate the navigation between filters.
   if (this.nextFilter_) {
     this.nextFilter_.click(function() {
-      var current = $('.rhizo-filter:visible');
+      var current = $('.rhizo-filter:visible', gui.container);
       var next = current.next('.rhizo-filter:hidden').eq(0);
       if (next.length > 0) {
         // cannot use hide/show otherwise safari clips rendering
@@ -525,7 +525,7 @@ rhizo.ui.component.Filters.prototype.activate = function(project, gui, options) 
 
   if (this.prevFilter_) {
     this.prevFilter_.click(function() {
-      var current = $('.rhizo-filter:visible');
+      var current = $('.rhizo-filter:visible', gui.container);
       var prev = current.prev('.rhizo-filter:hidden').eq(0);
       if (prev.length > 0) {
         // cannot use hide/show otherwise safari clips rendering

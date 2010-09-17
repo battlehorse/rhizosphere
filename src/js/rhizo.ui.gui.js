@@ -145,3 +145,9 @@ rhizo.ui.gui.GUI.prototype.panUniverse = function(yMagnitude,
   };
   this.universe.stop().animate(this.universeTargetPosition_);
 };
+
+rhizo.ui.gui.GUI.prototype.activateOnscreenKeyboard = function() {
+  if (rhizo.keyboard && rhizo.keyboard.Keyboard) {
+    new rhizo.keyboard.Keyboard(this.container);
+  }
+};
