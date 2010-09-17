@@ -109,6 +109,10 @@
   opacity: 1; filter:Alpha(Opacity=1);
 }
 
+/* jQuery UI selectable helper is created outside the .rhizo container, so we need
+   this tweak to make it visible. */
+.ui-selectable-helper { position: absolute; z-index: 100; border:1px dotted black; }
+
 .rhizo A, .rhizo A:visited {
   color: @primary-link;
 }
