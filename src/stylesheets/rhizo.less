@@ -442,14 +442,28 @@
 }
 
 .rhizo-selection-trigger {
-  background: transparent url(../img/select.png) no-repeat top left;
   position: absolute;
   bottom: 0;
   right: 0;
+  border: 1px dashed @primary-control;
   width: 16px;
   height: 16px;
   cursor: pointer;
   z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.rhizo-selection-trigger:hover {
+  width: 32px;
+  height: 32px;
+  -webkit-property: width, height;
+  -webkit-transition-timing-function: ease-in-out;
+  -webkit-transition-duration: 0.3s;
+}
+
+.rhizo-device-ipad .rhizo-selection-trigger {
+  width: 20px;
+  height: 20px;
 }
 
 .rhizo-selection-trigger:hover {
