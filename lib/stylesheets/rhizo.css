@@ -2,6 +2,7 @@
 .rhizo{color:#222222;font-size:0.8em;overflow:hidden;}
 .rhizo.rhizo-device-ipad{font-size:0.9em;}
 .rhizo .ui-state-disabled{opacity:1;filter:alpha(opacity=1);}
+.ui-selectable-helper{position:absolute;z-index:100;border:1px dotted black;}
 .rhizo A,.rhizo A:visited{color:#2200cc;}
 .rhizo-section-header{font-variant:small-caps;text-align:center;font-size:1.3em;font-weight:bold;padding-bottom:2px;margin:5px 0 4px 0;border-top:1px solid #6391de;background-color:#6391de;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#6391de), to(#426dc9));background-image:-moz-linear-gradient(-90deg, #6391de, #426dc9);color:#ffffff;-webkit-box-shadow:0 2px 5px #bbbbbb;-moz-box-shadow:0 2px 5px #bbbbbb;box-shadow:0 2px 5px #bbbbbb;}
 .rhizo-bottom-bar .rhizo-section-header{border-width:0;background-color:transparent;background-image:none;font-variant:normal;padding:4px 5px;margin:0;height:1.5em;display:inline;-webkit-box-shadow:0 0 0;-moz-box-shadow:0 0 0;box-shadow:0 0 0;}
