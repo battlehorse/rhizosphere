@@ -130,4 +130,8 @@ rhizo.bootstrap.Bootstrap.prototype.deploy = function(payload) {
 
   this.project_.deploy(payload.models);
   this.template_.done();
+
+  if (/kb=(true|yes|1)/.test(document.location.href)) {
+    this.project_.gui().activateOnscreenKeyboard();
+  }
 };

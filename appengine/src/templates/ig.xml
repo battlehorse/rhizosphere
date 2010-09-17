@@ -61,6 +61,7 @@
     <script src="{{ hostname }}/static/src/js/rhizo.ui.gui.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.ui.component.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.bootstrap.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/src/js/extra/rhizo.keyboard.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" >
 
       var prefs = new _IG_Prefs();
