@@ -58,6 +58,12 @@ rhizo.ui.gui.GUI = function(container, platform, device) {
   this.selectionModeOn_ = false;
 };
 
+rhizo.ui.gui.GUI.prototype.done = function() {
+  if (/kb=(true|yes|1)/.test(document.location.href)) {
+    this.activateOnscreenKeyboard();
+  }
+};
+
 rhizo.ui.gui.GUI.prototype.initContainer_ = function() {
   // Enable device-specific and platform-specific styles.
   this.container.
