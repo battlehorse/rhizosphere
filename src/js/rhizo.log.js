@@ -24,7 +24,7 @@ rhizo.nativeConsoleExists = function() {
 rhizo.NoOpLogger = function() {};
 rhizo.NoOpLogger.prototype.info = function() {};
 rhizo.NoOpLogger.prototype.error = function() {};
-rhizo.NoOpLogger.prototype.warning = function() {};
+rhizo.NoOpLogger.prototype.warn = function() {};
 
 rhizo.NativeLogger = function() {};
 
@@ -36,7 +36,7 @@ rhizo.NativeLogger.prototype.error = function(message) {
   console.error(message);
 };
 
-rhizo.NativeLogger.prototype.warning = function(message) {
+rhizo.NativeLogger.prototype.warn = function(message) {
   console.warn(message);
 };
 
@@ -52,7 +52,7 @@ rhizo.Logger.prototype.log_ = function(message, opt_severity) {
     case "error":
       highlightColor = "#ff0000";
       break;
-    case "warning":
+    case "warn":
       highlightColor = "#ffff00";
       break;
   }
@@ -87,6 +87,6 @@ rhizo.Logger.prototype.error = function(message) {
   this.log_(message, "error");
 };
 
-rhizo.Logger.prototype.warning = function(message) {
-  this.log_(message, "warning");
+rhizo.Logger.prototype.warn = function(message) {
+  this.log_(message, "warn");
 };
