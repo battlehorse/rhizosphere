@@ -50,7 +50,11 @@ class RhizoHandler(webapp.RequestHandler):
 class IGoogleHandler(webapp.RequestHandler):
 
     def get(self):
-        template_values = {'hostname': 'http://%s' % os.environ['HTTP_HOST']}
+        # Should we serve compiled or uncompiled resources?
+        debug = self.request.get('d', '0') == '1'
+
+        template_values = {'debug': debug,
+                           'hostname': 'http://%s' % os.environ['HTTP_HOST']}
         path = os.path.join(os.path.dirname(__file__), '../../templates/ig.xml')
         self.response.headers.add_header('Content-Type', 'text/xml')
         self.response.out.write(template.render(path, template_values))

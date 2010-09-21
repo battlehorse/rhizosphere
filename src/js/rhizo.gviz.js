@@ -18,11 +18,11 @@
 namespace("rhizo.gviz");
 
 rhizo.gviz.Initializer = function(dataTable,
-                                  project,
+                                  logger,
                                   opt_options,
                                   opt_customRenderer) {
   this.dt_ = dataTable;
-  this.project_ = project;
+  this.logger_ = logger;
   this.options_ = opt_options || {};
   this.customRenderer_ = opt_customRenderer;
 
@@ -66,7 +66,7 @@ rhizo.gviz.Initializer.prototype.buildMetaModel_ = function() {
     } else {
       // assumed string type
       if (type != 'string') {
-        this.project_.logger().warning(
+        this.logger_.warn(
             "Column " + metamodel[id].label +
             " will be treated as String. Unsupported type: " + type);
       }
@@ -212,7 +212,7 @@ rhizo.gviz.Initializer.prototype.createDefaultRenderer_ =
 
 rhizo.gviz.DebugRenderer = function(dataTable) {
   this.dt_ = dataTable;
-}
+};
 
 rhizo.gviz.DebugRenderer.prototype.render = function(model) {
   var div = $("<div />");
