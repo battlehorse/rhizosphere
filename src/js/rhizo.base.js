@@ -445,7 +445,7 @@ rhizo.Project.prototype.alignVisibility_ = function(opt_filtered_visibility) {
         renderingsToFadeOut.push(this.models_[i].rendering.get(0));
         this.models_[i].visibility = filtered_visibility;
       }
-    } else if (this.models_[i].visibility <= filtered_visibility) {
+    } else if (this.models_[i].visibility < vis.VISIBLE) {
       // Items that were completely hidden must be repositioned.
       forceLayout = forceLayout || this.models_[i].visibility == vis.HIDDEN;
       renderingsToFadeIn.push(this.models_[i].rendering.get(0));
