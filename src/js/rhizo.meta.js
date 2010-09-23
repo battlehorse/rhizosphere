@@ -66,8 +66,11 @@ rhizo.meta.StringKind.prototype.survivesFilter =
 };
 
 rhizo.meta.StringKind.prototype.cluster = function(modelValue) {
-  return { key: modelValue.toUpperCase().charAt(0),
-           label: modelValue.toUpperCase().charAt(0) };
+  if (modelValue === null || typeof(modelValue) == 'undefined') {
+    modelValue = '';
+  }
+  return { key: modelValue.toString().toUpperCase().charAt(0),
+           label: modelValue.toString().toUpperCase().charAt(0) };
 };
 
 rhizo.meta.StringKind.prototype.isNumeric = function() {
@@ -96,6 +99,9 @@ rhizo.meta.NumberKind.prototype.compare = function(firstValue, secondValue) {
 
 rhizo.meta.NumberKind.prototype.cluster = function(modelValue) {
   var iModelValue = parseInt(modelValue, 10);
+  if (isNaN(iModelValue)) {
+    return {key: '-', label: '-'};
+  }
   if (parseFloat(modelValue) <= 10) {
     return {key: iModelValue, label: iModelValue.toString()};
   }
