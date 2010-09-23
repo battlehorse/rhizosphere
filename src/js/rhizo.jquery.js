@@ -87,9 +87,10 @@ rhizo.jquery.initAnimations_ = function(gui, opt_disableAllAnims) {
           if (gui.noFx) {
             $(this).css({visibility: 'hidden', opacity: 0.0});
           } else {
-            // Even though 'visibility' cannot be animated, its final value
-            // is correctly set at the end of the 'opacity' animation.
-            $(this).animate({opacity: 0.0, visibility: 'hidden'}, 400);
+            $(this).animate({opacity: 0.0}, {
+                             duration: 400,
+                             complete: function() {
+                               $(this).css('visibility', 'hidden'); }});
           }
         },
         greyOut: function() {
