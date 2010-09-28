@@ -14,8 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.layout,rhizo.ui
-// Dependency on rhizo.ui is for rhizo.ui.reRender.
+// RHIZODEP=rhizo.layout
 
 namespace("rhizo.layout");
 namespace("rhizo.layout.treemap");
@@ -44,8 +43,8 @@ rhizo.layout.treemap.TreeMapDirection = {
 
 /**
  * Treemaps affect the rendering (size, colors) of models. A backup manager
- * saves models original attributes and restores them once they are used in the
- * layout process.
+ * saves renderings original attributes and restores them once they are used in
+ * the layout process.
  *
  * The backup manager is preserved through multiple consequent applications of
  * the TreeMapLayout:
@@ -60,24 +59,27 @@ rhizo.layout.treemap.TreeMapDirection = {
  *
  * @constructor
  */
-rhizo.layout.treemap.ModelBackupManager = function() {
+rhizo.layout.treemap.RenderingBackupManager = function() {
 
   /**
-   * @type {Object.<string, rhizo.layout.treemap.ModelBackup>}
+   * @type {Object.<string, rhizo.layout.treemap.RenderingBackup>}
    * @private
    */
-  this.modelBackups_ = {};
+  this.renderingBackups_ = {};
   this.numBackups_ = 0;
 };
 
 /**
- * Adds a new model to the backup, if it is not already in there.
- * @param {rhizo.model.SuperModel} model The model to backup.
- * @return {boolean} if the model was added to the backups.
+ * Adds a new rendering to the backup, if it is not already in there.
+ * @param {*} mid The unique id of the model bound to this rendering.
+ * @param {rhizo.ui.Rendering} rendering The rendering to backup.
+ * @return {boolean} if the rendering was added to the backups.
  */
-rhizo.layout.treemap.ModelBackupManager.prototype.backup = function(model) {
-  if (!(model.id in this.modelBackups_)) {
-    this.modelBackups_[model.id] = new rhizo.layout.treemap.ModelBackup(model);
+rhizo.layout.treemap.RenderingBackupManager.prototype.backup = function(
+    mid, rendering) {
+  if (!(mid in this.renderingBackups_)) {
+    this.renderingBackups_[mid] =
+        new rhizo.layout.treemap.RenderingBackup(rendering);
     this.numBackups_++;
     return true;
   }
@@ -85,12 +87,13 @@ rhizo.layout.treemap.ModelBackupManager.prototype.backup = function(model) {
 };
 
 /**
- * Removes a model from the backup (if present) without restoring it.
- * @param {string} modelId.
+ * Removes a rendering from the backup (if present) without restoring it.
+ * @param {string} mid The id of the model whose rendering is to remove.
  */
-rhizo.layout.treemap.ModelBackupManager.prototype.removeBackup = function(modelId) {
-  if (modelId in this.modelBackups_) {
-    delete this.modelBackups_[modelId];
+rhizo.layout.treemap.RenderingBackupManager.prototype.removeBackup = function(
+    mid) {
+  if (mid in this.renderingBackups_) {
+    delete this.renderingBackups_[mid];
     this.numBackups_--;
   }
 };
@@ -105,7 +108,7 @@ rhizo.layout.treemap.ModelBackupManager.prototype.removeBackup = function(modelI
  * @param {boolean} colorReset Whether we are moving from a color-coded treemap
  *     layout to a non-color-coded one.
  */
-rhizo.layout.treemap.ModelBackupManager.prototype.restore = function(
+rhizo.layout.treemap.RenderingBackupManager.prototype.restore = function(
       supermodels, colorReset) {
   if (this.numBackups_ > 0) {
     var survivingModelIds = {};
@@ -113,15 +116,15 @@ rhizo.layout.treemap.ModelBackupManager.prototype.restore = function(
       survivingModelIds[supermodels[i].id] = true;
     }
     var restorableModels = {};
-    for (var modelId in this.modelBackups_) {
-      if (!(modelId in survivingModelIds)) {
-        restorableModels[modelId] = true;
+    for (var mid in this.renderingBackups_) {
+      if (!(mid in survivingModelIds)) {
+        restorableModels[mid] = true;
       }
     }
     this.restoreInternal_(restorableModels, true, true);
 
     if (colorReset) {
-      this.restoreInternal_(this.modelBackups_,
+      this.restoreInternal_(this.renderingBackups_,
                             /*sizes=*/ false, /*colors=*/ true);
     }
   }
@@ -130,18 +133,18 @@ rhizo.layout.treemap.ModelBackupManager.prototype.restore = function(
 /**
  * Restores all the backups.
  */
-rhizo.layout.treemap.ModelBackupManager.prototype.restoreAll = function() {
-  this.restoreInternal_(this.modelBackups_, true, true);
-  this.modelBackups_ = {};  // just in case.
+rhizo.layout.treemap.RenderingBackupManager.prototype.restoreAll = function() {
+  this.restoreInternal_(this.renderingBackups_, true, true);
+  this.renderingBackups_ = {};  // just in case.
   this.numBackups_ = 0;
 };
 
-rhizo.layout.treemap.ModelBackupManager.prototype.restoreInternal_ = function(
-    modelsMap, restoreSizes, restoreColors) {
-  for (var modelId in modelsMap) {
-    this.modelBackups_[modelId].restore(restoreSizes, restoreColors);
+rhizo.layout.treemap.RenderingBackupManager.prototype.restoreInternal_ =
+    function(modelsMap, restoreSizes, restoreColors) {
+  for (var mid in modelsMap) {
+    this.renderingBackups_[mid].restore(restoreSizes, restoreColors);
     if (restoreSizes && restoreColors) {
-      delete this.modelBackups_[modelId];
+      delete this.renderingBackups_[mid];
       this.numBackups_--;
     }
   }
@@ -149,27 +152,27 @@ rhizo.layout.treemap.ModelBackupManager.prototype.restoreInternal_ = function(
 
 
 /**
- * A wrapper around a supermodel to backup relevant rendering attributes that
+ * A wrapper around a supermodel rendering to backup relevant attributes that
  * will need to be restored once we leave (or change) TreeMapLayout.
  *
- * @param {rhizo.model.SuperModel} model The model to backup.
+ * @param {rhizo.ui.Rendering} rendering The rendering to backup.
  * @constructor
  */
-rhizo.layout.treemap.ModelBackup = function(model) {
-  this.model_ = model;
-  this.originalDimensions_ = jQuery.extend({}, model.getDimensions());
-  this.originalBackground_ = model.nakedCss('background-color');
+rhizo.layout.treemap.RenderingBackup = function(rendering) {
+  this.rendering_ = rendering;
+  this.originalDimensions_ = jQuery.extend({}, rendering.getDimensions());
+  this.originalBackground_ = rendering.nakedCss('background-color');
 };
 
-rhizo.layout.treemap.ModelBackup.prototype.restore = function(restoreSizes,
-                                                              restoreColors) {
+rhizo.layout.treemap.RenderingBackup.prototype.restore = function(
+    restoreSizes, restoreColors) {
   if (restoreColors) {
-    this.model_.setNakedCss({backgroundColor: this.originalBackground_});
+    this.rendering_.setNakedCss({backgroundColor: this.originalBackground_});
   }
   if (restoreSizes) {
-    this.model_.rescaleRendering(this.originalDimensions_.width,
-                                 this.originalDimensions_.height);
-    this.model_.rendering.css('z-index', '');
+    this.rendering_.rescaleRendering(this.originalDimensions_.width,
+                                     this.originalDimensions_.height);
+    this.rendering_.popElevation('__treemap__');
   }
 };
 
@@ -190,7 +193,9 @@ rhizo.layout.treemap.ModelBackup.prototype.restore = function(restoreSizes,
  *     the layout representation.
  */
 rhizo.layout.treemap.TreeMapNode = function(treenode, areaRatio) {
+  this.id = treenode.id;
   this.model_ = treenode.superModel;
+  this.rendering_ = this.model_.rendering();
   this.area_ = treenode.area * areaRatio;
   if (isNaN(this.area_) || this.area_ < 0) {
     this.area_ = 0.0;
@@ -203,16 +208,16 @@ rhizo.layout.treemap.TreeMapNode.prototype.area = function() {
   return this.area_;
 };
 
+rhizo.layout.treemap.TreeMapNode.prototype.rendering = function() {
+  return this.rendering_;
+};
+
 /**
  * Returns the {top, left} coordinates of this node, with respect to the overall
  * container that contains the whole treemap layout.
  */
 rhizo.layout.treemap.TreeMapNode.prototype.position = function() {
   return {top: this.top_, left: this.left_};
-};
-
-rhizo.layout.treemap.TreeMapNode.prototype.model = function() {
-  return this.model_;
 };
 
 /**
@@ -237,8 +242,8 @@ rhizo.layout.treemap.TreeMapNode.prototype.hide = function() {
 rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) {
   this.top_ = Math.round(top);
   this.left_ = Math.round(left);
-  this.model_.rendering.move(this.top_, this.left_);
-  this.model_.rendering.css('z-index', 50+deepness);
+  this.rendering_.move(this.top_, this.left_);
+  this.rendering_.pushElevation('__treemap__', 50+deepness);
 };
 
 /**
@@ -246,19 +251,19 @@ rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) 
  * @return {boolean} whether the resizing was successful.
  */
 rhizo.layout.treemap.TreeMapNode.prototype.resize = function(width, height) {
-  return this.model_.rescaleRendering(width, height);
+  return this.rendering_.rescaleRendering(width, height);
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.colorWeighted = function(colorRange) {
   var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
   if (!isNaN(colorVal)) {
-    this.model_.setNakedCss({backgroundColor:
-                             this.getBackgroundColor_(colorVal, colorRange)});
+    this.rendering_.setNakedCss(
+        {backgroundColor: this.getBackgroundColor_(colorVal, colorRange)});
   }
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.color = function(color) {
-  this.model_.setNakedCss({backgroundColor: color});
+  this.rendering_.setNakedCss({backgroundColor: color});
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.assignColorRange = function(colorRange) {
@@ -283,7 +288,7 @@ rhizo.layout.treemap.TreeMapNode.prototype.nestedBoundingRect = function() {
   // 39px: 4px padding, 15px header space, retain a minimum height of 20px for
   //       rendering nested contents.
 
-  var dims = this.model_.getDimensions();
+  var dims = this.rendering_.getDimensions();
   if (this.isHidden() || dims.width < 24 || dims.height < 39) {
     // Setting boundingRect dimensions to 0 will nullify areaRatio, which in turn
     // zeroes nodes' area, causing them to be hidden.
@@ -414,7 +419,7 @@ rhizo.layout.treemap.TreeMapSlice.prototype.aspectRatio = function(
  *
  * Nodes may be hidden if their area is too small to be relevant for the layout.
  *
- * @param {rhizo.layout.treemap.ModelBackupManager} backupManager
+ * @param {rhizo.layout.treemap.RenderingBackupManager} backupManager
  * @param {Object?} anchorDelta The {x,y} position delta to convert node
  *     positioning relative to the slice anchorPoint into absolute positioning
  *     with respect to the overall container that contains the whole treemap
@@ -451,12 +456,12 @@ rhizo.layout.treemap.TreeMapSlice.prototype.draw = function(backupManager,
         renderingSize['width'] = span;
         renderingSize['height'] = Math.round(length);
       }
-      var isNewBackup = backupManager.backup(node.model());
+      var isNewBackup = backupManager.backup(node.id, node.rendering());
       if (!node.resize(renderingSize['width'], renderingSize['height'])) {
         node.hide();
         numHiddenModels++;
         if (isNewBackup) {
-          backupManager.removeBackup(node.model().id);
+          backupManager.removeBackup(node.id);
         }
       } else {
         node.move(t, l, deepness);
@@ -487,7 +492,7 @@ rhizo.layout.TreeMapLayout = function(project) {
   this.parentKeys_ = [];
 
   this.prevColorMeta_ = '';
-  this.backupManager_ = new rhizo.layout.treemap.ModelBackupManager();
+  this.backupManager_ = new rhizo.layout.treemap.RenderingBackupManager();
   this.globalNodesMap_ = {};
 
   // Number of models that have been hidden specifically by this layout because
@@ -524,11 +529,8 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                               this.prevColorMeta_ != '' && colorMeta == '');
   this.prevColorMeta_ = colorMeta;
 
-  // Revert expanded models.
-  if (rhizo.ui.expandable(this.project_.renderer(),
-                          this.project_.gui().allRenderingHints())) {
-    this.revertExpandedModels_(supermodels, options);
-  }
+  // Revert expanded models, if needed.
+  this.revertExpandedModels_(supermodels);
 
   // Identify whether we are rendering nested treemaps or just a flat one with
   // no hierarchy.
@@ -688,7 +690,7 @@ rhizo.layout.TreeMapLayout.prototype.layoutNestedMap_ = function(
     // Iterate all over the TreeMapNodes that have been created at this level.
     for (var j = 0; j < slices[i].nodes().length; j++) {
       var node = slices[i].nodes()[j];
-      var treenode = treeRoot.childs[node.model().id];
+      var treenode = treeRoot.childs[node.id];
 
       // Bind TreeNode and TreeMapNode together (used later for coloring).
       treenode.treemapnode = node;
@@ -873,7 +875,9 @@ rhizo.layout.TreeMapLayout.prototype.computeColorRange_ = function(treeNode,
           treeNode.childs[modelId], colorRange) || hasVisibleChilds;
     }
     if (!hasVisibleChilds) {
-      treeNode.treemapnode.assignColorRange(colorRange);
+      if (!treeNode.is_root) {
+        treeNode.treemapnode.assignColorRange(colorRange);
+      }
     }
   } else if (!treeNode.is_root) {
     // visible leaf node.
@@ -922,17 +926,9 @@ rhizo.layout.TreeMapLayout.prototype.colorTree_ = function(treeNode,
  * @private
  */
 rhizo.layout.TreeMapLayout.prototype.revertExpandedModels_ = function(
-      supermodels, options) {
+      supermodels) {
   for (var i = supermodels.length-1; i >= 0; i--) {
-    var model = supermodels[i];
-    if (model.expanded) {
-
-      // Revert expanded items, since it messes up with treemapping.
-      model.expanded = !model.expanded;
-      rhizo.ui.reRender(model,
-                        this.project_.renderer(),
-                        this.project_.gui().allRenderingHints());
-    }
+    supermodels[i].rendering().setExpanded(false);
   }
 };
 
