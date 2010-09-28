@@ -326,7 +326,7 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
     childsArea.od = Math.max(childsArea.od, childRect.od);
   }
 
-  var dims = treenode.superModel.getDimensions();
+  var dims = treenode.renderingDimensions();
 
   // enrich the treenode with rendering info
   treenode.boundingRect =
@@ -350,8 +350,8 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
                                                     offset,
                                                     parentOffset,
                                                     parentNode) {
-  var r = treenode.superModel.rendering;
-  var dims = treenode.superModel.getDimensions();
+  var r = treenode.superModel.rendering();
+  var dims = treenode.renderingDimensions();
 
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
@@ -363,7 +363,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
       this.drawConnector_(container,
         this.packedCenter_(offset, dims),
         this.packedCenter_(parentOffset,
-                           parentNode.superModel.getDimensions()));
+                           parentNode.renderingDimensions()));
     }
   } else {
     r.move(offset.od + 5,
@@ -374,7 +374,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
       this.drawConnector_(container,
         this.evenCenter_(offset, dims, treenode.boundingRect),
         this.evenCenter_(parentOffset,
-                         parentNode.superModel.getDimensions(),
+                         parentNode.renderingDimensions(),
                          parentNode.boundingRect));
     }
   }

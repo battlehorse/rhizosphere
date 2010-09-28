@@ -17,39 +17,47 @@
 // RHIZODEP=rhizo.ui
 namespace("rhizo.model");
 
-rhizo.model.SuperModel = function(model, renderer) {
+/**
+ * Wraps a 'naked' model with additional functionalities and goodness required
+ * by Rhizosphere to manage it.
+ *
+ * @param {*} model The model to wrap.
+ * @constructor
+ */
+rhizo.model.SuperModel = function(model) {
   this.model = model;
   this.id = model.id;
-  this.selected = false;
   this.filters_ = {}; // a map of filter status, one for each model key
-  this.rendering = null;
-  this.naked_render = null;
-  this.expanded = false; // whether the rendering is expanded or not
-  // whether the rendering is visible or not. Multiple states might exist,
-  // as defined in the rhizo.ui.Visibility enum.
-  this.visibility = rhizo.ui.Visibility.HIDDEN;
-
-  this.cacheDimensions_ = false;
-  this.cachedDimensions_ = {};
-  this.setRendererHelpers_(renderer);
-  this.rendererRescaler_ = null;
-  this.rendererStyleChanger_ = null;
+  this.rendering_ = null;
+  this.selected_ = false;
 };
 
-rhizo.model.SuperModel.prototype.setRendererHelpers_ = function(renderer) {
-  if (typeof(renderer.rescale) == 'function') {
-    this.rendererRescaler_ = renderer.rescale;
-  }
-  if (typeof(renderer.changeStyle) == 'function') {
-    this.rendererStyleChanger_ = renderer.changeStyle;
-  }
+/**
+ * @param {rhizo.ui.Rendering} rendering
+ */
+rhizo.model.SuperModel.prototype.setRendering = function(rendering) {
+  this.rendering_ = rendering;
 };
 
-rhizo.model.SuperModel.prototype.setDimensionCaching = function(
-    cacheDimensions) {
-  this.cacheDimensions_ = cacheDimensions;
+/**
+ * @return {rhizo.ui.Rendering}
+ */
+rhizo.model.SuperModel.prototype.rendering = function() {
+  return this.rendering_;
 };
 
+/**
+ * Sets the selection status for this model. Propagates to its rendering.
+ * @param {boolean} selected
+ */
+rhizo.model.SuperModel.prototype.setSelected = function(selected) {
+  this.selected_ = !!selected;
+  this.rendering_.setSelected(this.selected_);
+};
+
+/**
+ * @return {*} the naked model wrapped by this SuperModel.
+ */
 rhizo.model.SuperModel.prototype.unwrap = function() {
   return this.model;
 };
@@ -74,75 +82,4 @@ rhizo.model.SuperModel.prototype.filter = function(key) {
 
 rhizo.model.SuperModel.prototype.resetFilter = function(key) {
   delete this.filters_[key];
-};
-
-rhizo.model.SuperModel.prototype.rescaleRendering = function(
-    width, height, opt_failure_callback) {
-  // The rendering is guaranteed to be marginless and paddingless, with a
-  // 1px border (unless someone tampers the .rhizo-model class), so we
-  // programmatically know that internal dimensions need to be resized
-  // to a smaller extent (exactly 2px less).
-  //
-  // If internal width/height falls to 0px we bail out.
-  if (width <= 2 || height <= 2) {
-    if (opt_failure_callback) {
-      opt_failure_callback();
-    }
-    return false;
-  }
-  this.cachedDimensions_ = {width: width, height: height};
-
-  this.rendering.width(width - 2).height(height - 2);
-  if (this.rendererRescaler_) {
-    // Give the original model renderer a chance to rescale the naked render,
-    // if a rescaler has been defined.
-    //
-    // Like this method, the rescaler too receives outer dimensions.
-    this.rendererRescaler_(width - 2, height - 2);
-  }
-  return true;
-};
-
-rhizo.model.SuperModel.prototype.setNakedCss = function(props) {
-  if (typeof props != 'object') {
-    throw 'setNakedCss() expects a map of properties.';
-  }
-  if (this.rendererStyleChanger_) {
-    this.rendererStyleChanger_(props);
-  } else {
-    this.naked_render.css(props);
-  }
-};
-
-rhizo.model.SuperModel.prototype.nakedCss = function(propName) {
-  if (typeof propName != 'string') {
-    throw 'nakedCss() expects a string of the property to access.';
-  }
-  return this.naked_render.css(propName);
-};
-
-rhizo.model.SuperModel.prototype.refreshCachedDimensions = function() {
-  if (this.rendering) {
-    this.cachedDimensions_ = {
-      width: this.rendering.get(0).offsetWidth,
-      height: this.rendering.get(0).offsetHeight
-    };
-  }
-};
-
-/**
- * @return {Object.<string, number>} The cached dimensions of this model
- *     rendering. The returned object has a 'width' and 'height' property
- *     that map to the outer dimensions (incl. border and such) of the
- *     rendering.
- */
-rhizo.model.SuperModel.prototype.getDimensions = function() {
-  if (this.cacheDimensions_) {
-    return this.cachedDimensions_;
-  } else {
-    return {
-      width: this.rendering.get(0).offsetWidth,
-      height: this.rendering.get(0).offsetHeight
-    };
-  }
 };

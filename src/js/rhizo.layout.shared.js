@@ -205,6 +205,14 @@ rhizo.layout.TreeNode.prototype.deepChildsAsArray = function(childs) {
 };
 
 /**
+ * @return {Object.<string, number>} The dimensions of the rendering bound to
+ *     this node.
+ */
+rhizo.layout.TreeNode.prototype.renderingDimensions = function() {
+  return this.superModel.rendering().getDimensions();
+};
+
+/**
  * An exception raised when cycles are encountered when treeifing a list of
  * SuperModels.
  * @constructor

@@ -700,8 +700,7 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, options) 
             var id = ui.draggable.data("id");
             if (!project.isSelected(id)) {
               alert("Action applied on " + project.model(id));
-              ui.draggable.move(ui.draggable.data("dropTop0"),
-                                ui.draggable.data("dropLeft0"));
+              project.model(id).rendering().moveToPin().unpinPosition();
             } else {
               var countSelected = 0;
               var all_selected = project.allSelected();
@@ -709,9 +708,7 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, options) 
               alert("Action applied on " + countSelected + " elements");
 
               for (var id in all_selected) {
-                all_selected[id].rendering.move(
-                  all_selected[id].rendering.data("dropTop0"),
-                  all_selected[id].rendering.data("dropLeft0"));
+                all_selected[id].rendering().moveToPin().unpinPosition();
               }
               project.unselectAll();
             }
