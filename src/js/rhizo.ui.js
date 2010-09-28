@@ -96,11 +96,14 @@ rhizo.ui.Visibility = {
  * Manages a max-heap of renderings' named elevations (z-indexes when applied to
  * HTML elements). A rendering can be raised to different elevations, with
  * the highest one being the one that is effectively used.
+ *
+ * Base elevation is 0, and any elevation request below or equal to that
+ * threshold will be ignored.
  * @constructor
  */
 rhizo.ui.Elevation = function() {
   this.elevations_ = {};
-  this.elevation_top_ = -Infinity;
+  this.elevation_top_ = 0;
 };
 
 /**
@@ -111,6 +114,9 @@ rhizo.ui.Elevation = function() {
  *     addition.
  */
 rhizo.ui.Elevation.prototype.add = function(el_key, el_value) {
+  if (el_value <= 0) {
+    return false;
+  }
   this.elevations_[el_key] = el_value;
   return this.recomputeTop_();
 };
@@ -137,7 +143,7 @@ rhizo.ui.Elevation.prototype.top = function() {
  * @return {boolean} Whether no named elevations are recorded yet.
  */
 rhizo.ui.Elevation.prototype.empty = function() {
-  return this.elevation_top_ == -Infinity;
+  return this.elevation_top_ == 0;
 };
 
 /**
@@ -145,7 +151,7 @@ rhizo.ui.Elevation.prototype.empty = function() {
  * @return {boolean} Whether the highest elevation changed
  */
 rhizo.ui.Elevation.prototype.recomputeTop_ = function() {
-  var new_top_ = -Infinity;
+  var new_top_ = 0;
   for (var key in this.elevations_) {
     new_top_ = Math.max(new_top_, this.elevations_[key]);
   }
@@ -254,6 +260,11 @@ rhizo.ui.Rendering.prototype.reRender_ = function() {
   // Remove any rescaling that might have been applied to the rendering.
   this.raw_node_.toggleClass('rhizo-model-expanded', this.expanded_).css(
       {width: '', height: ''});
+  if (this.expanded_) {
+    this.pushElevation('__expanded__', 200);
+  } else {
+    this.popElevation('__expanded__');
+  }
 
   // replace the old rendering
   this.raw_node_.children(':not(.rhizo-expand-model)').remove();
@@ -310,19 +321,23 @@ rhizo.ui.Rendering.prototype.moveFromPin = function(top, left, opt_instant) {
 
 /**
  * Pins the current model position.
+ * @return {rhizo.ui.Rendering} this object, for chaining.
  */
 rhizo.ui.Rendering.prototype.pinPosition = function() {
   this.pin_ = {
     top: parseInt(this.raw_node_.css('top'), 10),
     left: parseInt(this.raw_node_.css('left'), 10)
-  }
+  };
+  return this;
 };
 
 /**
  * Discards the current pin, if any.
+ * @return {rhizo.ui.Rendering} this object, for chaining.
  */
 rhizo.ui.Rendering.prototype.unpinPosition = function() {
   this.pin_ = null;
+  return this;
 };
 
 /**
@@ -815,10 +830,10 @@ rhizo.ui.RenderingBootstrap.prototype.startExpandable_ = function(
 rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
   rawRenderings.click(jQuery.proxy(function(ev) {
     var model = rhizo.ui.eventToModel(ev, this.project_);
-    if (model.rendering().isMode('dragging')) {
+    if (model.rendering().isMode('__dragging__')) {
       // A spurious click event always fires after a drag event, which we
       // ignore.
-      model.rendering().removeMode('dragging');
+      model.rendering().removeMode('__dragging__');
       return false;
     }
     this.project_.toggleSelect(model.id);
@@ -834,12 +849,14 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
     rawRenderings) {
   rawRenderings.draggable({
     cursor: 'pointer',
-    zIndex: 10000,
     distance: 3,
     addClasses: false,
     start: jQuery.proxy(function(ev, ui) {
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
-      model.rendering().setMode('dragging').pinPosition();
+      model.rendering().
+          setMode('__dragging__').
+          pinPosition().
+          pushElevation('__dragging__', 10000);
 
       // figure out all the initial positions for the selected elements
       // and store them.
@@ -866,7 +883,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
     }, this),
     stop: jQuery.proxy(function(ev, ui) {
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
-      model.rendering().unpinPosition();
+      model.rendering().unpinPosition().popElevation('__dragging__');
       if (this.project_.isSelected(model.id)) {
         var all_selected = this.project_.allSelected();
         for (var id in all_selected) {
