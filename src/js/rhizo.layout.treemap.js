@@ -24,8 +24,7 @@ namespace("rhizo.layout.treemap");
 // and Jarke J. van Wijk (http://tinyurl.com/2eey2zn).
 //
 // TODO(battlehorse): When expanding and unexpanding a model in this layout, the
-// model is re-rendered with its original size and z-index, not the one the
-// treemap expects.
+// model is re-rendered with its original size, not the one the treemap expects.
 //
 // TODO(battlehorse): Should offer the possibility to color items via a
 // logarithmic scale.
@@ -243,7 +242,7 @@ rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) 
   this.top_ = Math.round(top);
   this.left_ = Math.round(left);
   this.rendering_.move(this.top_, this.left_);
-  this.rendering_.pushElevation('__treemap__', 50+deepness);
+  this.rendering_.pushElevation('__treemap__', deepness);
 };
 
 /**
