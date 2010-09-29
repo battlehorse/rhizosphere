@@ -1,0 +1,34 @@
+Rhizosphere Project
+Copyright 2008-2010 The Rhizosphere Authors.
+
+This product depends on external libraries and code possibly developed under
+different licenses than the one listed in the COPYING file and with different
+copyright owners.
+
+This file enumerates such cases.
+
+library: jQuery, jQuery UI
+reference: http://jquery.org
+authors: http://jquery.org/team
+license: MIT license, http://jquery.org/license
+
+library: cvi_instant_lib.js
+reference: http://www.netzgesta.de/cvi/
+authors: Christian Effenberger
+license: Netzgestade Non-commercial Software License Agreement,
+         http://www.netzgesta.de/cvi/LICENSE.html
+
+library: JCarousel jQuery plugin
+reference: http://sorgalla.com/jcarousel/
+authors: Jan Sorgalla
+license:  MIT license, http://www.opensource.org/licenses/mit-license.php
+
+library: jquery.ui.ipad.js
+reference: http://code.google.com/p/jquery-ui-for-ipad-and-iphone/
+authors: Stephen von Takach
+license: MIT license, http://www.opensource.org/licenses/mit-license.php
+
+library: less.js
+reference: http://lesscss.org
+authors: Alexis Sellier
+license: Apache 2.0 License, http://www.apache.org/licenses/LICENSE-2.0
