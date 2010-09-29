@@ -104,6 +104,10 @@ rhizo.ui.Visibility = {
 rhizo.ui.Elevation = function() {
   this.elevations_ = {};
   this.elevation_top_ = 0;
+
+  // An offset that will always be added to the returned elevation values.
+  // Should match the base z-index used by Rhizosphere models.
+  this.elevation_offset_ = 50;
 };
 
 /**
@@ -136,7 +140,7 @@ rhizo.ui.Elevation.prototype.remove = function(el_key) {
  * @return {number} The highest elevation value.
  */
 rhizo.ui.Elevation.prototype.top = function() {
-  return this.elevation_top_;
+  return this.elevation_top_ + this.elevation_offset_;
 };
 
 /**
