@@ -1,0 +1,6 @@
+# This is a list of authors and top contributors to the Rhizosphere project.
+
+# Names should be added to this file like so:
+# Name and/or Organization <email address>
+
+Riccardo Govoni, Google Inc. <battlehorse@google.com>, <battlehorse@gmail.com>
