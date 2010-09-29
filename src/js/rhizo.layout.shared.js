@@ -103,7 +103,7 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
         var parentSuperModel = this.findFirstVisibleParent_(
             allmodels,
             allmodels[model[this.parentKey_]]);
-        if (parentSuperModel) {
+        if (parentSuperModel && parentSuperModel.id != model.id) {
           var parentModel = parentSuperModel.unwrap();
           globalNodesMap[parentModel.id].addChild(globalNodesMap[model.id]);
           model = parentSuperModel.unwrap();
