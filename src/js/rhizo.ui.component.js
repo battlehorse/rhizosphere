@@ -143,7 +143,7 @@ rhizo.ui.component.BottomBar.prototype.render = function(container, project, gui
        }
      }
     },
-    {component: 'rhizo.ui.component.Filters', title: 'Filters', 'class': ''},
+    {component: 'rhizo.ui.component.FilterBookContainer', title: 'Filters', 'class': ''},
     {component: 'rhizo.ui.component.Legend', title: 'Legend', 'class': ''},
     {component: 'rhizo.ui.component.Logo', title: '?', 'class': 'rhizo-link-help'}
   ];
@@ -475,116 +475,228 @@ rhizo.ui.component.SelectionManager.prototype.toggleSelectionTrigger =
      selectionModeOn ? 'Stop selecting items' : 'Start selecting items');
 };
 
-rhizo.ui.component.Filters = function(floating) {
-  this.floating_ = floating;
+
+/**
+ * A panel that enables/disables filters autocommit functionality.
+ * @constructor
+ */
+rhizo.ui.component.AutocommitPanel = function() {
+  this.callback_ = null;
 };
 
-rhizo.ui.component.Filters.prototype.getPanel = function() {
-  return this.filterPanel_;
+/**
+ * @return {*} The jQuery object pointing to the panel itself.
+ */
+rhizo.ui.component.AutocommitPanel.prototype.getPanel = function() {
+  return this.autocommitPanel_;
 };
 
-rhizo.ui.component.Filters.prototype.render = function(container, project, gui, options) {
-  gui.addComponent('rhizo.ui.component.Filters', this);
-
-  if (!this.floating_) {
-    $('<div />', {'class': 'rhizo-section-header'}).
-        text('Filters').
-        appendTo(container);
-  }
-
-  this.filterPanel_ = $('<div />', {'class': 'rhizo-filter-container'}).appendTo(container);
-
-  this.nextFilter_ = null;
-  this.prevFilter_ = null;
-  this.hideLink_ = null;
-  if (this.floating_) {
-    this.filterPanel_.addClass('rhizo-floating-panel').css('display', 'none');
-
-    this.nextFilter_ = $('<div />', {'class': 'rhizo-next-filter', title: 'Next filter'}).
-      text('>').
-      appendTo(this.filterPanel_);
-    this.prevFilter_ = $('<div />', {'class': 'rhizo-prev-filter', title: 'Previous filter'}).
-      text('<').
-      appendTo(this.filterPanel_);
-    this.hideLink_ = $('<a />', {'href': '#', 'class': 'rhizo-autocommit-link'}).text('Apply').
-      appendTo(this.filterPanel_);
-    if (project.isFilterAutocommit()) {
-      this.hideLink_.css('display', 'none');
-    }
-  }
-
-  var autocommitPanel = $('<div />',
-                          {'class': 'rhizo-filter ' +
-                                    'rhizo-autocommit-panel'}).
-      appendTo(this.filterPanel_);
-  this.autocommit_ = $('<input />', {type: 'checkbox',
-                                     checked: project.isFilterAutocommit()}).
-    appendTo(autocommitPanel);
-  $('<span>Autocommit</span>').appendTo(autocommitPanel);
-  this.hideButton_ = $('<button />', {disabled: project.isFilterAutocommit()}).
-      text('Apply filters').appendTo(autocommitPanel);
-
-  var metaModel = project.metaModel();
-  for (key in metaModel) {
-    var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
-    if (this.floating_) {
-      filter.css('display', 'none');
-    }
-    this.filterPanel_.append(filter);
-  }
+/**
+ * Registers a callback to be invoked anytime the autocommit setting is toggled.
+ * @param {function(boolean)} callback The callback to invoke. It receives one
+ *     parameter that defines whether autocommit is enabled or not.
+ */
+rhizo.ui.component.AutocommitPanel.prototype.registerCallback = function(
+    callback) {
+  this.callback_ = callback;
 };
 
-rhizo.ui.component.Filters.prototype.activate = function(project, gui, options) {
-  // Every single filter implementation auto-activates itself when created.
-  // Here we only need to activate the navigation between filters.
-  if (this.nextFilter_) {
-    this.nextFilter_.click(function() {
-      var current = $('.rhizo-filter:visible', gui.container);
-      var next = current.next('.rhizo-filter:hidden').eq(0);
-      if (next.length > 0) {
-        // cannot use hide/show otherwise safari clips rendering
-        current.css('display', 'none');
-        next.css('display', '');
-      }
-    });
-  }
+rhizo.ui.component.AutocommitPanel.prototype.render = function(container,
+                                                               project,
+                                                               gui,
+                                                               options) {
+  gui.addComponent('rhizo.ui.component.AutocommitPanel', this);
+  this.autocommitPanel_ =
+      $('<div />', {'class': 'rhizo-filter rhizo-autocommit-panel'}).
+      appendTo(container);
+  this.autocommit_ =
+      $('<input />', {type: 'checkbox', checked: project.isFilterAutocommit()}).
+      appendTo(this.autocommitPanel_);
+  this.autocommitLabel_ =
+      $('<span>Autocommit</span>').appendTo(this.autocommitPanel_);
+  this.hideButton_ =
+      $('<button />', {disabled: project.isFilterAutocommit()}).
+      text('Apply filters').
+      appendTo(this.autocommitPanel_);
+};
 
-  if (this.prevFilter_) {
-    this.prevFilter_.click(function() {
-      var current = $('.rhizo-filter:visible', gui.container);
-      var prev = current.prev('.rhizo-filter:hidden').eq(0);
-      if (prev.length > 0) {
-        // cannot use hide/show otherwise safari clips rendering
-        current.css('display', 'none');
-        prev.css('display', '');
-      }
-    });
-  }
-
+rhizo.ui.component.AutocommitPanel.prototype.activate = function(project,
+                                                                 gui,
+                                                                 options) {
   this.autocommit_.click(jQuery.proxy(function(ev) {
-    var checked = $(ev.target).is(':checked');
-    if (checked) {
-      this.hideButton_.attr('disabled', 'disabled');
-      if (this.hideLink_) {
-        this.hideLink_.css('display', 'none');
-      }
+    this.setAutocommit_(project, this.autocommit_.is(':checked'));
+  }, this));
+
+  this.autocommitLabel_.click(jQuery.proxy(function() {
+    // Can't delegate the click directly to the checkbox, because the event
+    // handler is triggered _before_ the checkbox state changes.
+    if (this.autocommit_.is(':checked')) {
+      this.autocommit_.removeAttr('checked');
+      this.setAutocommit_(project, false);
     } else {
-      this.hideButton_.removeAttr('disabled');
-      if (this.hideLink_) {
-        this.hideLink_.css('display', '');
-      }
+      this.autocommit_.attr('checked', 'checked');
+      this.setAutocommit_(project, true);
     }
-    project.enableFilterAutocommit(checked);
   }, this));
 
   this.hideButton_.click(function() {
     project.commitFilter();
   });
-  if (this.hideLink_) {
-    this.hideLink_.click(function() {
-      project.commitFilter();
-    });
+
+};
+
+/**
+ * Callback invoked whenever the autocommit status changes.
+ * @param {rhizo.Project} project The affected project.
+ * @param {boolean} autocommit Whether to enable autocommit or not.
+ * @private
+ */
+rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
+    project, autocommit) {
+  if (autocommit) {
+    this.hideButton_.attr('disabled', 'disabled');
+  } else {
+    this.hideButton_.removeAttr('disabled');
   }
+  if (this.callback_) {
+    this.callback_(autocommit);
+  }
+  project.enableFilterAutocommit(autocommit);
+};
+
+
+/**
+ * Renders a series of filters as a stack, with all filters showing one on
+ * top of the other.
+ * @constructor
+ */
+rhizo.ui.component.FilterStackContainer = function() {
+  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel();
+};
+
+/**
+ * @return {*} The jQuery object that contains all the filters this stack
+ *     manages.
+ */
+rhizo.ui.component.FilterStackContainer.prototype.getPanel = function() {
+  return this.filterPanel_;
+};
+
+rhizo.ui.component.FilterStackContainer.prototype.render = function(container,
+                                                                    project,
+                                                                    gui,
+                                                                    options) {
+  gui.addComponent('rhizo.ui.component.FilterStackContainer', this);
+  $('<div />', {'class': 'rhizo-section-header'}).text('Filters').
+      appendTo(container);
+  this.filterPanel_ =
+      $('<div />', {'class': 'rhizo-filter-container'}).
+      appendTo(container);
+  this.autocommitPanel_.render(this.filterPanel_, project, gui, options);
+
+  var metaModel = project.metaModel();
+  for (var key in metaModel) {
+    var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
+    this.filterPanel_.append(filter);
+  }
+};
+
+rhizo.ui.component.FilterStackContainer.prototype.activate = function(project,
+                                                                      gui,
+                                                                      options) {
+  // Every single filter implementation auto-activates itself when created.
+  // Here we only need to activate the navigation between filters.
+  this.autocommitPanel_.activate(project, gui, options);
+};
+
+
+/**
+ * Renders a series of filters as a 'book', with only filter showing at any
+ * time, and additional controls to flip between one filter and the next.
+ * @constructor
+ */
+rhizo.ui.component.FilterBookContainer = function() {
+  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel();
+};
+
+/**
+ * @return {*} The jQuery object that contains all the filters this book
+ *     manages.
+ */
+rhizo.ui.component.FilterBookContainer.prototype.getPanel = function() {
+  return this.filterPanel_;
+};
+
+rhizo.ui.component.FilterBookContainer.prototype.render = function(container,
+                                                                   project,
+                                                                   gui,
+                                                                   options) {
+  gui.addComponent('rhizo.ui.component.FilterBookContainer', this);
+  this.filterPanel_ =
+      $('<div />', {'class': 'rhizo-filter-container rhizo-floating-panel'}).
+      css('display', 'none').
+      appendTo(container);
+
+  this.nextFilter_ =
+      $('<div />', {'class': 'rhizo-next-filter', title: 'Next filter'}).
+      text('>').
+      appendTo(this.filterPanel_);
+  this.prevFilter_ =
+      $('<div />', {'class': 'rhizo-prev-filter', title: 'Previous filter'}).
+      text('<').
+      appendTo(this.filterPanel_);
+  this.hideLink_ =
+      $('<a />', {'href': '#', 'class': 'rhizo-autocommit-link'}).
+      text('Apply').
+      appendTo(this.filterPanel_);
+
+  if (project.isFilterAutocommit()) {
+    this.hideLink_.css('display', 'none');
+  }
+
+  this.autocommitPanel_.render(this.filterPanel_, project, gui, options);
+
+  var metaModel = project.metaModel();
+  for (var key in metaModel) {
+    var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
+    filter.css('display', 'none');
+    this.filterPanel_.append(filter);
+  }
+};
+
+rhizo.ui.component.FilterBookContainer.prototype.activate = function(project,
+                                                                     gui,
+                                                                     options) {
+  this.autocommitPanel_.activate(project, gui, options);
+  this.autocommitPanel_.registerCallback(jQuery.proxy(function(isAutocommit) {
+    this.hideLink_.css('display', isAutocommit ? 'none' : '');
+  }, this));
+
+  // Every single filter implementation auto-activates itself when created.
+  // Here we only need to activate the navigation between filters.
+  this.nextFilter_.click(function() {
+    var current = $('.rhizo-filter:visible', gui.container);
+    var next = current.next('.rhizo-filter:hidden').eq(0);
+    if (next.length > 0) {
+      // cannot use hide/show otherwise safari clips rendering
+      current.css('display', 'none');
+      next.css('display', '');
+    }
+  });
+
+  this.prevFilter_.click(function() {
+    var current = $('.rhizo-filter:visible', gui.container);
+    var prev = current.prev('.rhizo-filter:hidden').eq(0);
+    if (prev.length > 0) {
+      // cannot use hide/show otherwise safari clips rendering
+      current.css('display', 'none');
+      prev.css('display', '');
+    }
+  });
+
+  this.hideLink_.click(function() {
+    project.commitFilter();
+  });
 };
 
 rhizo.ui.component.Legend = function(floating) {
@@ -735,7 +847,7 @@ rhizo.ui.component.BottomTemplate = function(project) {
     // dynamic components
     LAYOUT: new rhizo.ui.component.Layout(/* floating = */ true),
     SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(/* floating = */ true),
-    FILTERS: new rhizo.ui.component.Filters(/* floating = */ true),
+    FILTERS: new rhizo.ui.component.FilterBookContainer(),
     LEGEND: new rhizo.ui.component.Legend(/* floating = */ true),
     BOTTOMBAR: new rhizo.ui.component.BottomBar()
   };
@@ -811,7 +923,7 @@ rhizo.ui.component.StandardTemplate = function(project) {
     // dynamic components
     LAYOUT: new rhizo.ui.component.Layout(/* floating = */ false),
     SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(/* floating = */ false),
-    FILTERS: new rhizo.ui.component.Filters(/* floating = */ false),
+    FILTERS: new rhizo.ui.component.FilterStackContainer(),
     LEGEND: new rhizo.ui.component.Legend(/* floating = */ false),
     ACTIONS: new rhizo.ui.component.Actions()
   };
