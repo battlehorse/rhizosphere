@@ -572,6 +572,10 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
  */
 rhizo.ui.component.FilterStackContainer = function() {
   this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel();
+
+  // Number of metaModel keys that will trigger filter selection (instead of
+  // just showing all the available filters).
+  this.filterSelectorThreshold_ = 5;
 };
 
 /**
@@ -595,9 +599,44 @@ rhizo.ui.component.FilterStackContainer.prototype.render = function(container,
   this.autocommitPanel_.render(this.filterPanel_, project, gui, options);
 
   var metaModel = project.metaModel();
+  var filtersNum = 0;
   for (var key in metaModel) {
-    var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
-    this.filterPanel_.append(filter);
+    filtersNum++;
+  }
+  
+  if (filtersNum <= this.filterSelectorThreshold_) {
+    for (key in metaModel) {
+      var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
+      this.filterPanel_.append(filter);
+    }
+  } else {
+    this.renderFilterSelector_(project);
+  }
+};
+
+/**
+ * Renders the filter selector, and an initial selection of filters up to
+ * the selector threshold.
+ * @param {rhizo.Project} project
+ * @private
+ */
+rhizo.ui.component.FilterStackContainer.prototype.renderFilterSelector_ =
+    function(project) {
+  var metaModel = project.metaModel();
+  this.filterSelector_ = $('<select />', {'class': 'rhizo-filter-selector'});
+  $('<option />').attr('value', '').text('More filters...').
+      appendTo(this.filterSelector_);
+  for (var key in metaModel) {
+    var option = $('<option />').attr('value', key).text(metaModel[key].label);
+    this.filterSelector_.append(option);
+  }
+  this.filterPanel_.append(this.filterSelector_);
+  var visibleFilterCount = 0;
+  for (key in metaModel) {
+    this.activateFilter_(key, project);
+    if (++visibleFilterCount == this.filterSelectorThreshold_) {
+      break;
+    }
   }
 };
 
@@ -607,8 +646,59 @@ rhizo.ui.component.FilterStackContainer.prototype.activate = function(project,
   // Every single filter implementation auto-activates itself when created.
   // Here we only need to activate the navigation between filters.
   this.autocommitPanel_.activate(project, gui, options);
+  if (this.filterSelector_) {
+    this.activateFilterSelector_(project);
+  }
 };
 
+/**
+ * @param {rhizo.Project} project
+ * @private
+ */
+rhizo.ui.component.FilterStackContainer.prototype.activateFilterSelector_ =
+    function(project) {
+  this.filterSelector_.change(jQuery.proxy(function() {
+    var key = this.filterSelector_.val();
+    if (!(key in project.metaModel())) {
+      return;
+    }
+    this.activateFilter_(key, project);
+
+    // re-select the first (default) option.
+    this.filterSelector_.find('option').eq(0).attr('selected', 'selected');
+  }, this));
+};
+
+/**
+ * @param {string} key
+ * @param {rhizo.Project} project
+ * @private
+ */
+rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ = function(key, project) {
+  var metaModel = project.metaModel();
+  var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
+  var filterCloseIcon =
+      $('<div />', {'class': 'rhizo-close-icon'}).
+          text('x').
+          prependTo(filter);
+  filterCloseIcon.click(jQuery.proxy(function() {
+    // remove the filter
+    filter.remove();
+
+    // re-align the visualization.
+    project.filter(key, '');
+
+    // re-enable the filter among the selectable ones.
+    this.filterSelector_.
+        find('option[value=' + key + ']').
+        removeAttr('disabled');
+  }, this));
+
+  filter.appendTo(this.filterPanel_);
+  this.filterSelector_.
+      find('option[value=' + key + ']').
+      attr('disabled', 'disabled');
+};
 
 /**
  * Renders a series of filters as a 'book', with only filter showing at any

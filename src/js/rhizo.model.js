@@ -80,6 +80,18 @@ rhizo.model.SuperModel.prototype.filter = function(key) {
   this.filters_[key] = true;
 };
 
+
+/**
+ * Removes the given filter from this model.
+ * @param {string} key The key of the filter to remove.
+ * @return {boolean} Whether the filter existed on tihs model (and was
+ *     therefore removed) or not.
+ */
 rhizo.model.SuperModel.prototype.resetFilter = function(key) {
-  delete this.filters_[key];
+  if (key in this.filters_) {
+    delete this.filters_[key];
+    return true;
+  } else {
+    return false;
+  }
 };
