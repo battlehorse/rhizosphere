@@ -139,10 +139,17 @@ rhizo.Project.prototype.currentLayoutEngineName = function() {
   return this.curLayoutName_;
 };
 
+/**
+ * Removes the given filter from all models.
+ * @param {string} key The key of the filter to remove.
+ * @return {boolean} Whether the filter existed on at least one of the models.
+ */
 rhizo.Project.prototype.resetAllFilter = function(key) {
+  var modelsAffected = false;
   for (var i = this.models_.length-1; i >= 0; i--) {
-    this.models_[i].resetFilter(key);
+    modelsAffected = this.models_[i].resetFilter(key) || modelsAffected;
   }
+  return modelsAffected;
 };
 
 rhizo.Project.prototype.enableFilterAutocommit = function(enable) {
@@ -314,7 +321,9 @@ rhizo.Project.prototype.filter = function(key, value) {
     }
   } else {
     // reset filter
-    this.resetAllFilter(key);
+    if (!this.resetAllFilter(key)) {
+      return;  // no models had the filter, nothing to re-align, return early.
+    }
   }
   this.alignFx();
 
