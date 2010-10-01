@@ -805,7 +805,8 @@ rhizo.ui.RenderingBootstrap.prototype.expandable_ = function() {
 rhizo.ui.RenderingBootstrap.prototype.startExpandable_ = function(
     rawRenderings) {
   var expander = $('<div />',
-                   {'class': 'rhizo-expand-model rhizo-maximize-icon'});
+                   {'class': 'rhizo-expand-model ' +
+                       'rhizo-icon rhizo-maximize-icon'});
   for (var i = this.renderings_.length-1; i >= 0; i--) {
     this.renderings_[i].startExpandable(expander.clone());
   }
