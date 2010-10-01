@@ -636,31 +636,64 @@
 /******************
   Icons
  *****************/
-.rhizo-maximize-icon {
-  display: block;
-  border: 1px solid @primary-control;
-  border-top: 4px solid @primary-control;
-  width: 14px;
-  height: 10px;
-  .rounded_corners(2px);
-}
-
-.rhizo-close-icon {
-  float: right;
-  display: block;
+ .rhizo-icon {
+  display: inline-block;
   border: 1px solid @primary-control;
   width: 14px;
   height: 14px;
-  text-align: center;
-  font-weight: bold;
-  margin-right: 2px;
   .rounded_corners(2px);
+  margin-right: 0.2em;
+  vertical-align: top;
+  text-align: center;
+  font-weight: bold
 }
 
-.rhizo-close-icon:hover {
+.rhizo-icon:hover {
+  border-color: @secondary-control;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.rhizo-icon.rhizo-maximize-icon {
+  height: 10px;
+  border-top-width: 4px;
+}
+
+.rhizo-icon.rhizo-close-icon {
+  float: right;
+  margin-right: 2px;
+}
+
+.rhizo-icon.rhizo-close-icon:hover {
+  border-color: @primary-control;
   background-color: @secondary-control;
   color: @inverted-control;
   cursor: pointer;
+}
+
+.rhizo-bottom-bar .rhizo-icon {
+  border-color: @primary-chrome-text;
+  position: absolute;
+  right: 5px;
+}
+
+.rhizo-bottom-bar .rhizo-icon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: @primary-chrome-text;
+}
+
+/* When inside a touch (iPad) device */
+.rhizo-device-ipad .rhizo-icon {
+  width: 19px;
+  height: 19px;
+  margin: 0.4em;
+  margin-right: 0.6em;
+  font-size: 1.1em;
+}
+
+.rhizo-device-ipad .rhizo-icon.rhizo-maximize-icon {
+  height: 14px;
+  border-top-width: 5px;
 }
 
 /******************
@@ -760,18 +793,6 @@
 /***************************
   Bottom-bar widgets
 ***************************/
-.rhizo-bottom-bar .rhizo-maximize-icon {
-  border: 1px solid @primary-chrome-text;
-  border-top: 4px solid @primary-chrome-text;
-  display: inline-block;
-  position: absolute;
-  right: 5px;
-}
-
-.rhizo-bottom-bar .rhizo-maximize-icon:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .rhizo-platform-mobile .rhizo-bottom-bar .rhizo-maximize-icon {
   display: none;
 }

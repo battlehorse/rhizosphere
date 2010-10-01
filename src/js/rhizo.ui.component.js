@@ -130,7 +130,9 @@ rhizo.ui.component.BottomBar = function() {};
 
 rhizo.ui.component.BottomBar.prototype.render = function(container, project, gui, options) {
   gui.addComponent('rhizo.ui.component.BottomBar', this);
-  this.resizeLink_ = $('<a/>', {'class': 'rhizo-maximize-icon', href: 'javascript:;', title: 'Maximize'}).appendTo(container);
+  this.resizeLink_ = $('<a/>', {'class': 'rhizo-icon rhizo-maximize-icon',
+                                href: 'javascript:;',
+                                title: 'Maximize'}).appendTo(container);
 
   this.components_ = [
     {component: 'rhizo.ui.component.Layout', title: 'Display', 'class': ''},
@@ -678,7 +680,7 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ = function(key
   var metaModel = project.metaModel();
   var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
   var filterCloseIcon =
-      $('<div />', {'class': 'rhizo-close-icon'}).
+      $('<div />', {'class': 'rhizo-icon rhizo-close-icon'}).
           text('x').
           prependTo(filter);
   filterCloseIcon.click(jQuery.proxy(function() {
