@@ -185,6 +185,8 @@
 .rhizo-left {
   position: absolute;
   background-color: @background;
+  background-image: -webkit-gradient(linear, 0 0, 50 100, from(@secondary-background), to(@background));
+  background-image: -moz-linear-gradient(-45deg, @secondary-background, @background);
   left: 0;
   top: 0;
   bottom: 0;
@@ -316,8 +318,7 @@
  *****************/
 .rhizo-logo {
   padding: 0;
-  background-image: -webkit-gradient(linear, 0 0, 50 100, from(@secondary-background), to(@background));
-  background-image: -moz-linear-gradient(-45deg, @secondary-background, @background);
+  text-align: center;
 }
 
 .rhizo-left .rhizo-logo {
@@ -325,15 +326,31 @@
 }
 
 .rhizo-logo H1 {
-  font-size: 2em;
+  font-size: 1.5em;
   margin: 0;
   padding: 0;
   color: @font-logo-color;
+  cursor: pointer;
+}
+
+.rhizo-logo H1:hover {
+  text-decoration: underline;
 }
 
 .rhizo-logo P {
   margin: 0;
   padding: 0;
+  display: none
+}
+
+/* When inside a floating panel */
+.rhizo-floating-panel.rhizo-logo P {
+  display: block;
+}
+
+.rhizo-floating-panel.rhizo-logo H1 {
+  cursor: auto;
+  padding-top: 0.5em;
 }
 
 /******************

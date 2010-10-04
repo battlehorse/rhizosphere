@@ -60,17 +60,38 @@ rhizo.ui.component.Logo.prototype.getPanel = function() {
 
 rhizo.ui.component.Logo.prototype.render = function(container, gui, options) {
   gui.addComponent('rhizo.ui.component.Logo', this);
-  this.logoPanel_ = $('<div />', {'class': 'rhizo-logo'}).html(
-      '<h1>Rhizosphere</h1><p>' +
-      'by <a href="mailto:battlehorse@gmail.com">Riccardo Govoni</a> (c) 2010<br />' +
-      '<a href="http://sites.google.com/site/rhizosphereui/" target="_blank">Project info</a>' +
-      '&nbsp;' +
-      '<a href="http://sites.google.com/site/rhizosphereui/Home/documentation" target="_blank" ' +
-      'style="font-weight:bold; text-decoration: underline">I Need Help!</a>' +
-      '</p>').appendTo(container);
+  this.logoPanel_ = $('<div />', {'class': 'rhizo-logo'}).appendTo(container);
+  var header = $('<h1>Rhizosphere</h1>').appendTo(this.logoPanel_);
+  var links = $('<p />').appendTo(this.logoPanel_);
+
+  links.append(
+      $('<a />', {
+        'href': 'http://sites.google.com/site/rhizosphereui/Home/documentation',
+        'target': '_blank'}).
+          text('Help'));
+
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://sites.google.com/site/rhizosphereui/',
+        'target': '_blank'}).
+          text('Project Info'));
+
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://rhizosphere.googlecode.com/hg/AUTHORS.txt',
+        'target': '_blank'}).
+          text('Authors'));
+
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://rhizosphere.googlecode.com/hg/COPYING.txt',
+        'target': '_blank'}).
+          text('License'));
 
   if (this.floating_) {
     this.logoPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+  } else {
+    header.click(function() { links.slideToggle('fast'); });
   }
 };
 
