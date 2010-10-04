@@ -97,6 +97,7 @@
         });
       }
     </script>
+    {% include "ga.html" %}
     ]]>
  </Content>
 </Module>
