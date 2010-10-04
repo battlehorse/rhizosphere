@@ -52,10 +52,12 @@ class RhizoHandler(webapp.RequestHandler):
         forcePlatform, forceDevice = self._getPlatformDevice()
         forceTemplate = self._getOptionFromUrl('forceTemplate',
                                                ['default', 'bottom'])
-        template_values = {'debug': debug,
-                           'forceTemplate': forceTemplate,
-                           'forceDevice': forceDevice,
-                           'forcePlatform': forcePlatform,}
+        template_values = rhizoglobals.DefaultTemplate()
+        template_values.update({
+            'forceTemplate': forceTemplate,
+            'forceDevice': forceDevice,
+            'forcePlatform': forcePlatform,
+        })
         path = os.path.join(os.path.dirname(__file__),
                             '../../templates%s' % self.request.path)
         self.response.out.write(template.render(path, template_values))
@@ -67,8 +69,10 @@ class IGoogleHandler(webapp.RequestHandler):
         # Should we serve compiled or uncompiled resources?
         debug = self.request.get('d', '0') == '1'
 
-        template_values = {'debug': debug,
-                           'hostname': 'http://%s' % os.environ['HTTP_HOST']}
+        template_values = rhizoglobals.DefaultTemplate()
+        template_values.update({
+            'hostname': 'http://%s' % os.environ['HTTP_HOST']
+        })
         path = os.path.join(os.path.dirname(__file__), '../../templates/ig.xml')
         self.response.headers.add_header('Content-Type', 'text/xml')
         self.response.out.write(template.render(path, template_values))

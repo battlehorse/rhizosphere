@@ -15,3 +15,10 @@
 # limitations under the License.
 
 debug=True
+analytics_id='UA-18908843-1'
+
+def DefaultTemplate():
+  return {
+    'debug': debug,
+    'analytics_id': analytics_id,
+  }
