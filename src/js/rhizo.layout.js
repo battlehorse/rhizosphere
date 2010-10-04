@@ -231,7 +231,9 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   var dirty = false;
   for (var i = 0; i < bucketKeys.length; i++) {
     var bucketKey = bucketKeys[i];
-    this.renderBucketHeader_(container, bucketsLabels[bucketKey]);
+    this.renderBucketHeader_(container,
+                             bucketsLabels[bucketKey],
+                             buckets[bucketKey]);
     dirty = this.internalFlowLayout_.layout(container,
                                             buckets[bucketKey],
                                             allmodels,
@@ -245,14 +247,40 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   return dirty;
 };
 
+/**
+ * Renders a bucket header.
+ *
+ * @param {*} container JQuery object pointing to the container the bucket
+ *     header will be appended to.
+ * @param {string} header The bucket label.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels The supermodels that are
+ *     clustered within this bucket.
+ * @private
+ */
 rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
-    function(container, header) {
+    function(container, header, supermodels) {
   var bucketHeader = $("<div class='rhizo-bucket-header'>" +
                        header +
                        "</div>");
   bucketHeader.css('position', 'absolute').
                css('left', 5).
-               css('top', this.internalFlowLayout_.top);
+               css('top', this.internalFlowLayout_.top).
+               click(jQuery.proxy(function() {
+                 var allSelected = true;
+                 for (var i = supermodels.length - 1; i >= 0; i--) {
+                   if (!this.project_.isSelected(supermodels[i].id)) {
+                    allSelected = false;
+                    break;
+                   }
+                 }
+                 for (var i = supermodels.length - 1; i >= 0; i--) {
+                   if (allSelected) {
+                     this.project_.unselect(supermodels[i].id);
+                   } else {
+                     this.project_.select(supermodels[i].id);
+                   }
+                 }    
+               }, this));
   this.bucketHeaders_.push(bucketHeader);
   container.append(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
