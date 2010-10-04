@@ -21,6 +21,12 @@ namespace("rhizo.ui.component");
 // Progress-bar to handle application startup feedback
 rhizo.ui.component.Progress = function(container) {
   this.pbarPanel_ = $('<div/>', {'class': 'rhizo-progressbar-panel'}).appendTo(container);
+
+  // center the progress bar.
+  this.pbarPanel_.css({
+    'top': Math.round((container.height() - this.pbarPanel_.height()) / 2),
+    'left': Math.round((container.width() - this.pbarPanel_.width()) / 2)
+  });
   var pbar = $('<div/>', {'class': 'rhizo-progressbar'}).appendTo(this.pbarPanel_);
   this.pbar_ = pbar.progressbar({value: 1});
   this.pbarText_ = $('<div/>', {'class': 'rhizo-progressbar-text'}).
@@ -41,7 +47,7 @@ rhizo.ui.component.Progress.prototype.update = function(value, opt_text) {
 rhizo.ui.component.Progress.prototype.destroy_ = function() {
   if (this.pbarPanel_.is(':visible')) {
     setTimeout(jQuery.proxy(function() {
-      this.pbarPanel_.fadeOut(500, function() {
+      this.pbarPanel_.fadeOut(function() {
         $(this).remove();
       });
     }, this), 1000);

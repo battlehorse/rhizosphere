@@ -54,8 +54,11 @@ rhizo.jquery.initAnimations_ = function(gui, opt_disableAllAnims) {
         fadeIn: function() {
           $(this).css({visibility: 'visible', opacity: 1.0});
         },
-        fadeOut: function() {
+        fadeOut: function(opt_callback) {
           $(this).css({visibility: 'hidden', opacity: 0.0});
+          if (opt_callback) {
+            opt_callback.apply(this);
+          }
         },
         greyOut: function() {
           $(this).css('opacity', 0.2);
@@ -82,15 +85,22 @@ rhizo.jquery.initAnimations_ = function(gui, opt_disableAllAnims) {
             $(this).css('visibility', 'visible').animate({opacity: 1.0}, 400);
           }
         },
-        fadeOut: function() {
+        fadeOut: function(opt_callback) {
           $(this).stop(true, true);
           if (gui.noFx) {
             $(this).css({visibility: 'hidden', opacity: 0.0});
+            if (opt_callback) {
+              opt_callback.apply(this);
+            }
           } else {
             $(this).animate({opacity: 0.0}, {
                              duration: 400,
                              complete: function() {
-                               $(this).css('visibility', 'hidden'); }});
+                               $(this).css('visibility', 'hidden');
+                               if (opt_callback) {
+                                 opt_callback.apply(this);
+                               }
+                             }});
           }
         },
         greyOut: function() {
