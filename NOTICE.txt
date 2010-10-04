@@ -32,3 +32,8 @@ library: less.js
 reference: http://lesscss.org
 authors: Alexis Sellier
 license: Apache 2.0 License, http://www.apache.org/licenses/LICENSE-2.0
+
+library: Tango Icon Set
+reference: http://tango.freedesktop.org/Tango_Desktop_Project
+authors: http://tango.freedesktop.org/The_People
+license: Public Domain
