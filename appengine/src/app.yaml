@@ -22,6 +22,14 @@ handlers:
 # Static files. Exclude static/samples/js since it is served by the
 # sample handler.
 
+- url: /favicon.ico
+  static_files: static/shared/img/rhizosphere.ico
+  upload: static/shared/img/rhizosphere.ico
+
+- url: /apple-touch-icon.png
+  static_files: static/shared/img/rhizosphere_ipad_iphone.png
+  upload: static/shared/img/rhizosphere_ipad_iphone.png
+
 - url: /static/src/(.*?)/(.*)
   static_files: static/src/\1/\2
   upload: static/src/(.*?)/(.*)
@@ -41,7 +49,6 @@ handlers:
 - url: /static/samples/img/(.*)
   static_files: static/samples/img/\1
   upload: static/samples/img/(.*)
-
 
 - url: /static/samples/stylesheets/(.*)
   static_files: static/samples/stylesheets/\1
