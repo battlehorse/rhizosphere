@@ -25,7 +25,7 @@ from py import rhizoglobals
 class MainHandler(webapp.RequestHandler):
 
     def get(self):
-        template_values = {}
+        template_values = rhizoglobals.DefaultTemplate()
         path = os.path.join(os.path.dirname(__file__), '../../templates/index.html')
         self.response.out.write(template.render(path, template_values))
 
