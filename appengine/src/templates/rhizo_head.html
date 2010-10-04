@@ -2,6 +2,13 @@
 {% ifequal forceDevice 'ipad' %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="viewport" content="width=device-width">
+<link rel="apple-touch-startup-image" href="static/shared/img/rhizosphere_startup_ipad_portrait.png">
+{% endifequal %}
+{% ifequal forceDevice 'iphone' %}
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,user-scalable=no">
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<link rel="apple-touch-startup-image" href="static/shared/img/rhizosphere_startup_iphone_portrait.png" >
 {% endifequal %}
 
 <link rel="stylesheet" href="static/shared/stylesheets/jquery-ui-1.8.4.custom.css" type="text/css" media="screen" charset="utf-8">

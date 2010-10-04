@@ -36,12 +36,14 @@ class RhizoHandler(webapp.RequestHandler):
       user_agent = self.request.headers.get('User-Agent', '').lower()
       if 'ipad' in user_agent:
           platform, device = 'mobile', 'ipad'
+      elif 'iphone' in user_agent:
+          platform, device = 'mobile', 'iphone'
       if not platform:
         platform = self._getOptionFromUrl('forcePlatform',
                                           ['default', 'mobile'])
       if not device:
         device = self._getOptionFromUrl('forceDevice',
-                                        ['default', 'ipad'])
+                                        ['default', 'ipad', 'iphone'])
       return platform, device
 
     def get(self):
