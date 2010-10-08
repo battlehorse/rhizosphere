@@ -25,14 +25,14 @@ from py import rhizoglobals
 class MainHandler(webapp.RequestHandler):
 
     def get(self):
-        template_values = rhizoglobals.DefaultTemplate()
+        template_values = rhizoglobals.DefaultTemplate(self.request)
         path = os.path.join(os.path.dirname(__file__), '../../templates/index.html')
         self.response.out.write(template.render(path, template_values))
 
 
 application = webapp.WSGIApplication(
     [('/', MainHandler),],
-    debug=rhizoglobals.debug)
+    debug=rhizoglobals.appenginedebug)
 
 
 def main():
