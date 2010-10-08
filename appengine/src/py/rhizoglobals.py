@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-debug=True
+
+appenginedebug=True
 analytics_id='UA-18908843-1'
 
-def DefaultTemplate():
+def DefaultTemplate(request):
   return {
-    'debug': debug,
+    # Should we serve compiled or uncompiled resources?
+    'debug': request.get('d', '0') == '1',
     'analytics_id': analytics_id,
   }
