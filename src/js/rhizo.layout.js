@@ -34,6 +34,15 @@ To define a new layout:
   This renders a piece of UI you can use to collect extra options
   for your layout
 
+- implement a getState()/setState() function pair (optional).
+  Handle state management for the layout. The former returns a plain js object
+  with the layout state information, the latter receives the same object back
+  for the layout to restore itself to a given state.
+  Most notably the layout will used it to restore the controls handled by
+  the details() function to a previous state.
+  setState() will receive a null state if the layout should be restored to its
+  'default' (or initial) state.
+
 - implement the cleanup() function (optional)
   If your layout creates data structures or UI components that
   have to be cleaned up
@@ -129,6 +138,27 @@ rhizo.layout.FlowLayout.prototype.details = function() {
            append(this.orderSelector_).
            append(" desc?").
            append(this.reverseCheckbox_);
+};
+
+rhizo.layout.FlowLayout.prototype.getState = function() {
+  return {
+    order: this.orderSelector_.val(),
+    reverse: this.reverseCheckbox_.is(':checked')
+  };
+};
+
+rhizo.layout.FlowLayout.prototype.setState = function(state) {
+  if (state) {
+    this.orderSelector_.val(state.order);
+    if (state.reverse) {
+      this.reverseCheckbox_.attr('checked', 'checked');
+    } else {
+    this.reverseCheckbox_.removeAttr('checked');
+    }
+  } else {
+    this.orderSelector_.find('option:first').attr('selected', 'selected');
+    this.reverseCheckbox_.removeAttr('checked');
+  }
 };
 
 rhizo.layout.FlowLayout.prototype.toString = function() {
@@ -304,6 +334,27 @@ rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, options) {
   $.each(this.bucketHeaders_, function() { this.remove(); });
   this.bucketHeaders_ = [];
   return false;
+};
+
+rhizo.layout.BucketLayout.prototype.getState = function() {
+  return {
+    bucketBy: this.bucketSelector_.val(),
+    reverse: this.reverseCheckbox_.is(':checked')
+  };
+};
+
+rhizo.layout.BucketLayout.prototype.setState = function(state) {
+  if (state) {
+    this.bucketSelector_.val(state.bucketBy);
+    if (state.reverse) {
+      this.reverseCheckbox_.attr('checked', 'checked');
+    } else {
+      this.reverseCheckbox_.removeAttr('checked');
+    }
+  } else {
+    this.bucketSelector_.find('option:first').attr('selected', 'selected');
+    this.reverseCheckbox_.removeAttr('checked');
+  }
 };
 
 rhizo.layout.BucketLayout.prototype.toString = function() {

@@ -46,6 +46,7 @@
     <script src="{{ hostname }}/static/src/js/rhizo.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.jquery.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.log.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/src/js/rhizo.state.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.base.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.meta.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/extra/rhizo.meta.extra.js" type="text/javascript" charset="utf-8"></script>
@@ -76,7 +77,7 @@
         arSize: prefs.getString('arSize'),
         arColor: prefs.getString('arColor'),
         arNumFields: prefs.getInt('arNumFields'),
-        allowSourcesFromUrl: false
+        allowConfigFromUrl: false
       };
 
       _IG_RegisterOnloadHandler(loadVisualizationAPI);

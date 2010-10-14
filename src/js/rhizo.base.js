@@ -15,9 +15,18 @@
 */
 
 // Global project namespace
-// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout
+// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.state
 namespace("rhizo");
 
+/**
+ * Projects are the central entities that manage an entire Rhizosphere
+ * visualization.
+ * 
+ * @param {rhizo.ui.gui.GUI} gui The GUI associated to this visualization.
+ * @param {*} opt_options A key-value map of project-wide customization
+ *     options.
+ * @constructor
+ */
 rhizo.Project = function(gui, opt_options) {
   this.models_ = [];
   this.modelsMap_ = {};
@@ -31,6 +40,13 @@ rhizo.Project = function(gui, opt_options) {
   } else {
     this.logger_ = new rhizo.NoOpLogger();
   }
+
+  /**
+   * Manages transitions in visualization state.
+   * @type {rhizo.state.ProjectStateBinder}
+   * @private
+   */
+  this.state_ = null;
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -96,11 +112,26 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   // already busy creating the whole dom).
   this.gui_.disableFx(true);
 
-  // laying out models and re-aligning elements' visibility
-  this.layout(this.curLayoutName_, {forcealign: true});
-
+  // rebuild visualization state, either from defaults or from history.
+  var initialStateRebuilt = rhizo.state.getMasterOverlord().attachProject(
+      this, [rhizo.state.Bindings.HISTORY]);
+  this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
+  if (!initialStateRebuilt) {
+    // The state overlord is not aware of any initial state, so we initialize
+    // the visualization using defaults. No state is pushed.
+    this.layoutInternal_(this.curLayoutName_, {forcealign: true});
+  }
   // re-aligning animation settings
   this.alignFx();
+};
+
+/**
+ * @return {string} A unique document-wide identifier for this project. We rely
+ *     on an unique id being assigned to the HTML element that contains the
+ *     visualization this project manages.
+ */
+rhizo.Project.prototype.uuid = function() {
+  return this.gui_.container.attr('id');
 };
 
 rhizo.Project.prototype.model = function(id) {
@@ -264,19 +295,91 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
   }
 };
 
+/**
+ * Listener method invoked whenever the visualization needs to be fully restored
+ * to a given state.
+ *
+ * @param {Object.<rhizo.state.Facets, *>} state A facet-facetState map
+ *     describing the full visualization state.
+ */
+rhizo.Project.prototype.setState = function(state) {
+  if (rhizo.state.Facets.LAYOUT in state) {
+    this.stateChanged(rhizo.state.Facets.LAYOUT,
+                      state[rhizo.state.Facets.LAYOUT]);
+  }
+  this.alignVisibility_();
+};
+
+/**
+ * Listener method invoked whenever a facet of the visualization state changed
+ * because of events that are not under the direct control of this project
+ * instance (for example, history and navigation events).
+ *
+ * @param {rhizo.state.Facets} facet The facet that changed.
+ * @param {*} The facet-specific state to transition to.
+ */
+rhizo.Project.prototype.stateChanged = function(facet, facetState) {
+  switch(facet) {
+    case rhizo.state.Facets.LAYOUT:
+      var layoutName = facetState ? facetState.layoutName : 'flow';
+      this.gui_.getComponent('rhizo.ui.component.Layout').setEngine(layoutName);
+      if (this.layoutEngines_[layoutName].setState) {
+        this.layoutEngines_[layoutName].setState(facetState);
+      }
+      this.layoutInternal_(layoutName);
+      break;
+    default:
+      this.logger_.error('Unknown state change: ' + facet);
+  }
+};
+
+/**
+ * Re-arranges the disposition of the project models according to the
+ * requested layout algorithm.
+ *
+ * @param {?string} opt_layoutEngineName The name of the layout engine to use.
+ *     If undefined, the last known engine will be used.
+ * @param {*} opt_options An optional key-value map of layout directives.
+ *    Currently supported ones include:
+ *    - 'filter' (boolean): Whether this layout operation is invoked as a result
+ *      of a filter being applied.
+ *    - 'forceAlign' (boolean): Whether models' visibility should be synced at
+ *      the end of the layout operation.
+ */
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
+  if (opt_layoutEngineName) {
+    if (!(opt_layoutEngineName in this.layoutEngines_)) {
+      this.logger_.error("Invalid layout engine:" + opt_layoutEngineName);
+      return;
+    }
+  }
+
+  var layoutName = opt_layoutEngineName || this.curLayoutName_;
+  var layoutState = null;
+  if (this.layoutEngines_[layoutName].getState) {
+    layoutState = this.layoutEngines_[layoutName].getState();
+  }
+  this.state_.pushLayoutChange(layoutName, layoutState);
+  this.layoutInternal_(opt_layoutEngineName || this.curLayoutName_,
+                       opt_options);
+};
+
+/**
+ * Internal version of layout that doesn't deal with state management.
+ * @param {string} layoutEngineName The name of the layout engine to use.
+ * @param {*} opt_options An optional Key-value map of layout directives. See
+ *    the documentation for layout().
+ * @private
+ */
+rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
+                                                   opt_options) {
+  console.log('layout ' + this.uuid());
   var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
   var options = $.extend({}, opt_options, this.options_);
 
   // Update the name of the current engine.
-  if (opt_layoutEngineName) {
-    this.curLayoutName_ = opt_layoutEngineName;
-  }
+  this.curLayoutName_ = layoutEngineName;
   var layoutEngine = this.layoutEngines_[this.curLayoutName_];
-  if (!layoutEngine) {
-    this.logger_.error("Invalid layout engine:" + this.curLayoutName_);
-    return;
-  }
 
   var dirty = false;
   if (lastLayoutEngine && lastLayoutEngine.cleanup) {
@@ -352,7 +455,7 @@ rhizo.Project.prototype.filter = function(key, value) {
 };
 
 rhizo.Project.prototype.commitFilter = function() {
-  this.layout(null, {filter: true, forcealign: true});
+  this.layoutInternal_(null, {filter: true, forcealign: true});
 };
 
 /**

@@ -18,6 +18,14 @@
 namespace('rhizo.bootstrap');
 
 /**
+ * Uuid counter to uniquely identify the container of each visualization within
+ * the document.
+ * @type {number}
+ * @private
+ */
+rhizo.bootstrap.uuids_ = 0;
+
+/**
  * A Bootstrap is the main entry point to start a Rhizosphere visualization.
  * It takes care of loading the data to visualize, create the chrome and other
  * ui elements for the visualization, and bind all the necessary event handlers.
@@ -29,6 +37,16 @@ namespace('rhizo.bootstrap');
  */
 rhizo.bootstrap.Bootstrap = function(container, opt_options) {
   this.container_ = container;
+  var containerId = $(container).attr('id');
+  if (!containerId || containerId.length == 0) {
+    // Generates a unique element id for the visualization container if one
+    // isn't defined yet.
+    // The generated id must be consistent over time (assuming the order of
+    // bootstrap calls does not change over time when multiple visualizations
+    // are present), since long-lived Rhizosphere state representations are
+    // based on this.
+    $(container).attr('rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
+  }
   this.options_ = { selectfilter: '.rhizo-model:visible' };
   if (opt_options) {
     $.extend(this.options_, opt_options);
@@ -223,13 +241,13 @@ rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(gui, project) {
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.tryInitResourceFromUrl_ = function() {
-  if (!this.options_.allowSourcesFromUrl) {
+  if (!this.options_.allowConfigFromUrl) {
     this.project_.logger().warn(
         'Sources extraction from url is disabled');
     return null;
   }
 
-  var regex = new RegExp('(source|src)=([^&]+)');
+  var regex = new RegExp('(source|src)=([^&#]+)');
   var results = regex.exec(document.location.href);
   if (!results || !results[2]) {
     this.project_.logger().error(

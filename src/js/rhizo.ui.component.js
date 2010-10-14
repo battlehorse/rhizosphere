@@ -339,12 +339,12 @@ rhizo.ui.component.Layout.prototype.render = function(container, project, gui, o
         (project.currentLayoutEngineName() == layoutEngineName ? "selected" : "") +
         ">" + layoutEngine  + "</option>"));
     if (layoutEngine.details) {
-	var details = layoutEngine.details();
-	this.detailsMap_[layoutEngineName] = details;
-        if (project.currentLayoutEngineName() != layoutEngineName) {
-          details.css("display","none");
-        }
-        this.layoutOptions_.append(details);
+      var details = layoutEngine.details();
+      this.detailsMap_[layoutEngineName] = details;
+      if (project.currentLayoutEngineName() != layoutEngineName) {
+        details.css("display","none");
+      }
+      this.layoutOptions_.append(details);
     }
   }
 
@@ -371,6 +371,10 @@ rhizo.ui.component.Layout.prototype.activate = function(project, gui, options) {
     // uncommitted filters (i.e. GREY models).
     project.layout(this.layoutSelector_.val(), {forcealign:true});
   }, this));
+};
+
+rhizo.ui.component.Layout.prototype.setEngine = function(layoutEngineName) {
+  this.layoutSelector_.val(layoutEngineName).change();
 };
 
 rhizo.ui.component.SelectionManager = function(floating) {
