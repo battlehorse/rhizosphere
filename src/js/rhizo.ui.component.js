@@ -416,37 +416,18 @@ rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, 
 };
 
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, options) {
-  //TODO(battlehorse): consolidate this filtering operations inside Project.
   this.selectButton_.click(jQuery.proxy(function(ev) {
-    var countSelected = 0;
-    for (var id in project.allSelected()) { countSelected++; };
-    if (countSelected == 0) {
-      project.logger().error("No items selected");
-      return;
+    var countFiltered =  project.filterUnselected();
+    if (countFiltered > 0) {
+      this.resetButton_.
+          removeAttr("disabled").
+          text("Reset (" + countFiltered + " filtered)");
     }
-
-    var allUnselected = project.allUnselected();
-    var countFiltered = 0;
-    for (var id in allUnselected) {
-      allUnselected[id].filter("__selection__"); // hard-coded keyword
-      countFiltered++;
-    }
-
-    // after filtering some elements, perform layout again
-    project.alignFx();
-    project.layout(null, {filter: true, forcealign: true});
-    project.unselectAll();
-    this.resetButton_.
-        removeAttr("disabled").
-        text("Reset (" + countFiltered + " filtered)");
   }, this));
 
 
   this.resetButton_.click(function(ev) {
-    project.resetAllFilter("__selection__");
-    project.alignFx();
-    // after filtering some elements, perform layout again
-    project.layout(null, {filter: true, forcealign: true});
+    project.resetUnselected();
     $(this).attr("disabled","disabled").text("Reset");
   });
 };

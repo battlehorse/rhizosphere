@@ -255,6 +255,37 @@ rhizo.Project.prototype.allUnselected = function() {
   });
 };
 
+rhizo.Project.prototype.filterUnselected = function() {
+  var countSelected = 0;
+  for (var id in this.selectionMap_) { countSelected++; }
+  if (countSelected == 0) {
+    this.logger_.error("No items selected");
+    return 0;
+  }
+
+  var allUnselected = this.allUnselected();
+  var countFiltered = 0;
+  for (var id in allUnselected) {
+    allUnselected[id].filter("__selection__"); // hard-coded keyword
+    countFiltered++;
+  }
+
+  // after filtering some elements, perform layout again
+  this.alignFx();
+  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+  this.unselectAll();
+  return countFiltered;
+};
+
+rhizo.Project.prototype.resetUnselected = function() {
+  if (!this.resetAllFilter("__selection__")) {
+    return;
+  }
+  // after filtering some elements, perform layout again
+  this.alignFx();
+  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+};
+
 /**
  * If the current layout supports it, ask it to extend a model selection.
  * The layout may be aware of relationships between models (such as hierarchies)
@@ -373,7 +404,6 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
  */
 rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
                                                    opt_options) {
-  console.log('layout ' + this.uuid());
   var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
   var options = $.extend({}, opt_options, this.options_);
 
