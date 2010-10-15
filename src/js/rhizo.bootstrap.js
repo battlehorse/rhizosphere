@@ -133,12 +133,12 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
   this.project_.setMetaModel(metamodel);
   this.project_.setRenderer(renderer);
 
-  this.project_.metaReady();
+  if (this.project_.metaReady()) {
+    this.template_.renderDynamic(this.options_);
+    this.template_.activateDynamic(this.options_);
+    this.project_.deploy(models);
+  }
 
-  this.template_.renderDynamic(this.options_);
-  this.template_.activateDynamic(this.options_);
-
-  this.project_.deploy(models);
   this.gui_.done();
   this.template_.done();
 };

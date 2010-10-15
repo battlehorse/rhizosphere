@@ -58,7 +58,11 @@ rhizo.Project.prototype.chromeReady = function() {
 };
 
 rhizo.Project.prototype.metaReady = function() {
+  if (!this.checkMetaModel_()) {
+    return false;
+  }
   this.initializeLayoutEngines_();
+  return true;
 };
 
 rhizo.Project.prototype.initializeLayoutEngines_ = function() {
@@ -144,6 +148,13 @@ rhizo.Project.prototype.metaModel = function() {
 
 rhizo.Project.prototype.setMetaModel = function(metaModel) {
   this.metaModel_ = metaModel;
+
+  // Convert all 'kind' specifications that are specified as factories into
+  // single instances.
+  for (var key in this.metaModel_) {
+    var obj_kind = rhizo.meta.objectify(this.metaModel_[key].kind);
+    this.metaModel_[key].kind = obj_kind;
+  }
 };
 
 rhizo.Project.prototype.renderer = function() {
@@ -354,16 +365,63 @@ rhizo.Project.prototype.extendSelection_ = function(id) {
   return [id];
 };
 
+/**
+ * Verify the models formal correctness, by checking that all the models have
+ * an assigned id and no duplicate ids exist.
+ * @private
+ */
 rhizo.Project.prototype.checkModels_ = function() {
   this.logger_.info("Checking models...");
-  var modelsAreCorrect = true;
+  var uniqueIds = {};
+  var missingIds = false;
+  var duplicateIds = [];
   for (var i = this.models_.length-1; i >= 0; i--) {
-    if (!this.models_[i].id) {
-      modelsAreCorrect = false;
-      this.logger_.error("Verify your models: missing ids.");
+    var id = this.models_[i].id;
+    if (!id) {
+      missingIds = true;
+    } else {
+      if (id in uniqueIds) {
+        duplicateIds.push(id);
+      } else {
+        uniqueIds[id] = true;
+      }
     }
   }
-  return modelsAreCorrect;
+
+  if (missingIds) {
+    this.logger_.error('Verify your models: missing ids.');
+  }
+  if (duplicateIds.length > 0) {
+    this.logger_.error('Verify your models: duplicate ids (' +
+                       duplicateIds.join(',') +
+                       ')');
+  }
+
+  return !missingIds && duplicateIds.length == 0;
+};
+
+/**
+ * Verify the metaModel formal correctness, by checking that every metaModel
+ * entry has a separate kind instance. MetaModels are stateful, so kinds cannot
+ * be shared.
+ * @private
+ */
+rhizo.Project.prototype.checkMetaModel_ = function() {
+  var allKinds = [];
+  for (var key in this.metaModel_) {
+    allKinds.push(this.metaModel_[key].kind);
+  }
+
+  // Ensure that there are no share meta instances in the metaModel.
+  for (var i = 0; i < allKinds.length; i++) {
+    for (var j = i+1; j < allKinds.length; j++) {
+      if (allKinds[i] === allKinds[j]) {
+        this.logger_.error('Verify your metaModel: shared kind instances.');
+        return false;
+      }
+    }
+  }
+  return true;
 };
 
 rhizo.Project.prototype.buildModelsMap_ = function() {
@@ -546,7 +604,7 @@ rhizo.Project.prototype.filter = function(key, value) {
 };
 
 rhizo.Project.prototype.commitFilter = function() {
-  this.layoutInternal_(null, {filter: true, forcealign: true});
+  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
 };
 
 /**
