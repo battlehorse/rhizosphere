@@ -83,7 +83,7 @@ rhizo.autorender.AR.prototype.getArField_ = function(key, property, value) {
 };
 
 rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
-  for (key in this.metamodel_) {
+  for (var key in this.metamodel_) {
     // master Field is by default the first one
     if (!this.masterField_) {
       this.masterField_ = key;
@@ -94,9 +94,8 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
     }
 
     // size Field is the first numeric field
-    if (!this.sizeField_ &&
-          (this.metamodel_[key].kind == rhizo.meta.Kind.NUMBER ||
-          this.metamodel_[key].kind == rhizo.meta.Kind.RANGE)) {
+    var kind = rhizo.meta.objectify(this.metamodel_[key].kind);
+    if (!this.sizeField_ && kind.isNumeric()) {
       this.sizeField_ = key;
       continue;
     }
@@ -104,9 +103,7 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
     // color Field is the next numeric field, or the first one if
     // size is explicitly bound
     if (this.sizeField_) {
-      if (!this.colorField_ &&
-            (this.metamodel_[key].kind == rhizo.meta.Kind.NUMBER ||
-            this.metamodel_[key].kind == rhizo.meta.Kind.RANGE)) {
+      if (!this.colorField_ && kind.isNumeric()) {
         this.colorField_ = key;
       }
     }
@@ -114,13 +111,16 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
 };
 
 rhizo.autorender.AR.prototype.locateMinMax_ = function(models, key) {
-  if (this.metamodel_[key].kind == rhizo.meta.Kind.RANGE) {
+  var kind = rhizo.meta.objectify(this.metamodel_[key].kind);
+  if (kind.isNumeric() &&
+      typeof(this.metamodel_[key].min) != 'undefined' &&
+      typeof(this.metamodel_[key].max) != 'undefined') {
+    // Numeric field with 'min' and 'max' attributes. Looks range-y.
     return { min: this.metamodel_[key].min ,
              max: this.metamodel_[key].max ,
              label: this.metamodel_[key].label };
   } else {
-    // number Kind
-    // iterate over models to figure out min and max
+    // simple numeric field. Iterate over models to figure out min and max.
     var modelMin = Number.POSITIVE_INFINITY;
     var modelMax = Number.NEGATIVE_INFINITY;
     $.each(models, function(i, model) {

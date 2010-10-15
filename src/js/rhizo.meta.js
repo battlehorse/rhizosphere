@@ -458,17 +458,31 @@ rhizo.meta.sortByKind = function(kind, opt_reverse) {
     if (kind.compare) {
       return kind.compare(firstValue, secondValue)*reverse;
     } else {
-      return (firstValue < secondValue ? -1 : 
-	      firstValue > secondValue ? 1 : 0)*reverse;
+      return (firstValue < secondValue ? -1 :
+          firstValue > secondValue ? 1 : 0)*reverse;
     }
   };
 };
 
+/**
+ * returns a rhizo.meta.Kind instance, building it if necessary.
+ *
+ * @param {function|*} kind Either a rhizo.meta.Kind instance or a no-arg
+ *     function that can instantiate it.
+ */
+rhizo.meta.objectify = function(kind) {
+  if (typeof(kind) == 'function') {
+    return kind();
+  } else {  // assume 'object'
+    return kind;
+  }
+};
+
 rhizo.meta.Kind = {
-  STRING: new rhizo.meta.StringKind(),
-  NUMBER: new rhizo.meta.NumberKind(),
-  DATE: new rhizo.meta.DateKind(),
-  RANGE: new rhizo.meta.RangeKind(),
-  BOOLEAN: new rhizo.meta.BooleanKind(),
-  CATEGORY: new rhizo.meta.CategoryKind()
+  STRING: function() { return new rhizo.meta.StringKind(); },
+  NUMBER: function() { return new rhizo.meta.NumberKind(); },
+  DATE: function() { return new rhizo.meta.DateKind(); },
+  RANGE: function() { return new rhizo.meta.RangeKind(); },
+  BOOLEAN: function() { return new rhizo.meta.BooleanKind(); },
+  CATEGORY: function() { return new rhizo.meta.CategoryKind(); }
 };
