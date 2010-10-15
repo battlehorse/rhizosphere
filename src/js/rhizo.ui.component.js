@@ -418,18 +418,14 @@ rhizo.ui.component.SelectionManager.prototype.activate = function(project, gui, 
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(project, options) {
   this.selectButton_.click(jQuery.proxy(function(ev) {
     var countFiltered =  project.filterUnselected();
-    if (countFiltered > 0) {
-      this.resetButton_.
-          removeAttr("disabled").
-          text("Reset (" + countFiltered + " filtered)");
-    }
+    this.setNumFilteredModels(countFiltered);
   }, this));
 
 
-  this.resetButton_.click(function(ev) {
+  this.resetButton_.click(jQuery.proxy(function(ev) {
     project.resetUnselected();
-    $(this).attr("disabled","disabled").text("Reset");
-  });
+    this.setNumFilteredModels(0);
+  }, this));
 };
 
 /**
@@ -487,6 +483,17 @@ rhizo.ui.component.SelectionManager.prototype.toggleSelectionTrigger =
  this.selection_trigger_.attr(
      'title',
      selectionModeOn ? 'Stop selecting items' : 'Start selecting items');
+};
+
+rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels =
+    function(numFilteredModels) {
+  if (numFilteredModels > 0) {
+    this.resetButton_.
+        removeAttr("disabled").
+        text("Reset (" + numFilteredModels + " filtered)");
+  } else {
+    this.resetButton_.attr('disabled', 'disabled').text('Reset');
+  }
 };
 
 

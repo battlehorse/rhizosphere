@@ -98,7 +98,8 @@ rhizo.state.TYPE = '__rhizo_state__';
  * @enum {string}
  */
 rhizo.state.Facets = {
-  LAYOUT: 'layout'
+  LAYOUT: 'layout',
+  SELECTION_FILTER: 'selection'
 };
 
 
@@ -460,6 +461,19 @@ rhizo.state.ProjectStateBinder.prototype.pushLayoutChange = function(
   this.overlord_.transition(this.key(), delta);
 };
 
+/**
+ * Utility method to change the visualization state because of a change in
+ * the set of filtered models via selection.
+ * @param {Array.<*>} filteredModels Array of model ids, for all the models
+ *     that should be filtered out. null if no model should be filtered out.
+ */
+rhizo.state.ProjectStateBinder.prototype.pushFilterSelectionChange = function(
+    filteredModels) {
+  var delta = this.makeDelta(rhizo.state.Facets.SELECTION_FILTER,
+                             filteredModels);
+  this.overlord_.transition(this.key(), delta);
+};
+
 
 /**
  * Binds the visualization state to the browser HTML5 history.
@@ -611,27 +625,30 @@ rhizo.state.HistoryHelper.prototype.diff_ = function(current_state,
     // Moving backward through the history
     var facetToRollback = current_state.delta.facet;
     var uuidToRollback = current_state.delta.uuid;
-    if (!(uuidToRollback in target_state.uuids)) {
-      // The uuid is missing in the target state. We are rolling back to a
-      // state where the project associated to this uuid was in its default
-      // (unconfigured) state.
+    if (uuidToRollback in target_state.uuids &&
+        facetToRollback in target_state.uuids[uuidToRollback]) {
+      return {
+        ts: target_state.delta.ts,
+        uuid: uuidToRollback,
+        facet: facetToRollback,
+        facetState: target_state.uuids[uuidToRollback][facetToRollback]
+      }
+    } else {
+      // Either the uuid or the affected facet is missing in the target state.
+      // We are rolling back to a state where either the entire project
+      // associated to this uuid, or just one of its facets, was in its
+      // default (unconfigured) state.
+      // Examples:
+      // - missing uuid: null initial state (direct landing on the page),
+      //     apply a change and then roll it back.
+      // - missing facet: null initial state (direct landing on the page),
+      //     apply a change to 2 different facets, then rollback the latter.
       return {
         ts: target_state.delta.ts,
         uuid: uuidToRollback,
         facet: facetToRollback,
         facetState: null
       };
-    }
-    if (!(facetToRollback in target_state.uuids[uuidToRollback])) {
-      // Inconsistent state. Either we should rollback to an initial state
-      // (uuid missing) or to a state were the facet was just set.
-      throw('Missing facet ' + facetToRollback + ' in state to restore');
-    }
-    return {
-      ts: target_state.delta.ts,
-      uuid: uuidToRollback,
-      facet: facetToRollback,
-      facetState: target_state.uuids[uuidToRollback][facetToRollback]
     }
   }
 };

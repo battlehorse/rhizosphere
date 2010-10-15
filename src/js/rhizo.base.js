@@ -255,6 +255,10 @@ rhizo.Project.prototype.allUnselected = function() {
   });
 };
 
+/**
+ * Removes all the unselected models from user view, filtering them out.
+ * @return {number} The number of models that have been hidden from view.
+ */
 rhizo.Project.prototype.filterUnselected = function() {
   var countSelected = 0;
   for (var id in this.selectionMap_) { countSelected++; }
@@ -263,27 +267,71 @@ rhizo.Project.prototype.filterUnselected = function() {
     return 0;
   }
 
-  var allUnselected = this.allUnselected();
-  var countFiltered = 0;
-  for (var id in allUnselected) {
-    allUnselected[id].filter("__selection__"); // hard-coded keyword
-    countFiltered++;
+  var modelsToFilter = [];
+  for (var id in this.modelsMap_) {
+    if (!(id in this.selectionMap_)) {
+      modelsToFilter.push(id);
+    }
   }
 
-  // after filtering some elements, perform layout again
-  this.alignFx();
+  this.state_.pushFilterSelectionChange(modelsToFilter);
+  this.updateSelectionFilter_(modelsToFilter);
   this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
-  this.unselectAll();
-  return countFiltered;
+
+  return modelsToFilter.length;
 };
 
+/**
+ * Restores any models that were filtered out via selection.
+ */
 rhizo.Project.prototype.resetUnselected = function() {
-  if (!this.resetAllFilter("__selection__")) {
-    return;
+  var countFiltered = 0;
+  for (var i = this.models_.length - 1; i >= 0; i--) {
+    if (this.models_[i].isFiltered('__selection__')) {
+      countFiltered++;
+    }
   }
-  // after filtering some elements, perform layout again
-  this.alignFx();
+  if (countFiltered == 0) {
+    return;  // Nothing is filtered out because of previous selections.
+  }
+  this.state_.pushFilterSelectionChange(null);
+  this.updateSelectionFilter_(null);
   this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+};
+
+/**
+ * Assigns or removes the selection filter from a set of models.
+ *
+ * Note that the modelsToFilter set may come from historical visualization
+ * state, so it may contain references to model ids that are no longer part of
+ * the current visualization.
+ *
+ * @param {Array.<*>} modelsToFilter Array of ids for all the models that should
+ *     be filtered out. If null, no model should be filtered out.
+ * @private
+ */
+rhizo.Project.prototype.updateSelectionFilter_ = function(modelsToFilter) {
+  modelsToFilter = modelsToFilter || [];
+  if (modelsToFilter.length > 0) {
+    var modelsToFilterMap = {}; 
+    for (var i = modelsToFilter.length-1; i >= 0; i--) {
+      modelsToFilterMap[modelsToFilter[i]] = true;
+    }
+
+    // Transfer selection status to a filter.
+    for (var i = this.models_.length-1; i >= 0; i--) {
+     if (this.models_[i].id in modelsToFilterMap) {
+      this.models_[i].filter('__selection__');  // hard-coded filter key.
+     } else {
+       this.models_[i].resetFilter('__selection__');
+     }
+    }
+    this.unselectAll();
+  } else {
+    this.resetAllFilter('__selection__');
+  }
+  // after changing the filter status of some elements, recompute fx settings.
+  this.alignFx();
 };
 
 /**
@@ -334,11 +382,20 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
  *     describing the full visualization state.
  */
 rhizo.Project.prototype.setState = function(state) {
-  if (rhizo.state.Facets.LAYOUT in state) {
-    this.stateChanged(rhizo.state.Facets.LAYOUT,
-                      state[rhizo.state.Facets.LAYOUT]);
+  var layoutName = this.curLayoutName_;
+  var filter = false;
+  if (rhizo.state.Facets.SELECTION_FILTER in state) {
+    filter = true;
+    var filteredModels = state[rhizo.state.Facets.SELECTION_FILTER] || [];
+    this.updateSelectionFilter_(filteredModels);
+    this.alignSelectionUI_(filteredModels.length);
   }
-  this.alignVisibility_();
+  if (rhizo.state.Facets.LAYOUT in state) {
+    var facetState = state[rhizo.state.Facets.LAYOUT];
+    layoutName = facetState ? facetState.layoutName : 'flow';
+    this.alignLayoutUI_(layoutName, facetState);
+  }
+  this.layoutInternal_(layoutName, {filter: filter, forcealign: true});
 };
 
 /**
@@ -351,12 +408,16 @@ rhizo.Project.prototype.setState = function(state) {
  */
 rhizo.Project.prototype.stateChanged = function(facet, facetState) {
   switch(facet) {
+    case rhizo.state.Facets.SELECTION_FILTER:
+      var filteredModels = facetState || [];
+      this.updateSelectionFilter_(filteredModels);
+      this.alignSelectionUI_(filteredModels.length);
+      this.layoutInternal_(this.curLayoutName_,
+                           {filter: true, forcealign: true});
+      break;
     case rhizo.state.Facets.LAYOUT:
       var layoutName = facetState ? facetState.layoutName : 'flow';
-      this.gui_.getComponent('rhizo.ui.component.Layout').setEngine(layoutName);
-      if (this.layoutEngines_[layoutName].setState) {
-        this.layoutEngines_[layoutName].setState(facetState);
-      }
+      this.alignLayoutUI_(layoutName, facetState);
       this.layoutInternal_(layoutName);
       break;
     default:
@@ -486,6 +547,37 @@ rhizo.Project.prototype.filter = function(key, value) {
 
 rhizo.Project.prototype.commitFilter = function() {
   this.layoutInternal_(null, {filter: true, forcealign: true});
+};
+
+/**
+ * Updates the visualization UI to match the currently selected layout engine
+ * and associated state.
+ * @param {string} layoutName The currently selected layout engine.
+ * @param {*} layoutState The layout state, as returned from its getState()
+ *     method.
+ * @private
+ */
+rhizo.Project.prototype.alignLayoutUI_ = function(layoutName, layoutState) {
+  var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
+  if (ui) {
+    ui.setEngine(layoutName);
+  }
+  if (this.layoutEngines_[layoutName].setState) {
+    this.layoutEngines_[layoutName].setState(layoutState);
+  }
+};
+
+/**
+ * Updates the visualization UI to match the current selection status.
+ * @param {number} numFilteredModels The number of models that have been
+ *     filtered out as a result of selection operations.
+ * @private
+ */
+rhizo.Project.prototype.alignSelectionUI_ = function(numFilteredModels) {
+  var ui = this.gui_.getComponent('rhizo.ui.component.SelectionManager');
+  if (ui) {
+    ui.setNumFilteredModels(numFilteredModels);
+  }
 };
 
 /**
