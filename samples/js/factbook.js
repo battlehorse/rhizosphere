@@ -30,10 +30,8 @@
     return this.name + "(" + this.id + ")";
   };
 
-  // TODO(battlehorse): Logarithmic ranges cannot handle a minRange == 0, so here we
-  // hack in a minValue of 1.
   var logMeta = new rhizo.meta.LogarithmRangeKind(2, true);
-   logMeta.toHumanLabel_ = rhizo.ui.toHumanLabel;
+  logMeta.toHumanLabel_ = rhizo.ui.toHumanLabel;
    
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: 'Name'},
