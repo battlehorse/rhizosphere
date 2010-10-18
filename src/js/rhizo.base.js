@@ -442,6 +442,7 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 rhizo.Project.prototype.setState = function(state) {
   var layoutName = this.curLayoutName_;
   var filter = false;
+  var customModelPositions = null;
   for (var facet in state) {
     if (facet == rhizo.state.Facets.SELECTION_FILTER) {
       filter = true;
@@ -452,6 +453,7 @@ rhizo.Project.prototype.setState = function(state) {
       var layoutState = state[facet];
       layoutName = layoutState ? layoutState.layoutName : 'flow';
       this.alignLayoutUI_(layoutName, layoutState);
+      customModelPositions = layoutState.positions;
     } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
       filter = true;
       var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
@@ -464,6 +466,11 @@ rhizo.Project.prototype.setState = function(state) {
     }
   }
   this.layoutInternal_(layoutName, {filter: filter, forcealign: true});
+  // If the state contained custom model positions, restore them _after_
+  // having performed layout.
+  if (customModelPositions) {
+    this.moveModels_(customModelPositions);
+  }
 };
 
 /**
@@ -476,15 +483,18 @@ rhizo.Project.prototype.setState = function(state) {
  */
 rhizo.Project.prototype.stateChanged = function(facet, facetState) {
   if (facet == rhizo.state.Facets.SELECTION_FILTER) {
-      var filteredModels = facetState || [];
-      this.updateSelectionFilter_(filteredModels);
-      this.alignSelectionUI_(filteredModels.length);
-      this.layoutInternal_(this.curLayoutName_,
-                           {filter: true, forcealign: true});
+    var filteredModels = facetState || [];
+    this.updateSelectionFilter_(filteredModels);
+    this.alignSelectionUI_(filteredModels.length);
+    this.layoutInternal_(this.curLayoutName_,
+                         {filter: true, forcealign: true});
   } else if (facet == rhizo.state.Facets.LAYOUT) {
-      var layoutName = facetState ? facetState.layoutName : 'flow';
-      this.alignLayoutUI_(layoutName, facetState);
-      this.layoutInternal_(layoutName);
+    var layoutName = facetState ? facetState.layoutName : 'flow';
+    this.alignLayoutUI_(layoutName, facetState);
+    this.layoutInternal_(layoutName);
+    if (facetState.positions) {
+      this.moveModels_(facetState.positions);
+    }
   } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
     var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
     this.alignFilterUI_ (key, facetState);
@@ -497,6 +507,41 @@ rhizo.Project.prototype.stateChanged = function(facet, facetState) {
       } else {
         this.alignVisibility_(rhizo.ui.Visibility.GREY);
       }
+    }
+  }
+};
+
+/**
+ * Notifies the project that a set of models has been explicitly moved by the
+ * user to a different position.
+ *
+ * @param {Array.<*>} positions An array of all model positions that changed.
+ *     Each entry is a key-value map with the following properties: 'id', the
+ *     id of the model that moved, 'top': the ending top coordinate of the
+ *     top-left model corner with respect to the visualization universe,
+ *     'left', the ending left coordinate of the top-left model corner with
+ *     respect to the visualization universe.
+ */
+rhizo.Project.prototype.modelsMoved = function(positions) {
+  var layoutState = null;
+  if (this.layoutEngines_[this.curLayoutName_].getState) {
+    layoutState = this.layoutEngines_[this.curLayoutName_].getState();
+  }
+  this.state_.pushLayoutChange(this.curLayoutName_, layoutState, positions);
+};
+
+/**
+ * Moves a set of models to the requested positions.
+ *
+ * @param {Array.<*>} positions An array of all model positions that changed.
+ *     See modelsMoved() for the expected format of the array entries.
+ * @private
+ */
+rhizo.Project.prototype.moveModels_ = function(positions) {
+  for (var i = positions.length-1; i >= 0; i--) {
+    if (positions[i].id in this.modelsMap_) {
+      this.modelsMap_[positions[i].id].rendering().move(
+          positions[i].top, positions[i].left);
     }
   }
 };
