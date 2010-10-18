@@ -32,15 +32,11 @@
        setting on a per-field basis.
  */
 rhizo.meta.DecimalKind = function(opt_precision) {
+  rhizo.meta.NumberKind.call(this);
   this.precision_ = opt_precision || 2;
   this.input_ = null;
 };
-
-rhizo.meta.DecimalKind.prototype.renderFilter =
-    rhizo.meta.StringKind.prototype.renderFilter;
-
-rhizo.meta.DecimalKind.prototype.setFilterValue =
-    rhizo.meta.StringKind.prototype.setFilterValue;
+rhizo.inherits(rhizo.meta.DecimalKind, rhizo.meta.NumberKind);
 
 rhizo.meta.DecimalKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -74,10 +70,6 @@ rhizo.meta.DecimalKind.prototype.cluster = function(modelValue) {
                   rhizo.ui.toHumanLabel(hiRange) };
 };
 
-rhizo.meta.DecimalKind.prototype.isNumeric = function() {
-  return true;
-};
-
 
 /**
    DecimalRangeKind meta: A specialized filter that can render range sliders
@@ -92,36 +84,17 @@ rhizo.meta.DecimalKind.prototype.isNumeric = function() {
        setting on a per-field basis.
 */
 rhizo.meta.DecimalRangeKind = function(opt_precision) {
+  rhizo.meta.RangeKind.call(this);
   this.precision_ = opt_precision || 2;
   this.scale_ = Math.pow(10, this.precision_);
-
-  // TODO(battlehorse): Have DecimalRangeKind inherit from RangeKind, to avoid
-  // duplicating these fields.
-  this.slider_ = null;
-  this.minLabel_ = null;
-  this.maxLabel_ = null;
-
-  this.metadataMin_ = null;
-  this.metadataMax_ = null;
 };
-
-rhizo.meta.DecimalRangeKind.prototype.renderFilter =
-    rhizo.meta.RangeKind.prototype.renderFilter;
-
-rhizo.meta.DecimalRangeKind.prototype.setFilterValue =
-    rhizo.meta.RangeKind.prototype.setFilterValue;
-
-rhizo.meta.DecimalRangeKind.prototype.survivesFilter =
-    rhizo.meta.RangeKind.prototype.survivesFilter;
+rhizo.inherits(rhizo.meta.DecimalRangeKind, rhizo.meta.RangeKind);
 
 rhizo.meta.DecimalRangeKind.prototype.compare =
     rhizo.meta.DecimalKind.prototype.compare;
 
 rhizo.meta.DecimalRangeKind.prototype.cluster =
     rhizo.meta.DecimalKind.prototype.cluster;
-
-rhizo.meta.DecimalRangeKind.prototype.isNumeric =
-    rhizo.meta.DecimalKind.prototype.isNumeric;
 
 rhizo.meta.DecimalRangeKind.prototype.toModelScale_ = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
@@ -132,8 +105,6 @@ rhizo.meta.DecimalRangeKind.prototype.toFilterScale_ = function(modelValue) {
   return Math.round(modelValue * this.scale_);
 };
 
-rhizo.meta.DecimalRangeKind.prototype.toHumanLabel_ =
-  rhizo.meta.RangeKind.prototype.toHumanLabel_;
 
 /**
  *  LogarithmRangeKind meta: A specialized filter that can render range sliders
@@ -144,37 +115,10 @@ rhizo.meta.DecimalRangeKind.prototype.toHumanLabel_ =
  *  rather than Log10(x) (useful if your dataset has values that start from 0).
  */
 rhizo.meta.LogarithmRangeKind = function(opt_precision, opt_oneplus) {
-  this.precision_ = opt_precision || 2;
-  this.scale_ = Math.pow(10, this.precision_);
+  rhizo.meta.DecimalRangeKind.call(this, opt_precision);
   this.oneplus_ = !!opt_oneplus;
-
-  // TODO(battlehorse): Have LogarithmRangeKind inherit from DecimalRangeKind,
-  // to avoid duplicating these fields.
-  this.slider_ = null;
-  this.minLabel_ = null;
-  this.maxLabel_ = null;
-
-  this.metadataMin_ = null;
-  this.metadataMax_ = null;
 };
-
-rhizo.meta.LogarithmRangeKind.prototype.renderFilter =
-    rhizo.meta.DecimalRangeKind.prototype.renderFilter;
-
-rhizo.meta.LogarithmRangeKind.prototype.setFilterValue =
-    rhizo.meta.DecimalRangeKind.prototype.setFilterValue;
-
-rhizo.meta.LogarithmRangeKind.prototype.survivesFilter =
-    rhizo.meta.DecimalRangeKind.prototype.survivesFilter;
-
-rhizo.meta.LogarithmRangeKind.prototype.compare =
-    rhizo.meta.DecimalRangeKind.prototype.compare;
-
-rhizo.meta.LogarithmRangeKind.prototype.cluster =
-    rhizo.meta.DecimalRangeKind.prototype.cluster;
-
-rhizo.meta.LogarithmRangeKind.prototype.isNumeric =
-    rhizo.meta.DecimalRangeKind.prototype.isNumeric;
+rhizo.inherits(rhizo.meta.LogarithmRangeKind, rhizo.meta.DecimalRangeKind);
 
 rhizo.meta.LogarithmRangeKind.prototype.toModelScale_ = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
@@ -188,8 +132,6 @@ rhizo.meta.LogarithmRangeKind.prototype.toFilterScale_ = function(modelValue) {
   return Math.round(rhizo.util.log10_(modelValue) * this.scale_);
 };
 
-rhizo.meta.LogarithmRangeKind.prototype.toHumanLabel_ =
-  rhizo.meta.DecimalRangeKind.prototype.toHumanLabel_;
 
 /**
   StringArrayKind meta: A filter that behaves exactly like a String meta but
@@ -200,14 +142,9 @@ rhizo.meta.LogarithmRangeKind.prototype.toHumanLabel_ =
   out of normal filters by wrapping them).
 */
 rhizo.meta.StringArrayKind = function() {
-  this.input_ = null;
+  rhizo.meta.StringKind.call(this);
 };
-
-rhizo.meta.StringArrayKind.prototype.renderFilter =
-    rhizo.meta.StringKind.prototype.renderFilter;
-
-rhizo.meta.StringArrayKind.prototype.setFilterValue =
-    rhizo.meta.StringKind.prototype.setFilterValue;
+rhizo.inherits(rhizo.meta.StringArrayKind, rhizo.meta.StringKind);
 
 rhizo.meta.StringArrayKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -224,10 +161,6 @@ rhizo.meta.StringArrayKind.prototype.survivesFilter =
 rhizo.meta.StringArrayKind.prototype.cluster = function(modelValue) {
   return { key: "undefined",
            label: "Clustering unsupported for this datatype." };
-};
-
-rhizo.meta.StringArrayKind.prototype.isNumeric = function() {
-  return false;
 };
 
 
