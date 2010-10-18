@@ -442,16 +442,26 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 rhizo.Project.prototype.setState = function(state) {
   var layoutName = this.curLayoutName_;
   var filter = false;
-  if (rhizo.state.Facets.SELECTION_FILTER in state) {
-    filter = true;
-    var filteredModels = state[rhizo.state.Facets.SELECTION_FILTER] || [];
-    this.updateSelectionFilter_(filteredModels);
-    this.alignSelectionUI_(filteredModels.length);
-  }
-  if (rhizo.state.Facets.LAYOUT in state) {
-    var facetState = state[rhizo.state.Facets.LAYOUT];
-    layoutName = facetState ? facetState.layoutName : 'flow';
-    this.alignLayoutUI_(layoutName, facetState);
+  for (var facet in state) {
+    if (facet == rhizo.state.Facets.SELECTION_FILTER) {
+      filter = true;
+      var filteredModels = state[facet] || [];
+      this.updateSelectionFilter_(filteredModels);
+      this.alignSelectionUI_(filteredModels.length);
+    } else if (facet == rhizo.state.Facets.LAYOUT) {
+      var layoutState = state[facet];
+      layoutName = layoutState ? layoutState.layoutName : 'flow';
+      this.alignLayoutUI_(layoutName, layoutState);
+    } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
+      filter = true;
+      var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
+      var value = state[facet];
+      this.alignFilterUI_(key, value);
+
+      // We do not care whether the filter requires a re-layout or not, since
+      // layout will happen anyway. This will also purge any greyed-out models.
+      this.filterInternal_(key, value);
+    }
   }
   this.layoutInternal_(layoutName, {filter: filter, forcealign: true});
 };
@@ -465,21 +475,29 @@ rhizo.Project.prototype.setState = function(state) {
  * @param {*} The facet-specific state to transition to.
  */
 rhizo.Project.prototype.stateChanged = function(facet, facetState) {
-  switch(facet) {
-    case rhizo.state.Facets.SELECTION_FILTER:
+  if (facet == rhizo.state.Facets.SELECTION_FILTER) {
       var filteredModels = facetState || [];
       this.updateSelectionFilter_(filteredModels);
       this.alignSelectionUI_(filteredModels.length);
       this.layoutInternal_(this.curLayoutName_,
                            {filter: true, forcealign: true});
-      break;
-    case rhizo.state.Facets.LAYOUT:
+  } else if (facet == rhizo.state.Facets.LAYOUT) {
       var layoutName = facetState ? facetState.layoutName : 'flow';
       this.alignLayoutUI_(layoutName, facetState);
       this.layoutInternal_(layoutName);
-      break;
-    default:
-      this.logger_.error('Unknown state change: ' + facet);
+  } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
+    var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
+    this.alignFilterUI_ (key, facetState);
+    if (this.filterInternal_(key, facetState)) {
+      // The filtering status of some models was affected by the filter.
+      // Decide whether we need to reposition all models, or we can just grey
+      // out the affected ones, without affecting layout.
+      if (this.mustLayoutAfterFilter_()) {
+        this.commitFilter();
+      } else {
+        this.alignVisibility_(rhizo.ui.Visibility.GREY);
+      }
+    }
   }
 };
 
@@ -557,10 +575,37 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
-  if (!this.metaModel_[key]) {
-    this.logger_.error("Invalid filtering key: " + key);
+  if (this.filterInternal_(key, value)) {
+    this.state_.pushFilterChange(key, value);
+    // The filtering status of some models was affected by the filter.
+    // Decide whether we need to reposition all models, or we can just grey
+    // out the affected ones, without affecting layout.
+    if (this.mustLayoutAfterFilter_()) {
+      this.commitFilter();
+    } else {
+      this.alignVisibility_(rhizo.ui.Visibility.GREY);
+    }
   }
-  if (value != '') {
+};
+
+/**
+ * Changes the filtering status of models because of a change in a filter
+ * value.
+ * @param {string} key The metamodel key for the model attribute that was
+ *     filtered.
+ * @param {*} value The filter value.
+ * @return {boolean} Whether the filter status of some models was affected by
+ *     this new filter value.
+ * @private
+ */
+rhizo.Project.prototype.filterInternal_ = function(key, value) {
+  if (!(key in this.metaModel_)) {
+    // This may occur whenever we are applying a filter loaded from an
+    // historical state, but which no longer exists in the current
+    // visualization.
+    return false;
+  }
+  if (value && value != '') {
     for (var i = this.models_.length-1; i >= 0; i--) {
       var model = this.models_[i];
       if (this.metaModel_[key].kind.survivesFilter(value, model.unwrap()[key])) {
@@ -574,32 +619,36 @@ rhizo.Project.prototype.filter = function(key, value) {
   } else {
     // reset filter
     if (!this.resetAllFilter(key)) {
-      return;  // no models had the filter, nothing to re-align, return early.
+      return false;  // no models had the filter, nothing to re-align, return early.
     }
   }
   this.alignFx();
+  return true;
+};
 
+/**
+ * Decides whether models should be repositioned after a filter was applied.
+ * This may be necessary either because the filters are in autocommit mode, or
+ * because the filter change caused  some models that were completely hidden
+ * to become visible (hence all the models must be repositioned to accomodate
+ * these ones).
+ *
+ * @return {boolean} Whether models should be repositioned after a filter was
+ *     applied, or it's enough to align their visibility.
+ * @private
+ */
+rhizo.Project.prototype.mustLayoutAfterFilter_ = function() {
   if (this.filterAutocommit_) {
-    // after filtering some elements, perform layout again
-    this.commitFilter();
+    return true;
   } else {
-    // Even if we are not autocommiting the filter, we are force to do so if
-    // items that were completely hidden now become visible and must be
-    // repositioned.
-    var forceLayout = false;
     for (var i = this.models_.length-1; i >=0; i--) {
       if (!this.models_[i].isFiltered() &&
           this.models_[i].rendering().visibility ==
               rhizo.ui.Visibility.HIDDEN) {
-        forceLayout = true;
-        break;
+        return true;
       }
     }
-    if (!forceLayout) {
-      this.alignVisibility_(rhizo.ui.Visibility.GREY);
-    } else {
-      this.commitFilter();
-    }
+    return false;
   }
 };
 
@@ -635,6 +684,30 @@ rhizo.Project.prototype.alignSelectionUI_ = function(numFilteredModels) {
   var ui = this.gui_.getComponent('rhizo.ui.component.SelectionManager');
   if (ui) {
     ui.setNumFilteredModels(numFilteredModels);
+  }
+};
+
+/**
+ * Updates the visualization UI to match the a given filter status.
+ * @param {string} key The metamodel key whose associated filter is to restore
+ *     to a given value.
+ * @param {*} value The value the filter should be set to. The actual value type
+ *     matches what the filter itself initially provided to the Project when
+ *     project.filter() was called.
+ * @private
+ */
+rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
+  // Verify whether the filter key (which may come from an historical state)
+  // still exists in the metaModel.
+  if (key in this.metaModel_) {
+    // Rebuild and show the affected filter, if needed.
+    var ui = this.gui_.getComponent('rhizo.ui.component.FilterStackContainer');
+    if (ui) {
+      ui.showFilter(key, this);
+    }
+
+    // Restore the filter value.
+    this.metaModel_[key].kind.setFilterValue(value);
   }
 };
 

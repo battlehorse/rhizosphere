@@ -33,11 +33,14 @@
  */
 rhizo.meta.DecimalKind = function(opt_precision) {
   this.precision_ = opt_precision || 2;
+  this.input_ = null;
 };
 
 rhizo.meta.DecimalKind.prototype.renderFilter =
     rhizo.meta.StringKind.prototype.renderFilter;
 
+rhizo.meta.DecimalKind.prototype.setFilterValue =
+    rhizo.meta.StringKind.prototype.setFilterValue;
 
 rhizo.meta.DecimalKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -91,10 +94,22 @@ rhizo.meta.DecimalKind.prototype.isNumeric = function() {
 rhizo.meta.DecimalRangeKind = function(opt_precision) {
   this.precision_ = opt_precision || 2;
   this.scale_ = Math.pow(10, this.precision_);
+
+  // TODO(battlehorse): Have DecimalRangeKind inherit from RangeKind, to avoid
+  // duplicating these fields.
+  this.slider_ = null;
+  this.minLabel_ = null;
+  this.maxLabel_ = null;
+
+  this.metadataMin_ = null;
+  this.metadataMax_ = null;
 };
 
 rhizo.meta.DecimalRangeKind.prototype.renderFilter =
     rhizo.meta.RangeKind.prototype.renderFilter;
+
+rhizo.meta.DecimalRangeKind.prototype.setFilterValue =
+    rhizo.meta.RangeKind.prototype.setFilterValue;
 
 rhizo.meta.DecimalRangeKind.prototype.survivesFilter =
     rhizo.meta.RangeKind.prototype.survivesFilter;
@@ -132,10 +147,22 @@ rhizo.meta.LogarithmRangeKind = function(opt_precision, opt_oneplus) {
   this.precision_ = opt_precision || 2;
   this.scale_ = Math.pow(10, this.precision_);
   this.oneplus_ = !!opt_oneplus;
+
+  // TODO(battlehorse): Have LogarithmRangeKind inherit from DecimalRangeKind,
+  // to avoid duplicating these fields.
+  this.slider_ = null;
+  this.minLabel_ = null;
+  this.maxLabel_ = null;
+
+  this.metadataMin_ = null;
+  this.metadataMax_ = null;
 };
 
 rhizo.meta.LogarithmRangeKind.prototype.renderFilter =
-  rhizo.meta.DecimalRangeKind.prototype.renderFilter;
+    rhizo.meta.DecimalRangeKind.prototype.renderFilter;
+
+rhizo.meta.LogarithmRangeKind.prototype.setFilterValue =
+    rhizo.meta.DecimalRangeKind.prototype.setFilterValue;
 
 rhizo.meta.LogarithmRangeKind.prototype.survivesFilter =
     rhizo.meta.DecimalRangeKind.prototype.survivesFilter;
@@ -172,9 +199,15 @@ rhizo.meta.LogarithmRangeKind.prototype.toHumanLabel_ =
   clustering and b) it could be made a lot more generic (create array filters
   out of normal filters by wrapping them).
 */
-rhizo.meta.StringArrayKind = function() {};
+rhizo.meta.StringArrayKind = function() {
+  this.input_ = null;
+};
+
 rhizo.meta.StringArrayKind.prototype.renderFilter =
-  rhizo.meta.StringKind.prototype.renderFilter;
+    rhizo.meta.StringKind.prototype.renderFilter;
+
+rhizo.meta.StringArrayKind.prototype.setFilterValue =
+    rhizo.meta.StringKind.prototype.setFilterValue;
 
 rhizo.meta.StringArrayKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
