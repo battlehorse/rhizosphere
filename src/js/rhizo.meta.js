@@ -56,7 +56,9 @@ rhizo.meta.StringKind = function() {
 };
 
 // metadata is the part of the metamodel that applies to this kind
-rhizo.meta.StringKind.prototype.renderFilter = function(project, metadata, key) {
+rhizo.meta.StringKind.prototype.renderFilter = function(project,
+                                                        metadata,
+                                                        key) {
   this.input_ = $("<input type='text' />");
   // keypress handling removed due to browser quirks in key detection
   $(this.input_).change(function(ev) {
@@ -91,14 +93,9 @@ rhizo.meta.StringKind.prototype.isNumeric = function() {
 
 /* NumberKind meta */
 rhizo.meta.NumberKind = function() {
-  this.input_ = null;
+  rhizo.meta.StringKind.call(this);
 };
-
-rhizo.meta.NumberKind.prototype.renderFilter =
-    rhizo.meta.StringKind.prototype.renderFilter;
-
-rhizo.meta.NumberKind.prototype.setFilterValue =
-    rhizo.meta.StringKind.prototype.setFilterValue;
+rhizo.inherits(rhizo.meta.NumberKind, rhizo.meta.StringKind);
 
 rhizo.meta.NumberKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -144,10 +141,13 @@ rhizo.meta.NumberKind.prototype.isNumeric = function() {
 /* DateKind meta */
 rhizo.meta.DateKind = function(opt_clusterby) {
   this.monthMap_ = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
+    'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
   this.clusterby_ = opt_clusterby || 'y';
-  if (this.clusterby_ != 'y' && this.clusterby_ != 'm' && this.clusterby_ != 'd') {
+  if (this.clusterby_ != 'y' &&
+      this.clusterby_ != 'm' &&
+      this.clusterby_ != 'd') {
     this.clusterby_ = 'y';
   }
 
@@ -210,8 +210,9 @@ rhizo.meta.DateKind.prototype.survivesFilter =
   return survives;
 };
 
-// We do not implement a compare() function for dates because the native comparison
-// works just fine. Watch out because 2 kinds of comparisons occur for DateKind:
+// We do not implement a compare() function for dates because the native
+// comparison works just fine. Watch out because 2 kinds of comparisons occur
+// for DateKind:
 // - date comparison is performed when comparing model objects (for example
 //   to order elements in a list layout)
 // - string comparison is performed when comparing bucket keys (to order the
@@ -227,13 +228,19 @@ rhizo.meta.DateKind.prototype.cluster = function(modelValue) {
     };
   } else if (this.clusterby_ == 'm') {
     return {
-      key: modelValue.getFullYear() + '-' + this.addZero_(modelValue.getMonth()) + '-01',
-      label: modelValue.getFullYear() + '-' + this.monthMap_[modelValue.getMonth()]
+      key: modelValue.getFullYear() + '-' +
+           this.addZero_(modelValue.getMonth()) + '-01',
+      label: modelValue.getFullYear() + '-' +
+             this.monthMap_[modelValue.getMonth()]
     };
   } else {
     return {
-      key: modelValue.getFullYear() + '-' + this.addZero_(modelValue.getMonth()) + '-' + this.addZero_(modelValue.getDate()),
-      label: modelValue.getFullYear() + '-' + this.monthMap_[modelValue.getMonth()] + '-' + modelValue.getDate()
+      key: modelValue.getFullYear() + '-' +
+           this.addZero_(modelValue.getMonth()) + '-' +
+           this.addZero_(modelValue.getDate()),
+      label: modelValue.getFullYear() + '-' +
+             this.monthMap_[modelValue.getMonth()] + '-' +
+             modelValue.getDate()
     };   
   }
 };
@@ -405,7 +412,9 @@ rhizo.meta.BooleanKind = function() {
   this.check_ = null;
 };
 
-rhizo.meta.BooleanKind.prototype.renderFilter = function(project, metadata, key) {
+rhizo.meta.BooleanKind.prototype.renderFilter = function(project,
+                                                         metadata,
+                                                         key) {
   this.check_ = $("<select />");
   this.check_.append("<option value=''>-</option>");
   this.check_.append("<option value='true'>Yes</option>");
@@ -444,7 +453,9 @@ rhizo.meta.CategoryKind = function() {
   this.multiple_ = false;
 };
 
-rhizo.meta.CategoryKind.prototype.renderFilter = function(project, metadata, key) {
+rhizo.meta.CategoryKind.prototype.renderFilter = function(project,
+                                                          metadata,
+                                                          key) {
   this.multiple_ = !!metadata.multiple;
   this.categories_ = $("<select " +
                        (metadata.multiple ? 'multiple size="4" ' : '') +
