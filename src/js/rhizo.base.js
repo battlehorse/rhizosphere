@@ -492,7 +492,7 @@ rhizo.Project.prototype.stateChanged = function(facet, facetState) {
     var layoutName = facetState ? facetState.layoutName : 'flow';
     this.alignLayoutUI_(layoutName, facetState);
     this.layoutInternal_(layoutName);
-    if (facetState.positions) {
+    if (facetState && facetState.positions) {
       this.moveModels_(facetState.positions);
     }
   } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
