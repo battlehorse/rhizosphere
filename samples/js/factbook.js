@@ -30,22 +30,23 @@
     return this.name + "(" + this.id + ")";
   };
 
-  // TODO(battlehorse): Logarithmic ranges cannot handle a minRange == 0, so here we
-  // hack in a minValue of 1.
-  var logMeta = new rhizo.meta.LogarithmRangeKind(2, true);
-   logMeta.toHumanLabel_ = rhizo.ui.toHumanLabel;
+  var logMetaFactory = function() {
+    var logMeta = new rhizo.meta.LogarithmRangeKind(2, true);
+    logMeta.toHumanLabel_ = rhizo.ui.toHumanLabel;
+    return logMeta;
+  };
    
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: 'Name'},
-    internetUsers: { kind: logMeta, label: 'Internet Users',
+    internetUsers: { kind: logMetaFactory, label: 'Internet Users',
                      min: 0, max: 300000000 },
-    population: { kind: logMeta, label: 'Population',
+    population: { kind: logMetaFactory, label: 'Population',
                   min: 0, max: 1400000000},
     birthRate: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Birth Rate',
                  min: 0, max: 55.0},
-    oilConsumption: { kind: logMeta, label: 'Oil Consumption',
+    oilConsumption: { kind: logMetaFactory, label: 'Oil Consumption',
                       min: 0, max: 20000000},
-    gdp: { kind: logMeta, label: 'GDP per capita',
+    gdp: { kind: logMetaFactory, label: 'GDP per capita',
            min: 0, max: 130000}
   };
 

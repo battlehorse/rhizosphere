@@ -163,6 +163,31 @@ rhizo.layout.TreeLayout.prototype.details = function() {
   return details;
 };
 
+rhizo.layout.TreeLayout.prototype.getState = function() {
+  var state = {
+    direction: this.directionSelector_.val()
+  };
+  if (this.parentKeys_.length > 1) {
+    state.parentKey = this.metaModelKeySelector_.val();
+  }
+  return state;
+};
+
+rhizo.layout.TreeLayout.prototype.setState = function(state) {
+  if (state) {
+    this.directionSelector_.val(state.direction);
+    if (this.parentKeys_.length > 1) {
+      this.metaModelKeySelector_.val(state.parentKey);
+    }
+  } else {
+    this.directionSelector_.find('option:first').attr('selected', 'selected');
+    if (this.parentKeys_.length > 1) {
+      this.metaModelKeySelector_.find('option:first').attr('selected',
+                                                           'selected');
+    }
+  }
+};
+
 rhizo.layout.TreeLayout.prototype.toString = function() {
   return "Tree";
 };

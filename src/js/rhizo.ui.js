@@ -212,6 +212,9 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   this.cacheDimensions_ = false;
   this.cachedDimensions_ = {};
 
+  // The rendering position, at the time of the last move() call.
+  this.position_ = {};
+
   // whether the rendering is visible or not. Multiple states might exist,
   // as defined in the rhizo.ui.Visibility enum.
   this.visibility = rhizo.ui.Visibility.HIDDEN;
@@ -292,6 +295,7 @@ rhizo.ui.Rendering.prototype.move = function(top, left, opt_instant) {
   } else {
     this.raw_node_.move(top, left);
   }
+  this.position_ = {top: top, left: left};
   return this;
 };
 
@@ -355,6 +359,27 @@ rhizo.ui.Rendering.prototype.distanceFromPin = function(top, left) {
   } else {
     return null;
   }
+};
+
+/**
+ * Updates the current rendering position. This happens automatically if models
+ * are always repositioned using move() or one of its derivates.
+ * @return {rhizo.ui.Rendering} this object, for chaining.
+ */
+rhizo.ui.Rendering.prototype.refreshPosition = function() {
+  this.position_ = {
+    top: parseInt(this.raw_node_.css('top'), 10),
+    left: parseInt(this.raw_node_.css('left'),10)
+  };
+  return this;
+};
+
+/**
+ * @return {*} the {top, left} position of top-left corner of the rendering, with
+ * respect to the visualization universe top-left corner.
+ */
+rhizo.ui.Rendering.prototype.position = function() {
+  return this.position_;
 };
 
 /**
@@ -887,14 +912,30 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       }
     }, this),
     stop: jQuery.proxy(function(ev, ui) {
+      var modelPositions = [];
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
-      model.rendering().unpinPosition().popElevation('__dragging__');
+      model.rendering().
+          unpinPosition().
+          refreshPosition().
+          popElevation('__dragging__');
+
+      modelPositions.push({id: model.id,
+                           top: model.rendering().position().top,
+                           left: model.rendering().position().left});
+
       if (this.project_.isSelected(model.id)) {
         var all_selected = this.project_.allSelected();
         for (var id in all_selected) {
+          modelPositions.push({
+              id: id,
+              top: all_selected[id].rendering().position().top,
+              left: all_selected[id].rendering().position().left
+          });
           all_selected[id].rendering().unpinPosition();
         }
       }
+
+      this.project_.modelsMoved(modelPositions);
     }, this),
     refreshPositions: false
   });

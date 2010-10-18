@@ -212,14 +212,6 @@ rhizo.layout.treemap.TreeMapNode.prototype.rendering = function() {
 };
 
 /**
- * Returns the {top, left} coordinates of this node, with respect to the overall
- * container that contains the whole treemap layout.
- */
-rhizo.layout.treemap.TreeMapNode.prototype.position = function() {
-  return {top: this.top_, left: this.left_};
-};
-
-/**
  * Returns whether this treemap node is hidden from layout. Although it may
  * represent a non-filtered (visible) model, the model characteristics can be
  * of such kind to prevent this node from showing (e.g.: too small area).
@@ -640,6 +632,33 @@ rhizo.layout.TreeMapLayout.prototype.details = function() {
   return details;
 };
 
+rhizo.layout.TreeMapLayout.prototype.getState = function() {
+  var state = {
+    area: this.areaSelector_.val(),
+    color: this.colorSelector_.val()
+  };
+  if (this.parentKeys_.length > 0) {
+    state.parentKey = this.parentKeySelector_.val();
+  }
+  return state;
+};
+
+rhizo.layout.TreeMapLayout.prototype.setState = function(state) {
+  if (state) {
+    this.areaSelector_.val(state.area);
+    this.colorSelector_.val(state.color);
+    if (this.parentKeys_.length > 0) {
+      this.parentKeySelector_.val(state.parentKey);
+    }
+  } else {
+    this.areaSelector_.find('option:first').attr('selected', 'selected');
+    this.colorSelector_.find('option:first').attr('selected', 'selected');
+    if (this.parentKeys_.length > 1) {
+      this.parentKeySelector_.find('option:first').attr('selected', 'selected');
+    }
+  }
+};
+
 rhizo.layout.TreeMapLayout.prototype.dependentModels = function(modelId) {
   var extension = [];
   var treeNode = this.globalNodesMap_[modelId];
@@ -651,7 +670,6 @@ rhizo.layout.TreeMapLayout.prototype.dependentModels = function(modelId) {
   }
   return extension;
 };
-
 
 rhizo.layout.TreeMapLayout.prototype.toString = function() {
   return "TreeMap";

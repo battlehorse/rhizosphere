@@ -15,9 +15,18 @@
 */
 
 // Global project namespace
-// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout
+// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.state
 namespace("rhizo");
 
+/**
+ * Projects are the central entities that manage an entire Rhizosphere
+ * visualization.
+ * 
+ * @param {rhizo.ui.gui.GUI} gui The GUI associated to this visualization.
+ * @param {*} opt_options A key-value map of project-wide customization
+ *     options.
+ * @constructor
+ */
 rhizo.Project = function(gui, opt_options) {
   this.models_ = [];
   this.modelsMap_ = {};
@@ -31,6 +40,13 @@ rhizo.Project = function(gui, opt_options) {
   } else {
     this.logger_ = new rhizo.NoOpLogger();
   }
+
+  /**
+   * Manages transitions in visualization state.
+   * @type {rhizo.state.ProjectStateBinder}
+   * @private
+   */
+  this.state_ = null;
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -42,7 +58,11 @@ rhizo.Project.prototype.chromeReady = function() {
 };
 
 rhizo.Project.prototype.metaReady = function() {
+  if (!this.checkMetaModel_()) {
+    return false;
+  }
   this.initializeLayoutEngines_();
+  return true;
 };
 
 rhizo.Project.prototype.initializeLayoutEngines_ = function() {
@@ -96,11 +116,26 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   // already busy creating the whole dom).
   this.gui_.disableFx(true);
 
-  // laying out models and re-aligning elements' visibility
-  this.layout(this.curLayoutName_, {forcealign: true});
-
+  // rebuild visualization state, either from defaults or from history.
+  var initialStateRebuilt = rhizo.state.getMasterOverlord().attachProject(
+      this, [rhizo.state.Bindings.HISTORY]);
+  this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
+  if (!initialStateRebuilt) {
+    // The state overlord is not aware of any initial state, so we initialize
+    // the visualization using defaults. No state is pushed.
+    this.layoutInternal_(this.curLayoutName_, {forcealign: true});
+  }
   // re-aligning animation settings
   this.alignFx();
+};
+
+/**
+ * @return {string} A unique document-wide identifier for this project. We rely
+ *     on an unique id being assigned to the HTML element that contains the
+ *     visualization this project manages.
+ */
+rhizo.Project.prototype.uuid = function() {
+  return this.gui_.container.attr('id');
 };
 
 rhizo.Project.prototype.model = function(id) {
@@ -113,6 +148,13 @@ rhizo.Project.prototype.metaModel = function() {
 
 rhizo.Project.prototype.setMetaModel = function(metaModel) {
   this.metaModel_ = metaModel;
+
+  // Convert all 'kind' specifications that are specified as factories into
+  // single instances.
+  for (var key in this.metaModel_) {
+    var obj_kind = rhizo.meta.objectify(this.metaModel_[key].kind);
+    this.metaModel_[key].kind = obj_kind;
+  }
 };
 
 rhizo.Project.prototype.renderer = function() {
@@ -225,6 +267,85 @@ rhizo.Project.prototype.allUnselected = function() {
 };
 
 /**
+ * Removes all the unselected models from user view, filtering them out.
+ * @return {number} The number of models that have been hidden from view.
+ */
+rhizo.Project.prototype.filterUnselected = function() {
+  var countSelected = 0;
+  for (var id in this.selectionMap_) { countSelected++; }
+  if (countSelected == 0) {
+    this.logger_.error("No items selected");
+    return 0;
+  }
+
+  var modelsToFilter = [];
+  for (var id in this.modelsMap_) {
+    if (!(id in this.selectionMap_)) {
+      modelsToFilter.push(id);
+    }
+  }
+
+  this.state_.pushFilterSelectionChange(modelsToFilter);
+  this.updateSelectionFilter_(modelsToFilter);
+  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+
+  return modelsToFilter.length;
+};
+
+/**
+ * Restores any models that were filtered out via selection.
+ */
+rhizo.Project.prototype.resetUnselected = function() {
+  var countFiltered = 0;
+  for (var i = this.models_.length - 1; i >= 0; i--) {
+    if (this.models_[i].isFiltered('__selection__')) {
+      countFiltered++;
+    }
+  }
+  if (countFiltered == 0) {
+    return;  // Nothing is filtered out because of previous selections.
+  }
+  this.state_.pushFilterSelectionChange(null);
+  this.updateSelectionFilter_(null);
+  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+};
+
+/**
+ * Assigns or removes the selection filter from a set of models.
+ *
+ * Note that the modelsToFilter set may come from historical visualization
+ * state, so it may contain references to model ids that are no longer part of
+ * the current visualization.
+ *
+ * @param {Array.<*>} modelsToFilter Array of ids for all the models that should
+ *     be filtered out. If null, no model should be filtered out.
+ * @private
+ */
+rhizo.Project.prototype.updateSelectionFilter_ = function(modelsToFilter) {
+  modelsToFilter = modelsToFilter || [];
+  if (modelsToFilter.length > 0) {
+    var modelsToFilterMap = {}; 
+    for (var i = modelsToFilter.length-1; i >= 0; i--) {
+      modelsToFilterMap[modelsToFilter[i]] = true;
+    }
+
+    // Transfer selection status to a filter.
+    for (var i = this.models_.length-1; i >= 0; i--) {
+     if (this.models_[i].id in modelsToFilterMap) {
+      this.models_[i].filter('__selection__');  // hard-coded filter key.
+     } else {
+       this.models_[i].resetFilter('__selection__');
+     }
+    }
+    this.unselectAll();
+  } else {
+    this.resetAllFilter('__selection__');
+  }
+  // after changing the filter status of some elements, recompute fx settings.
+  this.alignFx();
+};
+
+/**
  * If the current layout supports it, ask it to extend a model selection.
  * The layout may be aware of relationships between models (such as hierarchies)
  * so that selecting a model should trigger the selection of dependent ones.
@@ -244,16 +365,63 @@ rhizo.Project.prototype.extendSelection_ = function(id) {
   return [id];
 };
 
+/**
+ * Verify the models formal correctness, by checking that all the models have
+ * an assigned id and no duplicate ids exist.
+ * @private
+ */
 rhizo.Project.prototype.checkModels_ = function() {
   this.logger_.info("Checking models...");
-  var modelsAreCorrect = true;
+  var uniqueIds = {};
+  var missingIds = false;
+  var duplicateIds = [];
   for (var i = this.models_.length-1; i >= 0; i--) {
-    if (!this.models_[i].id) {
-      modelsAreCorrect = false;
-      this.logger_.error("Verify your models: missing ids.");
+    var id = this.models_[i].id;
+    if (!id) {
+      missingIds = true;
+    } else {
+      if (id in uniqueIds) {
+        duplicateIds.push(id);
+      } else {
+        uniqueIds[id] = true;
+      }
     }
   }
-  return modelsAreCorrect;
+
+  if (missingIds) {
+    this.logger_.error('Verify your models: missing ids.');
+  }
+  if (duplicateIds.length > 0) {
+    this.logger_.error('Verify your models: duplicate ids (' +
+                       duplicateIds.join(',') +
+                       ')');
+  }
+
+  return !missingIds && duplicateIds.length == 0;
+};
+
+/**
+ * Verify the metaModel formal correctness, by checking that every metaModel
+ * entry has a separate kind instance. MetaModels are stateful, so kinds cannot
+ * be shared.
+ * @private
+ */
+rhizo.Project.prototype.checkMetaModel_ = function() {
+  var allKinds = [];
+  for (var key in this.metaModel_) {
+    allKinds.push(this.metaModel_[key].kind);
+  }
+
+  // Ensure that there are no share meta instances in the metaModel.
+  for (var i = 0; i < allKinds.length; i++) {
+    for (var j = i+1; j < allKinds.length; j++) {
+      if (allKinds[i] === allKinds[j]) {
+        this.logger_.error('Verify your metaModel: shared kind instances.');
+        return false;
+      }
+    }
+  }
+  return true;
 };
 
 rhizo.Project.prototype.buildModelsMap_ = function() {
@@ -264,19 +432,166 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
   }
 };
 
+/**
+ * Listener method invoked whenever the visualization needs to be fully restored
+ * to a given state.
+ *
+ * @param {Object.<rhizo.state.Facets, *>} state A facet-facetState map
+ *     describing the full visualization state.
+ */
+rhizo.Project.prototype.setState = function(state) {
+  var layoutName = this.curLayoutName_;
+  var filter = false;
+  var customModelPositions = null;
+  for (var facet in state) {
+    if (facet == rhizo.state.Facets.SELECTION_FILTER) {
+      filter = true;
+      var filteredModels = state[facet] || [];
+      this.updateSelectionFilter_(filteredModels);
+      this.alignSelectionUI_(filteredModels.length);
+    } else if (facet == rhizo.state.Facets.LAYOUT) {
+      var layoutState = state[facet];
+      layoutName = layoutState ? layoutState.layoutName : 'flow';
+      this.alignLayoutUI_(layoutName, layoutState);
+      customModelPositions = layoutState.positions;
+    } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
+      filter = true;
+      var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
+      var value = state[facet];
+      this.alignFilterUI_(key, value);
+
+      // We do not care whether the filter requires a re-layout or not, since
+      // layout will happen anyway. This will also purge any greyed-out models.
+      this.filterInternal_(key, value);
+    }
+  }
+  this.layoutInternal_(layoutName, {filter: filter, forcealign: true});
+  // If the state contained custom model positions, restore them _after_
+  // having performed layout.
+  if (customModelPositions) {
+    this.moveModels_(customModelPositions);
+  }
+};
+
+/**
+ * Listener method invoked whenever a facet of the visualization state changed
+ * because of events that are not under the direct control of this project
+ * instance (for example, history and navigation events).
+ *
+ * @param {rhizo.state.Facets} facet The facet that changed.
+ * @param {*} The facet-specific state to transition to.
+ */
+rhizo.Project.prototype.stateChanged = function(facet, facetState) {
+  if (facet == rhizo.state.Facets.SELECTION_FILTER) {
+    var filteredModels = facetState || [];
+    this.updateSelectionFilter_(filteredModels);
+    this.alignSelectionUI_(filteredModels.length);
+    this.layoutInternal_(this.curLayoutName_,
+                         {filter: true, forcealign: true});
+  } else if (facet == rhizo.state.Facets.LAYOUT) {
+    var layoutName = facetState ? facetState.layoutName : 'flow';
+    this.alignLayoutUI_(layoutName, facetState);
+    this.layoutInternal_(layoutName);
+    if (facetState && facetState.positions) {
+      this.moveModels_(facetState.positions);
+    }
+  } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
+    var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
+    this.alignFilterUI_ (key, facetState);
+    if (this.filterInternal_(key, facetState)) {
+      // The filtering status of some models was affected by the filter.
+      // Decide whether we need to reposition all models, or we can just grey
+      // out the affected ones, without affecting layout.
+      if (this.mustLayoutAfterFilter_()) {
+        this.commitFilter();
+      } else {
+        this.alignVisibility_(rhizo.ui.Visibility.GREY);
+      }
+    }
+  }
+};
+
+/**
+ * Notifies the project that a set of models has been explicitly moved by the
+ * user to a different position.
+ *
+ * @param {Array.<*>} positions An array of all model positions that changed.
+ *     Each entry is a key-value map with the following properties: 'id', the
+ *     id of the model that moved, 'top': the ending top coordinate of the
+ *     top-left model corner with respect to the visualization universe,
+ *     'left', the ending left coordinate of the top-left model corner with
+ *     respect to the visualization universe.
+ */
+rhizo.Project.prototype.modelsMoved = function(positions) {
+  var layoutState = null;
+  if (this.layoutEngines_[this.curLayoutName_].getState) {
+    layoutState = this.layoutEngines_[this.curLayoutName_].getState();
+  }
+  this.state_.pushLayoutChange(this.curLayoutName_, layoutState, positions);
+};
+
+/**
+ * Moves a set of models to the requested positions.
+ *
+ * @param {Array.<*>} positions An array of all model positions that changed.
+ *     See modelsMoved() for the expected format of the array entries.
+ * @private
+ */
+rhizo.Project.prototype.moveModels_ = function(positions) {
+  for (var i = positions.length-1; i >= 0; i--) {
+    if (positions[i].id in this.modelsMap_) {
+      this.modelsMap_[positions[i].id].rendering().move(
+          positions[i].top, positions[i].left);
+    }
+  }
+};
+
+/**
+ * Re-arranges the disposition of the project models according to the
+ * requested layout algorithm.
+ *
+ * @param {?string} opt_layoutEngineName The name of the layout engine to use.
+ *     If undefined, the last known engine will be used.
+ * @param {*} opt_options An optional key-value map of layout directives.
+ *    Currently supported ones include:
+ *    - 'filter' (boolean): Whether this layout operation is invoked as a result
+ *      of a filter being applied.
+ *    - 'forceAlign' (boolean): Whether models' visibility should be synced at
+ *      the end of the layout operation.
+ */
 rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
+  if (opt_layoutEngineName) {
+    if (!(opt_layoutEngineName in this.layoutEngines_)) {
+      this.logger_.error("Invalid layout engine:" + opt_layoutEngineName);
+      return;
+    }
+  }
+
+  var layoutName = opt_layoutEngineName || this.curLayoutName_;
+  var layoutState = null;
+  if (this.layoutEngines_[layoutName].getState) {
+    layoutState = this.layoutEngines_[layoutName].getState();
+  }
+  this.state_.pushLayoutChange(layoutName, layoutState);
+  this.layoutInternal_(opt_layoutEngineName || this.curLayoutName_,
+                       opt_options);
+};
+
+/**
+ * Internal version of layout that doesn't deal with state management.
+ * @param {string} layoutEngineName The name of the layout engine to use.
+ * @param {*} opt_options An optional Key-value map of layout directives. See
+ *    the documentation for layout().
+ * @private
+ */
+rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
+                                                   opt_options) {
   var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
   var options = $.extend({}, opt_options, this.options_);
 
   // Update the name of the current engine.
-  if (opt_layoutEngineName) {
-    this.curLayoutName_ = opt_layoutEngineName;
-  }
+  this.curLayoutName_ = layoutEngineName;
   var layoutEngine = this.layoutEngines_[this.curLayoutName_];
-  if (!layoutEngine) {
-    this.logger_.error("Invalid layout engine:" + this.curLayoutName_);
-    return;
-  }
 
   var dirty = false;
   if (lastLayoutEngine && lastLayoutEngine.cleanup) {
@@ -305,10 +620,37 @@ rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
 };
 
 rhizo.Project.prototype.filter = function(key, value) {
-  if (!this.metaModel_[key]) {
-    this.logger_.error("Invalid filtering key: " + key);
+  if (this.filterInternal_(key, value)) {
+    this.state_.pushFilterChange(key, value);
+    // The filtering status of some models was affected by the filter.
+    // Decide whether we need to reposition all models, or we can just grey
+    // out the affected ones, without affecting layout.
+    if (this.mustLayoutAfterFilter_()) {
+      this.commitFilter();
+    } else {
+      this.alignVisibility_(rhizo.ui.Visibility.GREY);
+    }
   }
-  if (value != '') {
+};
+
+/**
+ * Changes the filtering status of models because of a change in a filter
+ * value.
+ * @param {string} key The metamodel key for the model attribute that was
+ *     filtered.
+ * @param {*} value The filter value.
+ * @return {boolean} Whether the filter status of some models was affected by
+ *     this new filter value.
+ * @private
+ */
+rhizo.Project.prototype.filterInternal_ = function(key, value) {
+  if (!(key in this.metaModel_)) {
+    // This may occur whenever we are applying a filter loaded from an
+    // historical state, but which no longer exists in the current
+    // visualization.
+    return false;
+  }
+  if (value && value != '') {
     for (var i = this.models_.length-1; i >= 0; i--) {
       var model = this.models_[i];
       if (this.metaModel_[key].kind.survivesFilter(value, model.unwrap()[key])) {
@@ -322,37 +664,96 @@ rhizo.Project.prototype.filter = function(key, value) {
   } else {
     // reset filter
     if (!this.resetAllFilter(key)) {
-      return;  // no models had the filter, nothing to re-align, return early.
+      return false;  // no models had the filter, nothing to re-align, return early.
     }
   }
   this.alignFx();
+  return true;
+};
 
+/**
+ * Decides whether models should be repositioned after a filter was applied.
+ * This may be necessary either because the filters are in autocommit mode, or
+ * because the filter change caused  some models that were completely hidden
+ * to become visible (hence all the models must be repositioned to accomodate
+ * these ones).
+ *
+ * @return {boolean} Whether models should be repositioned after a filter was
+ *     applied, or it's enough to align their visibility.
+ * @private
+ */
+rhizo.Project.prototype.mustLayoutAfterFilter_ = function() {
   if (this.filterAutocommit_) {
-    // after filtering some elements, perform layout again
-    this.commitFilter();
+    return true;
   } else {
-    // Even if we are not autocommiting the filter, we are force to do so if
-    // items that were completely hidden now become visible and must be
-    // repositioned.
-    var forceLayout = false;
     for (var i = this.models_.length-1; i >=0; i--) {
       if (!this.models_[i].isFiltered() &&
           this.models_[i].rendering().visibility ==
               rhizo.ui.Visibility.HIDDEN) {
-        forceLayout = true;
-        break;
+        return true;
       }
     }
-    if (!forceLayout) {
-      this.alignVisibility_(rhizo.ui.Visibility.GREY);
-    } else {
-      this.commitFilter();
-    }
+    return false;
   }
 };
 
 rhizo.Project.prototype.commitFilter = function() {
-  this.layout(null, {filter: true, forcealign: true});
+  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+};
+
+/**
+ * Updates the visualization UI to match the currently selected layout engine
+ * and associated state.
+ * @param {string} layoutName The currently selected layout engine.
+ * @param {*} layoutState The layout state, as returned from its getState()
+ *     method.
+ * @private
+ */
+rhizo.Project.prototype.alignLayoutUI_ = function(layoutName, layoutState) {
+  var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
+  if (ui) {
+    ui.setEngine(layoutName);
+  }
+  if (this.layoutEngines_[layoutName].setState) {
+    this.layoutEngines_[layoutName].setState(layoutState);
+  }
+};
+
+/**
+ * Updates the visualization UI to match the current selection status.
+ * @param {number} numFilteredModels The number of models that have been
+ *     filtered out as a result of selection operations.
+ * @private
+ */
+rhizo.Project.prototype.alignSelectionUI_ = function(numFilteredModels) {
+  var ui = this.gui_.getComponent('rhizo.ui.component.SelectionManager');
+  if (ui) {
+    ui.setNumFilteredModels(numFilteredModels);
+  }
+};
+
+/**
+ * Updates the visualization UI to match the a given filter status.
+ * @param {string} key The metamodel key whose associated filter is to restore
+ *     to a given value.
+ * @param {*} value The value the filter should be set to. The actual value type
+ *     matches what the filter itself initially provided to the Project when
+ *     project.filter() was called.
+ * @private
+ */
+rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
+  // Verify whether the filter key (which may come from an historical state)
+  // still exists in the metaModel.
+  if (key in this.metaModel_) {
+    // Rebuild and show the affected filter, if needed.
+    var ui = this.gui_.getComponent('rhizo.ui.component.FilterStackContainer');
+    if (ui) {
+      ui.showFilter(key, this);
+    }
+
+    // Restore the filter value.
+    this.metaModel_[key].kind.setFilterValue(value);
+  }
 };
 
 /**
