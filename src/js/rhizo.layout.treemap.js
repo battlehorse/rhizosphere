@@ -212,14 +212,6 @@ rhizo.layout.treemap.TreeMapNode.prototype.rendering = function() {
 };
 
 /**
- * Returns the {top, left} coordinates of this node, with respect to the overall
- * container that contains the whole treemap layout.
- */
-rhizo.layout.treemap.TreeMapNode.prototype.position = function() {
-  return {top: this.top_, left: this.left_};
-};
-
-/**
  * Returns whether this treemap node is hidden from layout. Although it may
  * represent a non-filtered (visible) model, the model characteristics can be
  * of such kind to prevent this node from showing (e.g.: too small area).
