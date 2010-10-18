@@ -10,7 +10,7 @@
 .rhizo-bottom-bar .rhizo-section-header A{color:#ffffff;text-decoration:none;}
 .rhizo-bottom-bar .rhizo-section-header A:hover{color:#ffffff;}
 .rhizo-bottom-bar .rhizo-section-open,.rhizo-bottom-bar .rhizo-section-open:hover{background-color:#0f3a96 !important;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#0f3a96), to(#426dc9)) !important;background-image:-moz-linear-gradient(-90deg, #0f3a96, #426dc9) !important;}
-.rhizo-left{position:absolute;background-color:#ffffff;left:0;top:0;bottom:0;width:295px;border-right:1px solid #6391de;-webkit-box-shadow:0 1px 5px #0f3a96;-moz-box-shadow:0 1px 5px #0f3a96;box-shadow:0 1px 5px #0f3a96;z-index:300;}
+.rhizo-left{position:absolute;background-color:#ffffff;background-image:-webkit-gradient(linear, 0 0, 50 100, from(#ebeff9), to(#ffffff));background-image:-moz-linear-gradient(-45deg, #ebeff9, #ffffff);left:0;top:0;bottom:0;width:295px;border-right:1px solid #6391de;-webkit-box-shadow:0 1px 5px #0f3a96;-moz-box-shadow:0 1px 5px #0f3a96;box-shadow:0 1px 5px #0f3a96;z-index:300;}
 .rhizo-right{position:absolute;top:0;right:5px;width:120px;height:98%;z-index:300;}
 .rhizo-right-pop{position:absolute;top:0;right:0;bottom:0;width:5px;border-left:1px solid #6391de;background-color:#ffffff;color:#2e4987;padding:50% 0;z-index:300;}
 .rhizo-right-pop:hover{background-color:#6391de;background-image:-webkit-gradient(linear, 0 0, 100% 0, from(#6391de), to(#426dc9));background-image:-moz-linear-gradient(#6391de, #426dc9);color:#ffffff;}
@@ -18,19 +18,23 @@
 .rhizo-floating-panel{position:absolute;border-top:1px solid #6391de;border-bottom:1px solid #6391de;background-color:#ffffff;bottom:2.4em;left:0px;height:6em;width:100%;padding:5px 0;margin:0;font-weight:normal;z-index:1100;}
 .rhizo-viewport{position:absolute;background-color:#ebeff9;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#ebeff9), to(#dadee8));background-image:-moz-linear-gradient(-90deg, #ebeff9, #dadee8);top:0;left:295px;right:5px;bottom:0;overflow:hidden;}
 .rhizo-universe{position:absolute;top:0;left:0;right:0;bottom:0;}
-.rhizo-bucket-header{font-size:1.3em;font-weight:bold;border-bottom:1px solid #426dc9;width:200px;margin-bottom:5px;color:#6391de;}
+.rhizo-bucket-header{font-size:1.3em;font-weight:bold;border-bottom:1px solid #426dc9;width:200px;margin-bottom:5px;color:#6391de;cursor:pointer;}
 .rhizo-tree-connector{background-color:#6391de;}
-.rhizo-progressbar-panel{position:absolute;z-index:5000;-webkit-box-shadow:5px 5px 5px #dadee8;-moz-box-shadow:5px 5px 5px #dadee8;box-shadow:5px 5px 5px #dadee8;margin:5px;width:300px;height:100px;border:1px solid #6391de;background-color:#fff;}
+.rhizo-progressbar-panel{position:absolute;z-index:5000;-webkit-box-shadow:5px 5px 5px #dadee8;-moz-box-shadow:5px 5px 5px #dadee8;box-shadow:5px 5px 5px #dadee8;width:300px;height:100px;border:1px solid #6391de;background-color:#fff;}
 .rhizo-progressbar{margin:5px 10px;}
 .rhizo-progressbar-text{text-align:center;color:#222222;margin-bottom:5px;}
-.rhizo-logo{padding:0;background-image:-webkit-gradient(linear, 0 0, 50 100, from(#ebeff9), to(#ffffff));background-image:-moz-linear-gradient(-45deg, #ebeff9, #ffffff);}
+.rhizo-logo{padding:0;text-align:center;}
 .rhizo-left .rhizo-logo{padding-left:5px;}
-.rhizo-logo H1{font-size:2em;margin:0;padding:0;color:#426dc9;}
-.rhizo-logo P{margin:0;padding:0;}
+.rhizo-logo H1{font-size:1.5em;margin:0;padding:0;color:#426dc9;cursor:pointer;}
+.rhizo-logo H1:hover{text-decoration:underline;}
+.rhizo-logo P{margin:0;padding:0;display:none;}
+.rhizo-floating-panel.rhizo-logo P{display:block;}
+.rhizo-floating-panel.rhizo-logo H1{cursor:auto;padding-top:0.5em;}
 .rhizo-filter{padding:4px 0 5px 5px;border-bottom:1px solid #bbbbbb;clear:both;}
 .rhizo-filter-container .rhizo-filter SELECT{max-width:250px;}
 .rhizo-filter-selector{width:100%;}
 .rhizo-slider-moving{background-color:#ffee88;-moz-border-radius:3px;border-radius:3px;}
+.rhizo-slider-label{font-weight:bold;}
 .rhizo-slider{margin:5px 30px 0 5px;}
 .rhizo-floating-panel .rhizo-slider{margin-right:5px;}
 .rhizo-floating-panel .rhizo-layout-extra-options{margin-top:3px;}
