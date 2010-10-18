@@ -560,7 +560,7 @@ rhizo.meta.sortByKind = function(kind, opt_reverse) {
 /**
  * returns a rhizo.meta.Kind instance, building it if necessary.
  *
- * @param {function|*} kind Either a rhizo.meta.Kind instance or a no-arg
+ * @param {function()|*} kind Either a rhizo.meta.Kind instance or a no-arg
  *     function that can instantiate it.
  */
 rhizo.meta.objectify = function(kind) {
