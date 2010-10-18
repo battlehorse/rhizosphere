@@ -47,14 +47,11 @@ class RhizoHandler(webapp.RequestHandler):
       return platform, device
 
     def get(self):
-        # Should we serve compiled or uncompiled resources?
-        debug = self.request.get('d', '0') == '1'
-
         # Startup options
         forcePlatform, forceDevice = self._getPlatformDevice()
         forceTemplate = self._getOptionFromUrl('forceTemplate',
                                                ['default', 'bottom'])
-        template_values = rhizoglobals.DefaultTemplate()
+        template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
             'forceTemplate': forceTemplate,
             'forceDevice': forceDevice,
@@ -68,10 +65,7 @@ class RhizoHandler(webapp.RequestHandler):
 class IGoogleHandler(webapp.RequestHandler):
 
     def get(self):
-        # Should we serve compiled or uncompiled resources?
-        debug = self.request.get('d', '0') == '1'
-
-        template_values = rhizoglobals.DefaultTemplate()
+        template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
             'hostname': 'http://%s' % os.environ['HTTP_HOST']
         })
@@ -85,7 +79,7 @@ application = webapp.WSGIApplication(
      ('/multi.html', RhizoHandler),
      ('/ig', IGoogleHandler),
     ],
-    debug=rhizoglobals.debug)
+    debug=rhizoglobals.appenginedebug)
 
 
 def main():

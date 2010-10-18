@@ -35,7 +35,7 @@ class ScriptHandler(webapp.RequestHandler):
 
 application = webapp.WSGIApplication(
     [('/sample/.*', ScriptHandler),],
-    debug=rhizoglobals.debug)
+    debug=rhizoglobals.appenginedebug)
 
 
 def main():
