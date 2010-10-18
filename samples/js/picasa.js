@@ -32,8 +32,8 @@
     this.summary =  item.summary['$t'];
     this.albumtitle = item.gphoto$albumtitle['$t'];
     this.thumbnail = item.media$group.media$thumbnail[0];
-    this.mpixel = item.media$group.media$content[0].width *
-      item.media$group.media$content[0].height / (1024.0 * 1024.0);
+    this.resolution = item.media$group.media$content[0].width *
+      item.media$group.media$content[0].height;
     this.bigthumbnail = item.media$group.media$content[0];
     this.tilt = tilts[Math.floor(Math.random()*tilts.length)];
 
@@ -94,13 +94,13 @@
 
       // Post-processing to identify model characteristics and ranges required
       // by the metaModel.
-      var minResolution = 100;
-      var maxResolution = 0;
+      var minResolution = Number.POSITIVE_INFINITY;
+      var maxResolution = Number.NEGATIVE_INFINITY;
       var minYear = 3000;
       var maxYear = 0;
       $.each(models, function(i, model) {
-        minResolution = Math.min(minResolution, model.mpixel);
-        maxResolution = Math.max(maxResolution, model.mpixel);
+        minResolution = Math.min(minResolution, model.resolution);
+        maxResolution = Math.max(maxResolution, model.resolution);
         minYear = Math.min(minYear, model.published.getFullYear());
         maxYear = Math.max(maxYear, model.published.getFullYear());
       });
@@ -112,8 +112,8 @@
       var metamodel = {
         author: { kind: rhizo.meta.Kind.STRING, label: "Name" },
         title: { kind: rhizo.meta.Kind.STRING, label: "Title" },
-        mpixel: { kind: decimalKind, label: "Resolution (MP)",
-                  min: minResolution, max: maxResolution },
+        resolution: { kind: decimalKind, label: "Resolution",
+                      min: minResolution, max: maxResolution },
         published: { kind: new rhizo.meta.DateKind('y'), label: "Published",
                      minYear: minYear, maxYear: maxYear }
       };
