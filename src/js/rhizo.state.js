@@ -314,6 +314,13 @@ rhizo.state.ProjectOverlord.prototype.uuid = function() {
 };
 
 /**
+ * @return {rhizo.state.MasterOverlord} Returns the master state overlord.
+ */
+rhizo.state.ProjectOverlord.prototype.master = function() {
+  return this.master_;
+};
+
+/**
  * Applies a state transition requested by one binder and broadcast the changes
  * to all the other binders.
  *
@@ -340,16 +347,20 @@ rhizo.state.ProjectOverlord.prototype.uuid = function() {
  *       if we are rolling back to a previous state).
  * @param {*} opt_target_state Optional target state. Can be omitted if the
  *     change is a forward change.
+ * @param {boolean} opt_replace Hints that the target state reached by this
+ *     delta transition should replace the current one, instead of being a
+ *     transition from it.
  */
 rhizo.state.ProjectOverlord.prototype.transition = function(sourceKey,
                                                             delta,
-                                                            opt_target_state) {
+                                                            opt_target_state,
+                                                            opt_replace) {
   if (opt_target_state) {
     this.master_.setState(opt_target_state);
   } else {
     this.master_.pushDelta(delta);
   }
-  this.broadcast(sourceKey, delta);
+  this.broadcast(sourceKey, delta, opt_replace);
 };
 
 /**
@@ -362,13 +373,18 @@ rhizo.state.ProjectOverlord.prototype.transition = function(sourceKey,
  *     where the last state change originated from.
  * @param {*} delta An optional key-value map that describes a delta change
  *     that occurred. See transition() for this object attributes.
+ * @param {boolean} opt_replace Hints that the target state reached by this
+ *     delta transition should replace the current one, instead of being a
+ *     transition from it.
  */
 rhizo.state.ProjectOverlord.prototype.broadcast = function(sourceKey,
-                                                           delta) {
+                                                           delta,
+                                                           opt_replace) {
   // Propagate the change to all the other binders to keep them in sync.
   for (var binderKey in this.bindings_) {
     if (binderKey != sourceKey) {
-      this.bindings_[binderKey].onTransition(delta, this.master_.state());
+      this.bindings_[binderKey].onTransition(
+          delta, this.master_.state(), opt_replace);
     }
   }
 };
@@ -399,8 +415,13 @@ rhizo.state.StateBinder.prototype.key = function() {
  *     rhizo.state.ProjectOverlord.prototype.transition. null if the change
  *     affected multiple facets at the same time.
  * @param {*} state The target state at the end of the transition.
+ * @param {boolean} opt_replace Hints that the target state reached by this
+ *     delta transition should replace the current one, instead of being a
+ *     transition from it.
  */
-rhizo.state.StateBinder.prototype.onTransition = function(delta, state) {
+rhizo.state.StateBinder.prototype.onTransition = function(delta,
+                                                          state,
+                                                          opt_replace) {
   throw("Unimplemented StateBinder.onTransition");
 };
 
@@ -453,13 +474,63 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(delta,
  * @param {string} layoutName The name of the layout engine that was applied.
  * @param {*} layoutState Layout engine state (see getState() in the layout
  *     documentation.
+ * @param {Array.<*>} opt_positions An optional array of all model that have
+ *     a custom position, other than the one the layout mandates.
+ *     Each entry is a key-value map with the following properties: 'id', the
+ *     id of the model that moved, 'top': the ending top coordinate of the
+ *     top-left model corner with respect to the visualization universe,
+ *     'left', the ending left coordinate of the top-left model corner with
+ *     respect to the visualization universe.
  */
 rhizo.state.ProjectStateBinder.prototype.pushLayoutChange = function(
-    layoutName, layoutState) {
-  var delta = this.makeDelta(
-      rhizo.state.Facets.LAYOUT,
-      jQuery.extend({layoutName: layoutName}, layoutState));
-  this.overlord_.transition(this.key(), delta);
+    layoutName, layoutState, opt_positions) {
+  var facetState = jQuery.extend({layoutName: layoutName}, layoutState);
+  var replace = !!opt_positions && this.curLayoutHasPositions_();
+  if (opt_positions) {
+    facetState.positions = this.mergePositions_(opt_positions);
+  }
+  var delta = this.makeDelta(rhizo.state.Facets.LAYOUT, facetState);
+  this.overlord_.transition(this.key(), delta, null, replace);
+};
+
+/**
+ * @return {boolean} Whether the current state, and the current layout in
+ *     particular, is storing custom model positions or not.
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.curLayoutHasPositions_ = function() {
+  var state = this.overlord_.master().state();
+  var uuid = this.overlord_.uuid();
+  return uuid in state.uuids &&
+      rhizo.state.Facets.LAYOUT in state.uuids[uuid] &&
+      !!state.uuids[uuid][rhizo.state.Facets.LAYOUT].positions;
+};
+
+/**
+ * Merges all the custom layout positions currently stored in the visualization
+ * state with new custom model positions defined in the current transition.
+ *
+ * @param {Array.<*>} positions An array of all model that have moved to a
+ *     custom position as part of the current state transition.
+ * @return {Array.<*>} An array of the same format of the input one, that
+ *     contains all known custom model positions (current and historical).
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.mergePositions_ = function(positions) {
+  var positions_map = {};
+  for (var i = positions.length-1; i >= 0; i--) {
+    positions_map[positions[i].id] = true;
+  }
+
+  if (this.curLayoutHasPositions_()) {
+    var cur_positions = this.overlord_.master().state().uuids[this.overlord_.uuid()][rhizo.state.Facets.LAYOUT].positions || [];
+    for (var i = cur_positions.length-1; i >= 0; i--) {
+      if (!(cur_positions[i].id in positions_map)) {
+        positions.push(cur_positions[i]);
+      }
+    }
+  }
+  return positions;
 };
 
 /**
@@ -475,6 +546,12 @@ rhizo.state.ProjectStateBinder.prototype.pushFilterSelectionChange = function(
   this.overlord_.transition(this.key(), delta);
 };
 
+/**
+ * Utility method to change the visualization state because of a change in the
+ * set of metamodel filters.
+ * @param {string} key The key of the metamodel filter that changed.
+ * @param {*} value The target value of the metamodel filter.
+ */
 rhizo.state.ProjectStateBinder.prototype.pushFilterChange = function(key,
                                                                      value) {
   var delta = this.makeDelta(rhizo.state.Facets.FILTER_PREFIX + key,
@@ -499,8 +576,9 @@ rhizo.state.HistoryStateBinder = function(overlord) {
 rhizo.inherits(rhizo.state.HistoryStateBinder, rhizo.state.StateBinder);
 
 rhizo.state.HistoryStateBinder.prototype.onTransition = function(delta,
-                                                                 state) {
-  rhizo.state.getHistoryHelper().sync(state);
+                                                                 state,
+                                                                 opt_replace) {
+  rhizo.state.getHistoryHelper().sync(state, opt_replace);
 };
 
 
@@ -535,13 +613,17 @@ rhizo.state.HistoryHelper.prototype.addListener = function(uuid, callback) {
 /**
  * Pushes the current master state to HTML5 history.
  */
-rhizo.state.HistoryHelper.prototype.sync = function(state) {
+rhizo.state.HistoryHelper.prototype.sync = function(state, opt_replace) {
   // Stop listening for initial events after the first push.
   // We assume the initial state was never fired during the init process,
   // as is the case of Safari/MacOs when we are landing directly on the
   // visualization page (not arriving from history browse).
   this.initialStateReceived_ = true;
-  window.history.pushState(state, /* empty title */ '');
+  if (opt_replace) {
+    window.history.replaceState(state, /* empty title */ '');
+  } else {
+    window.history.pushState(state, /* empty title */ '');
+  }
 };
 
 /**
