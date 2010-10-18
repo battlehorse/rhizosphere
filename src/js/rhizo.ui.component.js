@@ -594,9 +594,21 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
 rhizo.ui.component.FilterStackContainer = function() {
   this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel();
 
-  // Number of metaModel keys that will trigger filter selection (instead of
-  // just showing all the available filters).
+  /**
+   * Number of metaModel keys that will trigger filter selection (instead of
+   * just showing all the available filters).
+   * @type {number}
+   * @private
+   */
   this.filterSelectorThreshold_ = 5;
+
+  /**
+   * Defines which filters are currently visible. This set is only meaningful
+   * when filter selection is active, otherwise all filters are always visible.
+   * @type {Object.<string, boolean>}
+   * @private
+   */
+  this.activeFilters_ = {};
 };
 
 /**
@@ -695,9 +707,11 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilterSelector_ =
  * @param {rhizo.Project} project
  * @private
  */
-rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ = function(key, project) {
+rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ =
+    function(key, project) {
   var metaModel = project.metaModel();
   var filter = metaModel[key].kind.renderFilter(project, metaModel[key], key);
+  this.activeFilters_[key] = true;
   var filterCloseIcon =
       $('<div />', {'class': 'rhizo-icon rhizo-close-icon'}).
           text('x').
@@ -705,6 +719,7 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ = function(key
   filterCloseIcon.click(jQuery.proxy(function() {
     // remove the filter
     filter.remove();
+    delete this.activeFilters_[key];
 
     // re-align the visualization.
     project.filter(key, '');
@@ -719,6 +734,25 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ = function(key
   this.filterSelector_.
       find('option[value=' + key + ']').
       attr('disabled', 'disabled');
+};
+
+/**
+ * Ensures that the UI for the given filter key is visible to the user. This is
+ * only relevant when filter selection is active, otherwise all filters are
+ * always visible.
+ * @param {string} key The metamodel key of the filter to show.
+ * @param {rhizo.Project} project
+ */
+rhizo.ui.component.FilterStackContainer.prototype.showFilter =
+    function(key, project) {
+  if (!this.filterSelector_) {
+    // The filter selector is not in use. This means that all filters are
+    // always visible.
+    return;
+  }
+  if (!(key in this.activeFilters_)) {
+    this.activateFilter_(key, project);
+  }
 };
 
 /**

@@ -99,7 +99,8 @@ rhizo.state.TYPE = '__rhizo_state__';
  */
 rhizo.state.Facets = {
   LAYOUT: 'layout',
-  SELECTION_FILTER: 'selection'
+  SELECTION_FILTER: 'selection',
+  FILTER_PREFIX: 'filter_'
 };
 
 
@@ -471,6 +472,13 @@ rhizo.state.ProjectStateBinder.prototype.pushFilterSelectionChange = function(
     filteredModels) {
   var delta = this.makeDelta(rhizo.state.Facets.SELECTION_FILTER,
                              filteredModels);
+  this.overlord_.transition(this.key(), delta);
+};
+
+rhizo.state.ProjectStateBinder.prototype.pushFilterChange = function(key,
+                                                                     value) {
+  var delta = this.makeDelta(rhizo.state.Facets.FILTER_PREFIX + key,
+                             value);
   this.overlord_.transition(this.key(), delta);
 };
 

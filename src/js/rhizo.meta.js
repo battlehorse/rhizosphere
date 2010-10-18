@@ -29,6 +29,12 @@ To define a new meta-type:
   This tells whether the kind of data this filter is applied to are numeric
   or not (i.e. can be used in arithmetic computations).
 
+- implment the setFilterValue() function.
+  This updates the filter UI as if it was set to the given value.
+  The object received is of the same kind the filter passes to project.filter()
+  calls. setFilterValue() will receive a null value if the filter is to be
+  restored to its initial (default) value.
+
 - implement the cluster() function (optional).
   Defines how grouping works for this type
 
@@ -45,18 +51,24 @@ To define a new meta-type:
 namespace("rhizo.meta");
 
 /* StringKind meta */
-rhizo.meta.StringKind = function() {};
+rhizo.meta.StringKind = function() {
+  this.input_ = null;
+};
 
 // metadata is the part of the metamodel that applies to this kind
 rhizo.meta.StringKind.prototype.renderFilter = function(project, metadata, key) {
-  var input = $("<input type='text' />");
+  this.input_ = $("<input type='text' />");
   // keypress handling removed due to browser quirks in key detection
-  $(input).change(function(ev) {
+  $(this.input_).change(function(ev) {
     project.filter(key, $(this).val());
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
-           append($(input));
+           append($(this.input_));
+};
+
+rhizo.meta.StringKind.prototype.setFilterValue = function(value) {
+  this.input_.val(value || '');
 };
 
 rhizo.meta.StringKind.prototype.survivesFilter =
@@ -78,10 +90,15 @@ rhizo.meta.StringKind.prototype.isNumeric = function() {
 };
 
 /* NumberKind meta */
-rhizo.meta.NumberKind = function() {};
+rhizo.meta.NumberKind = function() {
+  this.input_ = null;
+};
 
 rhizo.meta.NumberKind.prototype.renderFilter =
     rhizo.meta.StringKind.prototype.renderFilter;
+
+rhizo.meta.NumberKind.prototype.setFilterValue =
+    rhizo.meta.StringKind.prototype.setFilterValue;
 
 rhizo.meta.NumberKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -133,37 +150,52 @@ rhizo.meta.DateKind = function(opt_clusterby) {
   if (this.clusterby_ != 'y' && this.clusterby_ != 'm' && this.clusterby_ != 'd') {
     this.clusterby_ = 'y';
   }
+
+  this.year_ = null;
+  this.month_ = null;
+  this.day_ = null;
 };
 
 rhizo.meta.DateKind.prototype.renderFilter = function(project, metadata, key) {
-  var year = $("<select style='vertical-align:top' />");
-  year.append("<option value='yyyy'>yyyy</option>");
+  this.year_ = $("<select style='vertical-align:top' />");
+  this.year_.append("<option value='yyyy'>yyyy</option>");
   for (var i = metadata.minYear ; i <= metadata.maxYear; i++) {
-    year.append("<option value='" + i + "'>" + i + "</option>");
+    this.year_.append("<option value='" + i + "'>" + i + "</option>");
   }
-  var month = $("<select style='vertical-align:top' />");
-  month.append("<option value='mm'>mm</option>");
+  this.month_ = $("<select style='vertical-align:top' />");
+  this.month_.append("<option value='mm'>mm</option>");
   for (var i = 0; i < this.monthMap_.length; i++) {
-    month.append("<option value='" + i + "'>" + this.monthMap_[i] + "</option>");  
+    this.month_.append("<option value='" + i + "'>" +
+                       this.monthMap_[i] +
+                       "</option>");
   }
 
-  var day = $("<select style='vertical-align:top' />");
-  day.append("<option value='dd'>dd</option>");
+  this.day_ = $("<select style='vertical-align:top' />");
+  this.day_.append("<option value='dd'>dd</option>");
   for (var i = 1 ; i <= 31; i++) {
-    day.append("<option value='" + i + "'>" + i + "</option>");
+    this.day_.append("<option value='" + i + "'>" + i + "</option>");
   }
   
-  $(year).add($(month)).add($(day)).change(function(ev) {
-    project.filter(key, [$(year).val(), $(month).val(), $(day).val()]);
-  });
+  $(this.year_).add($(this.month_)).add($(this.day_)).change(
+      jQuery.proxy(function(ev) {
+        project.filter(
+          key, [$(this.year_).val(), $(this.month_).val(), $(this.day_).val()]);
+      }, this));
 
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
-           append($(year)).
+           append($(this.year_)).
            append(' - ').
-           append($(month)).
+           append($(this.month_)).
            append(' - ').
-           append($(day));
+           append($(this.day_));
+};
+
+rhizo.meta.DateKind.prototype.setFilterValue = function(value) {
+  value = value || [undefined, undefined, undefined];
+  this.year_.val(value[0] || 'yyyy');
+  this.month_.val(value[1] || 'mm');
+  this.day_.val(value[2] || 'dd');
 };
 
 rhizo.meta.DateKind.prototype.survivesFilter =
@@ -216,15 +248,27 @@ rhizo.meta.DateKind.prototype.addZero_ = function(value) {
     result = '0' + result;
   }
   return result;
-}
+};
 
 /* RangeKind meta */
-rhizo.meta.RangeKind = function() {};
+rhizo.meta.RangeKind = function() {
+  this.slider_ = null;
+  this.minLabel_ = null;
+  this.maxLabel_ = null;
+
+  this.metadataMin_ = null;
+  this.metadataMax_ = null;
+};
 
 rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
-  var slider = $("<div class='rhizo-slider' />");
-  var minLabel = $("<strong>" + this.toHumanLabel_(metadata.min) + "</strong>");
-  var maxLabel = $("<strong>" + this.toHumanLabel_(metadata.max) + "</strong>");
+  this.slider_ = $("<div class='rhizo-slider' />");
+  this.minLabel_ = $('<span />', {'class': 'rhizo-slider-label'}).
+      text(this.toHumanLabel_(metadata.min));
+  this.maxLabel_ = $('<span />', {'class': 'rhizo-slider-label'}).
+      text(this.toHumanLabel_(metadata.max));
+
+  this.metadataMin_ = metadata.min;
+  this.metadataMax_ = metadata.max;
 
   var minFilterScale = this.toFilterScale_(metadata.min);
   var maxFilterScale = this.toFilterScale_(metadata.max);
@@ -238,15 +282,17 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
   var slideCallback = jQuery.proxy(function(ev, ui) {
       if (ui.values[0] != minFilterScale) {
         // min slider has moved
-        minLabel.text(this.toHumanLabel_(this.toModelScale_(ui.values[0]))).
-                 addClass("rhizo-slider-moving");
-        maxLabel.removeClass("rhizo-slider-moving");
+        this.minLabel_.
+            text(this.toHumanLabel_(this.toModelScale_(ui.values[0]))).
+            addClass("rhizo-slider-moving");
+        this.maxLabel_.removeClass("rhizo-slider-moving");
       }
       if (ui.values[1] != maxFilterScale) {
         // max slider has moved
-        maxLabel.text(this.toHumanLabel_(this.toModelScale_(ui.values[1]))).
-                 addClass("rhizo-slider-moving");
-        minLabel.removeClass("rhizo-slider-moving");
+        this.maxLabel_.
+            text(this.toHumanLabel_(this.toModelScale_(ui.values[1]))).
+            addClass("rhizo-slider-moving");
+        this.minLabel_.removeClass("rhizo-slider-moving");
       }
   }, this);
 
@@ -255,14 +301,14 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
   var stopCallback = jQuery.proxy(function(ev, ui) {
       var minSlide = Math.max(this.toModelScale_(ui.values[0]), metadata.min);
       var maxSlide = Math.min(this.toModelScale_(ui.values[1]), metadata.max);
-      minLabel.text(this.toHumanLabel_(minSlide)).removeClass(
+      this.minLabel_.text(this.toHumanLabel_(minSlide)).removeClass(
           "rhizo-slider-moving");
-      maxLabel.text(this.toHumanLabel_(maxSlide)).removeClass(
+      this.maxLabel_.text(this.toHumanLabel_(maxSlide)).removeClass(
           "rhizo-slider-moving");
       project.filter(key, { min: minSlide, max: maxSlide });
   }, this);
 
-  $(slider).slider({
+  $(this.slider_).slider({
     stepping: steppingFilterScale,
     steps: metadata.steps,
     range: true,
@@ -271,19 +317,40 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
     slide: slideCallback,
     stop: stopCallback,
     orientation: 'horizontal',
-    values: [ minFilterScale, maxFilterScale ]
+    values: [minFilterScale, maxFilterScale]
   });
 
   return $("<div class='rhizo-filter' />").append(metadata.label + ": ")
-                                          .append($(minLabel))
+                                          .append($(this.minLabel_))
                                           .append(" to ")
-                                          .append($(maxLabel))
-                                          .append($(slider));
+                                          .append($(this.maxLabel_))
+                                          .append($(this.slider_));
+};
+
+rhizo.meta.RangeKind.prototype.setFilterValue = function(value) {
+  value = {
+    min: value ? this.clamp_(value.min) : this.metadataMin_,
+    max: value ? this.clamp_(value.max) : this.metadataMax_
+  };
+  this.minLabel_.text(this.toHumanLabel_(value.min));
+  this.maxLabel_.text(this.toHumanLabel_(value.max));
+  this.slider_.slider(
+      'values',
+      [this.toFilterScale_(value.min), this.toFilterScale_(value.max)]);
+};
+
+/**
+ * Clamps the given value between the minimum and maximum range limits.
+ * @param {number} val
+ * @private
+ */
+rhizo.meta.RangeKind.prototype.clamp_ = function(val) {
+  return Math.min(this.metadataMax_, Math.max(this.metadataMin_, val));
 };
 
 rhizo.meta.RangeKind.prototype.survivesFilter = function(filterValue,
                                                          modelValue) {
-  return modelValue >= filterValue.min && modelValue <= filterValue.max;;
+  return modelValue >= filterValue.min && modelValue <= filterValue.max;
 };
 
 rhizo.meta.RangeKind.prototype.compare =
@@ -334,20 +401,26 @@ rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
 };
 
 /* BooleanKind meta */
-rhizo.meta.BooleanKind = function() {};
+rhizo.meta.BooleanKind = function() {
+  this.check_ = null;
+};
 
 rhizo.meta.BooleanKind.prototype.renderFilter = function(project, metadata, key) {
-  var check = $("<select />");
-  check.append("<option value=''>-</option>");
-  check.append("<option value='true'>Yes</option>");
-  check.append("<option value='false'>No</option>");
+  this.check_ = $("<select />");
+  this.check_.append("<option value=''>-</option>");
+  this.check_.append("<option value='true'>Yes</option>");
+  this.check_.append("<option value='false'>No</option>");
 
-  $(check).change(function(ev) {
+  $(this.check_).change(function(ev) {
     project.filter(key, $(this).val());
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
-           append($(check));
+           append($(this.check_));
+};
+
+rhizo.meta.BooleanKind.prototype.setFilterValue = function(value) {
+  this.check_.val(value || '');
 };
 
 rhizo.meta.BooleanKind.prototype.survivesFilter =
@@ -366,19 +439,24 @@ rhizo.meta.BooleanKind.prototype.isNumeric = function() {
 };
 
 /* CategoryKind meta */
-rhizo.meta.CategoryKind = function() {};
+rhizo.meta.CategoryKind = function() {
+  this.categories_ = null;
+  this.multiple_ = false;
+};
 
 rhizo.meta.CategoryKind.prototype.renderFilter = function(project, metadata, key) {
-  var categories = $("<select " +
-                     (metadata.multiple ? 'multiple size="4" ' : '') +
-                     " style='vertical-align:top' />");
-  categories.append("<option value=''>-</option>");
+  this.multiple_ = !!metadata.multiple;
+  this.categories_ = $("<select " +
+                       (metadata.multiple ? 'multiple size="4" ' : '') +
+                       " style='vertical-align:top' />");
+  this.categories_.append("<option value=''>-</option>");
   for (var i = 0; i < metadata.categories.length; i++) {
-    categories.append("<option value='" + metadata.categories[i] + "'>" +
-                      metadata.categories[i] + "</option>");
+    this.categories_.append("<option value='" + metadata.categories[i] + "'>" +
+                            metadata.categories[i] +
+                            "</option>");
   }
 
-  $(categories).change(function(ev) {
+  $(this.categories_).change(function(ev) {
     var selectedCategories = [ $(this).val() ];
     if (metadata.multiple) {
       selectedCategories = $.grep($(this).val(), function(category) {
@@ -389,7 +467,11 @@ rhizo.meta.CategoryKind.prototype.renderFilter = function(project, metadata, key
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
-           append($(categories));
+           append($(this.categories_));
+};
+
+rhizo.meta.CategoryKind.prototype.setFilterValue = function(value) {
+  this.categories_.val(value || (this.multiple_ ? [] : ''));
 };
 
 rhizo.meta.CategoryKind.prototype.survivesFilter =
