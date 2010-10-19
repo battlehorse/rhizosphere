@@ -33,6 +33,12 @@ BODY {
   padding: 0 1em;
 }
 
+.headerbar LI.current A, .headerbar LI.current A:visited {
+  font-weight: bold;
+  text-decoration: none;
+  color: black;
+}
+
 .navigation {
   float: left;
   width: 15em;
@@ -49,6 +55,7 @@ BODY {
   font-size: 1.1em;
   border-top: 1px dotted #999;
   padding-top: 0.5em;
+  margin-right: 1em;
 }
 
 .toc UL {
