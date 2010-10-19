@@ -19,7 +19,7 @@ handlers:
 - url: /sample/.*\.js
   script: py/handlers/sample.py
 
-- url: /doc/.*\.html
+- url: /doc(/(.*\.html)?)?
   script: py/handlers/doc.py
 
 # Static files. Exclude static/samples/js since it is served by the

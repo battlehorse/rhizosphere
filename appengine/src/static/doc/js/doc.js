@@ -8,8 +8,11 @@ function findCurrentDoc(el_id) {
   }
   var matches = el.querySelectorAll('ul>li>a');
   var curDocument = document.location.href;
+  if (curDocument.indexOf('.html') == -1) {
+    curDocument = 'index.html';
+  }
   for (var i = 0; i < matches.length; i++) {
-    if (curDocument.indexOf(matches[i].href) != -1) {
+    if (curDocument.indexOf(matches[i].getAttribute('href')) != -1) {
       matches[i].parentNode.className = 'current';
     }
   }

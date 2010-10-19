@@ -25,18 +25,22 @@ from py import rhizoglobals
 
 class DocHandler(webapp.RequestHandler):
   def get(self):
-    docfile = self.request.path.replace('/doc/', '');
+    docfile = self.request.path.replace('/doc', '')
+    if not docfile or docfile == '/':
+      docfile = '/index.html'
+
     template_values = rhizoglobals.DefaultTemplate(self.request)
     template_values.update({
       'docfile': docfile,
     })
     path = os.path.join(os.path.dirname(__file__),
-                        '../../templates/doc/%s' % docfile)
+                        '../../templates/doc%s' % docfile)
     self.response.out.write(template.render(path, template_values))
 
 
 application = webapp.WSGIApplication(
-    [('/doc/.*', DocHandler),],
+    [('/doc/.*', DocHandler),
+     ('/doc', DocHandler),],
     debug=rhizoglobals.appenginedebug)
 
 
