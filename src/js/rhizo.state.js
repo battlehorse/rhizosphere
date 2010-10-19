@@ -523,7 +523,9 @@ rhizo.state.ProjectStateBinder.prototype.mergePositions_ = function(positions) {
   }
 
   if (this.curLayoutHasPositions_()) {
-    var cur_positions = this.overlord_.master().state().uuids[this.overlord_.uuid()][rhizo.state.Facets.LAYOUT].positions || [];
+    var cur_positions =
+        this.overlord_.master().state().uuids[this.overlord_.uuid()][
+            rhizo.state.Facets.LAYOUT].positions || [];
     for (var i = cur_positions.length-1; i >= 0; i--) {
       if (!(cur_positions[i].id in positions_map)) {
         positions.push(cur_positions[i]);
