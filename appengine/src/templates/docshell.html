@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}Rhizosphere Documentation{% endblock %}</title>
+    <link href="/static/doc/stylesheets/prettify.css" type="text/css" rel="stylesheet" />
+    <link href="/static/doc/stylesheets/doc.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="/static/doc/js/prettify.js"></script>
+    <script type="text/javascript" src="/static/doc/js/doc.js"></script>
+    <style>
+
+    </style>
+  </head>
+  <body onload="prettyPrint(); findCurrentDoc('navigation');">
+    <img src="/static/shared/img/rhizosphere_logo.png" />
+    <div class="headerbar">
+      <ul>
+        <li><a href="http://sites.google.com/site/rhizosphereui">
+          Project Site</a></li>
+        <li><a href="http://rhizospherejs.appspot.com">Demos</a></li>
+        <li><a href="http://code.google.com/p/rhizosphere">Code</a></li>
+      </ul>
+      <h1>Rhizosphere Documentation</h1>
+    </div>
+    <div class="navigation" id="navigation">
+      {% block navigation %}{% endblock %}
+    </div>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+      <p>
+        The content of this page is licensed under the
+        <a href="http://creativecommons.org/licenses/by/3.0/">
+          Creative Commons Attribution 3.0 License
+        </a>
+      </p>
+      <p>
+        &copy;{{ copyright_year}} The Rhizosphere Authors -
+        <a href="http://sites.google.com/site/rhizosphereui">Project site</a>
+        -
+        <a href="http://code.google.com/p/rhizosphere/source/browse/COPYING.txt">
+          License</a>
+      </p>
+    </div>
+    {% include "../ga.html" %}
+  </body>
+</html>

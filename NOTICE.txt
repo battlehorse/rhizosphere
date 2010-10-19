@@ -37,3 +37,8 @@ library: Tango Icon Set
 reference: http://tango.freedesktop.org/Tango_Desktop_Project
 authors: http://tango.freedesktop.org/The_People
 license: Public Domain
+
+library: google-code-prettify
+reference: http://code.google.com/p/google-code-prettify/
+authors: http://code.google.com/p/google-code-prettify/people/list
+license: Apache 2.0 License, http://code.google.com/p/google-code-prettify/source/browse/trunk/COPYING
