@@ -1,0 +1,128 @@
+/* The following style mimics the one used by code.google.com APIs */
+BODY {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 80%;
+  margin-right: 5em;
+  max-width: 1160px;
+}
+
+.headerbar {
+  background-color: rgb(229, 236, 249);
+  border-top: 1px solid rgb(51, 102, 204);
+  padding: 0.1em 0.3em;
+  margin-top: 1em;
+}
+
+.headerbar H1 {
+  font-size: 1.5em;
+  line-height: 1.3em;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+}
+
+.headerbar UL {
+  float: right;
+  margin: 0;
+  padding-top: 0.4em;
+}
+
+.headerbar LI {
+  display: inline;
+  list-style-type: none;
+  padding: 0 1em;
+}
+
+.navigation {
+  float: left;
+  width: 15em;
+}
+
+.navigation .toc {
+  border-right: 3px solid rgb(229, 236, 249);
+  margin: 0;
+  padding: 1em 0 1em 1em;
+}
+
+.toc H3 {
+  font-weight: bold;
+  font-size: 1.1em;
+  border-top: 1px dotted #999;
+  padding-top: 0.5em;
+}
+
+.toc UL {
+  margin: 0.2em 0 0.2em 0.2em;
+  padding: 0;
+}
+
+.toc UL LI {
+  list-style-type: none;
+  padding: 0.4em 0.2em;
+}
+
+.toc UL LI.current {
+  background-color: rgb(229, 236, 249);
+}
+
+.toc UL LI.current A, .toc UL LI.current A:visited {
+  text-decoration: none;
+  color: black;
+}
+
+.content {
+  margin-left: 16em;
+}
+
+.content H1 {
+  font-size: 2em;
+}
+
+.content H2 {
+  background-color: rgb(229, 236, 249);
+  border-top: 1px solid rgb(51, 102, 204);
+  padding: 0.1em 0.3em;
+  margin-top: 1em;
+}
+
+.content H3 {
+  font-size: 1.5em;
+}
+
+.content CODE, .content PRE {
+  color: #007000;
+  font-family: monospace;
+}
+
+.content PRE {
+  background-color: #fafafa;
+  border: 1px solid #bbb;
+  margin-top: 1em;
+  padding: 1em;
+}
+
+.content DT {
+  margin-top: 0.5em;
+  font-weight: bold;
+}
+
+.content DD {
+  margin-left: 2em;
+}
+
+.content DL.apireference DT {
+  font-family: monospace;
+  font-size: 1.2em;
+}
+
+.content DL.apireference DL.arguments DT {
+  font-weight: normal;
+  font-style: italic;
+}
+
+.footer {
+  margin-top: 2em;
+  clear: both;
+  color: #777;
+  text-align: center;
+}
