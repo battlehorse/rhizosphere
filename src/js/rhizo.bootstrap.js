@@ -155,6 +155,8 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
   var ua = navigator.userAgent;
   if (ua.toLowerCase().indexOf('ipad') != -1) {
     return {platform: 'mobile', device: 'ipad'};
+  } else if (ua.toLowerCase().indexOf('iphone') != -1) {
+    return {platform: 'mobile', device: 'iphone'};
   }
   return {platform: 'default', device: 'default'};
 };
