@@ -563,7 +563,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   this.numHiddenModels_ = this.layoutNestedMap_(boundingRect,
                                                 treeRoot,
                                                 {x:0, y:0},
-                                                /* deepness */ 0);
+                                                /* deepness */ 50);
 
   // Treemap coloring (if needed).
   // Color ranges are determined by sampling values from:
