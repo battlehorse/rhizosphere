@@ -81,6 +81,26 @@ BODY {
   margin-left: 16em;
 }
 
+.content P, .content LI, .content DL {
+  line-height: 140%;
+}
+
+.content P.note {
+  background-color: #efefef;
+  border-bottom: 1px solid #BBB;
+  border-top: 1px solid #BBB;
+  margin-top: 1em;
+  padding: 0.2em 0.5em 0.2em 0.9em;
+}
+
+.content IMG.screenshot {
+  -webkit-box-shadow: 5px 5px 5px #ccc;
+  -moz-box-shadow: 5px 5px 5px #ccc;
+  box-shadow: 5px 5px 5px #ccc;
+  border: 0;
+  margin: 0 1em 1em 0;
+}
+
 .content H1 {
   font-size: 2em;
 }
