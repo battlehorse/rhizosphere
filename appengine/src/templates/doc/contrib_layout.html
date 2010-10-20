@@ -1,0 +1,170 @@
+{% extends "../docshell.html" %}
+{% block title %}Code layout{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Code layout</h1>
+<p>The Rhizosphere codebase is structured in the following directories:</p>
+<dl>
+  <dt><code>appengine</code></dt>
+  <dd>Appengine application to serve the Rhizosphere library. Also hosts
+    the documentation and everything you see in the Rhizosphere
+    <a href="http://rhizospherejs.appspot.com">demo site</a>.
+  </dd>
+
+  <dt><code>lib</code></dt>
+  <dd>
+    Pre-packaged, minified versions of the Rhizosphere library ready for
+    production deployment.
+  </dd>
+
+  <dt><code>src</code></dt>
+  <dd>
+    Rhizosphere source code. The bulk of the library is contained within
+    <code>src/js</code>. The <code>src/js/extra</code> dir contains
+    extra Rhizosphere functionality that may be omitted when packaging
+    Rhizosphere for deployment.
+  </dd>
+
+  <dt><code>samples</code></dt>
+  <dd>Source code for Rhizosphere demos with sample datasets.</dd>
+
+  <dt><code>doc</code></dt>
+  <dd>Documentation.</dd>
+</dl>
+
+<h2>Library structure</h2>
+<p>Rhizosphere code is structured as a set of interconnected modules.
+  Each module provides a specific functionality, lives in a separate source
+  file and may depend on other modules.
+</p>
+<p>When Rhizosphere is packaged for production deployment, all module
+  dependencies are resolved and all modules are packaged in a single javascript
+  file.
+</p>
+<p>The main modules are listed here. The
+  <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/src/js">
+    source code</a> remains the ultimate reference you should rely on for
+    completeness.
+</p>
+<dl>
+  <dt>rhizo</dt>
+  <dd>
+    Shared utilities.
+  </dd>
+
+  <dt>rhizo.log</dt>
+  <dd>Logging facilities.</dd>
+
+  <dt>rhizo.jquery</dt>
+  <dd>Extensions to the jQuery library.</dd>
+
+  <dt>rhizo.base</dt>
+  <dd>
+    Core library functionality. Defines what a Rhizosphere visualization is
+    and ties all other modules together.
+  </dd>
+
+  <dt>rhizo.state</dt>
+  <dd>Visualization state management (includes HTML5 History support).</dd>
+
+  <dt>rhizo.model</dt>
+  <dd>Defines the behaviour and characteristics of Rhizosphere models. A model
+    represent a single datapoint in a visualization.
+  </dd>
+
+  <dt>rhizo.bootstrap</dt>
+  <dd>Bootstrap logic. Defines the entry points to intialize a new Rhizosphere
+    visualization.
+  </dd>
+
+  <dt>rhizo.model.loader</dt>
+  <dd>Pluggable datasource loaders, that let Rhizosphere build its datamodel
+    from datasources of your choice.
+  </dd>
+
+  <dt>rhizo.layout, rhizo.laoyut.shared, rhizo.layout.tree, rhizo.layout.treemap</dt>
+  <dd>Layout algorithms.</dd>
+
+  <dt>rhizo.meta, rhizo.meta.extra</dt>
+  <dd>Defines the behaviour and characteristics of Rhizosphere metamodels. A
+    metamodel defines the attributes and types that each model has, and
+    therefore dictates the kind of filtering and clustering operations that
+    such will be available in the visualization.
+  </dd>
+
+  <dt>rhizo.ui</dt>
+  <dd>Defines the behaviour and characteristics of Rhizosphere renderings. A
+    rendering is a visual representation of a model. It is the actual object
+    that the user sees on screen to represent a single datapoint.
+  </dd>
+
+  <dt>rhizo.ui.gui</dt>
+  <dd>Functionality to manage the Rhizosphere overall UI and chrome.</dd>
+
+  <dt>rhizo.ui.component</dt>
+  <dd>Defines the set of UI components that can be assembled together to form
+    the complete Rhizosphere visualization.
+  </dd>
+
+  <dt>rhizo.autorender</dt>
+  <dd>Provides an automated rendering of Rhizosphere models, for visualizations
+    that are not given a custom renderer.
+  </dd>
+
+  <dt>rhizo.gviz</dt>
+  <dd>
+    Allows Rhizosphere to ingest data from Google Visualization API datasources.
+  </dd>
+
+  <dt>rhizo.keyboard</dt>
+  <dd>On-screen keyboard (for keyboard-less touchscreens).</dd>
+
+</dl>
+
+<h2>Samples</h2>
+<p>
+  Rhizosphere ships with a number of samples and demo visualizations, located
+  in the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/samples/js">
+    <code>samples/js</code></a> directory.
+</p>
+<p class="note">
+  <strong>Note</strong>. In addition to the included samples, Rhizosphere can
+  also ingest any (reasonably formatted) Google Spreadsheet. See the
+  <a href="users_spreadsheets.html">Use with Google Spreadsheets</a> section for
+  more info.
+</p>
+<dl>
+  <dt>people.js</dt>
+  <dd>The most basic example, representing a fictional grouping of people.
+    Defines a handful of attributes and let's you explore all basic layout
+    algorithms.</dd>
+
+  <dt>picasa.js</dt>
+  <dd>Photo-browsing demo.</dd>
+
+  <dt>books.js</dt>
+  <dd>Shopping demo.</dd>
+
+  <dt>bugs.js</dt>
+  <dd>Agile project tracker demo.</dd>
+
+  <dt>usa.js</dt>
+  <dd>shows the USA states and major cities.
+    Demonstrates endless panning and the tree layout.</dd>
+
+  <dt>factbook.js</dt>
+  <dd>A selection of data from the CIA Factbook. Demonstrates Treemapping
+    capabilities and logarithmic sliders.</dd>
+
+  <dt>many.js</dt>
+  <dd>A stress test to verify Rhizosphere capabilities in handling hundreds
+    or thousands of elements. Can customize the number of elements to
+    create via URL parameter.</dd>
+
+  <dt>autorender.js</dt>
+  <dd>
+    Explains the AutoRenderer capabilities, automated legend and color coding.
+  </dd>
+</dl>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "../docshell.html" %}
+{% block title %}Development Setup{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Development Setup</h1>
+<p>
+  These instructions will guide you in setting up a local Rhizosphere
+  development environment on your machine.
+</p>
+<p>
+  The instructions assume you are executing them on a Linux machine.
+</p>
+<h2>Environment setup</h2>
+<p>At the very minimum, you must have these tools installed on your machine,
+  to modify and test Rhizosphere source code on your machine:</p>
+<dl>
+  <dt>
+    Python language interpreter
+  </dt>
+  <dd>
+    Available at <a href="http://www.python.org/">www.python.org</a>. If you
+    are running on Linux is probably already installed on your system.
+  </dd>
+  <dt>
+    Google AppEngine SDK
+  </dt>
+  <dd>
+    Although Rhizosphere is pure js, the library code is served by a small
+    Appengine application. Download the SDK from
+    <a href="http://code.google.com/appengine/">code.google.com/appengine</a>.
+  </dd>
+  <dt>
+    Mercurial
+  </dt>
+  <dd>
+    <a href="http://mercurial.selenic.com/">Mercurial</a> is Rhizosphere's
+    distributed version control system.
+  </dd>
+</dl>
+
+<p>If you also want to produce Rhizosphere release packages, you need this
+  additional tools:
+</p>
+<dl>
+  <dt>
+    Closure Compiler
+  </dt>
+  <dd>
+    Rhizosphere uses the <a href="http://code.google.com/closure/compiler/">
+    Closure Compiler</a> to minify and compress its javascript code for
+    production deployment.
+  </dd>
+  <dt>
+    NodeJS
+  </dt>
+  <dd>
+    <a href="http://nodejs.org/">Node</a> is used as part of the Rhizosphere
+    build and release toolchain.
+  </dd>
+  <dt>
+    LessJS
+  </dt>
+  <dd>
+    <a href="http://github.com/cloudhead/less.js">less.js</a> is a dynamic
+    styling language that extends CSS. Rhizosphere uses the
+    <a href="http://www.lesscss.org">LESS</a> language to dynamically create
+    its stylesheets.
+  </dd>
+</dl>
+<p>From now on, let's assume you installed the tools in a
+  <code>$RHIZOSPHERE_TOOLS</code> directory.
+</p>
+
+<h3>Download a local copy of Rhizosphere</h3>
+<p>Download a local copy of the code from the version control system:</p>
+<pre>
+  $ cd
+  $ hg clone https://rhizosphere.googlecode.com/hg rhizosphere
+</pre>
+
+<h3>Start serving Rhizosphere locally</h3>
+<p>
+  Start an AppEngine instance pointing it at the launcher code contained
+  within the downloaded source code:
+</p>
+<pre>
+  $ cd rhizosphere
+  $ $RHIZOSPHERE_TOOLS/appengine/dev_appserver.py appengine/src/
+</pre>
+<p>
+  You can now access the Rhizosphere samples at
+  <a href="http://localhost:8080/">localhost:8080/</a>.
+</p>
+
+<h2>Local development</h2>
+<p>
+  You can access all the Rhizosphere samples from the launcher interface at
+  <a href="http://localhost:8080/">localhost:8080/</a>, or a single sample
+  directly from the <code>rhizo.html</code> endpoint:
+</p>
+<pre>
+  http://localhost:8080/rhizo.html?<strong>d=1</strong>&amp;src=<i>sample/people.js</i>
+</pre>
+<p>
+  Change the <code>src</code> attribute to point to different samples.
+  Remember to use the <code>d=1</code> url parameter to enable development
+  mode (Rhizosphere files are served unbundled and not minified, CSS files
+  are compiled on the fly from their LESS specification).
+</p>
+<p>
+  You can also look at the <a href="contrib_tables.html">Reference Tables</a>
+  for available parameters and settings.
+</p>
+
+<h3>Development mode</h3>
+<p>
+  By appending the <code>d=1</code> parameter to local URLs you enable the
+  development mode. When in development mode:
+</p>
+<ul>
+  <li>
+    All rhizosphere javascript source files are served separately and
+    uncompressed to the browser.
+  </li>
+  <li>
+    CSS files are compiled on the fly from their LESS source (Rhizosphere
+    uses <a href="http://lesscss.org/">LESS</a> for easier CSS styling).
+  </li>
+</ul>
+<p>
+  This makes it easier to develop and debug code: just reload your browser
+  for it to pick up your changes.
+</p>
+
+<h2>Production deployment</h2>
+<p>
+  To optimize Rhizosphere code for production deployment and prepare a
+  Rhizosphere release, these are the required steps.
+</p>
+<p>Pack the javascript source code into a single minified library.You can use
+  the <code>packer.py</code> tool that ships with Rhizospher source code:
+</p>
+<pre>
+  $ cd $HOME/rhizosphere
+  $ ./packer.py --compiler=$RHIZOSPHERE_TOOLS/closurecompiler/compiler.jar
+</pre>
+<p>
+  This will create a packed library in the default location of
+  <code>lib/js/rhizo.pack.js</code>
+</p>
+<p class="note">
+  <strong>Tip</strong>. Have a look at other available packing options via the
+  <code>./packer.py --help</code> command.
+</p>
+<p>Then, compile and minify the Rhizosphere CSS files:</p>
+<pre>
+  $ $RHIZOSPHERE_TOOLS/nodejs/bin/node $RHIZOSPHERE_TOOLS/lessjs/bin/lessc -x \
+    src/stylesheets/rhizo.less lib/stylesheets/rhizo.css
+</pre>
+<p>
+  This will create a packed stylesheet in
+  <code>lib/stylesheets/rhizo.css</code>.
+  You can now copy the packed javascript and stylesheet elsewhere and use them
+  within your projects.
+</p>
+<pre>
+  $ cp lib/js/rhizo.pack.js lib/stylesheets/rhizo.css /path/to/your/other/project
+</pre>
+<p>
+  If you also want to deploy Rhizosphere appengine application, then issue:
+</p>
+<pre>
+  $ $RHIZOSPHERE_TOOLS/appengine/appcfg.py update appengine/src
+</pre>
+
+{% endblock %}

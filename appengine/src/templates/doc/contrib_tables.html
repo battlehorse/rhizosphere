@@ -1,0 +1,196 @@
+{% extends "../docshell.html" %}
+{% block title %}Reference Tables{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Reference Tables</h1>
+<p>
+  This page lists general reference material and other information that would
+  be otherwise scattered through the source code.
+</p>
+<h3>Available Types</h3>
+<p>Enumeration of the types that can be used to describe Rhizosphere models'
+  attributes. The attribute type define the filtering and clustering operations
+  that Rhizosphere will be able to perform on it, and the associated UI
+  controls.
+</p>
+<p>
+  The most up-to-date list of types is available in the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.meta.js"><code>
+    rhizo.meta.js</code></a> source file.
+</p>
+<dl class="apireference">
+  <dt>rhizo.meta.Kind.STRING</dt><dd>Basic string.</dd>
+  <dt>rhizo.meta.Kind.DATE</dt>
+  <dd>
+    Javascript
+    <a href="https://developer.mozilla.org/en/JavaScript/Reference/global_objects/date">Date</a>.
+  </dd>
+  <dt>rhizo.meta.Kind.BOOLEAN</dt><dd>Boolean field.</dd>
+  <dt>rhizo.meta.Kind.CATEGORY</dt>
+  <dd>Single selection or multiple selection set.</dd>
+  <dt>rhizo.meta.Kind.NUMBER</dt><dd>Integer number.</dd>
+  <dt>rhizo.meta.Kind.RANGE</dt><dd>Integer range.</dd>
+  <p class="note">
+    <strong>Note</strong>. The following types belong to the
+    <code>rhizo.meta.extra</code> package.
+  </p>
+  <dt>rhizo.meta.Kind.DECIMAL</dt><dd>Floating point number.</dd>
+  <dt>rhizo.meta.Kind.DECIMALRANGE</dt><dd>Floating point range.</dd>
+  <dt>rhizo.meta.Kind.LOGARITHMRANGE</dt><dd>Floating point range, with hint
+      that values should be converted to logarithmic scale.</dd>
+  <dt>rhizo.meta.Kind.STRINGARRAY</dt><dd>Comma separated list of strings.</dd>
+</dl>
+
+<h3>Available Layouts</h3>
+<p>
+  Enumeration of available layout algorithms. The most up-to-date list is
+  available in the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.layout.js"><code>
+    rhizo.layout.js</code></a> source file.
+</p>
+<dl class="apireference">
+  <dt>rhizo.layout.NoLayout</dt>
+  <dd>No-op layout algorithm (it doesn't affect models' positions).</dd>
+  <dt>rhizo.layout.FlowLayout</dt>
+  <dd>Left to right, top to bottom linear list of models.</dd>
+  <dt>rhizo.layout.ScrambleLayout</dt>
+  <dd>Random positioning of models.</dd>
+  <dt>rhizo.layout.BucketLayout</dt>
+  <dd>Clusters models in buckets based on shared attribute values.</dd>
+  <dt>rhizo.layout.TreeLayout</dt>
+  <dd>Represents models in hierarchical trees (if a parent-child relationship
+    exists in the model definition).</dd>
+  <dt>rhizo.layout.TreeMapLayout</dt>
+  <dd>Fits models in <a href="http://en.wikipedia.org/wiki/Treemapping">TreeMaps</a>.</dd>
+</dl>
+
+<h3>Runtime configuration options</h3>
+<p>
+  You can configure Rhizosphere behavior via runtime options that you can
+  pass in at visualization bootstrap time, when you instantiate a new
+  <code>rhizo.bootstrap.Bootstrap</code> instance. Options are passed as a
+  plain javascript object which is treated as a key-value map.
+</p>
+<h4>Global options</h4>
+<dl class="apireference">
+  <dt>allowConfigFromUrl (boolean, default: unset)</dt>
+  <dd>
+    If set, it allows the visualization to extract parameters from the current
+    document location URL.
+  </dd>
+  <dt>selectfilter (string, default: '.rhizo-model:visible')</dt>
+  <dd>
+    the jQuery selector that identifies selectable items in the visualization.
+    Affects the performance for selecting/unselecting items.
+    It is unlikely that you have to change the default and strongly recommended
+    to always define this option to match the selectable items as narrowly as
+    possible.
+  </dd>
+  <dt>noAnims (boolean, default: false)</dt>
+  <dd>
+    Disable all animations to improve performance.
+  </dd>
+  <dt>cacheDimensions (boolean: default: unset)</dt>
+  <dd>
+    Whether Rhizosphere should cache renderings' dimensions.
+    Greatly improves layout performance, but may result in layout bugs if the
+    models you are visualizing change their rendering dimensions arbitrarily
+    after the visualization initialization.
+  </dd>
+  <dt>forcePlatform (string, default: unset, allowed values: 'default'|'mobile')</dt>
+  <dd>
+    Forces Rhizosphere UI to adapt itself to the specified target platform.
+  </dd>
+  <dt>
+    forceDevice
+    (string, default: unset, allowed values: 'default'|'iphone'|'ipad')</dt>
+  <dd>
+    Forces Rhizosphere UI to adapt itself to the specified target device,
+    bypassing device detection from the user-agent.
+  </dd>
+  <dt>
+    forceTemplate
+    (string, default: unset, allowed values: 'default'|'bottom')
+  </dt>
+  <dd>
+    Forces Rhizosphere UI to use the specified layout template and chrome.
+  </dd>
+</dl>
+
+<h4>Autorender-specific options</h4>
+<p>
+  This set of options is relevant only when Rhizosphere uses autorenderers
+  (<code>rhizo.autorender.AR</code>), instead of custom-specified rendering
+  algorithms.
+</p>
+<dl class="apireference">
+  <dt>arMaster (string)</dt>
+  <dd>
+     An option currently used by the gviz loader when using the AutoRenderer
+    option, to declare which gviz column represents the 'master' field in the
+    AutoRenderer rendering.
+  </dd>
+  <dt>arSize (string)</dt>
+  <dd>
+    An option currently used by the gviz loader when using the AutoRenderer
+    option, to declare which gviz column will be used for the 'size' auto
+    scaling.
+  </dd>
+  <dt>arColor (string)</dt>
+  <dd>
+    An option currently used by the gviz loader when using the AutoRenderer
+    option, to declare which gviz column will be used for the 'color' auto
+    painting.
+  </dd>
+  <dt>arDefaults (boolean)</dt>
+  <dd>
+    An option currently used by the gviz loader when using the AutoRenderer
+    option, to declare that the AutoRender should automatically locate
+    the master, size and color fields when they are not explicitly specified.
+  </dd>
+  <dt>arNumFields (number, default: 5)</dt>
+  <dd>
+    An option currently used by the gviz loader when using the AutoRenderer
+    option, to declare how many fields should be displayed by the AutoRenderer.
+  </dd>
+</dl>
+
+<h3>URL parameters</h3>
+<p>
+  Rhizosphere understands the following URL parameters.
+</p>
+<p class="note">
+  <strong>Note</strong>.
+  Rhizosphere visualizations may decide to ignore URL parameters
+  under certain conditions (for example, when multiple visualizations are
+  present in a single document, as it would not be possible to decide which
+  visualization is affected by which parameter).</p>
+<dl class="apireference">
+  <dt>src|source=<i>datasource_uri</i></dt>
+  <dd>The datasource Rhizosphere should access to load the data to visualize.</dd>
+  <dt>kb=(true|yes|1)</dt>
+  <dd>Enables on-screen keyboard (for keyboardless touchscreens).</dd>
+</dl>
+
+<h3>Z-indexes used throughout Rhizosphere</h3>
+<p>Rhizosphere relies on z-indexing to separate different layers of the UI.
+  The following levels are used throughout the library.
+</p>
+<dl>
+  <dt>0</dt>
+  <dd>Ground level. Used by the viewport, universe and elsewhere where not
+    explicitly specified.</dd>
+  <dt>50</dt><dd>Models' renderings.</dd>
+  <dt>50+x</dt><dd>Nested treemaps layering.</dd>
+  <dt>200</dt><dd>Expanded models' renderings.</dd>
+  <dt>300</dt><dd>Left and right UI bars (where all controls are located
+    in the standard desktop UI template).</dd>
+  <dt>1000</dt><dd>Selection/Panning flip trigger.</dd>
+  <dt>1100</dt><dd>Floating panesl (where all controls are located in the
+    mobile UI template).</dd>
+  <dt>1300</dt><dd>BottomBar (used in the mobile UI template).</dd>
+  <dt>5000</dt><dd>Progressbar.</dd>
+  <dt>10000</dt><dd>Models while being dragged.</dd>
+  <dt>11000</dt><dd>Onscreen keyboard (when shown).</dd>
+</dl>
+{% endblock %}
