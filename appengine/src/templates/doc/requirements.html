@@ -1,0 +1,54 @@
+{% extends "../docshell.html" %}
+{% block title %}Requirements{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Requirements</h1>
+<p>
+  Rhizosphere is 100% web-based, and only uses standard technologies like
+  HTML and Javascript. You only need your browser to access Rhizosphere
+  visualizations.
+</p>
+<p>
+  Rhizosphere leverages HTML5 features which may not be available to all
+  current browsers, but it always provides fallback functionality for missing
+  browser capabilities.
+</p>
+<h2>Supported browsers</h2>
+<p>Rhizosphere supports the following browsers:</p>
+<dl>
+  <dt>Google Chrome</dt>
+  <dd>This is the recommended choice for speed and performance.</dd>
+  <dt>Apple Safari</dt>
+  <dd>Tested against version 5. Should work on version 4 and 3 too.</dd>
+  <dt>Mozilla Firefox</dt>
+  <dd>
+    Tested against version 3.6 and (upcoming) version 4.
+    Should work with earliers versions (FF3, possibly FF2).
+  </dd>
+  <dt>Opera</dt>
+  <dd>
+    Tested againg version 10.60 and onward.
+  </dd>
+</dl>
+
+<p class="note">
+  <strong>Note</strong>. Microsoft <strong>Internet Explorer</strong> is not
+  actively supported, although we tested the upcoming version 9 and is likely
+  to work flawlessly. For earlier versions we recommend installing
+  <a href="http://www.google.com/chromeframe">Google Chrome Frame</a>.
+</p>
+
+<h2>Supported devices</h2>
+<p>
+  Rhizosphere has been tested on traditional laptops, netbooks and
+  desktop PCs.
+</p>
+<p>Rhizosphere has been tested on a range of <strong>iOS</strong> devices:
+  Apple iPad, iPhone and iPod Touch. On smartphones and tables it provides
+  a customized user experience that adapts to the device screen size.
+</p>
+<p class="note">
+  <strong>Note</strong>. Rhizosphere also provides <strong>experimental</strong>
+  support for Android devices.
+</p>
+{% endblock %}
