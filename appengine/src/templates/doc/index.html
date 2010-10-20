@@ -1,0 +1,105 @@
+{% extends "../docshell.html" %}
+{% block title %}Home{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Welcome</h1>
+<p>
+  Welcome to the <strong>Rhizosphere</strong> documentation pages!
+  These pages contain all the information you need to use Rhizosphere from
+  the end user perspective all the way down to the code internals and reference
+  material for Rhizosphere developers.
+</p>
+<h2>Overview</h2>
+<p>
+  <strong>Rhizosphere</strong> is an innovative project to provide in-browser
+  html-based spatial navigation and interaction on structured data.
+</p>
+<p>
+  Rhizosphere is a data visualization tool: it lets you
+  visualize, browse, filter and act upon datasets of your choice.
+  Nowadays you're submerged by tons of data and information, stored in a
+  variety of different places: the cloud, websites, spreadsheets, custom formats
+  used by your applications.
+</p>
+<p>
+  Rhizosphere purpose is to provide a simple but effective way to flow through
+  your data and help you locate the information that you know it's there,
+  but it's lost amidst the noise. Until now, you have probably always used
+  mostly one paradigm to organize information: tables and spreadsheets.
+  They can be cumbersome when you need to sift through many parameters and
+  dimensions. Rihzosphere is the alternative.
+
+</p>
+<p>
+  Rhizosphere is a web-based visualization, implemented as a pure javascript
+  library. It runs within your browser and it doesn't require any additional
+  plugins: no Flash, no Silverlight.
+  It is tuned for multiple execution environments, from desktop
+  PCs to smartphones and tablets. It can run both as a standalone full-page
+  visualization and as an embedded component inside other webpages and online
+  applications (like Google Spreadsheets or iGoogle).
+</p>
+<p>
+  Rhizosphere is <strong>small</strong> and <strong>fast</strong>: once minified
+  and gzipped, the library is <strong>26Kb</strong> on the wire
+  (as of October 2010). We aim to provide sub-second performance for all the
+  operations supported by the visualization, even when handling large datasets
+  with thousands of datapoints.
+</p>
+<p>
+  Rhizosphere is <strong>flexible</strong>: we'd like to let you visualize your
+  data no matter where you keep them and what format you are using to store
+  them. 
+</p>
+<p>
+  Rhizosphere is <strong>open</strong>. You're free to modify the source code
+  and use it within your own projects according to terms of the Apache2
+  <a href="license.html">License</a>. We welcome all sorts of contributions,
+  from fixes to documentation typos to code patches: have a look at how to
+  <a href="contrib_overview.html">Contribute</a>.
+</p>
+
+<h3>Motivation</h3>
+<p>
+  Rhizosphere is driven by 5 main reasons:
+</p>
+<ul>
+  <li><strong>Data Overload</strong>:
+    The cloud of data that links to our digital identity is getting bigger
+    and bigger: pictures, documents, contacts, searches, shopping items...
+    We dive deeper and deeper to find the needles we are looking for in our
+    digital haystack. Structured and entity search become more relevant.
+  </li>
+  <li>
+    <strong>Mobile and Cloud</strong>:
+    Internet-connected mobile devices with advanced
+    capabilities (touch-enabled smartphones and tablets) are the Next Big Thing.
+    It shouldn't matter whether you are in front of your desktop or on the run,
+    you should always be able to visualize the data you need. 
+  </li>
+  <li>
+    <strong>New interaction patterns</strong>:
+    Ever increasing personal digital clouds, touch interfaces and the spread of
+    native apps for mobile devices have changed the way users look for
+    information. Interaction is now much stronger and physical.
+    They no longer browse for information, they manipulate it.
+  </li>
+  <li>
+    <strong>Simplicity</strong>:
+    No matter how complex is the data you want to visualize and how hidden are
+    the patterns you want to explore, you should be able to explore them with
+    simplicity and ease without having to read a 200 pages manual to understand
+    how the tool works.
+  </li>
+  <li>
+    <strong>Speed</strong>:
+    HTML5 and continuous speed improvements make browsers capable of rivaling
+    native applications, in terms of interaction and speed. But they surpass
+    native applications in portability and reach.
+  </li>
+</ul>
+<h2>Next ...</h2>
+<p>
+  Start by having a look at the library <a href="features.html">Features</a>.
+</p>
+{% endblock %}

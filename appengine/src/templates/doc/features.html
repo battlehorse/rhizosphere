@@ -1,0 +1,109 @@
+{% extends "../docshell.html" %}
+{% block title %}Features{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Features</h1>
+<p>
+  Rhizosphere project focuses both on traditional and innovative ways to browse
+  through data. Here follows a selection of library features.
+</p>
+<p>
+  Rhizosphere launches and iterates often. Keep an eye at the
+  <a href="https://sites.google.com/site/rhizosphereui/Home/announcements">
+    Announcements
+  </a> section of the project site, or follow
+  <a href="http://twitter.com/rhizosphere">Rhizosphere on Twitter</a> for the
+  latest news and releases.
+</p>
+<dl>
+  <dt>
+    Pure Javascript and HTML5
+  </dt>
+  <dd>
+    No Flash. No Silverlight. No plugins needed. Your browser alone is just
+    fine. We leverage HTML5 features to provide a better user experience (see
+    <a href="https://sites.google.com/site/rhizosphereui/Home/announcements/statefulvisualizationswithhtml5history">
+      this example
+    </a>, about history and state management).
+  </dd>
+  <dt>
+    Small footprint
+  </dt>
+  <dd>
+    The Rhizosphere library is only 26Kb once minified and gzipped. Once you
+    include the dependent libraries (jQuery, jQuery UI) it fits within 60-70Kb.
+    Client side caching means the user pays the load cost only the first time
+    it uses the library.
+  </dd>
+  <dt>
+    Speed
+  </dt>
+  <dd>
+    Sub-second response times for most operations, even on big datasets with
+    thousands of datapoints. See latest
+    <a href="https://sites.google.com/site/rhizosphereui/Home/announcements/fastdommanipulation">benchmarks</a>.
+  </dd>
+  <dt>
+    From high end PCs to Portable devices
+  </dt>
+  <dd>
+    From high-power desktop PCs all the way down to tablets and smartphones.
+    You can run Rhizosphere visualizations on all of them.
+  </dd>
+  <dt>
+    Embeddable
+  </dt>
+  <dd>
+    You can use Rhizosphere to create a stand-alone full-page visualization, or
+    you can embed it anywhere you want: in your webpages, as a Google
+    Spreadsheet or iGoogle gadget. You can have multiple visualizations per
+    page.
+  </dd>
+  <dt>
+    Spatial navigation
+  </dt>
+  <dd>
+    Rhizosphere behaves like a physical desktop with support for drag'n'drop,
+    groups selections, zooming, endless panning (aka Google Maps-like scrolling)
+  </dd>
+  <dt>
+    Multiple layout algorithms
+  </dt>
+  <dd>
+    To help you organize your data: plain, clusters, trees, treemaps and more.
+  </dd>
+  <dt>
+    Dynamic filters
+  </dt>
+  <dd>
+    To let you isolate, slice, partition your datasets and focus only on the
+    subset of data you care about.
+  </dd>
+  <dt>
+    UI Customization
+  </dt>
+  <dd>
+    You can tweak any aspect of the visualization, from the color scheme to use
+    to the UI layout, up to the rendering algorithm of each data point you
+    visualize.
+  </dd>
+  <dt>
+    Integration with multiple data sources
+  </dt>
+  <dd>
+    You can feed Rhizosphere data via
+    <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+      Google Visualization API
+    </a> datasources, Google Spreadsheets or using its custom input format.
+    Custom data sources can be added easily.
+  </dd>
+</dl>
+
+<h2>Next ...</h2>
+<p>
+  Start visualizing your data with Rhizosphere, as shown in the
+  <a href="users_overview.html">Getting Started</a> section.
+</p>
+{% endblock %}
+
+
