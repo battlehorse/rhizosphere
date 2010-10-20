@@ -1,0 +1,156 @@
+{% extends "../docshell.html" %}
+{% block title %}Google Spreadsheets{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Use with Google Spreadsheets</h1>
+<p>
+  This page describes how you can use Rhizosphere withing a
+  <a href="http://docs.google.com">Google Spreadsheet</a>.
+</p>
+
+<p>
+  First, login to <a href="http://docs.google.com">docs.google.com</a> and
+  create a new spreadsheet. Start entering some data or import them from an
+  external source, until you're satisfied with the contents.
+  For example, here is the
+  <a href="https://spreadsheets0.google.com/ccc?key=tfsbXD2LYRhYmC_SRKSreXA&hl=en_GB#gid=0">
+    spreadsheet I created</a> to decided which mobile phone is right for me.
+  You can access it live, and copy it for your experiments.
+</p>
+<p>
+  You should organize your data according to these rules:
+</p>
+<ul>
+  <li>Every <strong>row</strong> should represent an item to be displayed,</li>
+  <li>Every <strong>column</strong> should represent an attribute or
+    characteristic your items have.
+  </li>
+</ul>
+<img src="/static/doc/img/spreadsheet_0.png"
+     class="screenshot" style="border: 1px solid #bbb">
+
+<p>Select a range of cells. Then from the toolbar, choose
+  <strong>Insert &gt; Gadget</strong>. Choose to insert a
+  <strong>custom</strong> gadget and type in this URL:
+</p>
+<pre>
+  http://rhizospherejs.appspot.com/ig
+</pre>
+<p>
+  Click the Add button. This will add the Rhizosphere gadget on your
+  spreadsheet and open its configuration page, as shown here:
+</p>
+<img src="/static/doc/img/gadgetinfo.png"
+     class="screenshot" style="border: 1px solid #bbb">
+<p>
+  Verify that the <strong>Range</strong> option matches the cells you want to analyze,
+  or adjust it accordingly. That's it!
+</p>
+<img src="/static/doc/img/spreadsheet_1.png"
+     class="screenshot" style="border: 1px solid #bbb">
+<p>
+  Try using the menus in the bottom bar to change the items layout and filter
+  them. You can also drag them around, select them (just click them) and
+  restrict your work on the selected items only.
+</p>
+<p>
+  If you choose the <strong>Autoanalyze data</strong> checkbox within the gadget
+  options, Rhizosphere will do its best to extract new dimensions out of your
+  data. In the above example it's using colors and sizes to display
+  differences in prices and weights of the phones. A legend is provided
+  if you feel confused.
+</p>
+
+<h2>Fullscreen mode</h2>
+<p>
+  Rhizosphere can operate in different modes depending on how much space it has
+  to render its contents. So far Rhizosphere has been constrained to a
+  gadget-size rendering.
+</p>
+<p>
+  Withing Google Spreadsheets you can move Rhizosphere to his own sheet (from
+  the gadget options, choose <strong>Move to own sheet...</strong>). Rhizosphere
+  will then render itself using the full-page user interface, which you have
+  already seen in the <a href="users_overview.html">Getting Started</a> section.
+</p>
+
+<h2>Advanced Gadget options</h2>
+<p>
+  When Rhizosphere is embedded inside a spreadsheet as a gadget, you have
+  access to a set of advanced options.
+</p>
+<p>
+  Choose the <strong>Edit Gadget...</strong> link from within the gadget menu,
+  and you will have access to a set of advanced configuration options:
+</p>
+<dl>
+  <dt>Range / Datasource URL</dt>
+  <dd>The range of cells (if inside a Google Spreadsheet) or the datasource
+    (if inside another gadget container like iGoogle) that Rhizosphere uses to
+    extract the data to visualize.</dd>
+  <dt>Fancy Animations</dt>
+  <dd>
+    Animates transitions, layouts and filtering. Disable this if you experience
+    slowness or you are working with many ( hundreds ) elements.
+    You can usually keep this on with any worries.
+  </dd>
+  <dt>
+    Autoanalyze data
+  </dt>
+  <dd>
+    Rhizosphere will try to understand the type of your data and modify the
+    display accordingly. It will use the first column as the label for every
+    item, and map the first two numeric columns to the color and size of each
+    element. You can override this defaults by using the options labeled
+    as Advanced.
+  </dd>
+  <dt>
+    When Fullscreen, show
+  </dt>
+  <dd>
+    When in fullscreen mode, Rhizosphere will display more fields for each item,
+    rather than the label only. Here you can specify how many fields you want
+    to see.
+  </dd>
+  <dt>
+    Advanced, as Label use
+  </dt>
+  <dd>
+    Explicitly specify the column ( either by typing its name or its
+    identifying letter ) that Rhizosphere will use as label for each item.
+  </dd>
+  <dt>
+    Advanced, as Size use
+  </dt>
+  <dd>
+    Explicitly specify the column ( either by typing its name or its
+    identifying letter ) that Rhizosphere will use as the Size for each item.
+    The column should contain a numeric value. Bigger numbers will result in
+    bigger sizes.
+  </dd>
+  <dt>
+    Advanced, as Color use
+  </dt>
+  <dd>
+    Explicitly specify the column ( either by typing its name or its
+    identifying letter ) that Rhizosphere will use as the Color for each item.
+    The column should contain a numeric value. Rhizosphere will use a color
+    palette where bigger numbers will result in darker shades of the palette
+    color.
+  </dd>
+</dl>
+
+<h3>Other tips and tricks</h3>
+<p>
+  Normally filters over text columns are represented as input fields where you
+  can type in strings that will be matched against the column values.
+  You can transform them into dropdown selection boxes by adding the word
+  <code>CAT</code> (uppercase) to the column header.
+</p>
+<img src="/static/doc/img/gadgetcat.png"
+  class="screenshot" style="border: 1px solid #bbb">
+<p>
+  Do you want a selection box that allow multiple choices? Use the word
+  <code>CATMUL</code> instead.
+</p>
+{% endblock %}
