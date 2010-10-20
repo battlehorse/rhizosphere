@@ -1,0 +1,30 @@
+{% extends "../docshell.html" %}
+{% block title %}iGoogle{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Use with iGoogle</h1>
+<p>This page describes how you can use Rhizosphere gadgets inside your
+  <a href="http://www.google.com/ig">iGoogle homepage</a>.
+</p>
+
+<p>
+  To use Rhizosphere in your iGoogle page, first you identify a Google
+  Spreadsheet that contains the data you want to display. Once you have it,
+  follow <a href="users_spreadsheets.html">these instructions</a> to setup the
+  gadget inside the spreadsheet.
+</p>
+
+<p>
+  From within the spreadsheet, open the gadget menu from the top-right corner
+  of the Rhizosphere Gadget, and choose the <b>Add Gadget to iGoogle</b>
+  option. That's it. Really easy (thanks Google)!
+</p>
+<img src="/static/doc/img/igoogle.png"
+     class="screenshot" style="border: 1px solid #bbb">
+<p class="note">
+  <strong>Tip</strong>. By clicking the maximize icon in the top-right corner
+  of the Rhizosphere gadget, you can switch to fullscreen mode, exactly in the
+  same way as described for the
+  <a href="users_spreadsheets.html">spreadsheet case</a>.
+</p>
+{% endblock %}

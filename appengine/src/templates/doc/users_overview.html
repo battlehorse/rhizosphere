@@ -1,0 +1,149 @@
+{% extends "../docshell.html" %}
+{% block title %}Getting Started{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Getting Started with Rhizosphere</h1>
+<p>This page explains the basic Rhizosphere concepts and you can use it
+to visualize your own data.</p>
+<p>
+  The basic concept behind Rhizosphere is to let you load datasets of your
+  choice and let you manipulate their contents like you would do if they
+  were physical items.
+</p>
+<p>
+  No matter whether you are using Rhizosphere to visualize the contents of your
+  Picasa photo albums, Google Books search results to find something to buy or
+  anything else you care about, Rhizosphere will display all such items for you
+  and let you freely re-arrange them by sorting, grouping and filtering them
+  according to the specific characteristics of your data.
+</p>
+
+<h3>Try out the demos</h3>
+<p>
+  The easiest way to experience Rhizosphere is to try it out with some of the
+  demos. You can find
+  <a href="http://rhizospherejs.appspot.com">all the demos here</a>.
+</p>
+
+<h2>The Rhizosphere user interface</h2>
+<p>This screenshot shows you the Rhizosphere user interface. It is divided into
+  2 main areas: a viewport area on the right, where the items loaded from your
+  data source are visualized, and a control panel on the left that you can use
+  to customize the visualization.</p>
+<p class="note">
+  <strong>Note</strong>. The screenshot shows how Rhizosphere looks when
+  rendered as a standalone full-page visualization on a desktop PC. Other
+  scenarios, such as embedded use or use with a mobile device, have
+  different rendering, but the interaction patterns described here still
+  apply. See the screenshot linked to
+  <a href="http://sites.google.com/site/rhizosphereui/Home/announcements/aloadoftouch-relatedenhancements">
+    blog post</a> to get an idea of different UIs.
+</p>
+<img src="/static/doc/img/rhizosphere_ui_0.png" class="screenshot">
+<p>
+  Four main controls form the Rhizosphere interface:
+</p>
+<ol>
+  <li>The viewport area that displays items loaded from your datasource.</li>
+  <li>The layout picker.</li>
+  <li>The selection manager.</li>
+  <li>The filters section.</li>
+</ol>
+
+<h3>The viewport</h3>
+<p class="note">
+  <strong>Note</strong>. Click on any image for an enlarged version. 
+</p>
+<p>
+  <a href="/static/doc/img/rhizosphere_ui_1.png">
+  <img src="/static/doc/img/rhizosphere_ui_1.png"
+     class="screenshot" width="400" style="float: left; vertical-align:top"></a>
+  The viewport is where the main action occurs. It displays all the items from
+  your datasource that match the filters set in the control panel.
+</p>
+<p>
+  You can pan the viewport by clicking with your mouse in any empty area and then
+  dragging the mouse around, or by using your mousewheel, or by using your
+  finger if you are accessing Rhizosphere from a touch-capable device.
+</p>
+<p>
+  You can also freely rearrange the visualized items via drag'n'drop.
+</p>
+
+<h3 style="clear:both">Layout selector</h3>
+<p>
+  <a href="/static/doc/img/rhizosphere_ui_2.png">
+  <img src="/static/doc/img/rhizosphere_ui_2.png"
+     class="screenshot" width="400" style="float: left; vertical-align:top"></a>
+  The layout selector let you choose how to organize the items in the viewport.
+  You can choose among different algorithms, from simple lists to buckets, trees
+  and more complex alternatives.
+</p>
+<p>
+  In the example, the layout is configured to cluster items by their price
+  range.
+</p>
+
+<h3 style="clear: both">Selection management</h3>
+<p>
+  <a href="/static/doc/img/rhizosphere_ui_3.png">
+  <img src="/static/doc/img/rhizosphere_ui_3.png"
+     class="screenshot" width="400" style="float: left; vertical-align:top"></a>
+  The selection buttons let you narrow the set of visualized items down to the
+  ones you explicitly selected, to remove unwanted items from the visualization.
+</p>
+
+<p style="clear: both">
+  <a href="/static/doc/img/rhizosphere_selection_0.png">
+  <img src="/static/doc/img/rhizosphere_selection_0.png"
+     class="screenshot" width="400" style="float: left; vertical-align:top"></a>
+  You can select items by simply clicking them, or by using drag selection.
+</p>
+<p>
+  To enable drag selection, click the selection toggle in the lower-right corner
+  of the visualization. You can then use your mouse to draw rectangular areas
+  and select any item that falls within the area.
+</p>
+
+<h3 style="clear:both">Filters</h3>
+<p>
+  <a href="/static/doc/img/rhizosphere_ui_4.png">
+  <img src="/static/doc/img/rhizosphere_ui_4.png"
+     class="screenshot" width="400" style="float: left; vertical-align:top"></a>
+  By using the filters on the left control panel, you can filter out any items
+  that do not match your current interest (say, for example, you don't want
+  to see any book that has not received at least a 3-star rating).
+</p>
+<p>
+  Using the autocommit checkbox you can decide to immediately remove from the
+  visualization any item that doesn't match the current set of filters, or
+  simply grey them out and remove them later.
+</p>
+
+<h3 style="clear: both">Navigation</h3>
+<p>
+  <a href="/static/doc/img/rhizosphere_ui_5.png">
+  <img src="/static/doc/img/rhizosphere_ui_5.png"
+     class="screenshot" width="400" style="float: left; vertical-align:top"></a>
+  By using your browser back and forward buttons, you can navigate through any
+  filters, layout, or selection you applied to the visualization. This will
+  help you return to a previous visualization state and facilitate the
+  exploration of your data.
+</p>
+<p class="note">
+  <strong>Note</strong>. This feature is only enabled on browsers that support
+  the latest HTML5 specifications. See
+  <a href="http://sites.google.com/site/rhizosphereui/Home/announcements/statefulvisualizationswithhtml5history">
+    this article</a> for further info.
+</p>
+
+<h2 style="clear:both">Use it with your data</h2>
+<p>
+  You can now move on to using Rhizosphere with your own data. The easiest
+  way to start is to
+  <a href="users_spreadsheets.html">load your data into a Google Spreadsheet</a>.
+  Alternatively you can <a href="users_embed.html">Embed Rhizosphere</a> in your
+  webpages and feed it data using the
+  <a href="devel_jsformat.html">Rhizosphere data format</a>.
+</p>
+{% endblock %}
