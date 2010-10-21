@@ -119,6 +119,7 @@ BODY {
 .content CODE, .content PRE {
   color: #007000;
   font-family: monospace;
+  font-size: 1.1em;
 }
 
 .content PRE {
