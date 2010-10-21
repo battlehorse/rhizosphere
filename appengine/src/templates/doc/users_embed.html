@@ -1,0 +1,328 @@
+{% extends "../docshell.html" %}
+{% block title %}Embedding Rhizosphere{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Embedding Rhizosphere</h1>
+<p>
+  This page describes how you can embed Rhizosphere visualizations in your
+  web pages.
+</p>
+<p>
+  Let's start with an empty webpage.
+</p>
+<pre class="prettyprint lang-html">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Rhizosphere&lt;/title&gt;
+    &lt;style&gt;&lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+<p>
+  First, add all the required libraries and stylesheets. This include jQuery,
+  jQueryUI and Rhizosphere libraries.
+</p>
+<p class="note">
+  <strong>Note</strong>. When using the following snippets in your webpages
+  remember to change the URLs to point to your domain instead of
+  <code>rhizospherejs.appspot.com</code>.
+</p>
+<pre class="prettyprint lang-html">
+...
+&lt;head&gt;
+  &lt;link rel="stylesheet"
+        href="http://rhizospherejs.appspot.com/static/shared/stylesheets/jquery-ui-1.8.4.custom.css"
+        type="text/css"&gt;
+  &lt;link rel="stylesheet" 
+        href="http://rhizospherejs.appspot.com/static/lib/stylesheets/rhizo.css"
+        type="text/css"&gt;
+  &lt;script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-1.4.2.min.js"
+          type="text/javascript"
+          charset="utf-8"&gt;&lt;/script&gt;
+  &lt;script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-ui-1.8.4.custom.min.js"
+          type="text/javascript"
+          charset="utf-8"&gt;&lt;/script&gt;
+  &lt;script src="http://rhizospherejs.appspot.com/static/lib/js/rhizo.pack.js"
+          type="text/javascript"
+          charset="utf-8"&gt;&lt;/script&gt;
+&lt;/head&gt;
+...
+</pre>
+
+<p>
+  Then define a container element within the page that will contain the
+  visualization.
+</p>
+<pre class="prettyprint lang-html">
+&lt;body&gt;
+  &lt;div id="rhizo-container" class="rhizo-container"&gt;&lt;/div&gt;
+&lt;/body&gt;
+</pre>
+
+<p>
+  For the visualization to work correctly, it is important for the
+  visualization container to be absolutely or relatively positioned. You can
+  also specify the exact size the container should use, to limit the amount
+  of space assigned to the visualization.
+</p>
+
+<p>
+  For example, the style to use for a fullpage visualization would look like:
+</p>
+<pre class="prettyprint lang-html">
+&lt;style&gt;
+  .rhizo-container {
+    position: absolute; top: 0; bottom: 0; right: 0; left: 0;
+  }
+&lt;/style&gt;
+</pre>
+
+<p>
+  While the style for a visualization that occupies only a defined area in the
+  webpage would look like:
+</p>
+<pre class="prettyprint lang-html">
+&lt;style&gt;
+  .rhizo-container {
+    position: relative; height: 300px; width: 600px;
+  }
+&lt;/style&gt;
+</pre>
+
+<p>
+  Finally, include the logic to bootstrap the visualization (since Rhizosphere
+  depends on jQuery, here we are using
+  <a href="http://www.jquery.com">jQuery</a> syntax to initialize the
+  visualization once the containing webpage has finished loading.
+</p>
+<pre class="prettyprint lang-html">
+&lt;script type="text/javascript" charset="utf-8"&gt;
+  $(document).ready(function() {
+    var datasource_uri = '...';  // your datasource here.
+    var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
+    bootstrapper.prepareAndDeploy(datasource_uri);
+  });
+&lt;/script&gt;  
+</pre>
+<p>
+  In the above example, the <code>bootstrapper</code> expects you to provide
+  the URI of the datasource that cointains the items that you want to visualize.
+  Rhizosphere support various datasources: this includes Google Spreadsheets,
+  Google Visualization API datasources and plain javascript files written
+  according to Rhizosphere own <a href="devel_jsformat.html">data format</a>.
+</p>
+<p>
+  For example, if you want to use a Google Spreadsheet as datasource, first
+  identify the datasource URL associated to the spreadsheet using
+  <a href="http://code.google.com/apis/visualization/documentation/spreadsheets.html#Google_Spreadsheets_as_a_Data_Source">
+    these instructions</a>. The datasource URL will look like this one:
+</p>
+<pre>
+http://spreadsheets.google.com/tq?range=A1:K14&amp;headers=-1&amp;key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&amp;gid=0
+</pre>
+
+<h2>Bootstrap configuration</h2>
+<p>
+  The <code>rhizo.bootstrap.Bootstrap</code> class that drives Rhizosphere
+  initialization allows flexible configuration to match different initialization
+  needs. For a complete overview of the alternatives, please refer to the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.bootstrap.js">
+    <code>rhizo.bootstra.Bootstrap</code> source code</a>.
+</p>
+
+<h3>Initialization options</h3>
+<p>
+  The <code>rhizo.bootstrap.Bootstrap</code> constructor accepts a set of
+  initialization options as its second parameter, after the container
+  specification. You can use these options to tune Rhizosphere behavior.
+  You can find a complete list of supported options in the
+  <a href="contrib_tables.html">Reference tables</a>.
+</p>
+<p>
+  Here is an example of passing initialization options to the bootstrapper:
+</p>
+<pre class="prettyprint lang-js">
+var init_options = {
+  cacheDimensions: true,
+  noAnims: true
+};
+var datasource_uri = '...';  // your datasource here
+var bootstrapper = new rhizo.bootstrap.Bootstrap(
+    document.getElementById('container'),
+    init_options);
+bootstrapper.prepareAndDeploy(datasource_uri);
+</pre>
+
+<h3>Alternative bootstrap sequences</h3>
+<p>
+  <code>rhizo.bootstrap.Bootstrap</code> exposes alternative initialization
+  methods, in addition to the one shown above.
+</p>
+<dl class="apireference">
+  <dt>
+    rhizo.bootstrap.Bootstrap.prepareAndDeploy(opt_resource)
+  </dt>
+  <dd>
+    Initializes a Rhizosphere visualization loading the data to visualize from
+    the given <code>opt_resource</code> datasource URL. If
+    <code>opt_resource</code> is not specified, and the initialization option
+    <code>allowConfigFromUrl</code> is set to <code>true</code>, the
+    bootstrapper will try to extract to datasource to use from the URL of the
+    document that is embedding Rhizosphere.
+  </dd>
+  <dt>
+    rhizo.bootstrap.Bootstrap.deployWithLoader(loader)
+  </dt>
+  <dd>
+    Initializes a Rhizosphere visualization delegating the data loading to
+    the specified <code>loader</code>. <code>loader</code> is a Javascript
+    object that conforms to the specification described in
+    <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.model.loader.js">
+      <code>rhizo.model.loader.js</code></a>. <br />
+    <code>rhizo.bootstrap.Bootstrap.prepare()</code> must be invoked before
+    calling this method.
+  </dd>
+  <dt>
+    rhizo.bootstrap.Bootstrap.deployExplicit(metamodel, renderer, models)
+  </dt>
+  <dd>
+    Initializes a Rhizosphere visualization by explicitly declaring the models,
+    metamodels and renderer the visualization must use. Refer to
+    <a href="devel_concepts.html">Concepts</a> and 
+    <a href="devel_jsformat.html">Rhizosphere data format</a> for details about
+    the expected parameters. <br />
+    <code>rhizo.bootstrap.Bootstrap.prepare()</code> must be invoked before
+    calling this method.
+  <dd>
+  <dt>
+    rhizo.bootstrap.Bootstrap.prepare()
+  </dt>
+  <dd>
+    Performs all the necessary steps to prepare a Rhizosphere visualization, up
+    to the point where it can receive the models or datasource to display.
+  </dd>
+</dl>
+
+<h2>Advanced topics</h2>
+<p>
+  In some scenarios, a few additional steps are required for Rhizosphere to
+  work properly.
+</p>
+<h3>Mobile support</h3>
+<p>If you are accessing Rhizosphere visualizations via mobile devices, tablets
+  or smartphones, you should probably have the visualization container 
+  use all the available screen space, and include the following <code>meta</code>
+  attribute in your HTML page, to ensure a correct page scaling.
+</p>
+<pre class="prettyprint lang-html">
+&lt;meta name="viewport" content="width=device-width,user-scalable=no"&gt;
+</pre>
+
+<h3>Google Visualization API datasources</h3>
+<p>
+  If your Rhizosphere visualization is consuming a Google Visualization API
+  datasource, you must load the Google Visualization javascript libraries before
+  activating Rhizosphere.
+</p>
+<pre class="prettyprint lang-html">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script type="text/javascript" src="http://www.google.com/jsapi"&gt;&lt;/script&gt;
+    ...
+  &lt;/head&gt;
+  &lt;body&gt;
+    ...
+    &lt;script&gt;
+      // Early loading of the Google Visualization API libraries
+      if (typeof google != 'undefined') {
+        google.load('visualization', '1');
+        google.setOnLoadCallback(function() {});
+      }
+      
+      $(document).ready(function() {
+        var datasource_uri = '...';  // your datasource here.
+        var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
+        bootstrapper.prepareAndDeploy(datasource_uri);
+      });      
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<h3>Iframing</h3>
+<p>
+  Rhizosphere tries not to leak anything in the global javascript or CSS scope,
+  so it is <strong>not</strong> necessary to embed Rhizosphere within an
+  <code>iframe</code> tag (although you are free to do so, if you so prefer).
+</p>
+<p>
+  When choosing how to proceed, you should always be aware of the security
+  profile of the webpage where Rhizosphere will be included and decide
+  whether you need to constrain Rhizosphere and/or other javascript components
+  that live within the page into iframes in order to limit cross-interactions.
+</p>
+<p class="note">
+  <strong>Note</strong>. When using Rhizosphere custom data format and allowing
+  Rhizosphere configuration from URL parameters, Rhizosphere may load and 
+  execute Javascript payloads under the control of the requesting user. Consider
+  iframing Rhizosphere to limit the potential attack surface under such
+  conditions.
+<p>
+<h2>Everything put together</h2>
+<p>
+  This <a href="/static/doc/txt/rhizosphere_embed.html.txt">HTML page code</a> contains all the above snippets put together in a single file.
+  Use it as a template to embed Rhizosphere in your webpages.
+</p>
+
+<h2>Multiple visualizations in a single page</h2>
+<p>
+  You are not limited to having a single Rhizosphere visualization per page; you
+  can embed as many as you want. All Rhizosphere visualizations in a page share
+  the same library code, so your users don't have to pay use extra bandwidth.
+</p>
+<p>
+  To embed multiple visualizations in a single page, just repeat the
+  bootstrapping sequence for every visualization you want.
+</p>
+<pre class="prettyprint lang-html">
+&lt;html&gt;
+  &lt;head&gt;
+    ...
+    &lt;style&gt;
+      .rhizo-container {
+        position: relative; height: 300px; width: 600px;
+      }
+    &lt;/style&gt;
+    ...
+  &lt;/head&gt;
+  &lt;body&gt;
+    ...
+    &lt;div id="rhizo-first" class="rhizo-container"&gt;&lt;/div&gt;
+    &lt;div id="rhizo-second" class="rhizo-container"&gt;&lt;/div&gt;
+    &lt;div id="rhizo-third" class="rhizo-container"&gt;&lt;/div&gt;
+
+    &lt;script type="text/javascript" charset="utf-8"&gt;
+      $(document).ready(function() {
+        var divs = ['#rhizo-first', '#rhizo-second', '#rhizo-third'];
+        var datasources = ['...', '...', '...' ];  // your datasources here.
+        for (var i = 0; i &lt; divs.length; i++) {
+          var bootstrap = new rhizo.bootstrap.Bootstrap($(divs[i]));
+          bootstrap.prepareAndDeploy(datasources[i]);
+        }
+      });
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+<p>
+  Try this <a href="/multi.html">demo</a> to see multiple visualizations in
+  action in the same page.
+</p>
+
+<h2>Next ...</h2>
+<p>
+  Learn more about Rhizosphere internals browsing the
+  <a href="devel_overview.html">library reference documentation</a>.
+</p>
+{% endblock %}
