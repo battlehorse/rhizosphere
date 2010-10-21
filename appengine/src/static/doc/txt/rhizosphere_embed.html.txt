@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Rhizosphere</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no">
+    <link rel="stylesheet"
+          href="http://rhizospherejs.appspot.com/static/shared/stylesheets/jquery-ui-1.8.4.custom.css"
+          type="text/css">
+    <link rel="stylesheet"
+          href="http://rhizospherejs.appspot.com/static/lib/stylesheets/rhizo.css"
+          type="text/css">
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-1.4.2.min.js"
+            type="text/javascript"
+            charset="utf-8"></script>
+    <script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-ui-1.8.4.custom.min.js"
+            type="text/javascript"
+            charset="utf-8"></script>
+    <script src="http://rhizospherejs.appspot.com/static/lib/js/rhizo.pack.js"
+            type="text/javascript"
+            charset="utf-8"></script>
+    <style>
+      BODY {
+        margin: 0;
+        font-family: sans-serif;
+      }
+
+      .rhizo-container {
+        position: absolute; top: 0; bottom: 0; right: 0; left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="rhizo-container" class="rhizo-container"></div>
+    <script type="text/javascript" charset="utf-8">
+      // Early loading of the Google Visualization API libraries
+      if (typeof google != 'undefined') {
+        google.load('visualization', '1');
+        google.setOnLoadCallback(function() {});
+      }
+      
+      $(document).ready(function() {
+        // Replace 'datasource_uri' with your own datasource.
+        var datasource_uri = 'http://spreadsheets.google.com/tq?range=A1:K14&headers=-1&key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&gid=0';
+        var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
+        bootstrapper.prepareAndDeploy(datasource_uri);
+      });
+    </script>  
+  </body>
+</html>
