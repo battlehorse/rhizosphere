@@ -1,0 +1,111 @@
+{% extends "../docshell.html" %}
+{% block title %}Internals overview{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>The Rhizosphere library</h1>
+<p>
+  This section describes how the Rhizosphere library is structured and will
+  cover some of its internals. After reading this section you should be able
+  to understand how Rhizosphere works and leverage this to enhance your
+  visualizations.
+</p>
+<p>
+  Rhizosphere source code has been written observing the following general
+  concepts.
+</p>
+
+<h3>Modularity</h3>
+<p>
+  Rhizosphere is designed as a modular, object-oriented Javascript library. Each
+  visualization is managed by a limited set of classes, each one handling a
+  specific aspect of the visualization. Classes sharing similar scope are
+  collected in modules (e.g. <code>rhizo.ui</code>) which usually map 1-to-1
+  with javascript source files that have the same name.
+</p>
+<p>
+  Not all modules are mandatory, and some modules or
+  specific components might not be present at runtime (for example, to reduce
+  the library size on the wire). The library is flexible enough to handle this.
+</p>
+
+<h3>Extensibility</h3>
+<p>
+  Javascript makes it extremely easy to extend libraries for added
+  functionality. Rhizosphere leverages this and exposes several hooks where
+  additional components can be added to a visualization at runtime, allowing
+  the user to enhance the basic visualization with custom additions tailored
+  for his needs.
+</p>
+<p>
+  For example, adding a new layout engine is a simple as adding a new entry
+  to the <code>rhizo.layout.layouts</code> (defined
+  <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.layout.js">
+    here</a>) map, before Rhizosphere bootstraps.
+</p>
+
+<h3>Isolation</h3>
+<p>
+  Users of the Rhizosphere library expect it to behave properly when dropped
+  in their webpages and not interfere with other content already there.
+  Additionally, the Rhizosphere library can support multiple visualization
+  instances living in the same webpage: therefore each visualization should not
+  interfere with the others. For these reasons, the following paradigms are
+  used:
+</p>
+<ul>
+  <li>
+    All javascript code is confined within the <code>rhizo</code> namespace
+    (and many subnamespaces).
+  </li>
+  <li>
+    The usage of Javascript globals and statics is strictly limited to
+    components that actually have a single instance at the document level
+    (such as, for example, code that talks to <code>window.history</code>).
+    <br />
+    Each visualization is associated to a specific Javascript <em>manager</em>
+    object that oversees it. Every datastructure and dependent object that
+    pertains to the visualization links from this one. In Rhizosphere
+    terminology this <em>manager</em> object is a <code>rhizo.Project</code>
+    instance.
+  </li>
+  <li>
+    Rhizosphere does not rely on any HTML element being already present
+    in the page where it is included. It creates everything it needs on its own.
+  </li>
+  <li>
+    Rhizosphere does not use ids for the HTML elements it creates and manages,
+    because the same element could be created twice by two visualizations.
+    All element targeting and styling occurs via CSS classes and scoped
+    selectors.
+  </li>
+  <li>
+    All Rhizosphere styles are namespaced in the <code>.rhizo</code> namespace
+    and/or use the <code>.rhizo-</code> prefix.
+  </li>
+</ul>
+
+<h3>Capabilities, not Browsers</h3>
+<p>
+  Rhizosphere aims to target a whole range of browsers, devices and platforms
+  with a single javascript library. For this reason, the library does not
+  reason in terms of supported browsers, but instead in terms of supported
+  capabilities.
+</p>
+<p>
+  A functionality is enabled only if the hosting browser/device is capable of
+  it. This allows Rhizosphere to target touch devices, smartphones and
+  traditional desktop browsers with different levels of spec support with
+  a single piece of code.
+</p>
+<p>
+  For example, state management via HTML5 History is enabled only whenever the
+  hosting environment exposes the expected <code>window.history</code>
+  callbacks. The sample applies for handling touch events on capable devices.
+</p>
+
+<h2>Next ...</h2>
+<p>
+  Move on to Rhizosphere <a href="devel_concepts.html">Concepts</a>.
+</p>
+
+{% endblock %}
