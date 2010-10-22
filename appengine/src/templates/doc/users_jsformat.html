@@ -1,0 +1,370 @@
+{% extends "../docshell.html" %}
+{% block title %}Rhizosphere data format{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Rhizosphere data format</h1>
+<p>
+  This document describes how to define the datasets you want to
+  visualize in a format Rhizosphere supports.
+</p>
+<p>
+  You can declare datasets in two ways:
+</p>
+<ul>
+  <li><strong>implicitly</strong>, by feeding Rhizosphere with a datasource URL
+  that Rhizosphere knows how to parse. This is the case, for example, of feeding
+  Rhizosphere with data derived from a Google Spreadsheet or a Google
+  Visualization API datasource.</li>
+  <li>
+    <strong>explicitly</strong>, by feeding Rhizosphere the exact datastructures
+    it requires to build a visualization.
+  </li>
+</ul>
+
+<p>
+  This document focuses on the definition of explicit datasets. To define an
+  explicit dataset, you define a set of javascript objects that
+  conform to the <a href="devel_concepts.html">Rhizosphere data model</a> and
+  which you can then feed to the Rhizosphere bootstrapper, as shown in
+  the <a href="users_embed.html">Embedding Rhizosphere</a> section.
+</p>
+<p>
+  You have to provide 3 pieces of information:
+</p>
+<ul>
+  <li>
+    The list of datapoints that form your dataset. This is Rhizosphere set
+    of <code>models</code>.
+  </li>
+  <li>
+    A formal description of the characteristics and attributes that your
+    datapoints have. This is Rhizosphere <code>metamodel</code>.
+  </li>
+  <li>
+    Optionally, the logic to convert a datapoint from your dataset into a visual
+    (HTML) representation of it, which is what the user will ultimately see
+    in the visualization. This is Rhizosphere <code>renderer</code>.
+  </li>
+</ul>
+<p>
+  Have a look at Rhizosphere <a href="devel_concepts.html">concepts</a> for a
+  better understanding of models, metamodels and renderers, and the role they
+  play within a visualization.
+</p>
+
+<h3>The people sample</h3>
+<p>
+  From now on we will rely on the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/samples/js/people.js">
+    <code>people.js</code></a> sample as a basis for the code you are going to
+  write. This sample dataset defines a set of persons, as they could be
+  represented in a fictional orgchart visualization. Each person is
+  characterized by a set of attributes, such as gender, name and age.
+</p>
+<img src="/static/doc/img/peoplesample.png" class="screenshot">
+
+<h2>Defining models</h2>
+<p>
+  The first step is to define a javascript representation of the items you want
+  to visualize. To do so, we create a <code>Person</code> object.
+</p>
+<pre class="prettyprint lang-js">
+var Person = function(id, name, age, male, hobbies, salary, parentId) {
+  this.id = id;  // unique model id.
+  this.name = name;
+  this.age = age;
+  this.male = male;
+  this.hobbies = hobbies;
+  this.salary = salary;
+  this.parentId = parentId;  // will define parent-child relationships
+                             // to be able to visualize items in a tree.
+};
+</pre>
+<p class="note">
+  <strong>Note</strong>. Every model must have a <code>id</code> attribute
+  that uniquely identifies it within the entire dataset.
+</p>
+
+<p>
+  You can then enumerate all the items that you want to display in the
+  visualization:
+</p>
+<pre class="prettyprint lang-js">
+var models = [
+  new Person("1", "john", 30, true, ['fishing', 'soccer'], 100),
+  new Person("2", "mark", 20, true, ['fishing', 'soccer'], 200, "1"),
+  new Person("3", "battlehorse", 20, true,
+             ['computer games', 'soccer'], 300, "1"),
+  new Person("4", "sara", 25, false, ['fishing', 'soccer'], 100, "3"),
+  new Person("5", "jennifer", 25, false, ['fishing', 'soccer'], 200, "3"),
+  new Person("6", "dave", 25, true, [ 'computer games'], 300, "2"),
+  new Person("7", "carl", 25, true, ['cycling' , 'soccer'], 100, "2"),
+  new Person("8", "aaron", 25, true, [ ], 100, "6"),
+  new Person("9", "lucy", 35, false, ['soccer'], 150, "6"),
+  new Person("10", "jacob", 40, true, [], 230, "7")
+];
+</pre>
+
+<h2>Defining the metamodel</h2>
+<p>
+  The next step is to describe the characteristics and behavior of each model
+  attribute. To do so, you create the so-called <code>metamodel</code>.
+</p>
+<p>
+  A <code>metamodel</code> enumerates the same attributes that the models have,
+  and associate them with information that Rhizosphere will use to configure
+  the visualization behavior and capabilities. The most important bit is to
+  define each attribute <code>kind</code>, which Rhizosphere uses to
+  understand the attribute type (string, number, ...) and how filters and
+  layouts should work when applied to such kind.
+</p>
+<p>
+  The complete list of available kinds is available in the
+  <a href="contrib_tables.html">Reference tables</a>.
+</p>
+<p>
+  Here is how you define that the <code>name</code> attribute should be treated
+  as a <code>string</code>, and the <em>Name</em> label should be used in the
+  UI to refer to it:
+</p>
+<pre class="prettyprint lang-js">
+var metamodel = {
+  name: { kind: rhizo.meta.Kind.STRING, label: "Name" },
+  ...
+}
+</pre>
+
+<p>The entire metamodel will then look like this:</p>
+<pre class="prettyprint lang-js">
+var metamodel = {
+  name: { kind: rhizo.meta.Kind.STRING, label: "Name" },
+  age: { kind: rhizo.meta.Kind.RANGE, label: "Age", min: 20, max: 40, stepping: 1},
+  male: { kind: rhizo.meta.Kind.BOOLEAN, label: "Male" },
+  hobbies: { kind: rhizo.meta.Kind.CATEGORY, label: "Hobbies" ,
+             categories: [ 'fishing', 'soccer', 'computer games' , 'cycling'],
+             multiple: true},
+  salary: {kind: rhizo.meta.Kind.RANGE, label: "Salary", min:100, max: 300},
+  parentId: { kind: rhizo.meta.Kind.STRING, label: "Parent", isParent: true}
+};
+</pre>
+<p>
+  Each <code>kind</code> might depend on additional attributes associated to
+  the metamodel to define its behavior. Some examples:
+</p>
+<ul>
+  <li>A <code>rhizo.meta.Kind.RANGE</code> kind uses the <code>min</code> and
+  <code>max</code> attributes to define the slider range boundaries,
+  </li>
+  <li>
+    A <code>rhizo.meta.Kind.CATEGORY</code> kind accepts the list of available
+    <code>categories</code> the user will be able to choose from.
+  </li>
+  <li>
+    Any kind may be assigned the <code>isParent</code> tag to declare that
+    the value of the associated model attributes will map to other model ids,
+    in order to define parent-child relationships.
+  </li>
+</ul>
+
+<h2>Defining the renderer</h2>
+<p>
+  The final step is to define the visualization <code>renderer</code>. This
+  step is optional. If you want you can rely on an automated (albeit basic)
+  renderer that will provide a simple representation of your data items. To
+  do so, just use this line:
+</p>
+<pre class="prettyprint lang-js">
+var renderer = new rhizo.autorender.AR(
+  metamodel,
+  models,
+  true,  // should automatically try to figure out relevant attributes from the
+         // model definition, and use color-coding to differentiate them.
+  2);    // number of attributes to show in the model rendering.
+</pre>
+
+<p>
+  Alternatively, you can provide your own renderer code. At the very minimum
+  your renderer should expose the <code>render()</code> function, whose purpose
+  is to return a representation for the model that is passed in as parameter.
+</p>
+<p>Here is how the renderer from the people might look like:</p>
+<pre class="prettyprint lang-js">
+var renderer = {
+  render: function(model) {
+    return $("&lt;div class='rhizo-sample'&gt;" +
+             "&lt;p&gt;&lt;b&gt;&lt;span style='color:" +
+             (model.male ? "blue" : "pink") + "'&gt;"+
+             model.name + "&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;" +
+             "&lt;p&gt;&lt;span class='dim'&gt;Age:&lt;/span&gt;" + model.age + "&lt;/p&gt;" +
+             "&lt;p style='white-space: nowrap'&gt;" +
+             "&lt;span class='dim'&gt;Hobbies:&lt;/span&gt;&lt;br /&gt;" +
+             (model.hobbies.length &gt; 0 ? model.hobbies : "Nothing") + "&lt;p&gt;" +
+             "&lt;/div&gt;");
+  }
+};
+</pre>
+<p>
+  The <code>render()</code> function is supposed to return the HTML
+  representation of the model it received as paramter. It can either return
+  a plain string containing HTML code, an HTML Element object, or even a jQuery
+  object (as in the example above).
+</p>
+<p>
+  <code>render()</code> can also accept additional parameters to customize its
+  behavior. The complete signature is: 
+</p>
+<dl class="apireference">
+  <dt>render(model, expanded, renderingHints</dt>
+  <dd>
+    <p>
+      Returns an HTML representation of a model, either in the form of a plain
+      string, an HTML element or a jQuery object.
+    </p>
+    <dl class="arguments">
+      <dt>model (Object)</dt>
+      <dd>
+        The model to produce a visual representation of.
+      </dd>
+
+      <dt>expanded (boolean)</dt>
+      <dd>
+        Whether the model should be renderered in <em>expanded</em> mode or not.
+        A renderer may allow models to be renderered in two formats: normal or
+        expanded (i.e. maximized). This attribute defines which format to use.
+      </dd>
+
+      <dt>renderingHints (Object)</dt>
+      <dd>
+        A key-value map of additional flags that the renderer might use to
+        customize the rendering. This include, for example, flags that define
+        whether the visualization is being accessed by a mobile device or not.
+        See <code>rhizo.ui.gui.GUI.allRenderingHints</code> for the whole list.
+      </dd>
+    </dl>
+  </dd>
+</dl>
+
+<p>
+  Additionally, the renderer might exposes further attributes for Rhizosphere
+  to use:
+</p>
+<dl class="apireference">
+  <dt>expandable (boolean)</dt>
+  <dd>
+    Whether the renderer is capable of rendering models in both normal and
+    expanded (i.e. maximized) mode.
+  </dd>
+  <dt>cacheDimensions (boolean)</dt>
+  <dd>
+    Whether Rhizosphere should cache renderings' dimensions.
+    Greatly improves layout performance, but may result in layout bugs if the
+    models you are visualizing change their rendering dimensions arbitrarily
+    after the visualization initialization.
+  </dd>
+</dl>
+
+<p>A more capable renderer might then look like this:</p>
+<pre class="prettyprint lang-js">
+var renderer = {
+  render: function(model, expanded, renderingHints) {
+    if (renderingHints.small) {
+      // The visualization has reduced screen estate, limit the amount of
+      // information shown.
+      return $("&lt;div class='rhizo-sample'&gt;" +
+               "&lt;p&gt;&lt;b&gt;&lt;span style='color:" +
+               (model.male ? "blue" : "pink") + "'&gt;"+
+               model.name + "&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;" +
+               "&lt;/div&gt;");
+    } else {
+      return $("&lt;div class='rhizo-sample'&gt;" +
+               "&lt;p&gt;&lt;b&gt;&lt;span style='color:" +
+               (model.male ? "blue" : "pink") + "'&gt;"+
+               model.name + "&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;" +
+               "&lt;p&gt;&lt;span class='dim'&gt;Age:&lt;/span&gt;" + model.age + "&lt;/p&gt;" +
+               "&lt;p style='white-space: nowrap'&gt;" +
+               "&lt;span class='dim'&gt;Hobbies:&lt;/span&gt;&lt;br /&gt;" +
+               (model.hobbies.length &gt; 0 ? model.hobbies : "Nothing") + "&lt;p&gt;" +
+               "&lt;/div&gt;");
+    }
+  },
+  cacheDimensions: true
+};  
+</pre>
+
+<h2>Invoking the bootstrapper</h2>
+<p>Once you have defined the <code>model</code>, <code>metamodel</code> and
+<code>renderer</code> you can then feed a bootstrapper and start a Rhizosphere
+visualization.
+</p>
+<pre class="prettyprint lang-js">
+var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
+bootstrapper.prepare();
+bootstrapper.deployExplicit(metamodel, renderer, models);
+</pre>
+
+<h2>Everything put together</h2>
+This <a href="http://localhost:8080/static/doc/txt/rhizosphere_sample_people.html.txt">
+  code</a> contains all the above snippets put together in a single file.
+Use it as a template to define your own datasets.
+
+<h2>Loading via script inclusion</h2>
+<p>
+  In the above example, you included the dataset directly in the HTML page where
+  the visualization that uses it is located. If you want to distribute your
+  dataset in this format to other users, you should consider making it avaiable
+  for Rhizosphere to load it via script-inclusion.
+</p>
+<p>
+  When bootstrapping a Rhizosphere visualization, you can specify a javascript
+  file as the datasource:
+</p>
+<pre class="prettyprint lang-js">
+  var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
+  bootstrapper.prepareAndDeploy('http://yourhost.com/dataset.js');
+</pre>
+<p>
+  Rhizosphere will then request the resource with an additional
+  <code>jsonp</code> parameter attached to it:
+</p>
+<pre>
+  http://yourhost.com/dataset.js?jsonp=&lt;callback&gt;
+</pre>
+<p>
+  The <code>jsonp</code> parameter defines a javascript callback function that
+  your javascript code should invoke passing back the <code>model</code>,
+  <code>metamodel</code> and <code>renderer</code> like you defined above.
+</p>
+<p>
+  On the serving side, the javascript file defining the dataset would then look
+  like this:
+</p>
+<pre class="prettyprint lang-js">
+(function() {
+  // These can be the same ones defined above.
+  var models = [ ... ];
+  var metamodel = { ... };
+  var renderer = { ... };
+
+  &lt; value of the jsonp parameter here &gt;({
+      'renderer': renderer,
+      'metamodel': metamodel,
+      'models': models});
+})();
+</pre>
+<p>
+  How you inject the value of the <code>jsonp</code> parameter you received
+  in the URL back in the javascript file depends on the templating engine you
+  are using to serve webpages. For example, if you are use the
+  <a href="http://www.djangoproject.com/">Django</a> template engine, the code
+  would look like:
+</p>
+<pre class="prettyprint lang-js">
+  &#123;&#123; jsonp_parameter }}({
+      'renderer': renderer,
+      'metamodel': metamodel,
+      'models': models});
+</pre>
+<h2>Next ...</h2>
+Have a look at <a href="devel_overview.html">Rhizosphere internals</a>.
+
+{% endblock %}
