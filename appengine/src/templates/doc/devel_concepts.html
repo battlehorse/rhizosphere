@@ -1,0 +1,388 @@
+{% extends "../docshell.html" %}
+{% block title %}Concepts{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Concepts</h1>
+<p>This document describes the data model and main concepts that define the
+structure of a Rhizosphere visualization.
+</p>
+<p class="note">
+  <strong>Tip</strong>. Keep the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/src/js">
+  source code</a> at hand to quickly lookup all the entities and classes cited
+  in this document.
+</p>
+
+<h2>Black Box perspective</h2>
+<p>
+  From an external perspective, Rhizosphere is a black box that needs to be
+  fed data in a certain format for it to visualize them.
+</p>
+<p>Rhizosphere requires the definition of 3 main entities to be able to create
+  a visualization:
+</p>
+<dl class="apireference">
+  <dt>Models</dt>
+  <dd>
+    <p>
+    A <em>model</em> represents a single datapoint of the dataset you want to
+    visualize. The entire dataset is therefore represented as a set of models.
+    </p>
+    <p>
+      Each models is expected to have a unique id within the dataset it belongs
+      to. A model is described in terms of <em>attributes</em>, so for example
+      a model defining a Person might have the age, name and gender attributes.
+    </p>
+  </dd>
+  <dt>MetaModel</dt>
+  <dd>
+    <p>
+      A <em>metamodel</em> represents the formal definition of the models
+      structure. It enumerates the set of attributes that form each model. The
+      enumeration is done in terms of <em>Kind</em>s (aka <em>types</em> like
+      string, number, etc...). A Kind includes additional information that
+      describe how the visualization will be able to use the model attribute,
+      discussed later.
+    </p>
+
+  </dd>
+  <dt>Renderer</dt>
+  <dd>
+    <p>
+      The <em>renderer</em> is responsible for providing a visual representation
+      of models. The renderer is capable of converting each model into a
+      matching visual representation. The ensemble of all renderings is what
+      the user will ultimately see and manipulate within the visualization UI.
+    </p>
+  </dd>
+</dl>
+
+<p>
+  From a black box persepective, the only strictly mandatory input to provide
+  is the list of <code>models</code>. The <code>metamodel</code> can be
+  automatically inferred if the datasource Rhizosphere is pulling data from is
+  rich enough. The <code>renderer</code> can be defined automatically
+  (see <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.autorender.js">
+  <code>rhizo.autorender.AR</code></a>) at the cost of some flexibility in
+  defining the rendering look'n'feel.
+</p>
+<p>
+  No matter whether they were explicity provided or automatically inferred, in
+  the end a Rhizosphere visualization is given a models,metamodel,renderer
+  tuple to be created from.
+</p>
+<p>
+  Rhizosphere realizes the black box paradigm by wrapping all Rhizosphere
+  functionality behind the <code>rhizo.bootstrap.Bootstrap</code> class which
+  is responsible for bootstrapping a visualization and hiding all the internals
+  from the user.
+</p>
+<p>
+  Internally, <code>rhizo.bootstrap.Bootstrap</code> instantiates a
+  <code>rhizo.Project</code> instance, which is the real core and overall
+  manager of every visualization.
+</p>
+<p>
+  Every visualization has an associated <code>rhizo.Project</code> and
+  <code>rhizo.Project</code> is the central hub that connects all the pieces
+  of the visualization together. See the dedicated section about
+  <code>rhizo.Project</code>.
+
+<h2>Interaction perspective</h2>
+<p>
+  From an interaction point of view, Rhizosphere is arranged around the
+  following concepts:
+</p>
+<dl class="apireference">
+  <dt>Viewport</dt>
+  <dd>
+    <p>
+      The <em>Viewport</em> occupies the main part of the visualization UI and
+      it's where the dataset being visualized is displayed. The viewport
+      contains all the models' renderings, produced by the <code>renderer</code>
+      for each <code>model</code> in the loaded dataset.
+    </p>
+  </dd>
+</dl>
+<p>
+  UI controls collect user input to drive the visualization and ultimately
+  affect the positioning, visibility and behavior of the objects shown in the
+  viewport.
+</p>
+<p>
+  The following controls currently exist:
+</p>
+<dl class="apireference">
+  </dd>
+  <dt>Layouts</dt>
+  <dd>
+    Layouts drive the positioning of models' renderings within the viewport.
+    For example, <code>rhizo.layout.TreeLayout</code> and
+    <code>rhizo.layout.TreeMapLayout</code> arrange viewport items respectively
+    in a tree and treemap representation.
+  </dd>
+  <dt>Filters</dt>
+  <dd>
+    Filters drive the visibility of models' renderings within the viewport. For
+    example, a filter may be represented as a slider control to limit the
+    set of items shown in the viewport to only those whose matching numeric
+    attribute fits within the defined range.
+  </dd>
+  <dt>Selection management</dt>
+  <dd>
+    The selection manager lets the user explicitly select items from the
+    viewport and limit the visualization only to those.
+  </dd>
+</dl>
+
+<p class="note">
+  <strong>Note</strong>. Refer to the <a href="users_overview.html">
+  Using Rhizosphere</a> overview for screenshots that illustrate the above
+  controls.
+</p>
+
+<h2><code>rhizo.Project</code> and Rhizosphere data model</h2>
+<p>To support the above interaction model, Rhizosphere uses the following data
+  model:
+</p>
+<dl class="apireference">
+  <dt>Project</dt>
+  <dd>
+    <p>
+      A <em>Project</em> is the core object that manages an entire visualization.
+      There is one <code>rhizo.Project</code> instance associated to each
+      visualization: it exposes public functions for others to programmatically
+      drive equivalent UI operations  (such as layouts and filters) and
+      connects together all the other objects that collectively handle the
+      visualization.
+    </p>
+
+    <p>
+      The Project keeps track of all the visualized models, their renderings,
+      available layouts and filters, and keeps an handle to the visualization UI
+      elements.
+    </p>
+    <p>
+      Additionally it tracks visualization state and dispatches state changes
+      notifications.
+    </p>
+  </dd>
+  <dt>SuperModel</dt>
+  <dd>
+    Each model in the dataset is reference by the Project via a
+    <code>rhizo.model.SuperModel</code> wrapper. The wrapper, in addition to
+    exposing the original model, enriches it with visualization-specific
+    information (such as its selection and filtering status).
+  </dd>
+  <dt>Rendering</dt>
+  <dd>
+    <p>
+      Each model rendering as returned by the visualization <code>renderer</code>
+      is wrapped in a <code>rhizo.ui.Rendering</code> instance.
+    </p>
+
+    <p>
+      The wrapper is responsible for proxying all UI-changing operations to the
+      actual rendering (such as changing the selection status) and providing
+      higher-level abstractions for some UI operations (such as raising/lowering
+      renderings in the viewport, or pinning them).
+    </p>
+  </dd>
+  <dt>Metas</dt>
+  <dd>
+    <p>
+      Each model attribute is bound to a specific <code>rhizo.meta.Kind</code>
+      instance (such as <code>rhizo.meta.Kind.STRING</code> or
+      <code>rhizo.meta.Kind.DECIMALRANGE</code>).
+    </p>
+
+    <p>
+      A <em>meta</em> defines both the attribute type (number, string, ...) and
+      the operations the visualization can perform on it. Specifically, it
+      dictates how models can be sorted, clustered and filtered on the attribute
+      that the <em>meta</em> is associated to. Rhizosphere uses these
+      information to for various purposes:
+    </p>
+    <ul>
+      <li>
+        to render matching filter controls in the UI (so that for example
+        a <code>rhizo.meta.Kind.RANGE</code> model attribute will result in
+        the associated filter looking like a slider with two handles).
+      </li>
+      <li>
+        to customize the behavior of other parts of the UI (so that for
+        example, layout engines that depending on clustering behavior may
+        customize their logic depending on which models' attribute they're
+        clustering upon).
+      </li>
+    </ul>
+    <p>
+      Rhizosphere uses the information externally provided via the
+      <code>metamodel</code> to defined the set of <em>meta</em>s and
+      <code>rhizo.meta.Kind</code> instances the visualization will require.
+    </p>
+  </dd>
+
+  <dt>Layouts</dt>
+  <dd>
+    <p>
+      Layout engines drive the positioning of models' renderings within the
+      viewport. Each project may let the user choose and switch among multiple
+      layouts. All layouts Rhizosphere knows about are listed in the
+      <code>rhizo.layout.layouts</code> map.
+    </p>
+
+    <p>
+      Each layout operates on the set of <code>models</code> which are not
+      currently filtered out, and uses the information provided by the
+      <code>metamodel</code> to drive its logic.
+    </p>
+  </dd>
+</dl>
+
+<h2>User Interface</h2>
+<p>
+  The management of the Rhizosphere UI and visualization chrome is split
+  among multiple components. Each <code>rhizo.Project</code> instance is
+  bound to a <code>rhizo.ui.gui.GUI</code> class, which collates
+  all UI-related aspects together.
+</p>
+<dl class="apireference">
+  <dt>Container</dt>
+  <dd>
+    The <code>GUI</code> contains a public
+    <code>rhizo.ui.gui.GUI.container</code> field that points to the HTML
+    element which acts as a container for the entire visualization.
+  </dd>
+
+  <dt>Viewport</dt>
+  <dd>
+    Within the <code>container</code> lives a
+    <code>rhizo.ui.gui.GUI.viewport</code>. The viewport is the main part of
+    the visualization UI, where the dataset being visualized is displayed.
+  </dd>
+
+  <dt>Universe</dt>
+  <dd>
+    The <code>rhizo.ui.gui.GUI.universe</code> element is a limitless 2D surface
+    to which all the models' renderings are attached. As the name says, the
+    <code>viewport</code> represents the visible portion of the potentially
+    much bigger <code>universe</code>. By changing the delta between the
+    positioning of the viewport and the underlying universe, the user can
+    pan and navigate through the universe.
+  </dd>
+
+  <dt>Components</dt>
+  <dd>
+    <p>
+      A <code>component</code> is a single UI control which is part of the
+      Rhizosphere chrome. Multiple components exist, each one
+      serving a specific need, such as the layout selector, the container of
+      all filters, the <code>viewport</code> itself, or even something as simple
+      as the logo and links section.
+    </p>
+    <p>
+      The <code>rhizo.ui.gui.GUI</code> instance keeps a list of the current
+      components and can be queried for existence of a specific component.
+    </p>
+  </dd>
+
+  <dt>Templates</dt>
+  <dd>
+    <p>
+      A <code>template</code> defines how to visually arrange a collection of
+      <code>components</code>. By choosing a different template, Rhizosphere can
+      re-arrange the set of components into a different visual setup. This is
+      how Rhizosphere provides a different interface for mobile users versus
+      traditional desktop users, while maintaining the same overall backend
+      logic and UI handling code (which is bound to components).
+    </p>
+  </dd>
+</dl>
+
+<h2>Visualization bootstrap</h2>
+<p>
+  Bootstrapping a Rhizosphere visualization requires assembling together all
+  the above elements and feeding the composed visualization instance with the
+  data the user wants to visualize.
+</p>
+<dl class="apireference">
+  <dt>Bootstrapper</dt>
+  <dd>
+    <p>
+      Every visualization is started by a <code>rhizo.bootstrap.Bootstrap</code>
+      instance: it collects external options and either the datasource to
+      load or directly the models, metamodel, renderer tuple. It is responsible
+      for creating the <code>rhizo.Project</code>, <code>rhizo.ui.gui.GUI</code>
+      and linking everything together.
+    </p>
+
+    <p>
+      An helper <code>rhizo.ui.RenderingBootstrap</code> is responsible for the
+      specific initialization of all the renderings that are displayed within
+      the viewport.
+    </p>
+  </dd>
+
+  <dt>Model loader</dt>
+  <dd>
+    <p>
+      Whenever the bootstrapper receives a datasource URL to load the data to
+      visualize from, it forwards it to a model loader. A model loader is
+      responsible for extracting data from datasource and generate the
+      model, metamodel, renderer tuple that will be fed to the
+      <code>rhizo.Project</code> the bootstrapper is creating.
+    </p>
+
+    <p>All model loaders are collected in the
+      <code>rhizo.model.loader.loaders</code> enumeration.
+    </p>
+  </dd>
+</dl>
+
+<h2>Other Support classes</h2>
+<p>
+  Many other classes participate in managing a Rhizosphere visualization:
+</p>
+<dl class="apireference">
+  <dt>State Manager</dt>
+  <dd>
+    <p>
+      <code>rhizo.Project</code> is the main component responsible for changes
+      in the isualization state (which layout is selected, which filters are
+      active...), but other parties may contribute it and may be interested
+      in state change notifications. One example is history management via
+      HTML5 History. <code>rhizo.state.MasterOverlord</code> and the related
+      classes defined in
+      <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.state.js">
+        rhizo.state.js</a> are responsible for collecting and syncing state
+      changes among all interested parties.
+    </p>
+  </dd>
+
+  <dt>Google Visualization API initializer</dt>
+  <dd>
+    <p>
+      In the context of visualization bootstrapping,
+      <code>rhizo.gviz.Initializer</code> is the component which is responsible
+      for translating the Google Visualization API datamodel into
+      <a href="users_jsformat.html">Rhizosphere data format</a>.
+    </p>
+  </dd>
+
+  <dt>Autorenderer</dt>
+  <dd>
+    <p>
+      <code>rhizo.autorender.AR</code> is an automated (albeit basic) renderer
+      that can be used whenever an externally provided <code>renderer</code> is
+      not available.
+    </p>
+  </dd>
+</dl>
+
+<h2>Next ...</h2>
+<p>
+  Have a look at the complete <a href="devel_api.html">Rhizosphere APIs</a> for
+  an indepth look at the implementation of all the concepts listed above.
+</p>
+{% endblock %}
