@@ -18,9 +18,17 @@
 // GUI Namespace
 namespace("rhizo.ui.gui");
 
-/*
-  A GUI is a collection of UI Components. A GUI is built by a Template.
-*/
+/**
+ * The visualization GUI, defined by the overall container, viewport, universe
+ * and a collection of UI Components.
+ *
+ * @param {HTMLElement} container The HTML element that will contain the
+ * @param {string} platform The platform we are currently running on (e.g.:
+ *     'mobile', 'default' ... ).
+ * @param {string} device The device we are currently running on (e.g.:
+ *     'ipad', 'iphone', 'default' ... ).
+ * @constructor
+ */
 rhizo.ui.gui.GUI = function(container, platform, device) {
   // The target platform we are rendering onto (e.g.: 'mobile').
   this.platform_ = platform;
@@ -30,7 +38,7 @@ rhizo.ui.gui.GUI = function(container, platform, device) {
 
   // A JQuery object pointing to the DOM element that contains the whole
   // Rhizosphere instance.
-  this.container = container;
+  this.container = $(container);
   this.is_small_container_ = false;
   this.initContainer_();
 
