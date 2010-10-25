@@ -14,11 +14,56 @@
   limitations under the License.
 */
 
+/**
+ * === Components and Templates
+ *
+ * This file contains the building blocks of the Rhizosphere UI:
+ *
+ * = Components:
+ *   a Component is a single UI control (e.g. the layout selector or the filters
+ *   container) that can be plugged into the Rhizosphere UI.
+ *
+ *   Components can be either static or dynamic: the latter type require to
+ *   visualization metamodel to be known, the former don't.
+ *
+ *   Static components must implement the following api:
+ *   - render(container, gui, options)
+ *   - activate(gui, options)
+ *   Dynamic components must implement the following api:
+ *   - render(container, project, gui, options)
+ *   - activate(project, gui, options)
+ *
+ * = Templates
+ *   a Template is a collection of Compoents and the associated rules on how
+ *   to arrange them inside the Rhizosphere UI.
+ *
+ *   Every visualization has a template attached to it. Every template inherits
+ *   from the rhizo.ui.component.Template base class.
+ *
+ *   A Template may expose hooks: an hook is a Component in the Template
+ *   that can have components attached to it. This allows third parties to
+ *   include additional components to the templates defined here without having
+ *   to create a brand new template.
+ *
+ *   For a Component to correctly work as a hook, it must also expose a
+ *   getPanel() function, that returns the container element where subcomponents
+ *   will be attached.
+ *
+ * New templates can be registered by adding a factory method to the
+ * rhizo.ui.component.templates enumeration.
+ */
+
 // RHIZODEP=rhizo.ui,rhizo.layout
 // Components Namespace
 namespace("rhizo.ui.component");
 
-// Progress-bar to handle application startup feedback
+/**
+ * Progress-bar to handle application startup feedback.
+ *
+ * @param {*} container jQuery object pointing to the element to which add the
+ *   progress bar.
+ * @constructor
+ */
 rhizo.ui.component.Progress = function(container) {
   this.pbarPanel_ = $('<div/>', {'class': 'rhizo-progressbar-panel'}).appendTo(container);
 
@@ -34,6 +79,13 @@ rhizo.ui.component.Progress = function(container) {
       appendTo(this.pbarPanel_);
 };
 
+/**
+ * Updates the progress bar to a new value.
+ * @param {number} value The new value to set. If greater or equal than 100, the
+ *     task is assumed to be completed and the progressbar is removed.
+ * @param {?string} opt_text An optional descriptive text to describe the
+ *     current status.
+ */
 rhizo.ui.component.Progress.prototype.update = function(value, opt_text) {
   this.pbar_.progressbar('value', value);
   if (opt_text) {
@@ -44,6 +96,10 @@ rhizo.ui.component.Progress.prototype.update = function(value, opt_text) {
   }
 };
 
+/**
+ * Destroys the progress bar.
+ * @private
+ */
 rhizo.ui.component.Progress.prototype.destroy_ = function() {
   if (this.pbarPanel_.is(':visible')) {
     setTimeout(jQuery.proxy(function() {
@@ -56,56 +112,20 @@ rhizo.ui.component.Progress.prototype.destroy_ = function() {
   }
 };
 
-rhizo.ui.component.Logo = function(floating) {
-  this.floating_ = floating;
-};
 
-rhizo.ui.component.Logo.prototype.getPanel = function() {
-  return this.logoPanel_;
-};
-
-rhizo.ui.component.Logo.prototype.render = function(container, gui, options) {
-  gui.addComponent('rhizo.ui.component.Logo', this);
-  this.logoPanel_ = $('<div />', {'class': 'rhizo-logo'}).appendTo(container);
-  var header = $('<h1>Rhizosphere</h1>').appendTo(this.logoPanel_);
-  var links = $('<p />').appendTo(this.logoPanel_);
-
-  links.append(
-      $('<a />', {
-        'href': 'http://sites.google.com/site/rhizosphereui/Home/documentation',
-        'target': '_blank'}).
-          text('Help'));
-
-  links.append('&nbsp;').append(
-      $('<a />', {
-        'href': 'http://sites.google.com/site/rhizosphereui/',
-        'target': '_blank'}).
-          text('Project Info'));
-
-  links.append('&nbsp;').append(
-      $('<a />', {
-        'href': 'http://rhizosphere.googlecode.com/hg/AUTHORS.txt',
-        'target': '_blank'}).
-          text('Authors'));
-
-  links.append('&nbsp;').append(
-      $('<a />', {
-        'href': 'http://rhizosphere.googlecode.com/hg/COPYING.txt',
-        'target': '_blank'}).
-          text('License'));
-
-  if (this.floating_) {
-    this.logoPanel_.addClass('rhizo-floating-panel').css('display', 'none');
-  } else {
-    header.click(function() { links.slideToggle('fast'); });
-  }
-};
-
+/**
+ * The Viewport is the core of the visualization, where all models renderings
+ * are displayed and laid out.
+ * @constructor
+ */
 rhizo.ui.component.Viewport = function() {};
 
-rhizo.ui.component.Viewport.prototype.render = function(container, gui, options) {
+rhizo.ui.component.Viewport.prototype.render = function(container,
+                                                        gui,
+                                                        options) {
   this.viewport_ = $('<div/>', {'class': 'rhizo-viewport'}).appendTo(container);
-  this.universe_ = $('<div/>', {'class': 'rhizo-universe'}).appendTo(this.viewport_);
+  this.universe_ = $('<div/>', {'class': 'rhizo-universe'}).
+      appendTo(this.viewport_);
 
   // Update the GUI object.
   gui.setViewport(this.viewport_);
@@ -132,7 +152,7 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, options) {
       //   helper (in respect to the viewport) at the current instant.
       var dragTop = ui.position.top + gui.universe.data("top0");
       var dragLeft = ui.position.left + gui.universe.data("left0");
-      
+
       var snapDistance = 15;
       if (Math.abs(ui.position.left) <= snapDistance) {
         dragLeft = gui.universe.data("left0");
@@ -153,6 +173,34 @@ rhizo.ui.component.Viewport.prototype.activate = function(gui, options) {
   });
 };
 
+
+/* ==== Components with hooks ==== */
+
+/**
+ * An empty panel that accepts sub components.
+ * @param {string} className the CSS class name to attach to the component.
+ */
+rhizo.ui.component.BasicPanel = function(className) {
+  this.className_ = className;
+  this.panel_ = null;
+};
+
+rhizo.ui.component.BasicPanel.prototype.render = function(container,
+                                                          gui,
+                                                          options) {
+  this.panel_ = $('<div/>', {'class': this.className_}).appendTo(container);
+};
+
+rhizo.ui.component.BasicPanel.prototype.getPanel = function() {
+  return this.panel_;
+};
+
+
+/**
+ * An horizontal bar that cointains links to activate other components, that
+ * will be displayed as floating panels above it.
+ * @constructor
+ */
 rhizo.ui.component.BottomBar = function() {};
 
 rhizo.ui.component.BottomBar.prototype.render = function(container, project, gui, options) {
@@ -235,6 +283,101 @@ rhizo.ui.component.BottomBar.prototype.toggleComponent = function(component_id,
   }
 };
 
+
+/**
+ * A collapsible bar sitting on the right of the viewport.
+ * @constructor
+ */
+rhizo.ui.component.RightBar = function() {};
+
+rhizo.ui.component.RightBar.prototype.render = function(container, gui, options) {
+  gui.addComponent('rhizo.ui.component.RightBar', this);
+
+  this.toggle_ = $('<div />', {'class': 'rhizo-right-pop'}).html('&#x25c2;').appendTo(container);
+  this.rightBar_ = $('<div />', {'class': 'rhizo-right'}).css('display', 'none').
+      appendTo(container);
+};
+
+rhizo.ui.component.RightBar.prototype.activate = function(gui, options) {
+  this.toggle_.click(jQuery.proxy(function() {
+    if (this.rightBar_.is(":visible")) {
+      this.toggle_.css('right', 0).html('&#x25c2;');
+      gui.viewport.css('right', 5);
+      this.rightBar_.css('display', 'none');
+    } else {
+      gui.viewport.css('right', 135);
+      this.toggle_.css('right', 130).html('&#x25b8;');
+      this.rightBar_.css('display', '');
+    }
+  }, this));
+};
+
+rhizo.ui.component.RightBar.prototype.getToggle = function() {
+  return this.toggle_;
+};
+
+rhizo.ui.component.RightBar.prototype.getPanel = function() {
+  return this.rightBar_;
+};
+
+/* ==== plain Components ==== */
+
+/**
+ *
+ * @param {boolean} floating Whether the component is rendered inside a floating
+ *     panel or not.
+ * @constructor
+ */
+rhizo.ui.component.Logo = function(floating) {
+  this.floating_ = floating;
+};
+
+rhizo.ui.component.Logo.prototype.getPanel = function() {
+  return this.logoPanel_;
+};
+
+rhizo.ui.component.Logo.prototype.render = function(container, gui, options) {
+  gui.addComponent('rhizo.ui.component.Logo', this);
+  this.logoPanel_ = $('<div />', {'class': 'rhizo-logo'}).appendTo(container);
+  var header = $('<h1>Rhizosphere</h1>').appendTo(this.logoPanel_);
+  var links = $('<p />').appendTo(this.logoPanel_);
+
+  links.append(
+      $('<a />', {
+        'href': 'http://sites.google.com/site/rhizosphereui/Home/documentation',
+        'target': '_blank'}).
+          text('Help'));
+
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://sites.google.com/site/rhizosphereui/',
+        'target': '_blank'}).
+          text('Project Info'));
+
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://rhizosphere.googlecode.com/hg/AUTHORS.txt',
+        'target': '_blank'}).
+          text('Authors'));
+
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://rhizosphere.googlecode.com/hg/COPYING.txt',
+        'target': '_blank'}).
+          text('License'));
+
+  if (this.floating_) {
+    this.logoPanel_.addClass('rhizo-floating-panel').css('display', 'none');
+  } else {
+    header.click(function() { links.slideToggle('fast'); });
+  }
+};
+
+
+/**
+ *
+ * @constructor
+ */
 rhizo.ui.component.Console = function() {};
 
 rhizo.ui.component.Console.prototype.render = function(container, gui, options) {
@@ -273,38 +416,13 @@ rhizo.ui.component.Console.prototype.getHeader = function() {
   return this.consoleHeader_;
 };
 
-rhizo.ui.component.RightBar = function() {};
 
-rhizo.ui.component.RightBar.prototype.render = function(container, gui, options) {
-  gui.addComponent('rhizo.ui.component.RightBar', this);
-
-  this.toggle_ = $('<div />', {'class': 'rhizo-right-pop'}).html('&#x25c2;').appendTo(container);
-  this.rightBar_ = $('<div />', {'class': 'rhizo-right'}).css('display', 'none').
-      appendTo(container);
-};
-
-rhizo.ui.component.RightBar.prototype.activate = function(gui, options) {
-  this.toggle_.click(jQuery.proxy(function() {
-    if (this.rightBar_.is(":visible")) {
-      this.toggle_.css('right', 0).html('&#x25c2;');
-      gui.viewport.css('right', 5);
-      this.rightBar_.css('display', 'none');
-    } else {
-      gui.viewport.css('right', 135);
-      this.toggle_.css('right', 130).html('&#x25b8;');
-      this.rightBar_.css('display', '');
-    }
-  }, this));
-};
-
-rhizo.ui.component.RightBar.prototype.getToggle = function() {
-  return this.toggle_;
-};
-
-rhizo.ui.component.RightBar.prototype.getPanel = function() {
-  return this.rightBar_;
-};
-
+/**
+ *
+ * @param {boolean} floating Whether the component is rendered inside a floating
+ *     panel or not.
+ * @constructor
+ */
 rhizo.ui.component.Layout = function(floating) {
   this.floating_ = floating;
 };
@@ -377,6 +495,13 @@ rhizo.ui.component.Layout.prototype.setEngine = function(layoutEngineName) {
   this.layoutSelector_.val(layoutEngineName).change();
 };
 
+
+/**
+ *
+ * @param {boolean} floating Whether the component is rendered inside a floating
+ *     panel or not.
+ * @constructor
+ */
 rhizo.ui.component.SelectionManager = function(floating) {
   this.floating_ = floating;
 };
@@ -429,15 +554,16 @@ rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function(projec
 };
 
 /**
-   Checks whether an event was raised on empty space, i.e. somewhere in the
-   viewport, but not on top of any models or any other elements.
-
-   Since the viewport and the universe may be not on top of each other, the
-   method checks whether any of the two is the original target of the event.
-
-   @params {Event} the event to inspect.
-   @returns {boolean} true if the click occurred on the viewport, false
-     otherwise.
+ * Checks whether an event was raised on empty space, i.e. somewhere in the
+ * viewport, but not on top of any models or any other elements.
+ *
+ * Since the viewport and the universe may be not on top of each other, the
+ * method checks whether any of the two is the original target of the event.
+ *
+ * @param {Event} evt the event to inspect.
+ * @returns {boolean} true if the click occurred on the viewport, false
+ *   otherwise.
+ * @private
  */
 rhizo.ui.component.SelectionManager.prototype.isOnEmptySpace_ = function(evt) {
   return $(evt.target).hasClass('rhizo-viewport') ||
@@ -563,7 +689,6 @@ rhizo.ui.component.AutocommitPanel.prototype.activate = function(project,
   this.hideButton_.click(function() {
     project.commitFilter();
   });
-
 };
 
 /**
@@ -755,6 +880,7 @@ rhizo.ui.component.FilterStackContainer.prototype.showFilter =
   }
 };
 
+
 /**
  * Renders a series of filters as a 'book', with only filter showing at any
  * time, and additional controls to flip between one filter and the next.
@@ -844,6 +970,13 @@ rhizo.ui.component.FilterBookContainer.prototype.activate = function(project,
   });
 };
 
+
+/**
+ *
+ * @param {boolean} floating Whether the component is rendered inside a floating
+ *     panel or not.
+ * @constructor
+ */
 rhizo.ui.component.Legend = function(floating) {
   this.floating_ = floating;
 };
@@ -853,6 +986,10 @@ rhizo.ui.component.Legend.prototype.getPanel = function() {
 };
 
 rhizo.ui.component.Legend.prototype.render = function(container, project, gui, options) {
+  if (!project.renderer().getSizeRange &&
+      !project.renderer().getColorRange) {
+    return;
+  }
   gui.addComponent('rhizo.ui.component.Legend', this);
 
   var sizeRange = null;
@@ -907,8 +1044,11 @@ rhizo.ui.component.Legend.prototype.render = function(container, project, gui, o
   }
 };
 
-rhizo.ui.component.Legend.prototype.activate = function(project, gui, options) {};
 
+/**
+ *
+ * @constructor
+ */
 rhizo.ui.component.Actions = function() {};
 
 rhizo.ui.component.Actions.prototype.render = function(container, project, gui, options) {
@@ -981,163 +1121,266 @@ rhizo.ui.component.Actions.prototype.activate = function(project, gui, options) 
   }
 };
 
-rhizo.ui.component.BottomTemplate = function(project) {
+/* ==== Templates ==== */
+
+/**
+ * Base class to define Rhizosphere UI templates. A Template is a collection
+ * of Compoents and the associated rules on how to arrange them inside the
+ * Rhizosphere UI.
+ *
+ * A template will always include a rhizo.ui.component.Viewport instance.
+ *
+ * A template rendering sequence is composed of 4 steps:
+ * - rendering and activation of all static components,
+ * - rendering and activation of all dynamic components.
+ *
+ * After the first 2 steps (renderChrome(), activateChrome()) the Rhizosphere
+ * UI should have its basic chrome, with no project-specific information.
+ *
+ * After the remaining 2 steps (renderDynamic(), activateDynamic()) the UI
+ * would have all the components that contain project-specific information
+ * (such as filters and layout selectors) in it.
+ *
+ * @param {string} template_key A unique key identifying the template.
+ * @param {rhizo.Project} project The project this template is applied to.
+ * @constructor
+ */
+rhizo.ui.component.Template = function(template_key, project) {
   this.project_ = project;
   this.gui_ = project.gui();
-  this.components_ = {
-    // chrome components
-    LOGO: new rhizo.ui.component.Logo(/* floating = */ true),
-    VIEWPORT: new rhizo.ui.component.Viewport(),
+  this.options_ = null;
 
-    // dynamic components
-    LAYOUT: new rhizo.ui.component.Layout(/* floating = */ true),
-    SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(/* floating = */ true),
-    FILTERS: new rhizo.ui.component.FilterBookContainer(),
-    LEGEND: new rhizo.ui.component.Legend(/* floating = */ true),
-    BOTTOMBAR: new rhizo.ui.component.BottomBar()
-  };
+  this.viewport_ = new rhizo.ui.component.Viewport();
+  this.progress_ = null;
+
+  this.hooks_ = {};
+
+  this.static_components_ = {};
+  this.dynamic_components_ = {};
+
+  this.template_key_ = template_key;
 };
 
-rhizo.ui.component.BottomTemplate.prototype.renderChrome = function(options) {
-  this.gui_.container.addClass('rhizo-template-bottom');
+/**
+ * Passes project-wide configuration options to this template.
+ *
+ * @param {*} options The project-wide configuration options.
+ */
+rhizo.ui.component.Template.prototype.setOptions = function(options) {
+  this.options_ = options;
+};
 
-  this.components_.VIEWPORT.render(this.gui_.container, this.gui_, options);
+/**
+ * Registers a new hook. An hook is a container element into which other
+ * components can be added.
+ *
+ * @param {string} hook The hook name.
+ * @param {*} container A jQuery object pointing to the container element where
+ *     subcomponents will be added.
+ */
+rhizo.ui.component.Template.prototype.addHook = function(hook, container) {
+  this.hooks_[hook] = container;
+};
+
+/**
+ * Adds a component to the given hook.
+ * @param {string} hook The hook name.
+ * @param {boolean} is_static Whether the component is static or dynamic.
+ * @param {*} component The component to add.
+ */
+rhizo.ui.component.Template.prototype.addComponentToHook = function(hook,
+                                                                    is_static,
+                                                                    component) {
+  var hooks = is_static ? this.static_components_ : this.dynamic_components_;
+  if (!(hook in hooks)) {
+    hooks[hook] = [];
+  }
+  hooks[hook].push(component);
+};
+
+/**
+ * Renders all static components that are part of this template. This includes
+ * the viewport and all the 'hook' components, which are rendered before the
+ * their respective hooked components.
+ */
+rhizo.ui.component.Template.prototype.renderChrome = function() {
+  this.gui_.container.addClass('rhizo-template-' + this.template_key_);
+
+  // Create the viewport, which is always to guarantee to exist within every
+  // Rhizosphere visualization.
+  this.viewport_.render(this.gui_.container, this.gui_, this.options_);
   this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
 
-  this.progress_.update(10, 'Creating static UI...');
-  this.bottomBar_ = $('<div />', {'class': "rhizo-bottom-bar"}).appendTo(this.gui_.container);
-  this.components_.LOGO.render(this.bottomBar_, this.gui_, options);
-  this.progress_.update(25, 'All static UI created.');
-};
-
-rhizo.ui.component.BottomTemplate.prototype.activateChrome = function(options) {
-  this.progress_.update(26, 'Activating static UI...');
-  this.components_.VIEWPORT.activate(this.gui_, options);
-  this.progress_.update(33, 'Loading models...');
-};
-
-rhizo.ui.component.BottomTemplate.prototype.renderDynamic = function(options) {
-  this.progress_.update(34, 'Creating dynamic controls...');
-  this.components_.LAYOUT.render(this.bottomBar_, this.project_, this.gui_, options);
-  this.progress_.update(36, 'Layout engine created.');
-  this.components_.SELECTION_MANAGER.render(this.bottomBar_, this.project_, this.gui_, options);
-  this.progress_.update(40, 'Selection manager created.');
-  this.components_.FILTERS.render(this.bottomBar_, this.project_, this.gui_, options);
-  this.progress_.update(44, 'Filters created.');
-
-  if (this.project_.renderer().getSizeRange ||
-      this.project_.renderer().getColorRange) {
-    this.components_.LEGEND.render(this.bottomBar_,
-                                   this.project_,
-                                   this.gui_,
-                                   options);
-    this.progress_.update(46, 'Legend created.');
+  for (var hook in this.hooks_) {
+    this.hooks_[hook].render(this.gui_.container, this.gui_, this.options_);
+    this.processPhase_(this.static_components_[hook], 'render',
+        this.hooks_[hook].getPanel(), this.gui_, this.options_);
   }
-
-  // All other components must be in place before creating the toolbar.
-  this.components_.BOTTOMBAR.render(this.bottomBar_, this.project_, this.gui_, options);
-  this.progress_.update(48, 'Toolbar created.');
+  this.progress_.update(20, 'Chrome created. Activating...');
 };
 
-rhizo.ui.component.BottomTemplate.prototype.activateDynamic = function(options) {
-  this.progress_.update(51, 'Activating dynamic controls...');
-  this.components_.LAYOUT.activate(this.project_, this.gui_, options);
-  this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, options);
-  this.components_.FILTERS.activate(this.project_, this.gui_, options);
-  this.components_.LEGEND.activate(this.project_, this.gui_, options);
-  this.components_.BOTTOMBAR.activate(this.project_, this.gui_, options);
-  this.progress_.update(66, 'Rhizosphere controls are ready.');
+/**
+ * Activates all static components that are part of this template.
+ */
+rhizo.ui.component.Template.prototype.activateChrome = function() {
+  this.viewport_.activate(this.gui_, this.options_);
+
+  for (var hook in this.hooks_) {
+    if (typeof(this.hooks_[hook].activate) == 'function') {
+      this.hooks_[hook].activate(this.gui_, this.options_);
+    }
+    this.processPhase_(this.static_components_[hook], 'activate',
+        this.gui_, this.options_);
+  }
+  this.progress_.update(40, 'Chrome activated. Loading models...');
 };
 
-rhizo.ui.component.BottomTemplate.prototype.done = function() {
+/**
+ * Renders all dynamic components.
+ */
+rhizo.ui.component.Template.prototype.renderDynamic = function() {
+  this.progress_.update(60, 'Models loaded. Rendering dynamic components...');
+  for (var hook in this.hooks_) {
+    this.processPhase_(this.dynamic_components_[hook], 'render',
+        this.hooks_[hook].getPanel(), this.project_, this.gui_, this.options_);
+  }
+  this.progress_.update(80, 'Dynamic components ready. Activating...');
+};
+
+/**
+ * Activates all dynamic components.
+ */
+rhizo.ui.component.Template.prototype.activateDynamic = function() {
+  for (var hook in this.hooks_) {
+    this.processPhase_(this.dynamic_components_[hook], 'activate',
+        this.project_, this.gui_, this.options_);
+  }
+};
+
+/**
+ * Dismisses the progress bar that is display during the template assemply
+ * process.
+ */
+rhizo.ui.component.Template.prototype.done = function() {
   this.progress_.update(100, 'Rhizosphere ready!');
 };
 
-
-
-rhizo.ui.component.StandardTemplate = function(project) {
-  this.project_ = project;
-  this.gui_ = project.gui();
-  this.components_ = {
-    // chrome components
-    LOGO: new rhizo.ui.component.Logo(/* floating = */ false),
-    VIEWPORT: new rhizo.ui.component.Viewport(),
-    RIGHTBAR: new rhizo.ui.component.RightBar(),
-    CONSOLE: new rhizo.ui.component.Console(),
-
-    // dynamic components
-    LAYOUT: new rhizo.ui.component.Layout(/* floating = */ false),
-    SELECTION_MANAGER: new rhizo.ui.component.SelectionManager(/* floating = */ false),
-    FILTERS: new rhizo.ui.component.FilterStackContainer(),
-    LEGEND: new rhizo.ui.component.Legend(/* floating = */ false),
-    ACTIONS: new rhizo.ui.component.Actions()
-  };
-};
-
-rhizo.ui.component.StandardTemplate.prototype.renderChrome = function(options) {
-  this.gui_.container.addClass('rhizo-template-default');
-
-  this.components_.VIEWPORT.render(this.gui_.container, this.gui_, options);
-  this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
-
-  this.leftBar_= $('<div/>', {'class': 'rhizo-left'}).appendTo(this.gui_.container);
-  this.components_.RIGHTBAR.render(this.gui_.container, this.gui_, options);
-
-  this.progress_.update(10, 'Creating static UI...');
-  this.components_.LOGO.render(this.leftBar_, this.gui_, options);
-  this.components_.CONSOLE.render(
-      this.components_.RIGHTBAR.getPanel(),
-      this.gui_,
-      options);
-  this.progress_.update(25, 'All static UI created.');
-};
-
-rhizo.ui.component.StandardTemplate.prototype.activateChrome = function(options) {
-  this.progress_.update(26, 'Activating static UI...');
-
-  this.components_.RIGHTBAR.activate(this.gui_, options);
-  this.components_.CONSOLE.activate(this.gui_, options);
-  this.components_.VIEWPORT.activate(this.gui_, options);
-  this.progress_.update(33, 'Loading models...');
-};
-
-rhizo.ui.component.StandardTemplate.prototype.renderDynamic =
-    function(options) {
-  this.progress_.update(34, 'Creating dynamic controls...');
-  this.components_.LAYOUT.render(this.leftBar_, this.project_, this.gui_, options);
-  this.progress_.update(38, 'Layout engine created.');
-  this.components_.SELECTION_MANAGER.render(this.leftBar_, this.project_, this.gui_, options);
-  this.progress_.update(42, 'Selection manager created.');
-  this.components_.FILTERS.render(this.leftBar_, this.project_, this.gui_, options);
-  this.progress_.update(46, 'Filters created.');
-
-  if (this.project_.renderer().getSizeRange ||
-      this.project_.renderer().getColorRange) {
-    this.components_.LEGEND.render(this.leftBar_,
-                                   this.project_,
-                                   this.gui_,
-                                   options);
-    this.progress_.update(48, 'Legend created.');
+/**
+ * Renders or initializes the given list of components.
+ * @param {Array.<*>} components A list of components.
+ * @param {string} phase Either 'render' or 'activate'.
+ * @private
+ */
+rhizo.ui.component.Template.prototype.processPhase_ = function(components,
+                                                               phase) {
+  if (components) {
+    for (var i = 0; i < components.length; i++) {
+      var component = components[i];
+      if (typeof(component[phase]) == 'function') {
+        component[phase].apply(
+            component, Array.prototype.slice.call(arguments, 2));
+      }
+    }
   }
-  this.components_.ACTIONS.render(
-      this.components_.RIGHTBAR.getPanel(),
-      this.project_,
-      this.gui_,
-      options);
-  this.progress_.update(50, 'Actions created');
 };
 
-rhizo.ui.component.StandardTemplate.prototype.activateDynamic = 
-    function(options) {
-  this.progress_.update(51, 'Activating dynamic controls...');
-  this.components_.LAYOUT.activate(this.project_, this.gui_, options);
-  this.components_.SELECTION_MANAGER.activate(this.project_, this.gui_, options);
-  this.components_.FILTERS.activate(this.project_, this.gui_, options);
-  this.components_.LEGEND.activate(this.project_, this.gui_, options);
-  this.components_.ACTIONS.activate(this.project_, this.gui_, options);
-  this.progress_.update(66, 'Rhizosphere controls are ready.');
+
+/**
+ * The 'bottom' template, used when Rhizosphere is accessed by a mobile device,
+ * or when explicitly requested by the user.
+ *
+ * @param {string} template_key A unique key identifying the template.
+ * @param {rhizo.Project} project The project this template is applied to.
+ * @constructor
+ */
+rhizo.ui.component.BottomTemplate = function(template_key, project) {
+  rhizo.ui.component.Template.call(this, template_key, project);
+  this.initHooks_();
+};
+rhizo.inherits(rhizo.ui.component.BottomTemplate, rhizo.ui.component.Template);
+
+rhizo.ui.component.BottomTemplate.prototype.initHooks_ = function() {
+  this.addHook('bottom', new rhizo.ui.component.BasicPanel('rhizo-bottom-bar'));
+
+  this.initComponentsToHooks();
 };
 
-rhizo.ui.component.StandardTemplate.prototype.done = function() {
-  this.progress_.update(100, 'Rhizosphere ready!');
+rhizo.ui.component.BottomTemplate.prototype.initComponentsToHooks = function() {
+  // Static components
+  this.addComponentToHook(
+      'bottom', true, new rhizo.ui.component.Logo(/* floating = */ true));
+
+  // Dynamic components
+  this.addComponentToHook(
+      'bottom', false, new rhizo.ui.component.Layout(/* floating = */ true));
+  this.addComponentToHook(
+      'bottom', false,
+      new rhizo.ui.component.SelectionManager(/* floating = */ true));
+  this.addComponentToHook(
+      'bottom', false, new rhizo.ui.component.FilterBookContainer());
+  this.addComponentToHook(
+      'bottom', false, new rhizo.ui.component.Legend(/* floating = */ true));
+  this.addComponentToHook(
+      'bottom', false, new rhizo.ui.component.BottomBar());
+};
+
+/**
+ * The 'default' template, used by default when no other template is explicitly
+ * requested.
+ *
+ * @param {string} template_key A unique key identifying the template.
+ * @param {rhizo.Project} project The project this template is applied to.
+ * @constructor
+ */
+rhizo.ui.component.StandardTemplate = function(template_key, project) {
+  rhizo.ui.component.Template.call(this, template_key, project);
+  this.initHooks_();
+};
+rhizo.inherits(rhizo.ui.component.StandardTemplate,
+               rhizo.ui.component.Template);
+
+rhizo.ui.component.StandardTemplate.prototype.initHooks_ = function() {
+  this.addHook('left', new rhizo.ui.component.BasicPanel('rhizo-left'));
+  this.addHook('right', new rhizo.ui.component.RightBar());
+
+  this.initComponentsToHooks();
+};
+
+rhizo.ui.component.StandardTemplate.prototype.initComponentsToHooks =
+    function() {
+  // Static components
+  this.addComponentToHook(
+      'left', true, new rhizo.ui.component.Logo(/* floating = */ false));
+  this.addComponentToHook(
+      'right', true, new rhizo.ui.component.Console());
+
+  // Dynamic components
+  this.addComponentToHook(
+      'left', false, new rhizo.ui.component.Layout(/* floating = */ false));
+  this.addComponentToHook(
+      'left', false,
+      new rhizo.ui.component.SelectionManager(/* floating = */ false));
+  this.addComponentToHook(
+      'left', false, new rhizo.ui.component.FilterStackContainer());
+  this.addComponentToHook(
+      'left', false, new rhizo.ui.component.Legend(/* floating = */ false));
+  this.addComponentToHook(
+      'right', false, new rhizo.ui.component.Actions());
+};
+
+/**
+ * Enumerates available template factories. A template factory is a function
+ * that receives a rhizo.Project as input and returns a template instance.
+ *
+ * New templates can be registered by adding a factory to this enum.
+ *
+ * @enum {string} Enumeration of available template factories.
+ */
+rhizo.ui.component.templates = {
+  'bottom': function(project) {
+    return new rhizo.ui.component.BottomTemplate('bottom', project);
+  },
+  'default': function(project) {
+    return new rhizo.ui.component.StandardTemplate('default', project);
+  }
 };

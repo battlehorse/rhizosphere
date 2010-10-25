@@ -134,8 +134,8 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
   this.project_.setRenderer(renderer);
 
   if (this.project_.metaReady()) {
-    this.template_.renderDynamic(this.options_);
-    this.template_.activateDynamic(this.options_);
+    this.template_.renderDynamic();
+    this.template_.activateDynamic();
     this.project_.deploy(models);
   }
 
@@ -164,28 +164,22 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
 /**
  * Identifies the best template to use for the visualization.
  * @param {rhizo.ui.gui.GUI} gui
- * @return {function(rhizo.Project):Object} A constructor for the template to
- *     use.
+ * @return {function(rhizo.Project):rhizo.ui.component.Template} A factory for
+ *     the template to use.
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui) {
-  var templateCtors = {
-    'bottom' : rhizo.ui.component.BottomTemplate,
-    'default': rhizo.ui.component.StandardTemplate
-  };
-
   if (this.options_.forceTemplate &&
-      this.options_.forceTemplate in templateCtors)
-  if (this.options_.forceTemplate) {
-    return templateCtors[this.options_.forceTemplate];
+      this.options_.forceTemplate in rhizo.ui.component.templates) {
+    return rhizo.ui.component.templates[this.options_.forceTemplate];
   }
 
   // No specific template has been forced. Select a specific one based on
   // document size and target platform.
   if (gui.isMobile() || gui.isSmall()) {
-    return templateCtors['bottom'];
+    return rhizo.ui.component.templates['bottom'];
   }
-  return templateCtors['default'];
+  return rhizo.ui.component.templates['default'];
 };
 
 /**
@@ -221,17 +215,18 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
  * Initializes the template that will render this project chrome.
  * @param {rhizo.ui.gui.GUI} gui
  * @param {rhizo.Project} project
- * @return {*} The project template.
+ * @return {rhizo.ui.component.Template} The project template.
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(gui, project) {
   // Identify the target device and template to use.
   var templateCtor = this.identifyTemplate_(gui);
-  var template = new templateCtor(this.project_);
+  var template = new templateCtor(project);
+  template.setOptions(this.options_);
 
   // Get the minimum chrome up and running.
-  template.renderChrome(this.options_);
-  template.activateChrome(this.options_);
+  template.renderChrome();
+  template.activateChrome();
   return template;
 };
 
