@@ -49,8 +49,7 @@ class RhizoHandler(webapp.RequestHandler):
     def get(self):
         # Startup options
         forcePlatform, forceDevice = self._getPlatformDevice()
-        forceTemplate = self._getOptionFromUrl('forceTemplate',
-                                               ['default', 'bottom'])
+        forceTemplate = self.request.get('forceTemplate')
         template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
             'forceTemplate': forceTemplate,
