@@ -42,3 +42,8 @@ library: google-code-prettify
 reference: http://code.google.com/p/google-code-prettify/
 authors: http://code.google.com/p/google-code-prettify/people/list
 license: Apache 2.0 License, http://code.google.com/p/google-code-prettify/source/browse/trunk/COPYING
+
+library: parseURI
+reference: http://blog.stevenlevithan.com/archives/parseuri
+authors: Steven Levithan
+licence: MIT license, http://www.opensource.org/licenses/mit-license.php
