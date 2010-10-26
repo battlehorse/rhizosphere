@@ -244,13 +244,12 @@ rhizo.bootstrap.Bootstrap.prototype.tryInitResourceFromUrl_ = function() {
     return null;
   }
 
-  var regex = new RegExp('(source|src)=([^&#]+)');
-  var results = regex.exec(document.location.href);
-  if (!results || !results[2]) {
+  var urlparams = rhizo.util.urlParams();
+  var resource = urlparams['source'] || urlparams['src'];
+  if (!resource) {
     this.project_.logger().error(
         'Unable to identify datasource from location');
     return null;
-  } else {
-    return decodeURIComponent(results[2]);
   }
+  return decodeURIComponent(resource);
 };

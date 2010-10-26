@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.ui.component
+// RHIZODEP=rhizo.ui.component,rhizo.util
 // GUI Namespace
 namespace("rhizo.ui.gui");
 
@@ -67,7 +67,8 @@ rhizo.ui.gui.GUI = function(container, platform, device) {
 };
 
 rhizo.ui.gui.GUI.prototype.done = function() {
-  if (/kb=(true|yes|1)/.test(document.location.href)) {
+  var kbParam = rhizo.util.urlParams()['kb'];
+  if (kbParam && /true|yes|1/.test(kbParam)) {
     this.activateOnscreenKeyboard();
   }
 };
