@@ -344,7 +344,7 @@ rhizo.ui.component.Logo.prototype.render = function(container, gui, options) {
 
   links.append(
       $('<a />', {
-        'href': 'http://sites.google.com/site/rhizosphereui/Home/documentation',
+        'href': 'http://rhizospherejs.appspot.com/doc',
         'target': '_blank'}).
           text('Help'));
 
