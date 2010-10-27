@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to="persons">
+  <inherits name='com.google.gwt.user.User'/>
+  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <inherits name='com.google.gwt.visualization.Visualization'/>
+  <entry-point class='com.google.rhizosphere.gviz.client.sample.PersonsEntryPoint'/>
+  <source path='client'/>
+</module>
