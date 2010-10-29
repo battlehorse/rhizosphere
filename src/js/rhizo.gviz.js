@@ -52,7 +52,12 @@ rhizo.gviz.Initializer = function(dataTable,
   this.dt_ = dataTable;
   this.logger_ = logger;
   this.options_ = opt_options || {};
-  this.customRenderer_ = opt_customRenderer;
+  
+  if (this.options_.renderer) {
+	  this.customRenderer_ = this.options_.renderer;
+  } else {
+	  this.customRenderer_ = opt_customRenderer;
+  }
 
   this.init_();
 };
