@@ -110,8 +110,10 @@
 .ar-col-4m,.ar-col-4{padding:3px;background-color:#C3FCCA;}
 .ar-col-5m,.ar-col-5{padding:3px;background-color:#B1FCCA;}
 .ar-col-legend{border:1px solid #6391de;}
+.rhizo-broadcast P{margin:0;vertical-align:middle;}
+.rhizo-broadcast BUTTON{float:right;}
+.rhizo-broadcast-url{font-size:0.9em;width:19em;display:none;}
 .rhizo-platform-mobile .rhizo-bottom-bar .rhizo-maximize-icon{display:none;}
-.rhizo-bottom-bar .rhizo-link-help{padding:0;margin:0 5px;}
 .rhizo-template-bottom .rhizo-viewport{left:0;right:0;}
 .rhizo-template-bottom .rhizo-bucket-header{font-size:1.2em;margin-bottom:3px;width:160px;}
 .rhizo-template-bottom .rhizo-selection-trigger{top:0;}
