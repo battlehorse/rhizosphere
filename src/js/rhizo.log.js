@@ -69,7 +69,7 @@ rhizo.Logger.prototype.log_ = function(message, opt_severity) {
     htmlMsg.effect("highlight", {color: highlightColor }, 1000);
   }
   if (!this.console_.getContents().is(':visible') && opt_severity) {
-    if (this.rightBar_ && !this.rightBar_.getPanel().is(':visible')) {
+    if (this.rightBar_ && !this.rightBar_.isCollapsed()) {
       this.rightBar_.getToggle().effect(
           "highlight", {color: highlightColor }, 1000);
     } else {
