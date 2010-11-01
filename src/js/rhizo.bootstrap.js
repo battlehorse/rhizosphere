@@ -77,7 +77,7 @@ rhizo.bootstrap.Bootstrap.prototype.prepare = function() {
   // Initialize the GUI, project and template.
   this.gui_ = this.initGui_();
   this.project_ = new rhizo.Project(this.gui_, this.options_);
-  this.template_ = this.initTemplate_(this.gui_, this.project_);
+  this.template_ = this.initTemplate_(this.project_, this.gui_, this.options_);
   this.project_.chromeReady();
 };
 
@@ -133,14 +133,17 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
   this.project_.setMetaModel(metamodel);
   this.project_.setRenderer(renderer);
 
-  if (this.project_.metaReady()) {
-    this.template_.renderDynamic();
-    this.template_.activateDynamic();
-    this.project_.deploy(models);
+  if (renderer.getSizeRange || renderer.getColorRange) {
+    this.template_.addComponent(new rhizo.ui.component.Legend(this.project_,
+                                                              this.options_));
   }
 
+  if (this.project_.metaReady()) {
+    this.template_.metaReady();
+    this.project_.deploy(models);
+    this.template_.ready();
+  }
   this.gui_.done();
-  this.template_.done();
 };
 
 /**
@@ -164,14 +167,15 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
 /**
  * Identifies the best template to use for the visualization.
  * @param {rhizo.ui.gui.GUI} gui
+ * @param {*} options
  * @return {function(rhizo.Project):rhizo.ui.component.Template} A factory for
  *     the template to use.
  * @private
  */
-rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui) {
-  if (this.options_.forceTemplate &&
-      this.options_.forceTemplate in rhizo.ui.component.templates) {
-    return rhizo.ui.component.templates[this.options_.forceTemplate];
+rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui, options) {
+  if (options.forceTemplate &&
+      options.forceTemplate in rhizo.ui.component.templates) {
+    return rhizo.ui.component.templates[options.forceTemplate];
   }
 
   // No specific template has been forced. Select a specific one based on
@@ -213,20 +217,21 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
 
 /**
  * Initializes the template that will render this project chrome.
- * @param {rhizo.ui.gui.GUI} gui
  * @param {rhizo.Project} project
+ * @param {rhizo.ui.gui.GUI} gui
+ * @param {*} options
  * @return {rhizo.ui.component.Template} The project template.
  * @private
  */
-rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(gui, project) {
+rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(project,
+                                                             gui,
+                                                             options) {
   // Identify the target device and template to use.
-  var templateCtor = this.identifyTemplate_(gui);
-  var template = new templateCtor(project);
-  template.setOptions(this.options_);
+  var templateFactory = this.identifyTemplate_(gui, options);
+  var template = templateFactory(project, options);
 
   // Get the minimum chrome up and running.
-  template.renderChrome();
-  template.activateChrome();
+  template.render();
   return template;
 };
 
