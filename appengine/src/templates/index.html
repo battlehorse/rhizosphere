@@ -76,7 +76,7 @@
         'sample/bugs.js',
         'sample/usa.js' ];
 
-      function go(js_file, simulate_id, debug_id) {
+      function go(js_file, simulate_id, debug_id, experimental_id) {
         var simulate = document.getElementById(simulate_id).value;
         var forceParams = '';
         if (simulate == 'mobile') {
@@ -84,6 +84,8 @@
         }
         var url = 'rhizo.html?d=' +
             (document.getElementById(debug_id).checked ? '1' : '0') +
+            '&exp=' +
+            (document.getElementById(experimental_id).checked ? '1' : '0') +
             forceParams +
             '&source=' + js_file;
         var windowName = 'rhizosphere';
@@ -110,10 +112,13 @@
           }
         });
         $('.try-rhizosphere-link').click(function() {
-          go(carousel_js_file, 'simulate', 'debug');
+          go(carousel_js_file, 'simulate', 'debug', 'experimental');
         });
         $('#try-your-own').submit(function() {
-          return go($('#source').val(), 'try-your-own-simulate', 'try-your-own-debug');
+          return go($('#source').val(),
+                    'try-your-own-simulate',
+                    'try-your-own-debug',
+                    'try-your-own-experimental');
         });
         $('#try-learn').click(function() {
           $('#try-learn-contents').show('fast');
@@ -191,8 +196,10 @@
             <option value="mobile">Mobile device</option>
             <option value="small">Small rendering</option>
           </select><br />
-          <label for="debug" class="smaller shaded">Debug mode</label>
           <input type="checkbox" name="debug" id="debug">
+          <label for="debug" class="smaller shaded">Debug mode</label><br />
+          <input type="checkbox" name="experimental" id="experimental" checked="checked">
+          <label for="experimental" class="smaller shaded">Experimental features</label>
         </div>
         <div id="desc-1" class="carousel-description">
           <h2>Picasa<span class="bluelight">.js</span></h2>
@@ -275,8 +282,10 @@
                     </td>
                   </tr><tr valign="top">
                     <td>
-                      <label for="try-your-own-debug" class="smaller shaded">Debug Mode</label>
-                      <input type="checkbox" name="try-your-own-debug" id="try-your-own-debug"><br />
+                      <input type="checkbox" name="try-your-own-debug" id="try-your-own-debug">
+                      <label for="try-your-own-debug" class="smaller shaded">Debug Mode</label><br />
+                      <input type="checkbox" name="try-your-own-experimental" id="try-your-own-experimental" checked="checked">
+                      <label for="try-your-own-experimental" class="smaller shaded">Exp. features</label><br />
                       <select name="try-your-own-simulate" id="try-your-own-simulate" class="smaller">
                         <option value="">No simulation</option>
                         <option value="mobile">Mobile device</option>
