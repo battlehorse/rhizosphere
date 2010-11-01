@@ -50,11 +50,20 @@ class RhizoHandler(webapp.RequestHandler):
         # Startup options
         forcePlatform, forceDevice = self._getPlatformDevice()
         forceTemplate = self.request.get('forceTemplate')
+
+        # Experimental features
+        experimental = self._getOptionFromUrl('exp', ['0', '1'])
+        if experimental == '1':
+          use_channels = True
+        else:
+          use_channels = False
+
         template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
             'forceTemplate': forceTemplate,
             'forceDevice': forceDevice,
             'forcePlatform': forcePlatform,
+            'use_channels': use_channels,
         })
         path = os.path.join(os.path.dirname(__file__),
                             '../../templates%s' % self.request.path)

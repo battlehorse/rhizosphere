@@ -22,6 +22,9 @@ handlers:
 - url: /doc(/(.*\.html)?)?
   script: py/handlers/doc.py
 
+- url: /broadcast/.*
+  script: py/handlers/broadcast.py
+
 # Static files. Exclude static/samples/js since it is served by the
 # sample handler.
 

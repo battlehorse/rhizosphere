@@ -443,6 +443,20 @@ rhizo.Project.prototype.setState = function(state) {
   var layoutName = this.curLayoutName_;
   var filter = false;
   var customModelPositions = null;
+
+  // When restoring a full state, all facets should be reverted to their default
+  // value. Here we set correct defaults for any facet which might be missing
+  // from the full state specification.
+  if (!(rhizo.state.Facets.SELECTION_FILTER in state)) {
+    state[rhizo.state.Facets.SELECTION_FILTER] = [];
+  }
+  for (var key in this.metaModel_) {
+    var facet = rhizo.state.Facets.FILTER_PREFIX + key;
+    if (!(facet in state)) {
+      state[facet] = null;
+    }
+  }
+
   for (var facet in state) {
     if (facet == rhizo.state.Facets.SELECTION_FILTER) {
       filter = true;

@@ -118,3 +118,36 @@ rhizo.util.parseUri.options_ = {
 rhizo.util.urlParams = function() {
   return rhizo.util.parseUri(document.location.href).queryKey;
 };
+
+/**
+ * Creates a new url by adding extra query parameters to a base url.
+ *
+ * @param {string} opt_url The base url to build the new one from. Defaults to
+ *     document.location.href if unspecified.
+ * @param {Object.<string, string>} opt_extra_params A key-value map of
+ *     query parameters that will be added to the url.
+ * @return {string} The newly built url.
+ */
+rhizo.util.buildUrl = function(opt_url, opt_extra_params) {
+  var url = opt_url || document.location.href;
+  if (!opt_extra_params) {
+    return url;
+  }
+  urlData = rhizo.util.parseUri(url);
+  var newUrl = [
+      urlData.protocol, '://',
+      urlData.authority,
+      urlData.path, '?',
+      urlData.query ];
+  for (var key in opt_extra_params) {
+    newUrl.push('&');
+    newUrl.push(key);
+    newUrl.push('=');
+    newUrl.push(encodeURIComponent(opt_extra_params[key]))
+  }
+  if (urlData.anchor.length > 0) {
+    newUrl.push('#');
+    newUrl.push(urlData.anchor)
+  }
+  return newUrl.join('');
+};

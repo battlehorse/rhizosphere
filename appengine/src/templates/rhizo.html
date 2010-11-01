@@ -2,6 +2,9 @@
 <html>
   <head>
     <title>Rhizosphere</title>
+    {% if use_channels %}
+      <script src='/_ah/channel/jsapi'></script>
+    {% endif %}
 
     {% include "rhizo_head.html" %}
   </head>
@@ -24,10 +27,35 @@
       }
 
       $(document).ready(function() {
+        {% if use_channels %}
+          // TODO(battlehorse): Broadcasting should rely on capabilities to
+          // decide whether to activate itself or not, rather than URL
+          // experimental parameters.
+          rhizo.ui.component.templates['broadcast'] = function(project, options) {
+            var template;
+            if (project.gui().isSmall() || project.gui().isMobile()) {
+              template = new rhizo.ui.component.BottomTemplate(
+                  project, options, 'bottom');
+              template.addtoBottomBar(new rhizo.broadcast.BaseComponent(
+                  project, options));
+            } else {
+              template = new rhizo.ui.component.StandardTemplate(
+                  project, options, 'default');
+              template.addtoLeftBar(new rhizo.broadcast.BaseComponent(
+                  project, options));
+            }
+            return template;
+          };
+        {% endif %}
+
         var options = {
           allowConfigFromUrl: true
-          {% if forceTemplate %}
-          ,forceTemplate: '{{forceTemplate}}'
+          {% if use_channels %}
+            ,forceTemplate: 'broadcast'
+          {% else %}
+            {% if forceTemplate %}
+            ,forceTemplate: '{{forceTemplate}}'
+            {% endif %}
           {% endif %}
           {% if forcePlatform %}
           ,forcePlatform: '{{forcePlatform}}'
