@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo,rhizo.util,rhizo.ui.component,rhizo.state
+// RHIZODEP=rhizo,rhizo.ui.component,rhizo.state
 namespace("rhizo.broadcast");
 
 /**

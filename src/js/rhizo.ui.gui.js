@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.ui.component,rhizo.util
+// RHIZODEP=rhizo.ui.component,rhizo
 // GUI Namespace
 namespace("rhizo.ui.gui");
 
