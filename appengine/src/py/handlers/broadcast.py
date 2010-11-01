@@ -163,7 +163,7 @@ class PublishBroadcastHandler(BroadcastBase):
 
   A publisher issues this message to upload its current visualization state
   server side and have it distributed to all known followers.
-  """"
+  """
 
   def post(self):
     channel_uuid, channel_payload = self.restore_channel()
