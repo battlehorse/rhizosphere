@@ -369,7 +369,7 @@ rhizo.ui.component.Container.prototype.renderContainer = function() {
  * @param {?number} opt_position The position of the component being rendered
  *     in the sequence of components part of this container. Guaranteed to be
  *     greater or equal to 0.
- * @return {Array.<HTMLElement|HTMLElement} The set of elements (can be one
+ * @return {Array.<HTMLElement>|HTMLElement} The set of elements (can be one
  *     or more) that define the given component and should be attached to the
  *     visualization DOM, unless they're explicity attached within this method.
  */
