@@ -459,9 +459,9 @@ rhizo.broadcast.Transmitter = function() {
 /**
  * Registers a listener to be notified whenever a message is received.
  * @param {string} key A unique key that identifies the listener.
- * @param {function} callback The callback that will be invoked when a message
- *     is received. It receives a single parameter, the message itself (which
- *     will be a plain untyped javascript object).
+ * @param {function(*)} callback The callback that will be invoked when a
+ *     message is received. It receives a single parameter, the message itself
+ *     (which will be a plain untyped javascript object).
  */
 rhizo.broadcast.Transmitter.prototype.listen = function(key, callback) {
   this.listen_callbacks_[key] = callback
@@ -485,16 +485,18 @@ rhizo.broadcast.Transmitter.prototype.unlisten = function(key) {
  *
  * @param {string} follow_uuid The uuid of the channel to follow.
  * @param {boolean} enable Whether to start or stop following the channel.
- * @param {function} callback Callback invoked upon success/failure of the
- *     follow operation. It receives up to 3 parameters. The first is a boolean
- *     status flag for success/failure.
+ * @param {function(boolean, string, *)} callback Callback invoked upon
+ *     success/failure of the follow operation. It receives up to 3 parameters.
+ *     The first is a boolean status flag for success/failure.
  *     On failure the second parameter will contain the description of the error
  *     that occurred.
  *     On success, the second parameter is unused, and the third will contain
  *     the current channel state (i.e. the current state of the remote
  *     visualization being followed), if any.
  */
-rhizo.broadcast.Transmitter.prototype.follow = function(follow_uuid, enable, callback) {
+rhizo.broadcast.Transmitter.prototype.follow = function(follow_uuid,
+                                                        enable,
+                                                        callback) {
   if (!this.channel_uuid_) {
     // Try opening the channel if it's not established yet.
     this.open(jQuery.proxy(function(status, text) {
@@ -513,7 +515,9 @@ rhizo.broadcast.Transmitter.prototype.follow = function(follow_uuid, enable, cal
     url: '/broadcast/follow',
     dataType: 'json',
     type: 'POST',
-    data: {uuid: this.channel_uuid_, follow: follow_uuid, enable: enable ? '1' : '0'},
+    data: {uuid: this.channel_uuid_,
+           follow: follow_uuid,
+           enable: enable ? '1' : '0'},
     error: function(xhr, status, error) {
       callback(false, 'Error changing follow status');
     },
@@ -540,12 +544,13 @@ rhizo.broadcast.Transmitter.prototype.follow = function(follow_uuid, enable, cal
  *
  * @param {*} message A plain Javascript object containing the payload to
  *     publish. Must be possible to serialize it as JSON.
- * @param {function} opt_callback An optional callback function invoked upon
- *     success/failure of the publish operation. It receives 2 parameters: the
- *     first is a boolean defining success/failure, the second is an error
- *     message in case of failure.
+ * @param {function(boolean, string)} opt_callback An optional callback function
+ *     invoked upon success/failure of the publish operation.
+ *     It receives 2 parameters: the first is a boolean defining
+ *     success/failure, the second is an error message in case of failure.
  */
-rhizo.broadcast.Transmitter.prototype.publish = function(message, opt_callback) {
+rhizo.broadcast.Transmitter.prototype.publish = function(message,
+                                                         opt_callback) {
   if (!this.channel_uuid_) {
     if (opt_callback) {
       opt_callback(false, 'Channel is not established yet.');
@@ -583,7 +588,7 @@ rhizo.broadcast.Transmitter.prototype.publish = function(message, opt_callback) 
  *
  * This method is asynchronous.
  *
- * @param {function} callback A callback function invoked upon
+ * @param {function(boolean, string)} callback A callback function invoked upon
  *     success/failure of the open operation. It receives 2 parameters: the
  *     first is a boolean defining success/failure, the second is an error
  *     message in case of failure or the uuid of the opened channel in case
@@ -631,8 +636,8 @@ rhizo.broadcast.Transmitter.prototype.messageReceived_ = function(evt) {
  *     channel that has been created on the server.
  * @param {string} channel_uuid The unique id of the channel, that will be used
  *     for all future communications on the channel.
- * @param {function} callback Callback function passed on by open(), to be
- *     invoked upon success/failure of the entire open operation.
+ * @param {function(boolean, string)} callback Callback function passed on by
+ *     open(), to be invoked upon success/failure of the entire open operation.
  * @private
  */
 rhizo.broadcast.Transmitter.prototype.openChannel_ = function(
@@ -652,11 +657,11 @@ rhizo.broadcast.Transmitter.prototype.openChannel_ = function(
  *
  * @param {string} channel_uuid The unique id of the channel, that will be used
  *     for all future communications on the channel.
- * @param {function} callback Callback function passed on by open(), to be
- *     invoked upon success/failure of the entire open operation.
+ * @param {function(boolean, string)} callback Callback function passed on by
+ *     open(), to be invoked upon success/failure of the entire open operation.
  */
-rhizo.broadcast.Transmitter.prototype.confirmOpenChannel_ = function(channel_uuid,
-                                                                     callback) {
+rhizo.broadcast.Transmitter.prototype.confirmOpenChannel_ = function(
+    channel_uuid, callback) {
   $.ajax({
     url: '/broadcast/connect',
     dataType: 'json',
