@@ -620,9 +620,6 @@ rhizo.inherits(rhizo.ui.component.HBox, rhizo.ui.component.Container);
 
 rhizo.ui.component.HBox.prototype.renderContainer = function() {
   this.bar_ = $('<div />', {'class': this.boxclass_});
-  this.resizeLink_ = $('<a/>', {'class': 'rhizo-icon rhizo-maximize-icon',
-                                href: 'javascript:;',
-                                title: 'Maximize'}).appendTo(this.bar_);
   return this.bar_.get(0);
 };
 
@@ -698,16 +695,6 @@ rhizo.ui.component.HBox.prototype.activateToggle_ = function(curToggle) {
       }
     }, this));
   }, this));
-};
-
-rhizo.ui.component.HBox.prototype.ready = function() {
-  rhizo.ui.component.Container.prototype.ready.call(this);
-
-  this.resizeLink_.click(function() {
-    self.resizeTo(1000, 700);
-    self.location.reload();
-    return false;
-  });
 };
 
 /**
