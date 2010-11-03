@@ -9,7 +9,9 @@
     <link rel="stylesheet"
           href="http://rhizospherejs.appspot.com/static/lib/stylesheets/rhizo.css"
           type="text/css">
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+    <!-- Early loading of the Google Visualization API libraries -->
+    <script type="text/javascript" src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"></script>
     <script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-1.4.2.min.js"
             type="text/javascript"
             charset="utf-8"></script>
@@ -47,12 +49,6 @@
   <body>
     <div id="rhizo-container" class="rhizo-container"></div>
     <script type="text/javascript" charset="utf-8">
-      // Early loading of the Google Visualization API libraries
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-
       var Person = function(id, name, age, male, hobbies, salary, parentId) {
         this.id = id;  // unique model id.
         this.name = name;
