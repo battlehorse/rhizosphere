@@ -38,6 +38,26 @@
   </dd>
 </dl>
 
+<p>
+  Some Rhizosphere demos and showcase applications require additional libraries
+  that are not included by default in the Rhizosphere codebase and you
+  must download separately. This include:
+</p>
+
+<dl>
+  <dt>Python GData Client</dt>
+  <dd>
+    Some Rhizosphere demos are rely on
+    <a href="http://code.google.com/apis/gdata/">GData</a> feeds for the data
+    they consume, via the
+    <a href="http://code.google.com/p/gdata-python-client/">
+      gdata-python-client</a> library. The library must be place in the
+    <code>appengine/shared</code> directory after you have downloaded
+    Rhizosphere source code. See the <code>appengine/shared/README.txt</code>
+    file for further info.
+  </dd>
+</dl>
+
 <p>If you also want to produce Rhizosphere release packages, you need this
   additional tools:
 </p>
@@ -106,6 +126,10 @@
   Remember to use the <code>d=1</code> url parameter to enable development
   mode (Rhizosphere files are served unbundled and not minified, CSS files
   are compiled on the fly from their LESS specification).
+</p>
+<p>
+  Some experimental Rhizosphere features are also protected by an <code>exp</code>
+  URL parameter which must be set to <code>1</code> to enable them.
 </p>
 <p>
   You can also look at the <a href="contrib_tables.html">Reference Tables</a>
