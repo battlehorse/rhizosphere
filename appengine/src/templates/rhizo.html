@@ -2,10 +2,16 @@
 <html>
   <head>
     <title>Rhizosphere</title>
+
+    <!-- Google services integration (e.g. GViz) -->
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+    <!-- AppEngine channels -->
     {% if use_channels %}
       <script src='/_ah/channel/jsapi'></script>
     {% endif %}
 
+    <!-- Rhizosphere libraries and styles -->
     {% include "rhizo_head.html" %}
   </head>
   <body>
