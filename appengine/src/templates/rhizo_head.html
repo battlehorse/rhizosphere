@@ -2,25 +2,25 @@
 {% ifequal forceDevice 'ipad' %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="viewport" content="width=device-width">
-<link rel="apple-touch-startup-image" href="static/shared/img/rhizosphere_startup_ipad_portrait.png">
+<link rel="apple-touch-startup-image" href="/static/shared/img/rhizosphere_startup_ipad_portrait.png">
 {% endifequal %}
 {% ifequal forceDevice 'iphone' %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="viewport" content="width=device-width,user-scalable=no">
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<link rel="apple-touch-startup-image" href="static/shared/img/rhizosphere_startup_iphone_portrait.png" >
+<link rel="apple-touch-startup-image" href="/static/shared/img/rhizosphere_startup_iphone_portrait.png" >
 {% endifequal %}
 
-<link rel="stylesheet" href="static/shared/stylesheets/jquery-ui-1.8.4.custom.css" type="text/css" media="screen" charset="utf-8">
-<link rel="stylesheet" href="static/src/stylesheets/base.css" type="text/css" media="screen" charset="utf-8">
-<link rel="stylesheet" href="static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
+<link rel="stylesheet" href="/static/shared/stylesheets/jquery-ui-1.8.4.custom.css" type="text/css" media="screen" charset="utf-8">
+<link rel="stylesheet" href="/static/src/stylesheets/base.css" type="text/css" media="screen" charset="utf-8">
+<link rel="stylesheet" href="/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
 
 {% if debug %}
-  <link rel="stylesheet/less" href="static/src/stylesheets/rhizo.less" type="text/css" />
-  <script src="static/shared/js/less-1.0.35.min.js"></script>
+  <link rel="stylesheet/less" href="/static/src/stylesheets/rhizo.less" type="text/css" />
+  <script src="/static/shared/js/less-1.0.35.min.js"></script>
 
 {% else %}
-  <link rel="stylesheet" href="static/lib/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
+  <link rel="stylesheet" href="/static/lib/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
 {% endif %}
 
 
@@ -31,39 +31,42 @@
 
 <!-- JQuery specific libraries -->
 {% if debug %}
-  <script src="static/shared/js/jquery-1.4.2.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/shared/js/jquery-ui-1.8.4.custom.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/shared/js/jquery-1.4.2.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/shared/js/jquery-ui-1.8.4.custom.js" type="text/javascript" charset="utf-8"></script>
 {% else %}
-  <script src="static/shared/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/shared/js/jquery-ui-1.8.4.custom.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/shared/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/shared/js/jquery-ui-1.8.4.custom.min.js" type="text/javascript" charset="utf-8"></script>
 {% endif %}
 {% ifequal forceDevice 'ipad' %}
-  <script src="static/shared/js/jquery.ui.ipad.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/shared/js/jquery.ui.ipad.js" type="text/javascript" charset="utf-8"></script>
+{% endifequal %}
+{% ifequal forceDevicce 'iphone' %}
+  <script src="/static/shared/js/jquery.ui.ipad.js" type="text/javascript" charset="utf-8"></script>
 {% endifequal %}
 
 <!-- Rhizosphere libraries -->
 {% if debug %}
-  <script src="static/src/js/rhizo.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.jquery.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.log.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.state.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.base.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.meta.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/extra/rhizo.meta.extra.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.layout.shared.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.layout.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.layout.tree.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.layout.treemap.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.model.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.model.loader.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.autorender.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.gviz.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.ui.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.ui.gui.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.ui.component.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/rhizo.bootstrap.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/extra/rhizo.keyboard.js" type="text/javascript" charset="utf-8"></script>
-  <script src="static/src/js/extra/rhizo.broadcast.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.jquery.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.log.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.state.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.base.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.meta.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/extra/rhizo.meta.extra.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.layout.shared.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.layout.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.layout.tree.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.layout.treemap.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.model.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.model.loader.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.autorender.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.gviz.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.ui.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.ui.gui.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.ui.component.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/rhizo.bootstrap.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/extra/rhizo.keyboard.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/src/js/extra/rhizo.broadcast.js" type="text/javascript" charset="utf-8"></script>
 {% else %}
-  <script src="static/lib/js/rhizo.pack.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/lib/js/rhizo.pack.js" type="text/javascript" charset="utf-8"></script>
 {% endif %}
