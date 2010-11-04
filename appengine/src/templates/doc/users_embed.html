@@ -228,18 +228,18 @@ bootstrapper.prepareAndDeploy(datasource_uri);
 <pre class="prettyprint lang-html">
 &lt;html&gt;
   &lt;head&gt;
-    &lt;script type="text/javascript" src="http://www.google.com/jsapi"&gt;&lt;/script&gt;
+    <strong>
+    &lt;!-- Early loading of the Google Visualization API libraries --&gt;
+    &lt;script
+      type="text/javascript"
+      src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"&gt;
+    &lt;/script&gt;
+    </strong>
     ...
   &lt;/head&gt;
   &lt;body&gt;
     ...
     &lt;script&gt;
-      // Early loading of the Google Visualization API libraries
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-      
       $(document).ready(function() {
         var datasource_uri = '...';  // your datasource here.
         var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
@@ -249,6 +249,13 @@ bootstrapper.prepareAndDeploy(datasource_uri);
   &lt;/body&gt;
 &lt;/html&gt;
 </pre>
+
+<p class="note">
+  <strong>Note</strong>. The <code>src</code> URL of the script that loads the
+  Google Visualization API should be fully urlencoded. The above URL,
+  for example, reads:
+  <code>http://www.google.com/jsapi?autoload={modules:[{name:visualization,version:1}]}</code>
+</p>
 
 <h3>Iframing</h3>
 <p>

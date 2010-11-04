@@ -47,3 +47,8 @@ library: parseURI
 reference: http://blog.stevenlevithan.com/archives/parseuri
 authors: Steven Levithan
 licence: MIT license, http://www.opensource.org/licenses/mit-license.php
+
+library: gdata-python-client
+reference: http://code.google.com/p/gdata-python-client/
+authors: http://code.google.com/p/gdata-python-client/people/list
+license: Apache 2.0 License, http://www.apache.org/licenses/LICENSE-2.0
