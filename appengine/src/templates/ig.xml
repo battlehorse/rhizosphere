@@ -34,8 +34,11 @@
     </div>
     <!-- Scripts section -->
 
-    <!-- for the GViz loader -->
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <!--
+      Google services integration. Autoloads:
+      - google visualization APIs.
+    -->
+    <script type="text/javascript" src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"></script>
 
     <!-- JQuery specific libraries -->
     <script src="{{ hostname }}/static/shared/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
@@ -81,14 +84,8 @@
         allowConfigFromUrl: false
       };
 
-      _IG_RegisterOnloadHandler(loadVisualizationAPI);
-
-      function loadVisualizationAPI() {
-          google.load('visualization', '1');
-          google.setOnLoadCallback(vizLoaded_);
-      }
-
-      function vizLoaded_() {
+      _IG_RegisterOnloadHandler(loadRhizosphere);
+      function loadRhizosphere() {
         $(document).ready(function() {
           var bootstrapper = new rhizo.bootstrap.Bootstrap(
               $('#rhizo-pangea'), globalOptions);

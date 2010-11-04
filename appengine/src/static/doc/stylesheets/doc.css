@@ -127,6 +127,7 @@ BODY {
   border: 1px solid #bbb;
   margin-top: 1em;
   padding: 1em;
+  word-wrap: break-word;
 }
 
 .content DT {

@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Rhizosphere : Multisphere</title>
+    <!-- Rhizosphere libraries and styles -->
     {% include "rhizo_head.html" %}
     <style>
       * {
@@ -45,11 +46,6 @@
     <div id="rhizo-third" class="rhizo-multi"></div>
 
     <script type="text/javascript" charset="utf-8">
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-
       $(document).ready(function() {
         var divs = ['#rhizo-first', '#rhizo-second', '#rhizo-third'];
         var samples = ['sample/picasa.js', 'sample/bugs.js', 'sample/books.js' ];

@@ -4,3 +4,5 @@ syntax: glob
 *.pyc
 *~
 .idea
+appengine/shared/atom
+appengine/shared/gdata
