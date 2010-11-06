@@ -203,7 +203,11 @@ rhizo.meta.DateKind.prototype.survivesFilter =
   var year = parseInt(filterValue[0], 10);
   var month = parseInt(filterValue[1], 10);
   var day = parseInt(filterValue[2], 10);
-  
+
+  if (!modelValue) {
+    return isNaN(year) && isNaN(month) && isNaN(day);
+  }
+
   var survives = ((isNaN(year) || modelValue.getFullYear() == year) &&
           (isNaN(month) || modelValue.getMonth() == month) &&
           (isNaN(day) || modelValue.getDate() == day));
@@ -221,6 +225,9 @@ rhizo.meta.DateKind.prototype.survivesFilter =
 //   the underlying date ordering when lexicographically sorted.
 
 rhizo.meta.DateKind.prototype.cluster = function(modelValue) {
+  if (!modelValue) {
+    return {key: 'Undefined date', label: 'Undefined date'};
+  }
   if (this.clusterby_ == 'y') {
     return {
       key: modelValue.getFullYear() + '-00-01',
@@ -491,7 +498,7 @@ rhizo.meta.CategoryKind.prototype.survivesFilter =
 
   // var survives = true;
   // for (var i = 0; i < filterValue.length; i++) {
-  //   if (modelValue.indexOf(filterValue[i]) == -1) {
+  //   if (modelValue && modelValue.indexOf(filterValue[i]) == -1) {
   //     survives = false;
   //     break;
   //   }
@@ -501,7 +508,7 @@ rhizo.meta.CategoryKind.prototype.survivesFilter =
   // OR-filter
   var survives = false;
   for (var i = 0; i < filterValue.length; i++) {
-    if (modelValue.indexOf(filterValue[i]) != -1) {
+    if (modelValue && modelValue.indexOf(filterValue[i]) != -1) {
       survives = true;
       break;
     }
@@ -510,6 +517,9 @@ rhizo.meta.CategoryKind.prototype.survivesFilter =
 };
 
 rhizo.meta.CategoryKind.prototype.cluster = function(modelValue) {
+  if (!modelValue) {
+    return {key: 'Nothing', label: 'Nothing'};
+  }
   return { key: modelValue.length == 0 ? "Nothing" : modelValue,
            label: modelValue.length == 0 ? "Nothing" : modelValue };
 };
@@ -517,7 +527,8 @@ rhizo.meta.CategoryKind.prototype.cluster = function(modelValue) {
 rhizo.meta.CategoryKind.prototype.compare = function(firstValue, secondValue) {
   // comparison based on number of categories.
   // Not necessarily the most meaningful...
-  return firstValue.length - secondValue.length;
+  return (firstValue ? firstValue.length : 0) -
+         (secondValue ? secondValue.length : 0);
 };
 
 rhizo.meta.CategoryKind.prototype.isNumeric = function() {
