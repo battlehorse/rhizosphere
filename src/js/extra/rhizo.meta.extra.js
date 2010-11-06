@@ -85,7 +85,7 @@ rhizo.meta.DecimalKind.prototype.cluster = function(modelValue) {
 */
 rhizo.meta.DecimalRangeKind = function(opt_precision) {
   rhizo.meta.RangeKind.call(this);
-  this.precision_ = opt_precision || 2;
+  this.precision_ = typeof(opt_precision) == 'number' ? opt_precision : 2;
   this.scale_ = Math.pow(10, this.precision_);
 };
 rhizo.inherits(rhizo.meta.DecimalRangeKind, rhizo.meta.RangeKind);
