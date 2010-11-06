@@ -532,7 +532,7 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
     // if a rescaler has been defined.
     //
     // Like this method, the rescaler too receives outer dimensions.
-    this.rendererRescaler_(width - 2, height - 2);
+    this.rendererRescaler_(this.naked_node_, width - 2, height - 2);
   }
   return true;
 };
@@ -550,7 +550,7 @@ rhizo.ui.Rendering.prototype.setNakedCss = function(props) {
     throw 'setNakedCss() expects a map of properties.';
   }
   if (this.rendererStyleChanger_) {
-    this.rendererStyleChanger_(props);
+    this.rendererStyleChanger_(this.naked_node_, props);
   } else {
     this.naked_node_.css(props);
   }
