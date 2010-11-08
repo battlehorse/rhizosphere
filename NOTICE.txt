@@ -52,3 +52,8 @@ library: gdata-python-client
 reference: http://code.google.com/p/gdata-python-client/
 authors: http://code.google.com/p/gdata-python-client/people/list
 license: Apache 2.0 License, http://www.apache.org/licenses/LICENSE-2.0
+
+library: Fugue Icons
+reference: http://p.yusukekamiyamane.com/
+authors: Yusuke Kamiyamane
+license: Creative Commons Attribution 3.0 license
