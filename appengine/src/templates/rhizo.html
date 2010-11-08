@@ -47,17 +47,17 @@
         var options = {
           allowConfigFromUrl: true
           {% if use_channels %}
-            ,forceTemplate: 'broadcast'
+            ,template: 'broadcast'
           {% else %}
-            {% if forceTemplate %}
-            ,forceTemplate: '{{forceTemplate}}'
+            {% if template %}
+            ,template: '{{template}}'
             {% endif %}
           {% endif %}
-          {% if forcePlatform %}
-          ,forcePlatform: '{{forcePlatform}}'
+          {% if platform %}
+          ,platform: '{{platform}}'
           {% endif %}
-          {% if forceDevice %}
-          ,forceDevice: '{{forceDevice}}'
+          {% if device %}
+          ,device: '{{device}}'
           {% endif %}
         };
         var bootstrapper = new rhizo.bootstrap.Bootstrap(

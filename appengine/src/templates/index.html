@@ -80,7 +80,7 @@
         var simulate = document.getElementById(simulate_id).value;
         var forceParams = '';
         if (simulate == 'mobile') {
-          forceParams = '&forcePlatform=mobile&forceDevice=ipad';
+          forceParams = '&platform=mobile&device=ipad';
         }
         var url = 'rhizo.html?d=' +
             (document.getElementById(debug_id).checked ? '1' : '0') +

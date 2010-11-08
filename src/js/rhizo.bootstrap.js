@@ -151,15 +151,17 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
-  if (this.options_.forcePlatform && this.options_.forceDevice) {
-    return {platform: this.options_.forcePlatform,
-            device: this.options_.forceDevice};
+  if (this.options_.platform && this.options_.device) {
+    return {platform: this.options_.platform,
+            device: this.options_.device};
   }
   var ua = navigator.userAgent;
   if (ua.toLowerCase().indexOf('ipad') != -1) {
     return {platform: 'mobile', device: 'ipad'};
   } else if (ua.toLowerCase().indexOf('iphone') != -1) {
     return {platform: 'mobile', device: 'iphone'};
+  } else if (ua.toLowerCase().indexOf('android') != -1) {
+    return {platform: 'mobile', 'device': 'android'};
   }
   return {platform: 'default', device: 'default'};
 };
@@ -173,9 +175,9 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui, options) {
-  if (options.forceTemplate &&
-      options.forceTemplate in rhizo.ui.component.templates) {
-    return rhizo.ui.component.templates[options.forceTemplate];
+  if (options.template &&
+      options.template in rhizo.ui.component.templates) {
+    return rhizo.ui.component.templates[options.template];
   }
 
   // No specific template has been forced. Select a specific one based on

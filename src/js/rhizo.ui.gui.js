@@ -26,7 +26,7 @@ namespace("rhizo.ui.gui");
  * @param {string} platform The platform we are currently running on (e.g.:
  *     'mobile', 'default' ... ).
  * @param {string} device The device we are currently running on (e.g.:
- *     'ipad', 'iphone', 'default' ... ).
+ *     'ipad', 'iphone', 'android', 'default' ... ).
  * @constructor
  */
 rhizo.ui.gui.GUI = function(container, platform, device) {
