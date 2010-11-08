@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+  <title>Rhizosphere Showcase :: Google Code</title>
+  <style type="text/css">
+    .error {
+      border: 1px solid red;
+      background-color: #fcc;
+    }
+  </style>
+  {% include "../../ga.html" %}
+</head>
+<body>
+  <h1>Google Code</h1>
+  {% if error %}
+  <p class="error">
+    {{ error }}
+  </p>
+  {% endif %}
+  <form action="/showcase/code/rhizo" method="GET">
+    <label for="p">Project:</label>
+    <input type="text" name="p" id="p" value="{{ qs.p }}"><br />
+
+    <label for="n">Max results</label>
+    <select id="n" name="n">
+      <option value="max" {% ifequal qs.n 'max' %}selected='selected'{% endifequal %}>max</option>
+      <option value="10" {% ifequal qs.n '10' %}selected='selected'{% endifequal %}>10</option>
+      <option value="50" {% ifequal qs.n '50' %}selected='selected'{% endifequal %}>50</option>
+      <option value="100" {% ifequal qs.n '100' %}selected='selected'{% endifequal %}>100</option>
+      <option value="500" {% ifequal qs.n '500' %}selected='selected'{% endifequal %}>500</option>
+      <option value="1000" {% ifequal qs.n '1000' %}selected='selected'{% endifequal %}>1000</option>
+      <option value="2000" {% ifequal qs.n '2000' %}selected='selected'{% endifequal %}>2000</option>
+      <option value="5000" {% ifequal qs.n '5000' %}selected='selected'{% endifequal %}>5000</option>
+      <option value="10000" {% ifequal qs.n '10000' %}selected='selected'{% endifequal %}>10000</option>
+    </select><br />
+
+    <label for="can">Canned query</label>
+    <select name="can" id="can">
+      <option value="all" {% ifequal qs.can 'all' %}selected='selected'{% endifequal %}>all</option>
+      <option value="open" {% ifequal qs.can 'open' %}selected='selected'{% endifequal %}>open</option>
+      <option value="owned" {% ifequal qs.can 'owned' %}selected='selected'{% endifequal %}>owned</option>
+      <option value="reported" {% ifequal qs.can 'reported' %}selected='selected'{% endifequal %}>reported</option>
+      <option value="starred" {% ifequal qs.can 'starred' %}selected='selected'{% endifequal %}>starred</option>
+      <option value="new" {% ifequal qs.can 'new' %}selected='selected'{% endifequal %}>new</option>
+      <option value="to-verify" {% ifequal qs.can 'to-verify' %}selected='selected'{% endifequal %}>to-verify</option>
+    </select><br />
+
+    <label for="pub">Published since</label>
+    <select name="pub" id="pub">
+      <option value="" {% ifequal qs.pub '' %}selected='selected'{% endifequal %}>all time</option>
+      <option value="1d" {% ifequal qs.pub '1d' %}selected='selected'{% endifequal %}>yesterday</option>
+      <option value="1w" {% ifequal qs.pub '1w' %}selected='selected'{% endifequal %}>last week</option>
+      <option value="1m" {% ifequal qs.pub '1m' %}selected='selected'{% endifequal %}>last month</option>
+      <option value="3m" {% ifequal qs.pub '3m' %}selected='selected'{% endifequal %}>last 3 months</option>
+      <option value="6m" {% ifequal qs.pub '6m' %}selected='selected'{% endifequal %}>last 6 months</option>
+      <option value="12m" {% ifequal qs.pub '12m' %}selected='selected'{% endifequal %}>last year</option>
+    </select>
+
+    <label for="upd">Updated since</label>
+    <select name="upd" id="upd">
+      <option value="" {% ifequal qs.upd '' %}selected='selected'{% endifequal %}>all time</option>
+      <option value="1d" {% ifequal qs.upd '1d' %}selected='selected'{% endifequal %}>yesterday</option>
+      <option value="1w" {% ifequal qs.upd '1w' %}selected='selected'{% endifequal %}>last week</option>
+      <option value="1m" {% ifequal qs.upd '1m' %}selected='selected'{% endifequal %}>last month</option>
+      <option value="3m" {% ifequal qs.upd '3m' %}selected='selected'{% endifequal %}>last 3 months</option>
+      <option value="6m" {% ifequal qs.upd '6m' %}selected='selected'{% endifequal %}>last 6 months</option>
+      <option value="12m" {% ifequal qs.upd '12m' %}selected='selected'{% endifequal %}>last year</option>
+    </select>
+
+    <label for="det">Detail</label>
+    <select name="det" id="det">
+      <option value="compressed" {% ifequal qs.det 'compressed' %}selected='selected'{% endifequal %}>few</option>
+      <option value="all" {% ifequal qs.det 'all' %}selected='selected'{% endifequal %}>lots</option>
+    </select>
+
+    <input type="submit" value="Go!">
+  </form>
+</body>
+</html>

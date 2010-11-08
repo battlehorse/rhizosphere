@@ -81,3 +81,8 @@ def IdentifyPlatformDevice(request):
     device = GetOptionFromUrl(request, 'device',
                               ['default', 'ipad', 'iphone', 'android'])
   return platform, device
+
+
+def IsSmartphone(platform, device):
+  """Returns whether the user is accessing Rhizosphere from a smartphone."""
+  return platform == 'mobile' and device in ['iphone', 'android']
