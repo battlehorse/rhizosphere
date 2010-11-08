@@ -1,14 +1,17 @@
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
-{% ifequal forceDevice 'ipad' %}
+{% ifequal device 'ipad' %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="viewport" content="width=device-width">
 <link rel="apple-touch-startup-image" href="/static/shared/img/rhizosphere_startup_ipad_portrait.png">
 {% endifequal %}
-{% ifequal forceDevice 'iphone' %}
+{% ifequal device 'iphone' %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="viewport" content="width=device-width,user-scalable=no">
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <link rel="apple-touch-startup-image" href="/static/shared/img/rhizosphere_startup_iphone_portrait.png" >
+{% endifequal %}
+{% ifequal device 'android' %}
+<meta name="viewport" content="width=device-width,user-scalable=no">
 {% endifequal %}
 
 <link rel="stylesheet" href="/static/shared/stylesheets/jquery-ui-1.8.4.custom.css" type="text/css" media="screen" charset="utf-8">
@@ -32,10 +35,13 @@
   <script src="/static/shared/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="/static/shared/js/jquery-ui-1.8.4.custom.min.js" type="text/javascript" charset="utf-8"></script>
 {% endif %}
-{% ifequal forceDevice 'ipad' %}
+{% ifequal device 'ipad' %}
   <script src="/static/shared/js/jquery.ui.ipad.js" type="text/javascript" charset="utf-8"></script>
 {% endifequal %}
-{% ifequal forceDevicce 'iphone' %}
+{% ifequal device 'iphone' %}
+  <script src="/static/shared/js/jquery.ui.ipad.js" type="text/javascript" charset="utf-8"></script>
+{% endifequal %}
+{% ifequal device 'android' %}
   <script src="/static/shared/js/jquery.ui.ipad.js" type="text/javascript" charset="utf-8"></script>
 {% endifequal %}
 
