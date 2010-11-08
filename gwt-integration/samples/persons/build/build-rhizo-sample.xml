@@ -1,0 +1,89 @@
+<project name="RhizoSphereGwt Persons Sample" default="pack" basedir="../">
+	<loadproperties srcfile="build/build.properties" />
+
+	<property name="ant-work-dir" value="." />
+	<property name="gwt-sdk" value="."/>
+	<property name="gwt-visualization-jar" value="gwt-visualization.jar"/>
+	<property name="gwt-rhizosphere-jar" value="gwt-rhizosphere.jar"/>
+	<property name="gwt-compiler-args" value=""/>
+
+	<property name="compile-output-dir" value="${ant-work-dir}/classes" />
+	<property name="gwt-compile-output-dir" value="${ant-work-dir}/gwtout" />
+	<property name="exploded-output-dir" value="${ant-work-dir}/exploded" />
+	<property name="packages-output-dir" value="${ant-work-dir}/packages" />
+	<property name="packages-deploy-dir" value="/tomcat/webapps"/>
+
+	<path id="classpath.compile">
+		<pathelement location="${compile-output-dir}"/>
+		<pathelement location="${gwt-sdk}/gwt-user.jar"/>
+		<pathelement location="${gwt-sdk}/gwt-dev.jar"/>
+		<pathelement location="${gwt-visualization-jar}"/>
+		<pathelement location="${gwt-rhizosphere-jar}"/>
+	</path>
+
+	<target name="clean">
+		<delete dir="${ant-work-dir}">
+		</delete>
+	</target>
+
+	<target name="prepare-output-folders" depends="clean">
+		<mkdir dir="${compile-output-dir}" />
+		<mkdir dir="${packages-output-dir}" />
+	</target>
+
+	<target name="compile" depends="prepare-output-folders">
+		<javac srcdir="src" destdir="${compile-output-dir}" source="5" target="5" encoding="Cp1252"
+			debug="true" verbose="true">
+			<classpath refid="classpath.compile" />
+		</javac>
+	</target>
+
+	<target name="gwt-compile" depends="compile">
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+			<classpath>
+				<pathelement location="src" />
+				<path refid="classpath.compile" />
+			</classpath>
+			<!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+			<jvmarg value="-Xmx256M" />
+			<!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+			<arg line="${gwt-compiler-args} -war ${gwt-compile-output-dir}" />
+			<arg value="com.google.rhizosphere.gviz.samples.persons.Persons" />
+		</java>
+	</target>
+
+	<target name="explode">
+		<delete dir="${exploded-output-dir}"/>
+		<mkdir dir="${exploded-output-dir}" />
+		<copy todir="${exploded-output-dir}" failonerror="true">
+			<!-- libraries -->
+			<zipfileset dir="." prefix="WEB-INF/lib">
+				<include name="${gwt-visualization-jar}"/>
+				<include name="${gwt-rhizosphere-jar}"/>
+			</zipfileset>
+			<!-- html page and web.xml -->
+			<fileset dir="resources"/>
+			<!-- GWT output -->
+			<fileset dir="${gwt-compile-output-dir}"/>
+		</copy>
+		<copy todir="${exploded-output-dir}/rhizo" failonerror="true">
+			<!-- Rhizosphere JS -->
+			<fileset dir="../../../src/js"/>
+		</copy>
+	</target>
+
+	<target name="pack" depends="explode">
+		<jar file="${packages-output-dir}/persons.war">
+			<fileset dir="${exploded-output-dir}"></fileset>
+		</jar>
+	</target>
+	
+	<target name="rebuild-and-deploy" depends="gwt-compile, pack, deploy">
+	
+	</target>
+		
+	<target name="deploy">
+		<copy todir="${packages-deploy-dir}" failonerror="true" file="${packages-output-dir}/persons.war">
+		</copy>
+	</target>
+</project>

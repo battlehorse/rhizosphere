@@ -1,4 +1,4 @@
-package com.google.rhizosphere.gviz.client.sample;
+package com.google.rhizosphere.gviz.samples.persons.client;
 
 import java.util.Date;
 
