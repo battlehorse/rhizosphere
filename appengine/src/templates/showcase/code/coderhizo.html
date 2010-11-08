@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <title>Rhizosphere Showcase :: Google Code :: {{project}}</title>
+  <!-- Channels API -->
+  <script src='/_ah/channel/jsapi'></script>
+
+  <!-- Rhizosphere standard includes -->
+  {% include "../../rhizo_head.html" %}
+
+  <!-- Google Code showcase specific styles and javascript -->
+  <link rel="stylesheet" href="/static/showcase/code/stylesheets/googlecode.css"
+        type="text/css" media="screen" charset="utf-8">
+  <script src='/static/showcase/code/js/googlecode.js'></script>
+  <style type="text/css">
+    {% if smartphone %}
+    .rhizo-model {
+      width: 8em;
+      font-size: 0.8em;
+    }
+    .rhizo-model.rhizo-model-expanded {
+      width: 12em;
+    }
+    {% else %}
+      {% ifequal detail 'all' %}
+      .rhizo-model {
+        width: 15em;
+        height: 15em;
+      }
+      {% endifequal %}
+      {% ifequal detail 'compressed' %}
+      .rhizo-model {
+        width: 10em;
+        height: 10em;
+      }
+
+      .rhizo-model.rhizo-model-expanded {
+        width: 15em;
+        height: 15em;
+      }
+      {% endifequal %}
+    {% endif %}
+  </style>
+  {% include "../../ga.html" %}
+</head>
+<body>
+  <div id="rhizo-googlecode" class="googlecode-container" ></div>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      // Parse statistics about the issues fetched from Google Code Hosting.
+      var stats = JSON.parse('{{ stats }}');
+
+      // Convert the stats into a Rhizosphere-compatible metamodel.
+      var metamodel = googlecode.buildMetamodel(stats);
+
+      // Create the renderer.
+      var renderer = new googlecode.Renderer(stats.composite_labels.names);
+      {% ifequal detail 'all' %}
+        renderer.renderAllDetails();
+      {% endifequal %}
+
+      // Define a custom UI template factory.
+      rhizo.ui.component.templates['broadcast'] = googlecode.buildTemplate;
+
+      // Set up visulization options.
+      var options = {
+        allowConfigFromUrl: true,
+        template: 'broadcast'
+      };
+
+      // Start the bootstrap sequence.
+      var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-googlecode'),
+                                                       options);
+      bootstrapper.prepare();
+
+      // Load all the models.
+      var models = [];
+      {% for issue in issues %}
+        models.push(JSON.parse('{{issue}}'));
+      {% endfor %}
+
+      // Fix models, and after-load tweaks.
+      googlecode.fixModels(models, stats);
+
+      // And complete the deploy.
+      bootstrapper.deployExplicit(metamodel, renderer, models);
+    });
+  </script>
+</body>
+</html>
