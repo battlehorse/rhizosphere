@@ -166,7 +166,8 @@ rhizo.layout.treemap.RenderingBackup = function(rendering) {
 rhizo.layout.treemap.RenderingBackup.prototype.restore = function(
     restoreSizes, restoreColors) {
   if (restoreColors) {
-    this.rendering_.setNakedCss({backgroundColor: this.originalBackground_});
+    this.rendering_.setNakedCss({backgroundColor: this.originalBackground_},
+                                /* revert hint */ true);
   }
   if (restoreSizes) {
     this.rendering_.rescaleRendering(this.originalDimensions_.width,
