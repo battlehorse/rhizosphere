@@ -25,6 +25,9 @@ handlers:
 - url: /broadcast/.*
   script: py/handlers/broadcast.py
 
+- url: /showcase/code(/.*)?
+  script: py/handlers/showcase/googlecode.py
+
 # Static files. Exclude static/samples/js since it is served by the
 # sample handler.
 
@@ -51,6 +54,10 @@ handlers:
 - url: /static/welcome/(.*?)/(.*)
   static_files: static/welcome/\1/\2
   upload: static/welcome/(.*?)/(.*)
+
+- url: /static/showcase/(.*?)/(.*)/(.*)
+  static_files: static/showcase/\1/\2/\3
+  upload: static/showcase/(.*?)/(.*)/(.*)
 
 - url: /static/doc/(.*?)/(.*)
   static_files: static/doc/\1/\2
