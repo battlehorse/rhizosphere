@@ -224,7 +224,7 @@ class Date(object):
           as in this example: 2008-07-20T14:48:23.000Z
     """
     self.date = datetime.datetime.strptime(atom_date.text,
-                                           '%Y-%m-%dT%H:%M:%S.%fZ')
+                                           '%Y-%m-%dT%H:%M:%S.000Z')
 
   @property
   def date_yyyy_mm_dd(self):
