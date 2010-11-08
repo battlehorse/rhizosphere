@@ -543,14 +543,17 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
  * are applied directly on the naked rendering.
  *
  * @param {*} props CSS styles to apply, in the form of a plain javascript
- *   object.
+ *     object.
+ * @param {?boolean} opt_hintRevert An optional boolean hint to indicate that
+ *     the rendering properties are being reverted to their original state,
+ *     to cancel the effects of a previous call to this function.
  */
-rhizo.ui.Rendering.prototype.setNakedCss = function(props) {
+rhizo.ui.Rendering.prototype.setNakedCss = function(props, opt_hintRevert) {
   if (typeof props != 'object') {
     throw 'setNakedCss() expects a map of properties.';
   }
   if (this.rendererStyleChanger_) {
-    this.rendererStyleChanger_(this.naked_node_, props);
+    this.rendererStyleChanger_(this.naked_node_, props, opt_hintRevert);
   } else {
     this.naked_node_.css(props);
   }
