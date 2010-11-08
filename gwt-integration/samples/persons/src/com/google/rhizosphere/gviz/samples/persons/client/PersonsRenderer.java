@@ -1,4 +1,4 @@
-package com.google.rhizosphere.gviz.client.sample;
+package com.google.rhizosphere.gviz.samples.persons.client;
 
 import com.google.gwt.ajaxloader.client.Properties;
 import com.google.gwt.ajaxloader.client.Properties.TypeException;
