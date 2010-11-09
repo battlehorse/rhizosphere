@@ -212,7 +212,7 @@ googlecode.template.StandardTemplate = function(
 rhizo.inherits(googlecode.template.StandardTemplate,
                rhizo.ui.component.StandardTemplate);
 
-googlecode.template.StandardTemplate.prototype.defaultComponents = function(
+googlecode.template.StandardTemplate.prototype.defaultLeftComponents = function(
     project, options) {
   return [
       new googlecode.template.Logo(project, options, true,
@@ -221,6 +221,13 @@ googlecode.template.StandardTemplate.prototype.defaultComponents = function(
       new rhizo.ui.component.Layout(project, options),
       new rhizo.ui.component.SelectionManager(project, options),
       new rhizo.ui.component.FilterStackContainer(project, options)
+  ];
+};
+
+googlecode.template.StandardTemplate.prototype.defaultRightComponents =
+    function(project, options) {
+  return [
+      new rhizo.ui.component.Console(project, options)
   ];
 };
 
