@@ -485,4 +485,6 @@ class JSONHelper(object):
     return composite_labels
 
   def _Escape(self, text):
+    if not text:
+      return ""
     return "".join(self._escape_table.get(c,c) for c in text)
