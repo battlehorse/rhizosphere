@@ -305,7 +305,6 @@ googlecode.template.Logo.prototype.render = function() {
  * - full: All available information regarding the issue are displayed all the
  *   time.
  *
- * @param {*} composite_labels
  * @param {Object.<string, string>} composite_labels_names Key-value mapping
  *     from the javascript variable name that identifies a given issue label to
  *     its human-readable name.
@@ -394,12 +393,7 @@ googlecode.Renderer.prototype.render = function(model,
       appendTo(container);
   var html_link = $('<a />',
       {href: model.html_link,
-       target: '_blank',
-       click: function() {
-          document.location.href = model.html_link;
-          return false;
-       }
-      }).text(model.id);
+       target: '_blank'}).text(model.id);
   $('<span />', {'class': 'id'}).append(html_link).prependTo(summary);
 
   if (!this.shouldRenderAllDetails_(expanded, renderingHints)) {
