@@ -489,11 +489,16 @@ rhizo.meta.CategoryKind.prototype.renderFilter = function(project,
 };
 
 rhizo.meta.CategoryKind.prototype.setFilterValue = function(value) {
+  // val() accepts both a single string and an array.
   this.categories_.val(value || (this.multiple_ ? [] : ''));
 };
 
 rhizo.meta.CategoryKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
+  // This function relies on Javascript 1.6 for the indexOf() method to be
+  // present both on Arrays and Strings (since models can use both to define
+  // the value of a CategoryKind meta).
+
   // AND-filter
 
   // var survives = true;
@@ -517,6 +522,10 @@ rhizo.meta.CategoryKind.prototype.survivesFilter =
 };
 
 rhizo.meta.CategoryKind.prototype.cluster = function(modelValue) {
+  // This function relies on the length property being available both on
+  // Arrays and Strings (since models can use both to define
+  // the value of a CategoryKind meta) and in both cases a length == 0
+  // implies a missing value.
   if (!modelValue) {
     return {key: 'Nothing', label: 'Nothing'};
   }
@@ -525,8 +534,10 @@ rhizo.meta.CategoryKind.prototype.cluster = function(modelValue) {
 };
 
 rhizo.meta.CategoryKind.prototype.compare = function(firstValue, secondValue) {
-  // comparison based on number of categories.
-  // Not necessarily the most meaningful...
+  // comparison based on number of categories (if values are Arrays) or value
+  // length (if the value is a single category, represented as string).
+  // Not necessarily the most meaningful thing to do...
+  // TODO(battlehorse): define a better CategoryKind comparison strategy
   return (firstValue ? firstValue.length : 0) -
          (secondValue ? secondValue.length : 0);
 };
