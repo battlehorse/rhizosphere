@@ -869,6 +869,11 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
       model.rendering().removeMode('__dragging__');
       return false;
     }
+
+    if (ev.target.nodeName == 'A') {
+      // If a link was clicked, let the event bubble up.
+      return;
+    }
     this.project_.toggleSelect(model.id);
     return false;
   }, this));
