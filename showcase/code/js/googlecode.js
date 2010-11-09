@@ -63,13 +63,13 @@ googlecode.buildMetamodel = function(stats) {
     owner_name: {kind: rhizo.meta.Kind.CATEGORY, label: 'Owner',
                  categories: stats.owners},
 
-    published: {kind: new rhizo.meta.DateKind('m'),
-                label: "Published",
-                minYear: stats.published.minyear,
-                maxYear: stats.published.maxyear },
-    published_ago: {kind: rhizo.meta.Kind.RANGE,
-                    label: "Published (days ago)",
-                    min: 0, max: stats.published.daysago },
+    created: {kind: new rhizo.meta.DateKind('m'),
+              label: "Created",
+              minYear: stats.created.minyear,
+              maxYear: stats.created.maxyear },
+    created_ago: {kind: rhizo.meta.Kind.RANGE,
+                  label: "Created (days ago)",
+                  min: 0, max: stats.created.daysago },
     updated: {kind: new rhizo.meta.DateKind('m'),
               label: "Updated",
               minYear: stats.updated.minyear,
@@ -115,9 +115,9 @@ googlecode.fixModels = function(models, stats) {
     // Convert serialized dates into javascript Date objects.
     // Serialized dates are represented as [yyyy, mm, dd, days_ago] integer
     // arrays.
-    var published = models[i].published;
-    models[i].published_ago = published[3];
-    models[i].published = new Date(published[0], published[1]-1, published[2])
+    var created = models[i].created;
+    models[i].created_ago = created[3];
+    models[i].created = new Date(created[0], created[1]-1, created[2])
 
     var updated = models[i].updated;
     models[i].updated_ago = updated[3];
@@ -467,17 +467,18 @@ googlecode.Renderer.prototype.renderStars_ = function(model, container) {
 };
 
 /**
- * Renders information about the issue published, updated and closed date.
+ * Renders information about the issue published (created), updated and
+ * closed date.
  * @private
  */
 googlecode.Renderer.prototype.renderDates_ = function(model, container) {
   var dates = $('<p />', {'class': 'dates'});
-  dates.append($('<span />', {'title': 'Published'}).
-      text(this.formatDate_(model.published)));
+  dates.append($('<span />', {'title': 'Created'}).
+      text(this.formatDate_(model.created)));
   if (model.closed_date) {
     dates.append($('<span />', {'class': 'nextdate', 'title': 'Closed'}).
         text(this.formatDate_(model.closed_date)));
-  } else if (model.updated != model.published) {
+  } else if (model.updated != model.created) {
     dates.append($('<span />', {'class': 'nextdate', 'title': 'Updated'}).
         text(this.formatDate_(model.updated)));
   }

@@ -45,7 +45,7 @@
       <option value="to-verify" {% ifequal qs.can 'to-verify' %}selected='selected'{% endifequal %}>to-verify</option>
     </select><br />
 
-    <label for="pub">Published since</label>
+    <label for="pub">Created since</label>
     <select name="pub" id="pub">
       <option value="" {% ifequal qs.pub '' %}selected='selected'{% endifequal %}>all time</option>
       <option value="1d" {% ifequal qs.pub '1d' %}selected='selected'{% endifequal %}>yesterday</option>

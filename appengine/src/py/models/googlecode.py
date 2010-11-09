@@ -91,7 +91,7 @@ class Issue(object):
     assert hasattr(entry, 'updated')
     assert hasattr(entry, 'published')
     self.updated = Date(entry.updated)
-    self.published = Date(entry.published)
+    self.created = Date(entry.published)
 
     # The issue close date (if the issue has been closed).
     self.closed_date = None
@@ -310,7 +310,7 @@ class IssueStats(object):
     self._has_issues_with_no_reporters = False
 
     # The range of issue publishing (creation), update and closing dates.
-    self.published = {'minyear': 9999, 'maxyear': 0, 'daysago': 0}
+    self.created = {'minyear': 9999, 'maxyear': 0, 'daysago': 0}
     self.updated = {'minyear': 9999, 'maxyear': 0, 'daysago': 0}
 
     self._has_closed_dates = False
@@ -345,8 +345,8 @@ class IssueStats(object):
       else:
         self._has_issues_with_no_reporters = True
 
-      # Issue published, updated and (if available), closed date
-      self._ComputeDateStats(self.published, issue.published)
+      # Issue published (created), updated and (if available), closed date
+      self._ComputeDateStats(self.created, issue.created)
       self._ComputeDateStats(self.updated, issue.updated)
       if issue.closed_date:
         self._has_closed_dates = True
@@ -437,10 +437,10 @@ class JSONHelper(object):
       json['reporter_name'] = UNKNOWN_REPORTER
       json['reporter_uri'] = None
 
-    json['published'] = [issue.published.date.year,
-                         issue.published.date.month,
-                         issue.published.date.day,
-                         issue.published.days_ago]
+    json['created'] = [issue.created.date.year,
+                       issue.created.date.month,
+                       issue.created.date.day,
+                       issue.created.days_ago]
     json['updated'] = [issue.updated.date.year,
                        issue.updated.date.month,
                        issue.updated.date.day,
@@ -469,7 +469,7 @@ class JSONHelper(object):
       'owners': stats.owners,
       'reporters': stats.reporters,
       'stars' : stats.stars,
-      'published': stats.published,
+      'created': stats.created,
       'updated': stats.updated,
       'plain_labels': [label for label in stats.plain_labels],
       'composite_labels': self._BuildCompositeLabels(stats)

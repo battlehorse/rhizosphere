@@ -150,7 +150,7 @@ class FetchHandler(BaseHandler):
                             'starred', 'new', 'to-verify']:
       canned_query = 'all'
 
-    published_min = self._GetDateParam('pub')
+    created_min = self._GetDateParam('pub')
     updated_min = self._GetDateParam('upd')
 
     return {
@@ -158,15 +158,15 @@ class FetchHandler(BaseHandler):
         'detail': detail,
         'num_results': num_results,
         'canned_query': canned_query,
-        'published_min': published_min,
+        'created_min': created_min,
         'updated_min': updated_min,
         }
 
   def _BuildFeedUrl(self, params):
     feed_url = '/feeds/issues/p/%s/issues/full?max-results=%d&can=%s' % (
         params['project'], params['num_results'], params['canned_query'])
-    if params.get('published_min'):
-      feed_url = '%s&published-min=%s' % (feed_url, params['published_min'])
+    if params.get('created_min'):
+      feed_url = '%s&published-min=%s' % (feed_url, params['created_min'])
     if params.get('updated_min'):
       feed_url = '%s&updated-min=%s' % (feed_url, params['updated_min'])
     return feed_url

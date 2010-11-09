@@ -114,7 +114,7 @@
         {% endfor %}
       </p>
       <p>
-        Published: {{ issue.published.date_yyyy_mm_dd }} ({{issue.published.days_ago}} days ago) <br />
+        Created: {{ issue.created.date_yyyy_mm_dd }} ({{issue.created.days_ago}} days ago) <br />
         Updated: {{ issue.updated.date_yyyy_mm_dd }} ({{issue.updated.days_ago}} days ago)
         {% ifequal issue.state 'closed' %}
         <br />Closed: {{ issue.closed_date.date_yyyy_mm_dd}} ({{issue.closed_date.days_ago}} days ago)
