@@ -1785,32 +1785,51 @@ rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
   this.rightbox_ = new rhizo.ui.component.RightBar(
       project, options, 'rhizo.ui.component.RightBar', 'rhizo-right');
 
-  var default_components = this.defaultComponents(project, options);
-  for (var i = 0; i < default_components.length; i++) {
-    this.leftbox_.addComponent(default_components[i]);
+  var left_components = this.defaultLeftComponents(project, options);
+  for (var i = 0; i < left_components.length; i++) {
+    this.leftbox_.addComponent(left_components[i]);
   }
 
-  this.rightbox_.addComponent(new rhizo.ui.component.Console(project, options));
-  this.rightbox_.addComponent(new rhizo.ui.component.Actions(project, options));
+  var right_components = this.defaultRightComponents(project, options);
+  for (var i = 0; i < right_components.length; i++) {
+    this.rightbox_.addComponent(right_components[i]);
+  }
 
   rhizo.ui.component.Template.prototype.addComponent.call(this, this.leftbox_);
   rhizo.ui.component.Template.prototype.addComponent.call(this, this.rightbox_);
 };
 
 /**
- * Returns the list of default template components. Subclasses can override.
+ * Returns the list of default template components that will be added to the
+ * left bar. Subclasses can override.
  * @param {rhizo.Project} project The project this template belongs to.
  * @param {*} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
-rhizo.ui.component.StandardTemplate.prototype.defaultComponents = function(
+rhizo.ui.component.StandardTemplate.prototype.defaultLeftComponents = function(
     project, options) {
   return [
       new rhizo.ui.component.Logo(project, options, true, true),
       new rhizo.ui.component.Layout(project, options),
       new rhizo.ui.component.SelectionManager(project, options),
       new rhizo.ui.component.FilterStackContainer(project, options)
+  ];
+};
+
+/**
+ * Returns the list of default template components that will be added to the
+ * right bar. Subclasses can override.
+ * @param {rhizo.Project} project The project this template belongs to.
+ * @param {*} options Project-wide configuration options
+ * @return {Array.<rhizo.ui.component.Component>} The list of default
+ *     components that will be part of the template.
+ */
+rhizo.ui.component.StandardTemplate.prototype.defaultRightComponents =
+    function(project, options) {
+  return [
+      new rhizo.ui.component.Console(project, options),
+      new rhizo.ui.component.Actions(project, options)
   ];
 };
 
