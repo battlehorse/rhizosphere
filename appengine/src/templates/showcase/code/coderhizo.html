@@ -8,6 +8,12 @@
   <!-- Rhizosphere standard includes -->
   {% include "../../rhizo_head.html" %}
 
+  {% ifequal platform 'mobile' %}
+    <!-- Mobile webkit does not still have native JSON parse, so we have
+         to fall back to the software version. -->
+    <script src="/static/shared/js/json2.js"></script>
+  {% endifequal %}
+
   <!-- Google Code showcase specific styles and javascript -->
   <link rel="stylesheet" href="/static/showcase/code/stylesheets/googlecode.css"
         type="text/css" media="screen" charset="utf-8">
