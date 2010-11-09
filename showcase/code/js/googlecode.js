@@ -286,7 +286,7 @@ googlecode.template.Logo.prototype.render = function() {
           text('Rhizosphere'));
   poweredbylinks.append(' (').append(
       $('<a />', {
-        'href': 'http://rhizospherejs.appspot.com/doc',
+        'href': 'http://www.rhizospherejs.com/doc',
         'target': '_blank'}).
           text('Help')).append(')');
 

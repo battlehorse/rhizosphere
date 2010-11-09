@@ -849,7 +849,7 @@ rhizo.ui.component.Logo.prototype.render = function() {
 
   links.append(
       $('<a />', {
-        'href': 'http://rhizospherejs.appspot.com/doc',
+        'href': 'http://www.rhizospherejs.com/doc',
         'target': '_blank'}).
           text('Help'));
 
