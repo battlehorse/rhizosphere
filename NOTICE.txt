@@ -33,6 +33,11 @@ reference: http://lesscss.org
 authors: Alexis Sellier
 license: Apache 2.0 License, http://www.apache.org/licenses/LICENSE-2.0
 
+library: json2.js
+reference: http://www.JSON.org/json2.js
+authors: Douglas Crockford et al.
+license: Public Domain
+
 library: Tango Icon Set
 reference: http://tango.freedesktop.org/Tango_Desktop_Project
 authors: http://tango.freedesktop.org/The_People
