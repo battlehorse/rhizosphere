@@ -56,7 +56,14 @@ class BaseHandler(webapp.RequestHandler):
     template_values = rhizoglobals.DefaultTemplate(self.request)
     template_values.update({'error': error_msg})
     self._QueryStringToTemplate(template_values)
-    self._Respond('codeindex.html', template_values)
+
+    platform, device = rhizoglobals.IdentifyPlatformDevice(self.request)
+    smartphone = rhizoglobals.IsSmartphone(platform, device)
+
+    if smartphone:
+      self._Respond('codeindexmobile.html', template_values)
+    else:
+      self._Respond('codeindex.html', template_values)
 
   def _QueryStringToTemplate(self, template_values):
     qs = dict((qp, self.request.get(qp)) for qp in self.request.arguments())
@@ -251,7 +258,13 @@ class WelcomeHandler(BaseHandler):
       self._RespondError("GData libraries not found. "
                          "Have you included the GData libraries?")
       return
-    self._Respond('codeindex.html', template_values)
+
+    platform, device = rhizoglobals.IdentifyPlatformDevice(self.request)
+    smartphone = rhizoglobals.IsSmartphone(platform, device)
+    if smartphone:
+      self._Respond('codeindexmobile.html', template_values)
+    else:
+      self._Respond('codeindex.html', template_values)
 
 
 application = webapp.WSGIApplication(
