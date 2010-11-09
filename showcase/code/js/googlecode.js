@@ -25,7 +25,7 @@
 
 // Namespace
 var googlecode = {};
-
+googlecode.template = {};
 
 /**
  * The conventional owner name used when an issue is not yet assigned to
@@ -105,34 +105,6 @@ googlecode.buildMetamodel = function(stats) {
 
 
 /**
- * Builds an UI template tailored for the specific needs of this visualization.
- * In particular, it enables the broadcasting component and visualization
- * broadcasting.
- *
- * @param {rhizo.Project} project The project describing the visualization to
- *     set up a template for.
- * @param {*} options Project-wide configuration options.
- * @return {rhizo.ui.component.Template} The template for the visualization to
- *     use.
- */
-googlecode.buildTemplate = function(project, options) {
-  var template;
-  var broadcaster = new rhizo.broadcast.BaseComponent(project, options);
-  if (project.gui().isSmall() || project.gui().isMobile()) {
-    template = new rhizo.ui.component.BottomTemplate(project,
-                                                     options,
-                                                     'bottom');
-    template.addtoBottomBar(broadcaster);
-  } else {
-    template = new rhizo.ui.component.StandardTemplate(project,
-                                                       options,
-                                                       'default');
-    template.addtoLeftBar(broadcaster);
-  }
-  return template;
-};
-
-/**
  * Models are dumped from the server as plain JSON strings and then converted
  * to plain Javascript objects.
  * This method converts model attributes to more complex Javascript types where
@@ -159,6 +131,161 @@ googlecode.fixModels = function(models, stats) {
     }
   }
 };
+
+
+/**
+ * Returns a factory funtion to build an UI template tailored for the specific
+ * needs of this visualization. In particular, it enables the broadcasting
+ * component for visualization broadcasting and uses a custom logo component.
+ *
+ * @param {string} googlecode_project_name The name of Google Code project the
+ *     visualization is about.
+ * @return {function(rhizo.Project, *):rhizo.ui.component.Template} The factory
+ *     function that will create template instances.
+ */
+googlecode.template.buildTemplate = function(googlecode_project_name) {
+  return function(project, options) {
+    if (project.gui().isSmall() || project.gui().isMobile()) {
+      return new googlecode.template.BottomTemplate(project,
+                                                    options,
+                                                    'bottom',
+                                                    googlecode_project_name);
+    } else {
+      return new googlecode.template.StandardTemplate(project,
+                                                      options,
+                                                      'default',
+                                                      googlecode_project_name);
+    }
+  }
+};
+
+
+/**
+ * Extends Rhizosphere basic Bottom template with Google Code-specific
+ * customizations.
+ *
+ * @param {rhizo.Project} project The project this template belongs to.
+ * @param {*} options Project-wide configuration options
+ * @param {string} template_key The unique key that identifies the template.
+ * @param {string} googlecode_project_name The name of Google Code project the
+ *     visualization is about.
+ * @constructor
+ */
+googlecode.template.BottomTemplate = function(
+    project, options, template_key, googlecode_project_name) {
+  this.googlecode_project_name_ = googlecode_project_name;
+  rhizo.ui.component.BottomTemplate.call(this, project, options, template_key);
+};
+rhizo.inherits(googlecode.template.BottomTemplate,
+               rhizo.ui.component.BottomTemplate);
+
+googlecode.template.BottomTemplate.prototype.defaultComponents = function(
+    project, options) {
+  return [
+      new rhizo.ui.component.Layout(project, options),
+      new rhizo.ui.component.SelectionManager(project, options),
+      new rhizo.ui.component.FilterBookContainer(project, options),
+      new rhizo.broadcast.BaseComponent(project, options),
+      new googlecode.template.Logo(project, options, false,
+          this.googlecode_project_name_)
+  ];
+};
+
+
+/**
+ * Extends Rhizosphere basic Standard template with Google Code-specific
+ * customizations.
+ *
+ * @param {rhizo.Project} project The project this template belongs to.
+ * @param {*} options Project-wide configuration options
+ * @param {string} template_key The unique key that identifies the template.
+ * @param {string} googlecode_project_name The name of Google Code project the
+ *     visualization is about.
+ * @constructor
+ */
+googlecode.template.StandardTemplate = function(
+    project, options, template_key, googlecode_project_name) {
+  this.googlecode_project_name_ = googlecode_project_name;
+  rhizo.ui.component.StandardTemplate.call(
+      this, project, options, template_key);
+};
+rhizo.inherits(googlecode.template.StandardTemplate,
+               rhizo.ui.component.StandardTemplate);
+
+googlecode.template.StandardTemplate.prototype.defaultComponents = function(
+    project, options) {
+  return [
+      new googlecode.template.Logo(project, options, true,
+          this.googlecode_project_name_),
+      new rhizo.broadcast.BaseComponent(project, options),
+      new rhizo.ui.component.Layout(project, options),
+      new rhizo.ui.component.SelectionManager(project, options),
+      new rhizo.ui.component.FilterStackContainer(project, options)
+  ];
+};
+
+
+/**
+ * A custom visualization Logo.
+ *
+ * @param {rhizo.Project} project The project this component belongs to.
+ * @param {*} options Project-wide configuration options.
+ * @param {boolean} titleless Whether this component should have a title or not.
+ * @param {string} googlecode_project_name The name of Google Code project the
+ *     visualization is about.
+ * @constructor
+ */
+googlecode.template.Logo = function(project, options, titleless,
+                                    googlecode_project_name) {
+  rhizo.ui.component.Component.call(this, project, options, 'googlecode.template.Logo');
+  this.titleless_ = titleless;
+  this.googlecode_project_name_ = googlecode_project_name;
+};
+rhizo.inherits(googlecode.template.Logo, rhizo.ui.component.Component);
+
+googlecode.template.Logo.prototype.title = function() {
+  return this.titleless_ ? null : '?';
+};
+
+googlecode.template.Logo.prototype.render = function() {
+  var panel = $('<div />', {'class': 'googlecode-project-logo'});
+  var img = $('<img />', {
+    src: 'http://code.google.com/p/' + this.googlecode_project_name_ + '/logo',
+    error: function() {
+      $(this).attr('src', '/static/showcase/code/img/defaultprojectlogo.png');
+    }}).appendTo(panel);
+
+  var header = $('<h1 />').append(
+      $('<a />', {
+        'href': 'http://code.google.com/p/' + this.googlecode_project_name_,
+        'target': '_blank'}).text(this.googlecode_project_name_));
+  header.append($('<span />', {'class': 'tag'}).text(' Issue Tracker'));
+  header.appendTo(panel);
+
+  var links = $('<p />').appendTo(panel);
+  links.append('&nbsp;').append(
+      $('<a />', {
+        'href': 'http://code.google.com/p/' +
+                this.googlecode_project_name_ +
+                '/issues/list',
+        'target': '_blank'}).
+          text(this.googlecode_project_name_ + ' Issues'));
+
+  var poweredbylinks = $('<p />', {'class': 'poweredby'}).appendTo(panel);
+  poweredbylinks.append('Powered by ').append(
+      $('<a />', {
+        'href': 'http://sites.google.com/site/rhizosphereui/',
+        'target': '_blank'}).
+          text('Rhizosphere'));
+  poweredbylinks.append(' (').append(
+      $('<a />', {
+        'href': 'http://rhizospherejs.appspot.com/doc',
+        'target': '_blank'}).
+          text('Help')).append(')');
+
+  return panel.get(0);
+};
+
 
 /**
  * The renderer for the Google Code showcase. This renderer is tailored to

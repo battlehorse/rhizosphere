@@ -826,6 +826,9 @@ rhizo.ui.component.Viewport.prototype.panUniverse_ = function(deltaX,
  * The visualization logo.
  * @param {rhizo.Project} project The project this component belongs to.
  * @param {*} options Project-wide configuration options.
+ * @param {boolean} titleless Whether this component should have a title or not.
+ * @param {boolean} sliding Whether the link section should be hidden by default
+ *     and slide into view only when requested.
  * @constructor
  */
 rhizo.ui.component.Logo = function(project, options, titleless, sliding) {
@@ -1707,15 +1710,29 @@ rhizo.ui.component.BottomTemplate.prototype.initComponents_ = function(
   this.hbox_ = new rhizo.ui.component.HBox(project, options,
       'rhizo.ui.component.BottomBar', 'rhizo-bottom-bar');
 
-  this.hbox_.addComponent(new rhizo.ui.component.Layout(project, options));
-  this.hbox_.addComponent(new rhizo.ui.component.SelectionManager(project,
-                                                                  options));
-  this.hbox_.addComponent(new rhizo.ui.component.FilterBookContainer(project,
-                                                                     options));
-  this.hbox_.addComponent(new rhizo.ui.component.Logo(project, options,
-                                                      false, false));
+  var default_components = this.defaultComponents(project, options);
+  for (var i = 0; i < default_components.length; i++) {
+    this.hbox_.addComponent(default_components[i]);
+  }
 
   rhizo.ui.component.Template.prototype.addComponent.call(this, this.hbox_);
+};
+
+/**
+ * Returns the list of default template components. Subclasses can override.
+ * @param {rhizo.Project} project The project this template belongs to.
+ * @param {*} options Project-wide configuration options 
+ * @return {Array.<rhizo.ui.component.Component>} The list of default
+ *     components that will be part of the template.
+ */
+rhizo.ui.component.BottomTemplate.prototype.defaultComponents = function(
+    project, options) {
+  return [
+      new rhizo.ui.component.Layout(project, options),
+      new rhizo.ui.component.SelectionManager(project, options),
+      new rhizo.ui.component.FilterBookContainer(project, options),
+      new rhizo.ui.component.Logo(project, options, false, false)
+  ];
 };
 
 /**
@@ -1768,19 +1785,33 @@ rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
   this.rightbox_ = new rhizo.ui.component.RightBar(
       project, options, 'rhizo.ui.component.RightBar', 'rhizo-right');
 
-  this.leftbox_.addComponent(new rhizo.ui.component.Logo(project, options,
-                                                         true, true));
-  this.leftbox_.addComponent(new rhizo.ui.component.Layout(project, options));
-  this.leftbox_.addComponent(new rhizo.ui.component.SelectionManager(project,
-                                                                     options));
-  this.leftbox_.addComponent(new rhizo.ui.component.FilterStackContainer(
-      project, options));
+  var default_components = this.defaultComponents(project, options);
+  for (var i = 0; i < default_components.length; i++) {
+    this.leftbox_.addComponent(default_components[i]);
+  }
 
   this.rightbox_.addComponent(new rhizo.ui.component.Console(project, options));
   this.rightbox_.addComponent(new rhizo.ui.component.Actions(project, options));
 
   rhizo.ui.component.Template.prototype.addComponent.call(this, this.leftbox_);
   rhizo.ui.component.Template.prototype.addComponent.call(this, this.rightbox_);
+};
+
+/**
+ * Returns the list of default template components. Subclasses can override.
+ * @param {rhizo.Project} project The project this template belongs to.
+ * @param {*} options Project-wide configuration options
+ * @return {Array.<rhizo.ui.component.Component>} The list of default
+ *     components that will be part of the template.
+ */
+rhizo.ui.component.StandardTemplate.prototype.defaultComponents = function(
+    project, options) {
+  return [
+      new rhizo.ui.component.Logo(project, options, true, true),
+      new rhizo.ui.component.Layout(project, options),
+      new rhizo.ui.component.SelectionManager(project, options),
+      new rhizo.ui.component.FilterStackContainer(project, options)
+  ];
 };
 
 /**

@@ -37,7 +37,55 @@
     right: 0;
 }
 
-.googlecode { /* base rendering class */
+/* Custom logo section */
+.googlecode-project-logo IMG {
+  max-width: 55px;
+  max-height: 55px;
+  float: left;
+  margin: 0.5em;
+  border: 1px solid #6391de;
+}
+
+.googlecode-project-logo H1 {
+  font-size: 1.5em;
+  margin: 0;
+  padding: 0;
+}
+
+.googlecode-project-logo H1 A,
+.googlecode-project-logo H1 A:visited {
+  color: #426dc9;
+  text-decoration: none;
+}
+
+.googlecode-project-logo H1 A:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.googlecode-project-logo H1 .tag {
+  color: #aaa;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.googlecode-project-logo P {
+  margin: 0.2em 0;
+  padding: 0;
+}
+
+.googlecode-project-logo P.poweredby {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+.googlecode-project-logo .poweredby A,
+.googlecode-project-logo .poweredby A:visited {
+  color: #777;
+}
+
+/* base Rendering class */
+.googlecode {
     height: 100%;
     width: 100%;
     background-color: #fff;

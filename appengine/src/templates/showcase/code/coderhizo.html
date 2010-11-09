@@ -47,6 +47,7 @@
   <div id="rhizo-googlecode" class="googlecode-container" ></div>
   <script type="text/javascript">
     $(document).ready(function() {
+      var project_name = '{{project}}';
       // Parse statistics about the issues fetched from Google Code Hosting.
       var stats = JSON.parse('{{ stats }}');
 
@@ -60,7 +61,8 @@
       {% endifequal %}
 
       // Define a custom UI template factory.
-      rhizo.ui.component.templates['broadcast'] = googlecode.buildTemplate;
+      rhizo.ui.component.templates['broadcast'] =
+          googlecode.template.buildTemplate(project_name);
 
       // Set up visulization options.
       var options = {
