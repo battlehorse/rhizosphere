@@ -6,7 +6,7 @@ libraries contained here are not included by default, but must be installed
 separately.
 
 This list enumerates the expected content of this directory. See the
-Contributors section on http://rhizospherejs.appspot.com/doc for further info.
+Contributors section on http://www.rhizospherejs.com/doc for further info.
 
 Shared contents:
 atom/, gdata/ :
