@@ -286,13 +286,16 @@ googlecode.template.Logo.prototype.render = function() {
   header.appendTo(panel);
 
   var links = $('<p />').appendTo(panel);
-  links.append('&nbsp;').append(
+  links.append(
       $('<a />', {
         'href': 'http://code.google.com/p/' +
                 this.googlecode_project_name_ +
                 '/issues/list',
         'target': '_blank'}).
           text(this.googlecode_project_name_ + ' Issues'));
+  links.append('<br />').append(
+      $('<a />', {'href': '/showcase/code'}).
+          text('Change project'));
 
   var poweredbylinks = $('<p />', {'class': 'poweredby'}).appendTo(panel);
   poweredbylinks.append('Powered by ').append(
