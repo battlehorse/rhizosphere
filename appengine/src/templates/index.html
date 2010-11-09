@@ -67,16 +67,21 @@
     <link rel="stylesheet" href="static/welcome/stylesheets/jquery.jcarousel.css" type="text/css" media="screen" title="no title" charset="utf-8">
     <link rel="stylesheet" href="static/welcome/stylesheets/skin.css" type="text/css" media="screen" title="no title" charset="utf-8">
     <script type="text/javascript" charset="utf-8">
-      var carousel_js_file;
-      var js_files = [
-        'sample/picasa.js',
-        'sample/factbook.js',
-        'sample/people.js',
-        'sample/books.js',
-        'sample/bugs.js',
-        'sample/usa.js' ];
+      var current_sample;
+      var samples = [
+        {type: 'showcase', uri: '/showcase/code'},
+        {type: 'ds', uri: 'sample/picasa.js'},
+        {type: 'ds', uri: 'sample/factbook.js'},
+        {type: 'ds', uri: 'sample/people.js'},
+        {type: 'ds', uri: 'sample/books.js'},
+        {type: 'ds', uri: 'sample/usa.js'}
+      ];
 
-      function go(js_file, simulate_id, debug_id, experimental_id) {
+      function go(sample, simulate_id, debug_id, experimental_id) {
+        if (sample.type == 'showcase') {
+          document.location.href = sample.uri;
+          return;
+        }
         var simulate = document.getElementById(simulate_id).value;
         var forceParams = '';
         if (simulate == 'mobile') {
@@ -87,7 +92,7 @@
             '&exp=' +
             (document.getElementById(experimental_id).checked ? '1' : '0') +
             forceParams +
-            '&source=' + js_file;
+            '&source=' + sample.uri;
         var windowName = 'rhizosphere';
         var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
         windowFeatures += (simulate == 'small' ? "height=300,width=350" : "height=700, width=1000");
@@ -99,23 +104,28 @@
         jQuery('#carousel').jcarousel({
           visible: 1,
           scroll: 1,
-          start: Math.floor(Math.random()*5)+1,
+          start: 1,  // force start on the Google Code showcase
           wrap: 'both',
           itemVisibleInCallback: {
             onBeforeAnimation: function(carousel, item, index, state) {
-              $('.carousel-description').not('#desc.' + index).fadeOut();
+              $('.carousel-description').not('#desc-' + index).fadeOut();
             },
             onAfterAnimation: function(carousel, item, index, state) {
               $('#desc-' + index).fadeIn();
-              carousel_js_file = js_files[index-1];
+              current_sample = samples[index-1];
+              if (current_sample.type == 'ds') {
+                $('.try-rhizosphere-options').fadeIn();
+              } else {
+                $('.try-rhizosphere-options').fadeOut();
+              }
             }
           }
         });
         $('.try-rhizosphere-link').click(function() {
-          go(carousel_js_file, 'simulate', 'debug', 'experimental');
+          go(current_sample, 'simulate', 'debug', 'experimental');
         });
         $('#try-your-own').submit(function() {
-          return go($('#source').val(),
+          return go({type: 'ds', uri: $('#source').val()},
                     'try-your-own-simulate',
                     'try-your-own-debug',
                     'try-your-own-experimental');
@@ -158,6 +168,11 @@
         <ul id="carousel" class="jcarousel-skin-tango">
           <li>
             <a href="#" class="try-rhizosphere-link">
+              <img src="static/welcome/img/bugs.png" border="0">
+            </a>
+          </li>
+          <li>
+            <a href="#" class="try-rhizosphere-link">
               <img src="static/welcome/img/picasa.png" border="0">
             </a>
           </li>
@@ -178,11 +193,6 @@
           </li>
           <li>
             <a href="#" class="try-rhizosphere-link">
-              <img src="static/welcome/img/bugs.png" border="0">
-            </a>
-          </li>
-          <li>
-            <a href="#" class="try-rhizosphere-link">
               <img src="static/welcome/img/usa.png" border="0">
             </a>
           </li>
@@ -190,19 +200,31 @@
         <div style="float:right; margin: 0 40px 0 10px; padding-top: 10px">
           <a href="#" class="try-rhizosphere-link">
             <img src="static/welcome/img/try.png" alt="Try Rhizosphere" border="0">
-          </a><br />
-          <label for="simulate" class="smaller shaded">Simulate</label>
-          <select name="simulate" id="simulate" class="smaller">
-            <option value="">-</option>
-            <option value="mobile">Mobile device</option>
-            <option value="small">Small rendering</option>
-          </select><br />
-          <input type="checkbox" name="debug" id="debug">
-          <label for="debug" class="smaller shaded">Debug mode</label><br />
-          <input type="checkbox" name="experimental" id="experimental" checked="checked">
-          <label for="experimental" class="smaller shaded">Experimental features</label>
+          </a>
+          <div class="try-rhizosphere-options" style="display: none">
+            <label for="simulate" class="smaller shaded">Simulate</label>
+            <select name="simulate" id="simulate" class="smaller">
+              <option value="">-</option>
+              <option value="mobile">Mobile device</option>
+              <option value="small">Small rendering</option>
+            </select><br />
+            <input type="checkbox" name="debug" id="debug">
+            <label for="debug" class="smaller shaded">Debug mode</label><br />
+            <input type="checkbox" name="experimental" id="experimental" checked="checked">
+            <label for="experimental" class="smaller shaded">Experimental features</label>
+          </div>
         </div>
         <div id="desc-1" class="carousel-description">
+          <h2>Google Code <span class="bluelight">Issue tracking</span></h2>
+          <p>
+            Project tracking made easy. Don't get overwhelmed by your bugs.<br />
+          <span class="shaded">
+            Slice'n'dice according to multiple metrics: author, priority, severity
+            and many more.
+          </span>
+          </p>
+        </div>
+        <div id="desc-2" class="carousel-description">
           <h2>Picasa<span class="bluelight">.js</span></h2>
           <p>
             Simple photo browsing and picture organizer.<br />
@@ -212,7 +234,7 @@
           </span>
           </p>
         </div>
-        <div id="desc-2" class="carousel-description">
+        <div id="desc-3" class="carousel-description">
           <h2>Factbook<span class="bluelight">.js</span></h2>
           <p>
             Powerful and dynamic Treemaps.<br />
@@ -222,7 +244,7 @@
           </span>
           </p>
         </div>
-        <div id="desc-3" class="carousel-description">
+        <div id="desc-4" class="carousel-description">
           <h2>People<span class="bluelight">.js</span></h2>
           <p>
             Organizational charts, family trees and contacts management.<br />
@@ -231,22 +253,12 @@
           </span>
           </p>
         </div>
-        <div id="desc-4" class="carousel-description">
+        <div id="desc-5" class="carousel-description">
           <h2>Books<span class="bluelight">.js</span></h2>
           <p>
             A renewed shopping experience.<br />
           <span class="shaded">
             Use the filters to find the book you've been always looking for.
-          </span>
-          </p>
-        </div>
-        <div id="desc-5" class="carousel-description">
-          <h2>Bugs<span class="bluelight">.js</span></h2>
-          <p>
-            Project tracking made easy. Don't get overwhelmed by your bugs.<br />
-          <span class="shaded">
-            Slice'n'dice according to multiple metrics: author, priority, severity
-            and other metrics.
           </span>
           </p>
         </div>
