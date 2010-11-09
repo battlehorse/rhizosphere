@@ -195,7 +195,8 @@ class FetchHandler(BaseHandler):
     except urlfetch.DownloadError, er:
       if 'timed out' in er[0]:
         self._RespondError('The request timed out. Try again in a few seconds, '
-                           'or set the parameters to extract fewer issues.')
+                           'or set the advanced options to extract fewer '
+                           'issues.')
       else:
         self._RespondError(
             'An error occurred while fetching %s project data: %s' %
