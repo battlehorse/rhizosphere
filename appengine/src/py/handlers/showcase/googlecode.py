@@ -19,9 +19,14 @@ import datetime
 import os.path
 import re
 
-import gdata.auth
-import gdata.service
-import gdata.alt.appengine
+_GDATA_LIBS_FOUND = True
+
+try:
+  import gdata.auth
+  import gdata.service
+  import gdata.alt.appengine
+except ImportError:
+  _GDATA_LIBS_FOUND = False
 
 from google.appengine.api import urlfetch
 from google.appengine.api import users
@@ -241,6 +246,10 @@ class WelcomeHandler(BaseHandler):
 
   def get(self):
     template_values = rhizoglobals.DefaultTemplate(self.request)
+    if not _GDATA_LIBS_FOUND:
+      self._RespondError("GData libraries not found. "
+                         "Have you included the GData libraries?")
+      return
     self._Respond('codeindex.html', template_values)
 
 
