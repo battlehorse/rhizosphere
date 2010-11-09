@@ -24,8 +24,9 @@
  */
 
 // Namespace
-var googlecode = {};
-googlecode.template = {};
+var googlecode = {
+  template: {}, meta: {}
+};
 
 /**
  * The conventional owner name used when an issue is not yet assigned to
@@ -44,12 +45,27 @@ googlecode.UNKNOWN_REPORTER = '- Unknown';
 
 
 /**
+ * A custom NumberKind whose isNumeric property is suppressed, so that it
+ * doesn't show up in unwanted places (such as treemaps).
+ * @constructor
+ */
+googlecode.meta.NonNumericIdKind = function() {
+  rhizo.meta.NumberKind.call(this);
+};
+rhizo.inherits(googlecode.meta.NonNumericIdKind, rhizo.meta.NumberKind);
+
+googlecode.meta.NonNumericIdKind.prototype.isNumeric = function() {
+  return false;
+};
+
+
+/**
  * Builds the visualization metamodel from the statistics built server-side
  * about the issues that were fetched from Google Code Hosting.
  */
 googlecode.buildMetamodel = function(stats) {
   var metamodel = {
-    id: {kind: rhizo.meta.Kind.NUMBER, label: 'Id'},
+    id: {kind: new googlecode.meta.NonNumericIdKind(), label: 'Id'},
     summary: {kind: rhizo.meta.Kind.STRING, label: 'Summary'},
     state: {kind: rhizo.meta.Kind.CATEGORY, label: 'State',
             categories: ['open', 'closed']},
