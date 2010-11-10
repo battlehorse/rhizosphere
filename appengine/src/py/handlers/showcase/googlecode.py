@@ -206,12 +206,16 @@ class FetchHandler(BaseHandler):
                            'issues.')
       else:
         self._RespondError(
-            'An error occurred while fetching %s project data: %s' %
+            'An error occurred while fetching %s project data. '
+            'Try again in a few seconds, or set the advanced options to '
+            'extract fewer issues. (%s)' %
             (params['project'], er))
       return
     except urlfetch.Error, er:
       self._RespondError(
-          'An error occurred while fetching %s project data: %s' %
+          'An error occurred while fetching %s project data. '
+          'Try again in a few seconds, or set the advanced options to '
+          'extract fewer issues. (%s)' %
           (params['project'], er))
       return
     except gdata.service.RequestError, er:
