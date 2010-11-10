@@ -24,9 +24,9 @@
 <p>
   This document focuses on the definition of explicit datasets. To define an
   explicit dataset, you define a set of javascript objects that
-  conform to the <a href="devel_concepts.html">Rhizosphere data model</a> and
+  conform to the <a href="/doc/devel_concepts.html">Rhizosphere data model</a> and
   which you can then feed to the Rhizosphere bootstrapper, as shown in
-  the <a href="users_embed.html">Embedding Rhizosphere</a> section.
+  the <a href="/doc/users_embed.html">Embedding Rhizosphere</a> section.
 </p>
 <p>
   You have to provide 3 pieces of information:
@@ -47,7 +47,7 @@
   </li>
 </ul>
 <p>
-  Have a look at Rhizosphere <a href="devel_concepts.html">concepts</a> for a
+  Have a look at Rhizosphere <a href="/doc/devel_concepts.html">concepts</a> for a
   better understanding of models, metamodels and renderers, and the role they
   play within a visualization.
 </p>
@@ -120,7 +120,7 @@ var models = [
 </p>
 <p>
   The complete list of available kinds is available in the
-  <a href="contrib_tables.html">Reference tables</a>.
+  <a href="/doc/contrib_tables.html">Reference tables</a>.
 </p>
 <p>
   Here is how you define that the <code>name</code> attribute should be treated
@@ -303,7 +303,7 @@ bootstrapper.deployExplicit(metamodel, renderer, models);
 </pre>
 
 <h2>Everything put together</h2>
-This <a href="http://localhost:8080/static/doc/txt/rhizosphere_sample_people.html.txt">
+This <a href="/static/doc/txt/rhizosphere_sample_people.html.txt">
   code</a> contains all the above snippets put together in a single file.
 Use it as a template to define your own datasets.
 
@@ -365,6 +365,6 @@ Use it as a template to define your own datasets.
       'models': models});
 </pre>
 <h2>Next ...</h2>
-Have a look at <a href="devel_overview.html">Rhizosphere internals</a>.
+Have a look at <a href="/doc/devel_overview.html">Rhizosphere internals</a>.
 
 {% endblock %}
