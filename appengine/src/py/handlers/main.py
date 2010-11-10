@@ -26,6 +26,13 @@ class MainHandler(webapp.RequestHandler):
 
     def get(self):
         template_values = rhizoglobals.DefaultTemplate(self.request)
+        if rhizoglobals.HostName() == 'rhizospherejs.appspot.com':
+          google_site_verification = 'vg7YwHwP3zxmOzzisjgo-3EAjtDSY4UYdd-ErlS1V4A'
+        elif rhizoglobals.HostName() == 'rhizospherejs.com':
+          google_site_verification = 'mevMFXIyXdTOSL8sZfxXxhS2Ewp5AAVYmB_bIs7XVrM'
+        else:
+          google_site_verification = 'devel'
+        template_values['google_site_verification'] = google_site_verification
         path = os.path.join(os.path.dirname(__file__), '../../templates/index.html')
         self.response.out.write(template.render(path, template_values))
 
