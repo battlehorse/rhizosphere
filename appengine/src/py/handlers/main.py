@@ -28,7 +28,7 @@ class MainHandler(webapp.RequestHandler):
         template_values = rhizoglobals.DefaultTemplate(self.request)
         if rhizoglobals.HostName() == 'rhizospherejs.appspot.com':
           google_site_verification = 'vg7YwHwP3zxmOzzisjgo-3EAjtDSY4UYdd-ErlS1V4A'
-        elif rhizoglobals.HostName() == 'rhizospherejs.com':
+        elif rhizoglobals.HostName() == 'www.rhizospherejs.com':
           google_site_verification = 'mevMFXIyXdTOSL8sZfxXxhS2Ewp5AAVYmB_bIs7XVrM'
         else:
           google_site_verification = 'devel'
