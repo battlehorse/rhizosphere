@@ -25,7 +25,7 @@
   <UserPref name="arSize" display_name="Advanced: as Size, use" required="false" datatype="string" />
   <UserPref name="arColor" display_name="Advanced: as Color, use" required="false" datatype="string" />
   <Content type="html" view="home,profile,canvas,default"><![CDATA[
-    <link rel="stylesheet" href="{{ hostname }}/static/shared/stylesheets/jquery-ui-1.8.4.custom.css" type="text/css" media="screen" charset="utf-8">
+    <link rel="stylesheet" href="{{ hostname }}/static/shared/stylesheets/jquery-ui-1.8.6.custom.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/base.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/lib/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
@@ -42,7 +42,7 @@
 
     <!-- JQuery specific libraries -->
     <script src="{{ hostname }}/static/shared/js/jquery-1.4.4.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.4.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.6.custom.min.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Rhizosphere libraries -->
     {% if debug %}
