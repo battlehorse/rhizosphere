@@ -177,14 +177,14 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(container,
   }
   var containerWidth = container.width();
   var containerHeight = container.height();
-  var maxWidth = Math.round(containerWidth*0.3) ;
-  var maxHeight = Math.round(containerHeight*0.3);
 
+  // Randomly distributing models leaving a 5%-wide margin between the models
+  // and the container.
   for (var i = 0, len = supermodels.length; i < len; i++) {
-    var top = Math.round(containerHeight / 3 +
-                         Math.random()*maxHeight*2 - maxHeight);
-    var left = Math.round(containerWidth / 3 +
-                          Math.random()*maxWidth*2 - maxWidth);
+    var top = Math.round(containerHeight*0.05 +
+                         Math.random()*0.85*containerHeight);
+    var left = Math.round(containerWidth*0.05 +
+                          Math.random()*0.85*containerWidth);
 
     supermodels[i].rendering().move(top, left);
   }
