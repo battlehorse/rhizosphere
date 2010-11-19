@@ -633,6 +633,16 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
   }
 };
 
+/**
+ * Applies or removes a filter to the visualization, removing from view (or
+ * restoring) all the models that do not survive the filter.
+ *
+ * @param {string} key The metamodel key for the model attribute that is to
+ *     filter.
+ * @param {*} value The value that each model must have on the attribute
+ *     specified by 'key' in order not to be removed. To remove a previously
+ *     set filter, set value to null or undefined.
+ */
 rhizo.Project.prototype.filter = function(key, value) {
   if (this.filterInternal_(key, value)) {
     this.state_.pushFilterChange(key, value);
@@ -652,7 +662,8 @@ rhizo.Project.prototype.filter = function(key, value) {
  * value.
  * @param {string} key The metamodel key for the model attribute that was
  *     filtered.
- * @param {*} value The filter value.
+ * @param {*} value The filter value. Should be null or undefined when the
+ *     filter is to be removed.
  * @return {boolean} Whether the filter status of some models was affected by
  *     this new filter value.
  * @private
@@ -664,7 +675,7 @@ rhizo.Project.prototype.filterInternal_ = function(key, value) {
     // visualization.
     return false;
   }
-  if (value && value != '') {
+  if (value) {
     for (var i = this.models_.length-1; i >= 0; i--) {
       var model = this.models_[i];
       if (this.metaModel_[key].kind.survivesFilter(value, model.unwrap()[key])) {

@@ -20,7 +20,9 @@ To define a new meta-type:
 - create the object
 
 - implement the renderFilter() function.
-  This draws the UI for the filter on this type
+  This draws the UI for the filter on this type. It is also responsible for
+  hooking up any listeners on created UI controls that will generate calls
+  to rhizo.Project.prototype.filter() to trigger actual filtering.
 
 - implement the survivesFilter() function.
   This verifies if a model value matches the filter or not
@@ -62,7 +64,7 @@ rhizo.meta.StringKind.prototype.renderFilter = function(project,
   this.input_ = $("<input type='text' />");
   // keypress handling removed due to browser quirks in key detection
   $(this.input_).change(function(ev) {
-    project.filter(key, $(this).val());
+    project.filter(key, $(this).val().length > 0 ? $(this).val() : null);
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -178,8 +180,17 @@ rhizo.meta.DateKind.prototype.renderFilter = function(project, metadata, key) {
   
   $(this.year_).add($(this.month_)).add($(this.day_)).change(
       jQuery.proxy(function(ev) {
-        project.filter(
-          key, [$(this.year_).val(), $(this.month_).val(), $(this.day_).val()]);
+        var year = $(this.year_).val();
+        var month = $(this.month_).val();
+        var day = $(this.day_).val();
+        if (year == 'yyyy' && month == 'mm' && day == 'dd') {
+          project.filter(key, null);
+        } else {
+          project.filter(key,
+              [year != 'yyyy' ? year : undefined,
+               month != 'mm' ? month : undefined,
+               day != 'dd' ? day : undefined]);
+        }
       }, this));
 
   return $("<div class='rhizo-filter' />").
@@ -319,7 +330,11 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
           "rhizo-slider-moving");
       this.maxLabel_.text(this.toHumanLabel_(maxSlide)).removeClass(
           "rhizo-slider-moving");
-      project.filter(key, { min: minSlide, max: maxSlide });
+      if (minSlide != this.metadataMin_ || maxSlide != this.metadataMax_) {
+        project.filter(key, { min: minSlide, max: maxSlide });
+      } else {
+        project.filter(key, null);
+      }
   }, this);
 
   $(this.slider_).slider({
@@ -428,7 +443,7 @@ rhizo.meta.BooleanKind.prototype.renderFilter = function(project,
   this.check_.append("<option value='false'>No</option>");
 
   $(this.check_).change(function(ev) {
-    project.filter(key, $(this).val());
+    project.filter(key, $(this).val().length > 0 ? $(this).val() : null);
   });
   return $("<div class='rhizo-filter' />").
            append(metadata.label + ": ").
@@ -475,11 +490,16 @@ rhizo.meta.CategoryKind.prototype.renderFilter = function(project,
   }
 
   $(this.categories_).change(function(ev) {
-    var selectedCategories = [ $(this).val() ];
+    var selectedCategories = [];
     if (metadata.multiple) {
       selectedCategories = $.grep($(this).val(), function(category) {
         return category != '';
       });
+    } else if ($(this).val().length > 0) {
+      selectedCategories = [ $(this).val() ];
+    }
+    if (selectedCategories.length == 0) {
+      selectedCategories = null;
     }
     project.filter(key, selectedCategories);
   });
