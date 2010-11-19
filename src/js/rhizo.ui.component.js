@@ -1402,7 +1402,7 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ =
     delete this.activeFilters_[key];
 
     // re-align the visualization.
-    this.project_.filter(key, '');
+    this.project_.filter(key, null);
 
     // re-enable the filter among the selectable ones.
     this.filterSelector_.
