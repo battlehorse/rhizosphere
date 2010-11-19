@@ -1417,13 +1417,22 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ =
 };
 
 /**
+ * Checks whether the given filter is active (i.e., its UI is showing).
+ * @param {string} key The metamodel key of the filter to inspect.
+ * @return {boolean} Whether the filter is active (its UI is showing) or not.
+ */
+rhizo.ui.component.FilterStackContainer.prototype.isFilterActive =
+    function(key) {
+  return key in this.activeFilters_;
+};
+
+/**
  * Ensures that the UI for the given filter key is visible to the user. This is
  * only relevant when filter selection is active, otherwise all filters are
  * always visible.
  * @param {string} key The metamodel key of the filter to show.
  */
-rhizo.ui.component.FilterStackContainer.prototype.showFilter =
-    function(key) {
+rhizo.ui.component.FilterStackContainer.prototype.showFilter = function(key) {
   if (!this.filterSelector_) {
     // The filter selector is not in use. This means that all filters are
     // always visible.

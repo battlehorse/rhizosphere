@@ -770,14 +770,24 @@ rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
   // Verify whether the filter key (which may come from an historical state)
   // still exists in the metaModel.
   if (key in this.metaModel_) {
+    var filterUiExists = true;
+
     // Rebuild and show the affected filter, if needed.
     var ui = this.gui_.getComponent('rhizo.ui.component.FilterStackContainer');
     if (ui) {
-      ui.showFilter(key, this);
+      // A filter is explicitly made visible only if it's not in its default
+      // non-filtering state (i.e., it has a non-null value).
+      if (value) {
+        ui.showFilter(key);
+      }
+      filterUiExists = ui.isFilterActive(key);
     }
 
-    // Restore the filter value.
-    this.metaModel_[key].kind.setFilterValue(value);
+    // Restore the filter value, if the filter currently has an UI
+    // representation.
+    if (filterUiExists) {
+      this.metaModel_[key].kind.setFilterValue(value);
+    }
   }
 };
 
