@@ -259,11 +259,13 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   bucketKeys.sort(rhizo.meta.sortByKind(meta[bucketBy].kind, reverse));
 
   var dirty = false;
+  var firstBucket = true;
   for (var i = 0; i < bucketKeys.length; i++) {
     var bucketKey = bucketKeys[i];
     this.renderBucketHeader_(container,
                              bucketsLabels[bucketKey],
-                             buckets[bucketKey]);
+                             buckets[bucketKey],
+                             firstBucket);
     dirty = this.internalFlowLayout_.layout(container,
                                             buckets[bucketKey],
                                             allmodels,
@@ -273,6 +275,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
     // re-position for next bucket
     this.internalFlowLayout_.top += 10;
     this.internalFlowLayout_.left = 5;
+    firstBucket = false;
   }
   return dirty;
 };
@@ -285,13 +288,16 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
  * @param {string} header The bucket label.
  * @param {Array.<rhizo.model.SuperModel>} supermodels The supermodels that are
  *     clustered within this bucket.
+ * @param {boolean} firstBucket Whether the bucket header being rendered is the
+ *     first one or not.
  * @private
  */
 rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
-    function(container, header, supermodels) {
-  var bucketHeader = $("<div class='rhizo-bucket-header'>" +
-                       header +
-                       "</div>");
+    function(container, header, supermodels, firstBucket) {
+  var bucketHeader = $('<div />', {
+      'class': firstBucket ? 'rhizo-bucket-header rhizo-bucket-first' :
+                             'rhizo-bucket-header'}).
+      text(header);
   bucketHeader.css('position', 'absolute').
                css('left', 5).
                css('top', this.internalFlowLayout_.top).
