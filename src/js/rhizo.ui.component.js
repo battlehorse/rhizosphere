@@ -58,14 +58,19 @@
 // Components Namespace
 namespace("rhizo.ui.component");
 
+
 /**
- * Progress-bar to handle application startup feedback.
- *
- * @param {*} container jQuery object pointing to the element to which add the
- *   progress bar.
+ * Progress-bar to handle visualization startup feedback.
  * @constructor
  */
-rhizo.ui.component.Progress = function(container) {
+rhizo.ui.component.Progress = function() {};
+
+/**
+ * Initializes and renders the progress bar.
+ * @param {*} container jQuery object pointing to the element to which add the
+ *   progress bar.
+ */
+rhizo.ui.component.Progress.prototype.render = function(container) {
   this.pbarPanel_ = $('<div/>', {'class': 'rhizo-progressbar-panel'}).
       appendTo(container);
 
@@ -414,6 +419,10 @@ rhizo.ui.component.Container.prototype.ready = function() {
  * Additional components can be added to the template, even after it has been
  * made live, via the addComponent() method.
  *
+ * A template can notify an external component about the state of the
+ * initialization process. By default a rhizo.ui.component.Progress progressbar
+ * is used, but it can be customized via setProgressHandler().
+ *
  * @param {rhizo.Project} project The project this template belongs to.
  * @param {*} options Project-wide configuration options
  * @param {?string} template_key A unique key that identifies the template.
@@ -425,9 +434,22 @@ rhizo.ui.component.Template = function(project, options, template_key) {
   rhizo.ui.component.Container.call(this, project, options, template_key);
 
   this.viewport_ = new rhizo.ui.component.Viewport(project, options);
-  this.progress_ = null;
+  this.progress_ = new rhizo.ui.component.Progress();
 };
 rhizo.inherits(rhizo.ui.component.Template, rhizo.ui.component.Container);
+
+/**
+ * Sets the progress handler, that will receive notifications about the
+ * template initialization sequence.
+ *
+ * @param {*} progress An object that responds to the render(container) and
+ *     update(value, message) functions. See rhizo.ui.component.Progress for
+ *     an example on how to create a progress handler.
+ *     Set to null to disable progress reporting altogether.
+ */
+rhizo.ui.component.Template.prototype.setProgressHandler = function(progress) {
+  this.progress_ = progress;
+};
 
 /**
  * Adds a component to this template.
@@ -451,14 +473,18 @@ rhizo.ui.component.Template.prototype.addComponent = function(component) {
  */
 rhizo.ui.component.Template.prototype.render = function() {
   var all_renderings = rhizo.ui.component.Container.prototype.render.call(this);
-  this.progress_.update(20, 'Chrome created. Loading metadata...'); 
+  if (this.progress_) {
+    this.progress_.update(20, 'Chrome created. Loading metadata...');
+  }
   return all_renderings;
 };
 
 rhizo.ui.component.Template.prototype.renderContainer = function() {
   this.gui_.container.addClass('rhizo-template-' + this.key());
   this.gui_.container.append(this.viewport_.render());
-  this.progress_ = new rhizo.ui.component.Progress(this.gui_.viewport);
+  if (this.progress_) {
+    this.progress_.render(this.gui_.viewport);
+  }
   return this.gui_.container.get(0);
 };
 
@@ -469,17 +495,25 @@ rhizo.ui.component.Template.prototype.renderSingleComponent = function(
 };
 
 rhizo.ui.component.Template.prototype.metaReady = function() {
-  this.progress_.update(40, 'Metadata loaded. Updating components...');
+  if (this.progress_) {
+    this.progress_.update(40, 'Metadata loaded. Updating components...');
+  }
   this.viewport_.metaReady();
   rhizo.ui.component.Container.prototype.metaReady.call(this);
-  this.progress_.update(60, 'Components updated. Loading models...');
+  if (this.progress_) {
+    this.progress_.update(60, 'Components updated. Loading models...');
+  }
 };
 
 rhizo.ui.component.Template.prototype.ready = function() {
-  this.progress_.update(80, 'Models loaded. Activating UI...');
+  if (this.progress_) {
+    this.progress_.update(80, 'Models loaded. Activating UI...');
+  }
   this.viewport_.ready();
   rhizo.ui.component.Container.prototype.ready.call(this);
-  this.progress_.update(100, 'Rhizosphere ready!');
+  if (this.progress_) {
+    this.progress_.update(100, 'Rhizosphere ready!');
+  }
 };
 
 
