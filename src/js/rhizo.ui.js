@@ -437,9 +437,26 @@ rhizo.ui.Rendering.prototype.getDimensions = function() {
  *     appended to the raw rendering.
  */
 rhizo.ui.Rendering.prototype.startExpandable = function(expander) {
+  if (!this.expandableByModel_()) {
+    return;
+  }
   expander.data("id", this.id);
   this.raw_node_.append(expander);
   this.expandable_ = true;
+};
+
+/**
+ * @return {boolean} Whether the specific model attached to this rendering
+ *     supports expansion.
+ * @private
+ */
+rhizo.ui.Rendering.prototype.expandableByModel_ = function() {
+  if (typeof(this.renderer_.expandableByModel) == 'function') {
+    return this.renderer_.expandableByModel(this.model_.unwrap(),
+                                            this.renderingHints_);
+  } else {
+    return true;
+  }
 };
 
 /**
@@ -841,7 +858,8 @@ rhizo.ui.RenderingBootstrap.prototype.startExpandable_ = function(
     rawRenderings) {
   var expander = $('<div />',
                    {'class': 'rhizo-expand-model ' +
-                       'rhizo-icon rhizo-maximize-icon'});
+                       'rhizo-icon rhizo-maximize-icon',
+                    title: 'Maximize'});
   for (var i = this.renderings_.length-1; i >= 0; i--) {
     this.renderings_[i].startExpandable(expander.clone());
   }
