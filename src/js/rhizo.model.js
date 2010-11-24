@@ -95,3 +95,11 @@ rhizo.model.SuperModel.prototype.resetFilter = function(key) {
     return false;
   }
 };
+
+/**
+ * Notifies the supermodel that the underlying naked model has changed, forcing
+ * it to update the rendering.
+ */
+rhizo.model.SuperModel.prototype.modelChanged = function() {
+  this.rendering_.modelChanged();
+};

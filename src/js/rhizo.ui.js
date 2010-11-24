@@ -468,6 +468,13 @@ rhizo.ui.Rendering.prototype.toggleExpanded = function() {
 };
 
 /**
+ * Updates the rendering after a change that occurred to the underlying model.
+ */
+rhizo.ui.Rendering.prototype.modelChanged = function() {
+  this.reRender_();
+};
+
+/**
  * Pushes an elevation request on this rendering. Re-sets the z-index of this
  * rendering if needed.
  * @param {string} elevation_key
