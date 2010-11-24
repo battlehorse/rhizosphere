@@ -466,7 +466,7 @@ rhizo.Project.prototype.setState = function(state) {
     } else if (facet == rhizo.state.Facets.LAYOUT) {
       var layoutState = state[facet];
       layoutName = layoutState ? layoutState.layoutName : 'flow';
-      this.alignLayoutUI_(layoutName, layoutState);
+      this.alignLayout_(layoutName, layoutState);
       customModelPositions = layoutState.positions;
     } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
       filter = true;
@@ -504,7 +504,7 @@ rhizo.Project.prototype.stateChanged = function(facet, facetState) {
                          {filter: true, forcealign: true});
   } else if (facet == rhizo.state.Facets.LAYOUT) {
     var layoutName = facetState ? facetState.layoutName : 'flow';
-    this.alignLayoutUI_(layoutName, facetState);
+    this.alignLayout_(layoutName, facetState);
     this.layoutInternal_(layoutName);
     if (facetState && facetState.positions) {
       this.moveModels_(facetState.positions);
@@ -566,29 +566,44 @@ rhizo.Project.prototype.moveModels_ = function(positions) {
  *
  * @param {?string} opt_layoutEngineName The name of the layout engine to use.
  *     If undefined, the last known engine will be used.
+ * @param {*} opt_state The state the layout should be set to. The layout state
+ *     describes the set of layout-specific parameters. If undefined, the
+ *     current (possibly default) state the layout has will be used.
  * @param {*} opt_options An optional key-value map of layout directives.
  *    Currently supported ones include:
  *    - 'filter' (boolean): Whether this layout operation is invoked as a result
  *      of a filter being applied.
  *    - 'forceAlign' (boolean): Whether models' visibility should be synced at
  *      the end of the layout operation.
+ * @return {boolean} Whether the layout operation completed successfully.
  */
-rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
+rhizo.Project.prototype.layout = function(opt_layoutEngineName,
+                                          opt_state,
+                                          opt_options) {
   if (opt_layoutEngineName) {
     if (!(opt_layoutEngineName in this.layoutEngines_)) {
       this.logger_.error("Invalid layout engine:" + opt_layoutEngineName);
-      return;
+      return false;
     }
   }
 
   var layoutName = opt_layoutEngineName || this.curLayoutName_;
+  var layoutEngine = this.layoutEngines_[layoutName];
+
   var layoutState = null;
-  if (this.layoutEngines_[layoutName].getState) {
-    layoutState = this.layoutEngines_[layoutName].getState();
+  if (opt_state) {
+    if (!this.alignLayout_(layoutName, opt_state)) {
+      this.logger_.error('Received invalid layout state');
+      return false;
+    }
+    layoutState = opt_state;
+  } else if (layoutEngine.getState) {
+    layoutState = layoutEngine.getState();
   }
   this.state_.pushLayoutChange(layoutName, layoutState);
   this.layoutInternal_(opt_layoutEngineName || this.curLayoutName_,
                        opt_options);
+  return true;
 };
 
 /**
@@ -727,21 +742,31 @@ rhizo.Project.prototype.commitFilter = function() {
 };
 
 /**
- * Updates the visualization UI to match the currently selected layout engine
- * and associated state.
+ * Updates the UI and state of the layout engine to match the requested one.
+ *
+ * The layout selector component, if available, is updated to match the
+ * currently selected layout engine. The layout engine itself receives the
+ * updated state (which in turn triggers the update of layout UI controls).
+ *
  * @param {string} layoutName The currently selected layout engine.
  * @param {*} layoutState The layout state, as returned from its getState()
  *     method.
+ * @return {boolean} Whether the operation was successful or errors occurred
+ *     because of a malformed input layoutState.
  * @private
  */
-rhizo.Project.prototype.alignLayoutUI_ = function(layoutName, layoutState) {
-  var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
-  if (ui) {
-    ui.setEngine(layoutName);
-  }
+rhizo.Project.prototype.alignLayout_ = function(layoutName, layoutState) {
+  var success = true;
   if (this.layoutEngines_[layoutName].setState) {
-    this.layoutEngines_[layoutName].setState(layoutState);
+    success = this.layoutEngines_[layoutName].setState(layoutState);
   }
+  if (success) {
+    var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
+    if (ui) {
+      ui.setEngine(layoutName);
+    }
+  }
+  return success;
 };
 
 /**

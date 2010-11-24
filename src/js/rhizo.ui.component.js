@@ -1009,7 +1009,7 @@ rhizo.ui.component.Layout.prototype.render = function() {
 
 rhizo.ui.component.Layout.prototype.metaReady = function() {
   this.layoutSelector_.children().remove();
-  var detailsMap = {};
+  var layoutControlsMap = {};
   var layoutEngines = this.project_.layoutEngines();
   for (var layoutEngineName in layoutEngines) {
     var layoutEngine = layoutEngines[layoutEngineName];
@@ -1018,22 +1018,22 @@ rhizo.ui.component.Layout.prototype.metaReady = function() {
         (this.project_.currentLayoutEngineName() == layoutEngineName ?
              "selected" : "") +
         ">" + layoutEngine  + "</option>"));
-    if (layoutEngine.details) {
-      var details = layoutEngine.details();
-      detailsMap[layoutEngineName] = details;
+    if (layoutEngine.layoutUIControls) {
+      var layoutControls = layoutEngine.layoutUIControls();
+      layoutControlsMap[layoutEngineName] = $(layoutControls);
       if (this.project_.currentLayoutEngineName() != layoutEngineName) {
-        details.css("display","none");
+        layoutControls.css("display","none");
       }
-      this.layoutOptions_.append(details);
+      this.layoutOptions_.append(layoutControls);
     }
   }
 
   this.layoutSelector_.removeAttr('disabled').change(function(ev) {
-    for (var layout in detailsMap) {
+    for (var layout in layoutControlsMap) {
       if (layout == $(this).val()) {
-        detailsMap[layout].show("fast");
+        layoutControlsMap[layout].show("fast");
       } else {
-        detailsMap[layout].hide("fast");
+        layoutControlsMap[layout].hide("fast");
       }
     }
   });
@@ -1043,7 +1043,7 @@ rhizo.ui.component.Layout.prototype.ready = function() {
   this.submit_.removeAttr('disabled').click(jQuery.proxy(function() {
     // TODO(battlehorse): forceAlign should be true only if there are
     // uncommitted filters (i.e. GREY models).
-    this.project_.layout(this.layoutSelector_.val(), {forcealign:true});
+    this.project_.layout(this.layoutSelector_.val(), null, {forcealign:true});
   }, this));
 };
 

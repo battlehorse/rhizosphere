@@ -470,39 +470,95 @@ rhizo.layout.treemap.TreeMapSlice.prototype.draw = function(backupManager,
 
 
 /**
- * Implements the treemap layout algorithm.
+ * A layout that arranges models in treemaps, possibly hierarchical.
+ *
+ * @param {rhizo.Project} project
  * @constructor
  */
 rhizo.layout.TreeMapLayout = function(project) {
   this.project_ = project;
-
-  this.numericKeys_ = [];
-  this.areaSelector_ = null;
-  this.colorSelector_ = null;
-
-  this.parentKeySelector_ = null;
-  this.parentKeys_ = [];
-
-  this.prevColorMeta_ = '';
+  this.prevColorMeta_ = null;
   this.backupManager_ = new rhizo.layout.treemap.RenderingBackupManager();
+
+  /**
+   * Map that accumulates all the nodes matching the models being laid out.
+   * @type {Object.<string, rhizo.layout.TreeNode>}
+   * @private
+   */
   this.globalNodesMap_ = {};
 
   // Number of models that have been hidden specifically by this layout because
   // their area would be too small for display.
   this.numHiddenModels_ = 0;
-};
 
+  rhizo.layout.GUILayout.call(this, project,
+                              new rhizo.layout.TreeMapLayoutUI(this, project));
+};
+rhizo.inherits(rhizo.layout.TreeMapLayout, rhizo.layout.GUILayout);
+
+/**
+ * Verifies whether this layout can be used, given the project metamodel.
+ * The project metamodel must define at least one numeric model attribute that
+ * will be used to compute treemap areas.
+ *
+ * @param {*} meta The project metamodel.
+ */
 rhizo.layout.TreeMapLayout.prototype.verifyMetaModel = function(meta) {
   for (var key in meta) {
-    if (!!meta[key].isParent) {
-      this.parentKeys_.push(key);
-    }
-    if (meta[key].kind.isNumeric()) {
-      this.numericKeys_.push(key);
+    if (rhizo.layout.numericMatcher(key, meta[key])) {
+      return true;
     }
   }
+  return false;
+};
 
-  return this.numericKeys_.length > 0;
+/**
+ * @private
+ */
+rhizo.layout.TreeMapLayout.prototype.defaultState_ = function() {
+  return {
+    area: rhizo.layout.firstMetamodelKey(this.project_,
+                                         rhizo.layout.numericMatcher),
+    color: null,
+    parentKey: null
+  };
+};
+
+/**
+ * Validates a layout state. A valid state must have an 'area' property
+ * pointing to the numeric metamodel key that will be used to compute treemap
+ * areas.
+ *
+ * It might contain a 'color' property, which must be numeric, that will be
+ * used to assign colors to each treemap element.
+ *
+ * It might contain a 'parentKey' property, which must define parent-child
+ * relationships between models, that will be used to create hierarchical
+ * nesting in the treemap.
+ *
+ * @param {*} otherState
+ * @private
+ */
+rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
+  if (!this.validateStateAttributePresence_(otherState, 'area')) {
+    return false;
+  }
+
+  if (!this.validateMetamodelPresence_(otherState.area,
+                                       rhizo.layout.numericMatcher)) {
+    return false;
+  }
+  if (otherState.color &&
+      !(this.validateMetamodelPresence_(otherState.color,
+                                        rhizo.layout.numericMatcher))) {
+    return false;
+  }
+  if (otherState.parentKey &&
+      !(this.validateMetamodelPresence_(otherState.parentKey,
+                                        rhizo.layout.parentMatcher))) {
+    return false;
+  }
+  return true;
 };
 
 rhizo.layout.TreeMapLayout.prototype.layout = function(container,
@@ -510,15 +566,15 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
                                                        allmodels,
                                                        meta,
                                                        options) {
-  var areaMeta = this.areaSelector_.val();
-  var colorMeta = this.colorSelector_.val();
-  var parentKey = this.parentKeySelector_ ? this.parentKeySelector_.val() : '';
+  var areaMeta = this.getState().area;
+  var colorMeta = this.getState().color;
+  var parentKey = this.getState().parentKey;
 
   // Restore models that are no longer part of the treemap.
   // Keep track of the last coloring key used, in case we have to restore remove
   // color coding at a later layout run.
   this.backupManager_.restore(supermodels,
-                              this.prevColorMeta_ != '' && colorMeta == '');
+                              this.prevColorMeta_ && !colorMeta);
   this.prevColorMeta_ = colorMeta;
 
   // Revert expanded models, if needed.
@@ -528,7 +584,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   // no hierarchy.
   var treeRoot;
   this.globalNodesMap_ = {};
-  if (parentKey.length > 0) {
+  if (parentKey) {
     try {
       treeRoot = new rhizo.layout.Treeifier(parentKey).buildTree(
           supermodels, allmodels, this.globalNodesMap_);
@@ -570,7 +626,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   // Color ranges are determined by sampling values from:
   // - all visible leaf nodes.
   // - all visible non-leaf nodes whose children are all hidden.
-  if (colorMeta.length > 0) {
+  if (colorMeta) {
     var colorRange = {
       min: Number.MAX_VALUE,
       max: Number.MIN_VALUE,
@@ -603,61 +659,6 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
     return true;
   }
   return false;
-};
-
-rhizo.layout.TreeMapLayout.prototype.details = function() {
-  var details = $('<div />');
-
-  this.areaSelector_ = rhizo.layout.metaModelKeySelector(
-    this.project_, 'rhizo-treemaplayout-area', function(key, meta) {
-      return meta.kind.isNumeric();
-    });
-  this.colorSelector_ = rhizo.layout.metaModelKeySelector(
-    this.project_, 'rhizo-treemaplayout-color', function(key, meta) {
-      return meta.kind.isNumeric();
-    });
-  this.colorSelector_.append("<option value='' selected>-</option>");
-  details.append("Area: ").append(this.areaSelector_).
-      append(" Color:").append(this.colorSelector_);
-
-  if (this.parentKeys_.length > 0) {
-    this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_, 'rhizo-treemaplayout-parentKey', function(key, meta) {
-        return !!meta.isParent;
-      });
-    this.parentKeySelector_.append("<option value='' selected>-</option>");    
-
-    details.append(" Parent: ").append(this.parentKeySelector_);
-  }
-
-  return details;
-};
-
-rhizo.layout.TreeMapLayout.prototype.getState = function() {
-  var state = {
-    area: this.areaSelector_.val(),
-    color: this.colorSelector_.val()
-  };
-  if (this.parentKeys_.length > 0) {
-    state.parentKey = this.parentKeySelector_.val();
-  }
-  return state;
-};
-
-rhizo.layout.TreeMapLayout.prototype.setState = function(state) {
-  if (state) {
-    this.areaSelector_.val(state.area);
-    this.colorSelector_.val(state.color);
-    if (this.parentKeys_.length > 0) {
-      this.parentKeySelector_.val(state.parentKey);
-    }
-  } else {
-    this.areaSelector_.find('option:first').attr('selected', 'selected');
-    this.colorSelector_.find('option:first').attr('selected', 'selected');
-    if (this.parentKeys_.length > 1) {
-      this.parentKeySelector_.find('option:first').attr('selected', 'selected');
-    }
-  }
 };
 
 rhizo.layout.TreeMapLayout.prototype.dependentModels = function(modelId) {
@@ -723,6 +724,11 @@ rhizo.layout.TreeMapLayout.prototype.layoutNestedMap_ = function(
   return numHiddenModels;
 };
 
+/**
+ * @private
+ * @param {rhizo.layout.TreeNode} firstTreeNode
+ * @param {rhizo.layout.TreeNode} secondTreeNode
+ */
 rhizo.layout.TreeMapLayout.prototype.sortByAreaDesc_ = function(firstTreeNode,
                                                                 secondTreeNode) {
   return secondTreeNode.area - firstTreeNode.area;
@@ -949,6 +955,94 @@ rhizo.layout.TreeMapLayout.prototype.revertExpandedModels_ = function(
     supermodels[i].rendering().setExpanded(false);
   }
 };
+
+
+/**
+ * Helper class that handles TreeMapLayout ui controls.
+ * @param {rhizo.layout.TreeMapLayout} layout
+ * @param {rhizo.Project} project
+ * @constructor
+ */
+rhizo.layout.TreeMapLayoutUI = function(layout, project) {
+  this.layout_ = layout;
+  this.project_ = project;
+
+  this.areaSelector_ = null;
+  this.colorSelector_ = null;
+  this.parentKeySelector_ = null;
+};
+
+rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
+  var hasParentKeys = this.checkParentKeys_();
+  var details = $('<div />');
+
+  this.areaSelector_ = rhizo.layout.metaModelKeySelector(
+      this.project_,
+      'rhizo-treemaplayout-area',
+      rhizo.layout.numericMatcher).
+    change(jQuery.proxy(this.updateState_, this));
+  this.colorSelector_ = rhizo.layout.metaModelKeySelector(
+      this.project_,
+      'rhizo-treemaplayout-color',
+      rhizo.layout.numericMatcher).
+    append("<option value=''>-</option>").
+    change(jQuery.proxy(this.updateState_, this));
+  details.
+      append("Area: ").append(this.areaSelector_).
+      append(" Color:").append(this.colorSelector_);
+
+  if (hasParentKeys) {
+    this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
+        this.project_,
+        'rhizo-treemaplayout-parentKey',
+        rhizo.layout.parentMatcher).
+      append("<option value=''>-</option>").
+      change(jQuery.proxy(this.updateState_, this));
+
+    details.append(" Parent: ").append(this.parentKeySelector_);
+  }
+
+  return details;
+};
+
+/**
+ * Checks whether the project metamodel contains keys that define parent-child
+ * relationships between models, so that hierarchical treemaps can be built.
+ * @return {boolean} Whether the project allows hierarchical treemaps or not.
+ * @private
+ */
+rhizo.layout.TreeMapLayoutUI.prototype.checkParentKeys_ = function() {
+  for (var key in this.project_.metaModel()) {
+    if (rhizo.layout.parentMatcher(key, this.project_.metaModel()[key])) {
+      return true;
+    }
+  }
+  return false;
+};
+
+rhizo.layout.TreeMapLayoutUI.prototype.setState = function(state) {
+  this.areaSelector_.val(state.area);
+  this.colorSelector_.val(state.color || '');  // color is optional
+  if (this.parentKeySelector_) {
+    this.parentKeySelector_.val(state.parentKey || '');  // parent is optional.
+  }
+};
+
+/**
+ * Updates the layout state whenever the user modifies the controls.
+ * @private
+ */
+rhizo.layout.TreeMapLayoutUI.prototype.updateState_ = function() {
+  var state = {
+    area: this.areaSelector_.val(),
+    color: this.colorSelector_.val()
+  };
+  if (this.parentKeySelector_) {
+    state.parentKey = this.parentKeySelector_.val();
+  }
+  this.layout_.setStateFromUI(state);
+};
+
 
 // register the treemaplayout in global layout list
 rhizo.layout.layouts.treemap = rhizo.layout.TreeMapLayout;
