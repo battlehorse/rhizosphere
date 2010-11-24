@@ -21,6 +21,7 @@
 // RHIZODEP=rhizo.log,rhizo.meta
 namespace("rhizo.layout");
 
+
 /**
  * Creates a dropdown control that enumerates all the metaModel keys.
  * @param {rhizo.Project} project
@@ -42,6 +43,48 @@ rhizo.layout.metaModelKeySelector = function(project, className, opt_matcher) {
   }
   return select;
 };
+
+
+/**
+ * Returns the first key of the project metamodel, optionally satisfying a
+ * required constraint.
+ * @param {rhizo.Project} project
+ * @param {function(string, Object):boolean} opt_matcher Optional function to
+ *     decide whether to the given metaModel key is acceptable or not.
+ *     Receives as parametes the key itself and the associated metamodel entry.
+ * @return {string} The metamodel key, or null if no acceptable key could be
+ *     found.
+ */
+rhizo.layout.firstMetamodelKey = function(project, opt_matcher) {
+  for (var key in project.metaModel()) {
+    if (!opt_matcher || opt_matcher(key, project.metaModel()[key])) {
+      return key;
+    }
+  }
+  return null;
+};
+
+/**
+ * A function that matches metamodel keys that identify parent-child
+ * relationships between models (specifically, a key whose value points to
+ * parent model of a given one).
+ * @param {string} key The key to check.
+ * @param {*} meta The metamodel entry associated to this key.
+ */
+rhizo.layout.parentMatcher = function(key, meta) {
+  return !!meta.isParent;
+};
+
+/**
+ * A function that matches metamodel keys that identify numeric model
+ * attributes.
+ * @param {string} key The key to check.
+ * @param {*} meta The metamodel entry associated to this key.
+ */
+rhizo.layout.numericMatcher = function(key, meta) {
+  return meta.kind.isNumeric();
+};
+
 
 /**
  * Converter that turns an unorganized set of rhizo.model.SuperModel instances

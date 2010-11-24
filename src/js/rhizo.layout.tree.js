@@ -21,6 +21,8 @@
     left to right, top to bottom, hence this class uses the 'traditional' set of
     positioning coordinates (top, left, width, height).
 
+  - TreeLayoutUI: Helper class to manage layout UI controls.
+
   - TreeNode: a simple datastructure representing a node in the tree. It is used
     also to store some rendering information about the node, such as the
     bounding rectangle which can contain the rendering of the node itself and
@@ -47,29 +49,146 @@
 // RHIZODEP=rhizo.layout
 
 /**
+ * Helper class that handles TreeLayout ui controls.
+ * @param {rhizo.layout.TReeLayout} layout
+ * @param {rhizo.Project} project
+ */
+rhizo.layout.TreeLayoutUI = function(layout, project) {
+  this.layout_ = layout;
+  this.project_ = project;
+
+  this.directionSelector_ = null;
+  this.metaModelKeySelector_ = null;
+};
+
+rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
+  var parentKeys = this.getParentKeys_();
+  var details = $("<div />");
+  if (parentKeys.length == 0) {
+    // should never happen because of verifyMetaModel
+    details.append("No parent-child relationships exist");
+    return details;
+  }
+
+  details.append(" arrange ");
+  this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
+  this.directionSelector_.append("<option value='hor'>Horizontally</option>");
+  this.directionSelector_.append("<option value='ver'>Vertically</option>");
+  this.directionSelector_.change(jQuery.proxy(this.updateState_, this));
+  details.append(this.directionSelector_);
+
+  if (parentKeys.length > 1) {
+    this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
+        this.project_,
+        'rhizo-treelayout-parentKey',
+        rhizo.layout.parentMatcher);
+    this.metaModelKeySelector_.change(jQuery.proxy(this.updateState_, this));
+    details.append(" by ").append(this.metaModelKeySelector_);
+  } else if (parentKeys.length == 1) {
+    this.metaModelKeySelector_ =
+        $("<input type='hidden' />").val(parentKeys[0]);
+  }
+  return details;
+};
+
+/**
+ * @return {Array.<string>} The list of all metamodel keys which can be used
+ *     to arrange models in a tree structure (i.e., the point to parent-child
+ *     relationships).
+ * @private
+ */
+rhizo.layout.TreeLayoutUI.prototype.getParentKeys_ = function() {
+  var parentKeys = [];
+  for (var key in this.project_.metaModel()) {
+    if (rhizo.layout.parentMatcher(key, this.project_.metaModel()[key])) {
+      parentKeys.push(key);
+    }
+  }
+  return parentKeys;
+};
+
+rhizo.layout.TreeLayoutUI.prototype.setState = function(state) {
+  this.directionSelector_.val(state.direction);
+  if (this.metaModelKeySelector_) {
+    this.metaModelKeySelector_.val(state.parentKey);
+  }
+};
+
+/**
+ * Updates the layout state whenever the user modifies the controls.
+ * @private
+ */
+rhizo.layout.TreeLayoutUI.prototype.updateState_ = function() {
+  var state = {
+    direction: this.directionSelector_.val()
+  };
+  if (this.metaModelKeySelector_) {
+    state.parentKey = this.metaModelKeySelector_.val();
+  }
+  this.layout_.setStateFromUI(state);
+};
+
+
+/**
+ * A layout that arranges models in a tree structure.
+ *
+ * @param {rhizo.Project} project
  * @constructor
  */
 rhizo.layout.TreeLayout = function(project) {
   this.project_ = project;
-  this.directionSelector_ = null;
-  this.metaModelKeySelector_ = null;
-
-  this.parentKeys_ = [];
 
   /**
+   * Map that accumulates all the nodes matching the models being laid out.
    * @type {Object.<string, rhizo.layout.TreeNode>}
    * @private
    */
   this.globalNodesMap_ = null;
+  rhizo.layout.GUILayout.call(this, project,
+                              new rhizo.layout.TreeLayoutUI(this, project));
 };
+rhizo.inherits(rhizo.layout.TreeLayout, rhizo.layout.GUILayout);
 
+
+/**
+ * Verifies whether this layout can be used, given the project metamodel.
+ * The project metamodel must define at least one model attribute that specifies
+ * parent-child relationships, so that trees can be built.
+ *
+ * @param {*} meta The project metamodel.
+ */
 rhizo.layout.TreeLayout.prototype.verifyMetaModel = function(meta) {
   for (var key in meta) {
-    if (!!meta[key].isParent) {
-      this.parentKeys_.push(key);
+    if (rhizo.layout.parentMatcher(key, meta[key])) {
+      return true;
     }
   }
-  return this.parentKeys_.length > 0;
+  return false;
+};
+
+/**
+ * @private
+ */
+rhizo.layout.TreeLayout.prototype.defaultState_ = function() {
+  return {
+    direction: 'ver',
+    parentKey : rhizo.layout.firstMetamodelKey(
+        this.project_, rhizo.layout.parentMatcher)
+  };
+};
+
+/**
+ * Validates a layout state. A valid state must have a 'parentKey' property
+ * pointing to the metamodel key that contains parent-child relationships to
+ * create the layout tree.
+ *
+ * @param {*} otherState
+ * @private
+ */
+rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
+  return this.validateStateAttributePresence_(otherState, 'parentKey') &&
+         this.validateMetamodelPresence_(
+             otherState.parentKey, rhizo.layout.parentMatcher);
 };
 
 rhizo.layout.TreeLayout.prototype.layout = function(container,
@@ -77,21 +196,11 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
                                                     allmodels,
                                                     meta,
                                                     options) {
-  // detect parent
-  var parentKey;
-  if (this.parentKeys_.length == 0) {
-    this.project_.logger().error(
-        'Unable to identify parent-child relationships');
-    return false;
-  } else if (this.parentKeys_.length == 1) {
-    parentKey = this.parentKeys_[0];
-  } else {
-    parentKey = this.metaModelKeySelector_.val();
-  }
+  var parentKey = this.getState().parentKey;
   this.project_.logger().info("Creating tree by " + parentKey);
 
   // detect rendering direction
-  var vertical = this.directionSelector_.val() == 'ver';
+  var vertical = this.getState().direction == 'ver';
   this.treePainter_ = new rhizo.layout.TreePainter(vertical);
 
   try {
@@ -138,54 +247,6 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
     }
   }
   return false;
-};
-
-rhizo.layout.TreeLayout.prototype.details = function() {
-  var details = $("<div />");
-  if (this.parentKeys_.length == 0) {
-    details.append("No parent-child relationships exist");
-    return details;
-  }
-
-  details.append(" arrange ");
-  this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
-  this.directionSelector_.append("<option value='hor'>Horizontally</option>");
-  this.directionSelector_.append("<option value='ver'>Vertically</option>");
-  details.append(this.directionSelector_);
-
-  if (this.parentKeys_.length > 1) {
-    this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_, 'rhizo-treelayout-parentKey', function(key, meta) {
-        return !!meta.isParent;
-      });
-    details.append(" by ").append(this.metaModelKeySelector_);
-  }
-  return details;
-};
-
-rhizo.layout.TreeLayout.prototype.getState = function() {
-  var state = {
-    direction: this.directionSelector_.val()
-  };
-  if (this.parentKeys_.length > 1) {
-    state.parentKey = this.metaModelKeySelector_.val();
-  }
-  return state;
-};
-
-rhizo.layout.TreeLayout.prototype.setState = function(state) {
-  if (state) {
-    this.directionSelector_.val(state.direction);
-    if (this.parentKeys_.length > 1) {
-      this.metaModelKeySelector_.val(state.parentKey);
-    }
-  } else {
-    this.directionSelector_.find('option:first').attr('selected', 'selected');
-    if (this.parentKeys_.length > 1) {
-      this.metaModelKeySelector_.find('option:first').attr('selected',
-                                                           'selected');
-    }
-  }
 };
 
 rhizo.layout.TreeLayout.prototype.toString = function() {
