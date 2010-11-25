@@ -573,7 +573,7 @@ rhizo.Project.prototype.moveModels_ = function(positions) {
  *    Currently supported ones include:
  *    - 'filter' (boolean): Whether this layout operation is invoked as a result
  *      of a filter being applied.
- *    - 'forceAlign' (boolean): Whether models' visibility should be synced at
+ *    - 'forcealign' (boolean): Whether models' visibility should be synced at
  *      the end of the layout operation.
  * @return {boolean} Whether the layout operation completed successfully.
  */
@@ -714,7 +714,7 @@ rhizo.Project.prototype.filterInternal_ = function(key, value) {
 /**
  * Decides whether models should be repositioned after a filter was applied.
  * This may be necessary either because the filters are in autocommit mode, or
- * because the filter change caused  some models that were completely hidden
+ * because the filter change caused some models that were completely hidden
  * to become visible (hence all the models must be repositioned to accomodate
  * these ones).
  *
