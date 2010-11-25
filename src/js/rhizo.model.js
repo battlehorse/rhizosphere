@@ -30,6 +30,7 @@ rhizo.model.SuperModel = function(model) {
   this.filters_ = {}; // a map of filter status, one for each model key
   this.rendering_ = null;
   this.selected_ = false;
+  this.pinned_ = false;
 };
 
 /**
@@ -47,6 +48,21 @@ rhizo.model.SuperModel.prototype.rendering = function() {
 };
 
 /**
+ * @return {*} the naked model wrapped by this SuperModel.
+ */
+rhizo.model.SuperModel.prototype.unwrap = function() {
+  return this.model;
+};
+
+/**
+ * @return {boolean} Whether this model participates in layout operations.
+ *     A model won't respond to layouts if it's filtered or pinned.
+ */
+rhizo.model.SuperModel.prototype.isAvailableForLayout = function() {
+  return !this.isFiltered() && !this.isPinned();
+};
+
+/**
  * Sets the selection status for this model. Propagates to its rendering.
  * @param {boolean} selected
  */
@@ -56,10 +72,26 @@ rhizo.model.SuperModel.prototype.setSelected = function(selected) {
 };
 
 /**
- * @return {*} the naked model wrapped by this SuperModel.
+ * Pins the model. The model rendering will remain at a fixed position in
+ * the visualization universe and won't respond to layout operations. Users
+ * can still move the model by manually dragging it.
  */
-rhizo.model.SuperModel.prototype.unwrap = function() {
-  return this.model;
+rhizo.model.SuperModel.prototype.pin = function() {
+  this.pinned_ = true;
+};
+
+/**
+ * Unpins the model.
+ */
+rhizo.model.SuperModel.prototype.unpin = function() {
+  this.pinned_ = false;
+};
+
+/**
+ * @return {boolean} Whether the model is pinned or not.
+ */
+rhizo.model.SuperModel.prototype.isPinned = function() {
+  return this.pinned_;
 };
 
 rhizo.model.SuperModel.prototype.toString = function() {
@@ -79,7 +111,6 @@ rhizo.model.SuperModel.prototype.isFiltered = function(opt_key) {
 rhizo.model.SuperModel.prototype.filter = function(key) {
   this.filters_[key] = true;
 };
-
 
 /**
  * Removes the given filter from this model.
