@@ -100,7 +100,7 @@ rhizo.layout.Treeifier = function(parentKey) {
 
 /**
  * Builds a hierarchical structure of TreeNodes. Raises exceptions
- * if cycles are found within the tree. Deals automatically with "filtered"
+ * if cycles are found within the tree. Deals automatically with "unavailable"
  * parts of the tree.
  * 
  * @param {Array.<rhizo.model.SuperModel>} supermodels A list of all supermodels
@@ -124,8 +124,8 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
 
   var root = new rhizo.layout.TreeNode();
 
-  // supermodels contains only the _visible_ models, while allmodels contains
-  // all the known models.
+  // supermodels contains only the models that can be laid out, while allmodels
+  // contains all the known models.
   for (var i = 0, l = supermodels.length; i < l; i++) {
     if (!globalNodesMap[supermodels[i].unwrap().id].traversed_) {
 
@@ -143,7 +143,7 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
         localNodesMap[model.id] = true;
         globalNodesMap[model.id].traversed_ = true;
 
-        var parentSuperModel = this.findFirstVisibleParent_(
+        var parentSuperModel = this.findFirstAvailableParent_(
             allmodels,
             allmodels[model[this.parentKey_]]);
         if (parentSuperModel && parentSuperModel.id != model.id) {
@@ -161,10 +161,12 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
 };
 
 /**
- * From a given model, returns the first non-filtered model in the tree
- * hierarchy defined according to parentKey. If the given model itself is not
- * filtered, it is returned without further search. If a cycle is detected while
- * traversing filtered parents, an exception is raised.
+ * From a given model, returns the first model in the tree hierarchy defined
+ * according to parentKey which is available for layout. Models can be
+ * unavailable for various reasons, such as being filtered or pinned.
+ * If the given model itself is available, it is returned without further
+ * search. If a cycle is detected while traversing unavailable parents,
+ * an exception is raised.
  *
  * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
  *     model ids to SuperModel instances, for all models currently known to the
@@ -172,14 +174,14 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
  * @param {rhizo.model.SuperModel} superParent the model to start the search from.
  * @private
  */
-rhizo.layout.Treeifier.prototype.findFirstVisibleParent_ = function(allmodels,
-                                                                    superParent) {
+rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
+    allmodels, superParent) {
   if (!superParent) {
     return null;
   }
 
   var localNodesMap = {};
-  while (superParent.isFiltered()) {
+  while (!superParent.isAvailableForLayout()) {
     if (localNodesMap[superParent.id]) {
       // cycle detected
       throw new rhizo.layout.TreeCycleException(

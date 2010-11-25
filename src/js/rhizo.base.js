@@ -635,11 +635,11 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
   this.gui_.universe.move(0, 0, {'bottom': 0, 'right': 0});
 
   // layout only non filtered models
-  var nonFilteredModels = jQuery.grep(this.models_, function(model) {
-    return !model.isFiltered();
+  var freeModels = jQuery.grep(this.models_, function(model) {
+    return model.isAvailableForLayout();
   });
   dirty = layoutEngine.layout(this.gui_.universe,
-                              nonFilteredModels,
+                              freeModels,
                               this.modelsMap_,
                               this.metaModel_,
                               options) || dirty;
