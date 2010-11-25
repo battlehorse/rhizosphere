@@ -1041,7 +1041,7 @@ rhizo.ui.component.Layout.prototype.metaReady = function() {
 
 rhizo.ui.component.Layout.prototype.ready = function() {
   this.submit_.removeAttr('disabled').click(jQuery.proxy(function() {
-    // TODO(battlehorse): forceAlign should be true only if there are
+    // TODO(battlehorse): forcealign should be true only if there are
     // uncommitted filters (i.e. GREY models).
     this.project_.layout(this.layoutSelector_.val(), null, {forcealign:true});
   }, this));
