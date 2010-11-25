@@ -215,6 +215,10 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   // The rendering position, at the time of the last move() call.
   this.position_ = {};
 
+  // A position mark, that can be used to remember a previous position occupied
+  // by the rendering.
+  this.mark_ = null;
+
   // whether the rendering is visible or not. Multiple states might exist,
   // as defined in the rhizo.ui.Visibility enum.
   this.visibility = rhizo.ui.Visibility.HIDDEN;
@@ -300,27 +304,27 @@ rhizo.ui.Rendering.prototype.move = function(top, left, opt_instant) {
 };
 
 /**
- * Moves the rendering back to last pinned position.
+ * Moves the rendering back to last marked position.
  * @param {?boolean} opt_instant Whether the move should be instantaneous
  *   (no animations) or not.
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.moveToPin = function(opt_instant) {
-  if (this.pin_ !== null) {
-    this.move(this.pin_.top, this.pin_.left, opt_instant);
+rhizo.ui.Rendering.prototype.moveToMark = function(opt_instant) {
+  if (this.mark_ !== null) {
+    this.move(this.mark_.top, this.mark_.left, opt_instant);
   }
   return this;
 };
 
 /**
- * Moves the rendering of a {top, left} delta distance from the last pinned
- * position (if no pin exists, the move is relative to the universe top-left
+ * Moves the rendering of a {top, left} delta distance from the last marked
+ * position (if no mark exists, the move is relative to the universe top-left
  * corner).
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.moveFromPin = function(top, left, opt_instant) {
-  if (this.pin_ != null) {
-    this.move(this.pin_.top + top, this.pin_.left + left, opt_instant);
+rhizo.ui.Rendering.prototype.moveFromMark = function(top, left, opt_instant) {
+  if (this.mark_ != null) {
+    this.move(this.mark_.top + top, this.mark_.left + left, opt_instant);
   } else {
     this.move(top, left, opt_instant);
   }
@@ -328,11 +332,11 @@ rhizo.ui.Rendering.prototype.moveFromPin = function(top, left, opt_instant) {
 };
 
 /**
- * Pins the current model position.
+ * Marks the current model position.
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.pinPosition = function() {
-  this.pin_ = {
+rhizo.ui.Rendering.prototype.markPosition = function() {
+  this.mark_ = {
     top: parseInt(this.raw_node_.css('top'), 10),
     left: parseInt(this.raw_node_.css('left'), 10)
   };
@@ -340,22 +344,22 @@ rhizo.ui.Rendering.prototype.pinPosition = function() {
 };
 
 /**
- * Discards the current pin, if any.
+ * Discards the current mark, if any.
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.unpinPosition = function() {
-  this.pin_ = null;
+rhizo.ui.Rendering.prototype.unmarkPosition = function() {
+  this.mark_ = null;
   return this;
 };
 
 /**
  * @return {*} A {top,left} distance from the given {top, left} position and
- *   this rendering pin position. Returns null if no pin exists.
+ *   this rendering mark position. Returns null if no mark exists.
  */
-rhizo.ui.Rendering.prototype.distanceFromPin = function(top, left) {
-  if (this.pin_ != null) {
-    return {left: left - this.pin_.left,
-            top: top - this.pin_.top};
+rhizo.ui.Rendering.prototype.distanceFromMark = function(top, left) {
+  if (this.mark_ != null) {
+    return {left: left - this.mark_.left,
+            top: top - this.mark_.top};
   } else {
     return null;
   }
@@ -918,7 +922,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
       model.rendering().
           setMode('__dragging__').
-          pinPosition().
+          markPosition().
           pushElevation('__dragging__', 10000);
 
       // figure out all the initial positions for the selected elements
@@ -926,19 +930,19 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       if (this.project_.isSelected(model.id)) {
         var all_selected = this.project_.allSelected();
         for (var id in all_selected) {
-          this.project_.model(id).rendering().pinPosition();
+          this.project_.model(id).rendering().markPosition();
         }
       }
     }, this),
     drag: jQuery.proxy(function(ev, ui) {
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
       if (this.project_.isSelected(model.id)) {
-        var delta = model.rendering().distanceFromPin(ui.position.top,
+        var delta = model.rendering().distanceFromMark(ui.position.top,
                                                       ui.position.left);
         var all_selected = this.project_.allSelected();
         for (var id in all_selected) {
           if (id != model.id) {
-            all_selected[id].rendering().moveFromPin(
+            all_selected[id].rendering().moveFromMark(
                 delta.top, delta.left, true);
           }
         }
@@ -948,7 +952,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       var modelPositions = [];
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
       model.rendering().
-          unpinPosition().
+          unmarkPosition().
           refreshPosition().
           popElevation('__dragging__');
 
@@ -964,7 +968,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
               top: all_selected[id].rendering().position().top,
               left: all_selected[id].rendering().position().left
           });
-          all_selected[id].rendering().unpinPosition();
+          all_selected[id].rendering().unmarkPosition();
         }
       }
 
