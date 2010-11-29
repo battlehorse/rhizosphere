@@ -823,7 +823,7 @@ rhizo.state.getMasterOverlord = function() {
  * @type {rhizo.state.HistoryHelper}
  * @private
  */
-rhizo.state.histroy_ = null;
+rhizo.state.history_ = null;
 if (window.history && typeof(window.history.pushState) == 'function') {
   rhizo.state.history_ = new rhizo.state.HistoryHelper(
       rhizo.state.getMasterOverlord());
