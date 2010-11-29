@@ -191,7 +191,24 @@ rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
              otherState.parentKey, rhizo.layout.parentMatcher);
 };
 
+/**
+ * Lays out models.
+ *
+ * @param {*} container jQuery object pointing to the HTML container where
+ *     layout-specific UI elements should be added.
+ * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
+ *     the layout should occur.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
+ *     that will participate in the layout.
+ * @param {Object.<*, rhizo.model.SuperModel>} allmodels A map of all
+ *     visualization models, mapping from the model id the associated SuperModel
+ *     instance.
+ * @param {*} meta The project metamodel.
+ * @param {*} options The composition of project-wide configuration options and
+ *     layout-specific ones.
+ */
 rhizo.layout.TreeLayout.prototype.layout = function(container,
+                                                    layoutBox,
                                                     supermodels,
                                                     allmodels,
                                                     meta,
@@ -224,7 +241,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
           this.treePainter_.toAbsoluteCoords_(unrotatedBoundingRect);
 
       // 'return carriage' if needed
-      if (drawingOffset.left + boundingRect.w > container.width()) {
+      if (drawingOffset.left + boundingRect.w > layoutBox.width) {
         drawingOffset.left = 0;
         drawingOffset.top += maxHeight + (maxHeight > 0 ? 5 : 0);
       }

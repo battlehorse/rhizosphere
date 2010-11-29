@@ -638,7 +638,11 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
   var freeModels = jQuery.grep(this.models_, function(model) {
     return model.isAvailableForLayout();
   });
+
+  var boundingLayoutBox = new rhizo.layout.LayoutBox(
+      this.gui_.viewport, this.options_.layoutConstraints);
   dirty = layoutEngine.layout(this.gui_.universe,
+                              boundingLayoutBox,
                               freeModels,
                               this.modelsMap_,
                               this.metaModel_,

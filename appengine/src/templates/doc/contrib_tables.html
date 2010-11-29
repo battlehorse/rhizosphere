@@ -118,6 +118,34 @@
     parameter can be set to any template name registered in the
     <code>rhizo.ui.component.templates</code> enumeration.
   </dd>
+  <dt>
+    layoutConstraints
+    (object, default: unset,
+    allowed keys: top, bottom, left, right, width, height)
+  </dt>
+  <dd>
+    <p>
+      Specifies a map of constraints for the area that Rhizosphere will use to
+      lay out models' renderings. By default Rhizosphere will use the entire
+      available viewport area for its layouts.
+    </p>
+    <p>
+      With this option you can limit the part of the viewport that Rhizosphere
+      will fill when laying out models' renderings. The following keys are
+      accepted: <code>top</code>, <code>bottom</code>, <code>left</code>,
+      <code>right</code>, <code>width</code> and <code>height</code>. Each value
+      in the <code>[0.0, 1.0)</code> range is considered relative to the
+      viewport width and height. It is otherwise assumed to be an absolute number
+      of pixels otherwise. <code>width</code> and <code>height</code> properties
+      take precedence respectively over <code>right</code> and
+      <code>bottom</code>.
+    </p>
+
+    <p>
+      Example:
+      <code>{layoutConstraints: {top: 0.2, left: 0.2, width: 600, height: 600}}</code>
+    </p>
+  </dd>
 </dl>
 
 <h4>Autorender-specific options</h4>
