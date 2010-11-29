@@ -19,12 +19,17 @@ namespace("rhizo.jquery");
 /**
  * Extends jQuery with all the additional behaviors required by Rhizosphere.
  * @param {rhizo.ui.gui.GUI} gui
- * @param {boolean?} opt_disableAllAnims whether all animations for the
- *     visualization 'gui' refers to should be disabled permanently.
+ * @param {boolean} enableAnims whether the visualization can use animations to
+ *     smooth UI transitions, such as applying layouts and filters.
+ * @param {boolean} enableMouseWheelForPanning whether the visualization should
+ *     explicitly trap mousewheel (and trackpad) events and convert them into
+ *     panning requests for the visualization viewport.
  */
-rhizo.jquery.init = function(gui, opt_disableAllAnims) {
-  rhizo.jquery.initAnimations_(gui, opt_disableAllAnims);
-  rhizo.jquery.initMouseWheel_();
+rhizo.jquery.init = function(gui, enableAnims, enableMouseWheelForPanning) {
+  rhizo.jquery.initAnimations_(gui, enableAnims);
+  if (enableMouseWheelForPanning) {
+    rhizo.jquery.initMouseWheel_();
+  }
 };
 
 /**
@@ -37,15 +42,17 @@ rhizo.jquery.init = function(gui, opt_disableAllAnims) {
  * See http://code.google.com/p/rhizosphere/issues/detail?id=68
  * 
  * @param {rhizo.ui.gui.GUI} gui
- * @param {boolean?} opt_disableAllAnims whether all animations for the
- *     visualization 'gui' refers to should be disabled permanently.
+ * @param {boolean} enableAnims whether the visualization can use animations to
+ *     smooth UI transitions, such as applying layouts and filters.
  */
-rhizo.jquery.initAnimations_ = function(gui, opt_disableAllAnims) {
-  if (jQuery().greyOut) {
+rhizo.jquery.initAnimations_ = function(gui, enableAnims) {
+  if ($.support.greyOut) {
     return;
   }
+  $.extend($.support, {greyOut: true});
+
   (function($) {
-    if (opt_disableAllAnims) {
+    if (!enableAnims) {
       // Define non-animated move(), fadeIn() and fadeOut() functions
       $.fn.extend({
         move: function(top, left, opt_extras) {
@@ -66,7 +73,7 @@ rhizo.jquery.initAnimations_ = function(gui, opt_disableAllAnims) {
       });
     } else {
       // Define move(), fadeIn() and fadeOut() functions that discards
-      // animations if needed.
+      // animations only in case of overload.
       $.fn.extend({
         move: function(top, left, opt_extras) {
           if (gui.noFx) {
@@ -170,9 +177,11 @@ rhizo.jquery.initMouseWheel_ = function() {
   // Windows:
   //     Untested.
 
-  if (jQuery().mouseWheel) {
+  if ($.support.mouseWheel) {
     return;
   }
+
+  $.extend($.support, {mouseWheel: true});
   (function($) {
     
     var types = ['DOMMouseScroll', 'mousewheel'];
