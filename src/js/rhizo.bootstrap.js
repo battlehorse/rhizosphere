@@ -228,7 +228,7 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   // TODO(battlehorse): this must happen at the global level, and not locally
   // for every single visualization.
   // See http://code.google.com/p/rhizosphere/issues/detail?id=68.
-  rhizo.jquery.init(gui, this.options_.noAnims);
+  rhizo.jquery.init(gui, !this.options_.noAnims, true);
 
   return gui;
 };

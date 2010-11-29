@@ -816,9 +816,11 @@ rhizo.ui.component.Viewport.prototype.ready = function() {
   });
 
   // Mousewheel (or trackpad) based panning.
-  this.viewport_.mousewheel(jQuery.proxy(function (evt, deltaX, deltaY) {
-      this.panUniverse_(deltaX, deltaY);
-  }, this));
+  if ($.support.mouseWheel) {
+    this.viewport_.mousewheel(jQuery.proxy(function (evt, deltaX, deltaY) {
+        this.panUniverse_(deltaX, deltaY);
+    }, this));
+  }
 };
 
 /**
