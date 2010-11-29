@@ -10,7 +10,7 @@
     >
   </ModulePrefs>
   <UserPref name="_table_query_url" display_name="Data source URL" required="true"/>
-  <UserPref name="useAnims" display_name="Fancy animations" required="true" datatype="bool" default_value="false" />
+  <UserPref name="useAnims" display_name="Fancy animations" required="true" datatype="bool" default_value="true" />
   <UserPref name="arDefaults" display_name="Autoanalyze data:" required="false" datatype="bool" default_value="false" />
   <UserPref name="arNumFields" display_name="When fullscreen, show" required="false" datatype="enum" default_value="3" >
     <EnumValue value="1" display_value="1 field" />
@@ -75,7 +75,7 @@
 
       var prefs = new _IG_Prefs();
       var globalOptions = {
-        noAnims: !prefs.getBool('useAnims'),
+        enableAnims: prefs.getBool('useAnims'),
         arDefaults: prefs.getBool('arDefaults'),
         arMaster: prefs.getString('arMaster'),
         arSize: prefs.getString('arSize'),
