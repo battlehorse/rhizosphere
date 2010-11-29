@@ -53,7 +53,8 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
     $(container).attr('rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
   }
   this.options_ = { selectfilter: '.rhizo-model:visible',
-                    enableHTML5History: true};
+                    enableHTML5History: true,
+                    enableAnims: true};
   if (opt_options) {
     $.extend(this.options_, opt_options);
   }
@@ -219,9 +220,7 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   var gui = new rhizo.ui.gui.GUI(this.container_,
                                  platformDevice.platform,
                                  platformDevice.device);
-  if (this.options_.noAnims) {
-    gui.disableFx(true);
-  }
+  gui.disableFx(!this.options_.enableAnims);
 
   // Extends jQuery with all the additional behaviors required by Rhizosphere
   // Disable animations and other performance tunings if needed.
@@ -229,7 +228,7 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   // TODO(battlehorse): this must happen at the global level, and not locally
   // for every single visualization.
   // See http://code.google.com/p/rhizosphere/issues/detail?id=68.
-  rhizo.jquery.init(gui, !this.options_.noAnims, true);
+  rhizo.jquery.init(gui, this.options_.enableAnims, true);
 
   return gui;
 };

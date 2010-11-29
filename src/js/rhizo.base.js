@@ -847,7 +847,7 @@ rhizo.Project.prototype.alignFx = function() {
       numVisibleModels++;
     }
   }
-  this.gui_.disableFx(this.options_.noAnims ||
+  this.gui_.disableFx(!this.options_.enableAnims ||
                       numUnfilteredModels > 200 ||
                       numVisibleModels > 200);
 };

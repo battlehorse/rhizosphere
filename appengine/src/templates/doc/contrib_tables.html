@@ -86,9 +86,18 @@
     to always define this option to match the selectable items as narrowly as
     possible.
   </dd>
-  <dt>noAnims (boolean, default: false)</dt>
+  <dt>enableAnims (boolean, default: true)</dt>
   <dd>
-    Disable all animations to improve performance.
+    <p>
+      Whether Rhizosphere should use animations to smooth transitions such
+      as layouts and dynamic filtering.
+    </p>
+    <p>
+      Rhizosphere will automatically reduce animations to improve performance
+      when too many models are visualized on screen, but you can explicitly set
+      this to disable all animations from the start to further improve
+      performance.
+    </p>
   </dd>
   <dt>enableHTML5History (boolean, default: true)</dt>
   <dd>
