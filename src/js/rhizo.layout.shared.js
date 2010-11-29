@@ -87,6 +87,132 @@ rhizo.layout.numericMatcher = function(key, meta) {
 
 
 /**
+ * Defines the bounding rectangle inside which models' layout should occur.
+ * The bounding rectangle is guaranteed to remain within the container limits.
+ *
+ * @param {HTMLElement} container The HTML element whose width and height define
+ *     the maximum width and height of the layout rectangle. This will typically
+ *     be the visualization viewport.
+ * @param {*} opt_layoutConstraints An optional map of constraints for the
+ *     layout bounding rectangle. The following keys are accepted: top, bottom,
+ *     left, right, width and height. Each value in the [0.0,1.0) range is
+ *     considered relative to the container width and height, and assumed to
+ *     be absolute values otherwise. 'width' and 'height' takes precedence
+ *     respectively over 'right' and 'bottom'.
+ * @constructor
+ */
+rhizo.layout.LayoutBox = function(container, opt_layoutConstraints) {
+  /**
+   * The distance (in pixels) of the layout rectangle from the container top
+   * border.
+   * @type {number}
+   */
+  this.top = 0;
+
+  /**
+   * The distance (in pixels) of the layout rectangle from the container bottom
+   * border.
+   * @type {number}
+   */
+  this.bottom = 0;
+
+  /**
+   * The distance (in pixels) of the layout rectangle from the container left
+   * border.
+   * @type {number}
+   */
+  this.left = 0;
+
+  /**
+   * The distance (in pixels) of the layout rectangle from the container right
+   * border.
+   * @type {number}
+   */
+  this.right = 0;
+
+  /**
+   * The layout rectangle width (in pixels).
+   * @type {number}
+   */
+  this.width = 0;
+
+  /**
+   * The layout rectangle height (in pixels).
+   * @type {number}
+   */
+  this.height = 0;
+
+  this.maxWidth_ = $(container).width();
+  this.maxHeight_ = $(container).height();
+  this.computeLayoutBox_(opt_layoutConstraints || {});
+};
+
+/**
+ * Computes the top,bottom,left,right,width and height attributes of the layout
+ * rectangle, given the surrounding container size and any externally provided
+ * constraints.
+ *
+ * @param {*} layoutConstraints Map of constraints for the layout bounding
+ *     rectangle.
+ * @private
+ */
+rhizo.layout.LayoutBox.prototype.computeLayoutBox_ = function(
+    layoutConstraints) {
+  this.top = this.getAbsoluteDimension_(layoutConstraints.top,
+                                        this.maxHeight_);
+  if (layoutConstraints.height) {
+    this.height = this.getAbsoluteDimension_(layoutConstraints.height,
+                                             this.maxHeight_);
+    this.bottom = this.maxHeight_ - this.top - this.height;
+  } else {
+    this.bottom = this.clamp_(
+        this.getAbsoluteDimension_(layoutConstraints.bottom, this.maxHeight_),
+        this.top, this.maxHeight_);
+    this.height = this.maxHeight_ - this.top - this.bottom;
+  }
+
+  this.left = this.getAbsoluteDimension_(layoutConstraints.left,
+                                         this.maxWidth_);
+  if (layoutConstraints.width) {
+    this.width = this.getAbsoluteDimension_(layoutConstraints.width,
+                                            this.maxWidth_);
+    this.right = this.maxWidth_ - this.left - this.width;
+  } else {
+    this.right = this.clamp_(
+        this.getAbsoluteDimension_(layoutConstraints.right, this.maxWidth_),
+        this.left, this.maxWidth_);
+    this.width = this.maxWidth_ - this.left - this.right;
+  }
+};
+
+/**
+ * Converts a value relative to the container size into an absolute value (in
+ * pixels).
+ * @param {number} value The value to convert.
+ * @param {number} maxValue The maximum acceptable value.
+ * @return {number} An absolute number (in pixel units) that is guaranteed to
+ *     be in the [0, maxValue] range.
+ * @private
+ */
+rhizo.layout.LayoutBox.prototype.getAbsoluteDimension_ = function(value, maxValue) {
+  value = value || 0;
+  var multiplier = value < 1.0 ? maxValue : 1;
+  return this.clamp_(Math.round(value * multiplier), 0, maxValue);
+};
+
+/**
+ * Clamps the given value between the minimum and maximum range limits.
+ * @param {number} val
+ * @param {number} min
+ * @param {number} max
+ * @private
+ */
+rhizo.layout.LayoutBox.prototype.clamp_ = function(val, min, max) {
+  return Math.min(max, Math.max(min, val));
+};
+
+
+/**
  * Converter that turns an unorganized set of rhizo.model.SuperModel instances
  * into a tree, according to a model attribute (parentKey) that defines the
  * parent-child relationships.

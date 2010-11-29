@@ -561,7 +561,24 @@ rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
   return true;
 };
 
+/**
+ * Lays out models.
+ *
+ * @param {*} container jQuery object pointing to the HTML container where
+ *     layout-specific UI elements should be added.
+ * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
+ *     the layout should occur.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
+ *     that will participate in the layout.
+ * @param {Object.<*, rhizo.model.SuperModel>} allmodels A map of all
+ *     visualization models, mapping from the model id the associated SuperModel
+ *     instance.
+ * @param {*} meta The project metamodel.
+ * @param {*} options The composition of project-wide configuration options and
+ *     layout-specific ones.
+ */
 rhizo.layout.TreeMapLayout.prototype.layout = function(container,
+                                                       layoutBox,
                                                        supermodels,
                                                        allmodels,
                                                        meta,
@@ -609,18 +626,12 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
   // rather rely on the sum of all the underlying (non-filtered) models.
   this.computeNestedAreas_(treeRoot, areaMeta);
 
-  // Pointer to the container were new treemap nodes are added to. Initially
-  // maps to the entire available rendering area.
-  var boundingRect = {
-    width: container.width(),
-    height: container.height()
-  };
-
   // Actual layout occurs here.
-  this.numHiddenModels_ = this.layoutNestedMap_(boundingRect,
-                                                treeRoot,
-                                                {x:0, y:0},
-                                                /* deepness */ 50);
+  this.numHiddenModels_ = this.layoutNestedMap_(
+      {width: layoutBox.width, height: layoutBox.height},
+      treeRoot,
+      {x:0, y:0},
+      /* deepness */ 50);
 
   // Treemap coloring (if needed).
   // Color ranges are determined by sampling values from:

@@ -257,11 +257,7 @@ rhizo.layout.GUILayout.prototype.setStateFromUI = function(state) {
  */
 rhizo.layout.NoLayout = function(unused_project) {};
 
-rhizo.layout.NoLayout.prototype.layout = function(container,
-                                                  supermodels,
-                                                  allmodels,
-                                                  meta,
-                                                  options) {
+rhizo.layout.NoLayout.prototype.layout = function() {
   return false;
 };
 
@@ -278,7 +274,24 @@ rhizo.layout.NoLayout.prototype.toString = function() {
  */
 rhizo.layout.ScrambleLayout = function(unused_project) {};
 
+/**
+ * Lays out models.
+ *
+ * @param {*} container jQuery object pointing to the HTML container where
+ *     layout-specific UI elements should be added.
+ * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
+ *     the layout should occur.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
+ *     that will participate in the layout.
+ * @param {Object.<*, rhizo.model.SuperModel>} allmodels A map of all
+ *     visualization models, mapping from the model id the associated SuperModel
+ *     instance.
+ * @param {*} meta The project metamodel.
+ * @param {*} options The composition of project-wide configuration options and
+ *     layout-specific ones.
+ */
 rhizo.layout.ScrambleLayout.prototype.layout = function(container,
+                                                        layoutBox,
                                                         supermodels,
                                                         allmodels,
                                                         meta,
@@ -286,16 +299,14 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(container,
   if (options.filter) {
     return false; // re-layouting because of filtering doesn't affect the layout
   }
-  var containerWidth = container.width();
-  var containerHeight = container.height();
 
   // Randomly distributing models leaving a 5%-wide margin between the models
   // and the container.
   for (var i = 0, len = supermodels.length; i < len; i++) {
-    var top = Math.round(containerHeight*0.05 +
-                         Math.random()*0.85*containerHeight);
-    var left = Math.round(containerWidth*0.05 +
-                          Math.random()*0.85*containerWidth);
+    var top = Math.round(layoutBox.height*0.05 +
+                         Math.random()*0.85*layoutBox.height);
+    var left = Math.round(layoutBox.width*0.05 +
+                          Math.random()*0.85*layoutBox.width);
 
     supermodels[i].rendering().move(top, left);
   }
@@ -349,14 +360,31 @@ rhizo.layout.FlowLayout.prototype.validateState_ = function(otherState) {
       this.validateMetamodelPresence_(otherState.order);
 };
 
+/**
+ * Lays out models.
+ *
+ * @param {*} container jQuery object pointing to the HTML container where
+ *     layout-specific UI elements should be added.
+ * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
+ *     the layout should occur.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
+ *     that will participate in the layout.
+ * @param {Object.<*, rhizo.model.SuperModel>} allmodels A map of all
+ *     visualization models, mapping from the model id the associated SuperModel
+ *     instance.
+ * @param {*} meta The project metamodel.
+ * @param {*} options The composition of project-wide configuration options and
+ *     layout-specific ones.
+ */
 rhizo.layout.FlowLayout.prototype.layout = function(container,
+                                                    layoutBox,
                                                     supermodels,
                                                     allmodels,
                                                     meta,
                                                     options) {
   var order = this.getState().order;
   var reverse = !!this.getState().reverse;
-  var maxWidth = container.width();
+  var maxWidth = layoutBox.width;
   var lineHeight = 0;
 
   // reorder supermodels
@@ -478,7 +506,24 @@ rhizo.layout.BucketLayout.prototype.validateState_ = function(otherState) {
       this.validateMetamodelPresence_(otherState.bucketBy);
 };
 
+/**
+ * Lays out models.
+ *
+ * @param {*} container jQuery object pointing to the HTML container where
+ *     layout-specific UI elements should be added.
+ * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
+ *     the layout should occur.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
+ *     that will participate in the layout.
+ * @param {Object.<*, rhizo.model.SuperModel>} allmodels A map of all
+ *     visualization models, mapping from the model id the associated SuperModel
+ *     instance.
+ * @param {*} meta The project metamodel.
+ * @param {*} options The composition of project-wide configuration options and
+ *     layout-specific ones.
+ */
 rhizo.layout.BucketLayout.prototype.layout = function(container,
+                                                      layoutBox,
                                                       supermodels,
                                                       allmodels,
                                                       meta,
@@ -535,6 +580,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
                              buckets[bucketKey],
                              firstBucket);
     dirty = this.internalFlowLayout_.layout(container,
+                                            layoutBox,
                                             buckets[bucketKey],
                                             allmodels,
                                             meta,
