@@ -52,7 +52,8 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
     // based on this.
     $(container).attr('rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
   }
-  this.options_ = { selectfilter: '.rhizo-model:visible' };
+  this.options_ = { selectfilter: '.rhizo-model:visible',
+                    enableHTML5History: true};
   if (opt_options) {
     $.extend(this.options_, opt_options);
   }
