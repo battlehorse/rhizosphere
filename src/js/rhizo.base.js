@@ -116,9 +116,14 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   // already busy creating the whole dom).
   this.gui_.disableFx(true);
 
-  // rebuild visualization state, either from defaults or from history.
+  // Enable HTML5 history (if requested) and rebuild visualization state
+  // (either from defaults or from HTML5 history itself).
+  var bindings = [];
+  if (this.options_.enableHTML5History) {
+    bindings.push(rhizo.state.Bindings.HISTORY);
+  }
   var initialStateRebuilt = rhizo.state.getMasterOverlord().attachProject(
-      this, [rhizo.state.Bindings.HISTORY]);
+      this, bindings);
   this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
   if (!initialStateRebuilt) {
     // The state overlord is not aware of any initial state, so we initialize
