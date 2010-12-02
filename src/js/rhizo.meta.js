@@ -549,8 +549,8 @@ rhizo.meta.CategoryKind.prototype.cluster = function(modelValue) {
   if (!modelValue) {
     return {key: 'Nothing', label: 'Nothing'};
   }
-  return { key: modelValue.length == 0 ? "Nothing" : modelValue,
-           label: modelValue.length == 0 ? "Nothing" : modelValue };
+  return { key: modelValue.length == 0 ? "Nothing" : modelValue.toString(),
+           label: modelValue.length == 0 ? "Nothing" : modelValue.toString() };
 };
 
 rhizo.meta.CategoryKind.prototype.compare = function(firstValue, secondValue) {
