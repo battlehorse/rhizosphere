@@ -277,8 +277,9 @@ rhizo.layout.ScrambleLayout = function(unused_project) {};
 /**
  * Lays out models.
  *
- * @param {*} container jQuery object pointing to the HTML container where
- *     layout-specific UI elements should be added.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
  *     the layout should occur.
  * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
@@ -290,7 +291,7 @@ rhizo.layout.ScrambleLayout = function(unused_project) {};
  * @param {*} options The composition of project-wide configuration options and
  *     layout-specific ones.
  */
-rhizo.layout.ScrambleLayout.prototype.layout = function(container,
+rhizo.layout.ScrambleLayout.prototype.layout = function(pipeline,
                                                         layoutBox,
                                                         supermodels,
                                                         allmodels,
@@ -308,7 +309,7 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(container,
     var left = Math.round(layoutBox.width*0.05 +
                           Math.random()*0.85*layoutBox.width);
 
-    supermodels[i].rendering().move(top, left);
+    pipeline.move(supermodels[i].id, top, left);
   }
   return false;
 };
@@ -363,8 +364,9 @@ rhizo.layout.FlowLayout.prototype.validateState_ = function(otherState) {
 /**
  * Lays out models.
  *
- * @param {*} container jQuery object pointing to the HTML container where
- *     layout-specific UI elements should be added.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
  *     the layout should occur.
  * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
@@ -376,7 +378,7 @@ rhizo.layout.FlowLayout.prototype.validateState_ = function(otherState) {
  * @param {*} options The composition of project-wide configuration options and
  *     layout-specific ones.
  */
-rhizo.layout.FlowLayout.prototype.layout = function(container,
+rhizo.layout.FlowLayout.prototype.layout = function(pipeline,
                                                     layoutBox,
                                                     supermodels,
                                                     allmodels,
@@ -402,7 +404,7 @@ rhizo.layout.FlowLayout.prototype.layout = function(container,
       lineHeight = modelDims.height;
     }
 
-    supermodels[i].rendering().move(this.top, this.left);
+    pipeline.move(supermodels[i].id, this.top, this.left);
     this.left += modelDims.width + 5;
   }
   // adjust top after last line
@@ -477,7 +479,6 @@ rhizo.layout.FlowLayoutUI.prototype.updateState_ = function() {
 rhizo.layout.BucketLayout = function(project) {
   this.project_ = project;
   this.internalFlowLayout_ = new rhizo.layout.FlowLayout(project);
-  this.bucketHeaders_ = [];
   rhizo.layout.GUILayout.call(this, project,
                               new rhizo.layout.BucketLayoutUI(this, project));
 };
@@ -509,8 +510,9 @@ rhizo.layout.BucketLayout.prototype.validateState_ = function(otherState) {
 /**
  * Lays out models.
  *
- * @param {*} container jQuery object pointing to the HTML container where
- *     layout-specific UI elements should be added.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
  *     the layout should occur.
  * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
@@ -522,7 +524,7 @@ rhizo.layout.BucketLayout.prototype.validateState_ = function(otherState) {
  * @param {*} options The composition of project-wide configuration options and
  *     layout-specific ones.
  */
-rhizo.layout.BucketLayout.prototype.layout = function(container,
+rhizo.layout.BucketLayout.prototype.layout = function(pipeline,
                                                       layoutBox,
                                                       supermodels,
                                                       allmodels,
@@ -575,11 +577,11 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
   var firstBucket = true;
   for (var i = 0; i < bucketKeys.length; i++) {
     var bucketKey = bucketKeys[i];
-    this.renderBucketHeader_(container,
+    this.renderBucketHeader_(pipeline,
                              bucketsLabels[bucketKey],
                              buckets[bucketKey],
                              firstBucket);
-    dirty = this.internalFlowLayout_.layout(container,
+    dirty = this.internalFlowLayout_.layout(pipeline,
                                             layoutBox,
                                             buckets[bucketKey],
                                             allmodels,
@@ -597,8 +599,9 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
 /**
  * Renders a bucket header.
  *
- * @param {*} container JQuery object pointing to the container the bucket
- *     header will be appended to.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {string} header The bucket label.
  * @param {Array.<rhizo.model.SuperModel>} supermodels The supermodels that are
  *     clustered within this bucket.
@@ -607,12 +610,12 @@ rhizo.layout.BucketLayout.prototype.layout = function(container,
  * @private
  */
 rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
-    function(container, header, supermodels, firstBucket) {
+    function(pipeline, header, supermodels, firstBucket) {
   var bucketHeader = $('<div />', {
       'class': firstBucket ? 'rhizo-bucket-header rhizo-bucket-first' :
-                             'rhizo-bucket-header'}).
-      text(header);
-  bucketHeader.css('position', 'absolute').
+                             'rhizo-bucket-header'});
+  bucketHeader.text(header).
+               css('position', 'absolute').
                css('left', 5).
                css('top', this.internalFlowLayout_.top).
                click(jQuery.proxy(function() {
@@ -631,15 +634,12 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
                    }
                  }    
                }, this));
-  this.bucketHeaders_.push(bucketHeader);
-  container.append(bucketHeader);
+  pipeline.artifact(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
 };
 
 rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, options) {
   this.internalFlowLayout_.cleanup(sameEngine, options);
-  $.each(this.bucketHeaders_, function() { this.remove(); });
-  this.bucketHeaders_ = [];
   return false;
 };
 
