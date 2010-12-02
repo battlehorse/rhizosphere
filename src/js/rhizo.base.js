@@ -660,8 +660,10 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
                               options) || dirty;
   var resultLayoutBox = this.renderingPipeline_.apply();
   this.gui_.universe.css({
-      'width': resultLayoutBox.width + resultLayoutBox.left,
-      'height': resultLayoutBox.height + resultLayoutBox.top}).
+      'width': Math.max(resultLayoutBox.width + resultLayoutBox.left,
+                        this.gui_.viewport.width()),
+      'height': Math.max(resultLayoutBox.height + resultLayoutBox.top,
+                         this.gui_.viewport.height())}).
       move(0, 0);
   if (dirty || options.forcealign) {
     this.alignVisibility_();
