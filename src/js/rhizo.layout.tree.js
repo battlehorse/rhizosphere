@@ -194,8 +194,9 @@ rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
 /**
  * Lays out models.
  *
- * @param {*} container jQuery object pointing to the HTML container where
- *     layout-specific UI elements should be added.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
  *     the layout should occur.
  * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
@@ -207,7 +208,7 @@ rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
  * @param {*} options The composition of project-wide configuration options and
  *     layout-specific ones.
  */
-rhizo.layout.TreeLayout.prototype.layout = function(container,
+rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
                                                     layoutBox,
                                                     supermodels,
                                                     allmodels,
@@ -249,7 +250,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
       // Flip the drawing offset back into the gd-od coordinate set
       // and draw the tree.
       this.treePainter_.draw_(
-          container, roots[id],
+          pipeline, roots[id],
           this.treePainter_.toRelativeCoords_(drawingOffset));
 
       // update offset positions
@@ -268,13 +269,6 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
 
 rhizo.layout.TreeLayout.prototype.toString = function() {
   return "Tree";
-};
-
-rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, options) {
-  if (this.treePainter_) {
-    this.treePainter_.cleanup_();
-  }
-  return false;
 };
 
 rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
@@ -322,7 +316,6 @@ rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
  * @constructor
  */
 rhizo.layout.TreePainter = function(vertical) {
-  this.connectors_ = [];
   this.vertical_ = vertical;
 
   // translate coordinate names and distances into gd-od names
@@ -338,7 +331,7 @@ rhizo.layout.TreePainter = function(vertical) {
     this.odLength_ = 'height';
 
   }
-}
+};
 
 /**
  * Given the dimensions of a rendering, which is a DOM block element with
@@ -448,33 +441,34 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
  *
  * @private
  */
-rhizo.layout.TreePainter.prototype.draw_ = function(container,
+rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
                                                     treenode,
                                                     offset,
                                                     parentOffset,
                                                     parentNode) {
-  var r = treenode.superModel.rendering();
   var dims = treenode.renderingDimensions();
 
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
   if (this.vertical_) {
-    r.move(offset.gd + 5, offset.od);
+    pipeline.move(treenode.superModel.id, offset.gd + 5, offset.od);
 
     // draw connector if needed
     if (parentOffset != null) {
-      this.drawConnector_(container,
+      this.drawConnector_(pipeline,
         this.packedCenter_(offset, dims),
         this.packedCenter_(parentOffset,
                            parentNode.renderingDimensions()));
     }
   } else {
-    r.move(offset.od + 5,
-           offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
+    pipeline.move(
+        treenode.superModel.id,
+        offset.od + 5,
+        offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
 
     // draw connector if needed
     if (parentOffset != null) {
-      this.drawConnector_(container,
+      this.drawConnector_(pipeline,
         this.evenCenter_(offset, dims, treenode.boundingRect),
         this.evenCenter_(parentOffset,
                          parentNode.renderingDimensions(),
@@ -491,7 +485,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
       od: offset.od + this.od_(dims) + 20,
       gd: progressiveGd
     };
-    this.draw_(container, childNode, childOffset, offset, treenode);
+    this.draw_(pipeline, childNode, childOffset, offset, treenode);
     progressiveGd += childNode.boundingRect.gd + 5;
   }
 };
@@ -506,7 +500,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
  * @param parentCenter the gd-od coordinate of the center of its parent node
  * @private
  */
-rhizo.layout.TreePainter.prototype.drawConnector_ = function(container,
+rhizo.layout.TreePainter.prototype.drawConnector_ = function(pipeline,
                                                              curCenter,
                                                              parentCenter) {
   var gdCssAttrs = {position: 'absolute'};
@@ -529,15 +523,8 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(container,
                         'class': 'rhizo-tree-connector',
                         css: odCssAttrs});
 
-  this.connectors_.push(gdconnector);
-  this.connectors_.push(odconnector);
-  container.append(gdconnector);
-  container.append(odconnector);
-};
-
-rhizo.layout.TreePainter.prototype.cleanup_ = function() {
-  $.each(this.connectors_, function() { this.remove(); });
-  this.connectors_ = [];
+  pipeline.artifact(gdconnector);
+  pipeline.artifact(odconnector);
 };
 
 

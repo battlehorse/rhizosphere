@@ -188,20 +188,25 @@ rhizo.layout.treemap.RenderingBackup.prototype.restore = function(
  * @param {rhizo.layout.TreeNode} treenode The TreeNode wrapping the supermodel
  *     this TreeMapNode should bind to (the set of models to layout is converted
  *     to a tree early in the layout process, to support treemap nesting).
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {number} areaRatio The squared-pixel to area ratio, to map between
  *     area values as extracted from models and associated pixel dimensions in
  *     the layout representation.
  */
-rhizo.layout.treemap.TreeMapNode = function(treenode, areaRatio) {
+rhizo.layout.treemap.TreeMapNode = function(treenode, pipeline, areaRatio) {
   this.id = treenode.id;
+  this.pipeline_ = pipeline;
   this.model_ = treenode.superModel;
-  this.rendering_ = this.model_.rendering();
   this.area_ = treenode.area * areaRatio;
   if (isNaN(this.area_) || this.area_ < 0) {
     this.area_ = 0.0;
   }
   this.top_ = 0;
   this.left_ = 0;
+  this.width_ = 0;
+  this.height_ = 0;
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.area = function() {
@@ -209,7 +214,7 @@ rhizo.layout.treemap.TreeMapNode.prototype.area = function() {
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.rendering = function() {
-  return this.rendering_;
+  return this.model_.rendering();
 };
 
 /**
@@ -234,8 +239,7 @@ rhizo.layout.treemap.TreeMapNode.prototype.hide = function() {
 rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) {
   this.top_ = Math.round(top);
   this.left_ = Math.round(left);
-  this.rendering_.move(this.top_, this.left_);
-  this.rendering_.pushElevation('__treemap__', deepness);
+  this.pipeline_.move(this.id, this.top_, this.left_, '__treemap__', deepness);
 };
 
 /**
@@ -243,22 +247,29 @@ rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) 
  * @return {boolean} whether the resizing was successful.
  */
 rhizo.layout.treemap.TreeMapNode.prototype.resize = function(width, height) {
-  return this.rendering_.rescaleRendering(width, height);
+  if (this.model_.rendering().canRescaleTo(width, height)) {
+    this.pipeline_.resize(this.id, width, height);
+    this.width_ = width;
+    this.height_ = height;
+    return true;
+  }
+  return false;
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.colorWeighted = function(colorRange) {
   var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
   if (!isNaN(colorVal)) {
-    this.rendering_.setNakedCss(
+    this.pipeline_.style(
+        this.id,
         {backgroundColor: this.getBackgroundColor_(colorVal, colorRange)});
   }
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.color = function(color) {
-  this.rendering_.setNakedCss({backgroundColor: color});
+  this.pipeline_.style(this.id, {backgroundColor: color});
 };
 
-rhizo.layout.treemap.TreeMapNode.prototype.assignColorRange = function(colorRange) {
+rhizo.layout.treemap.TreeMapNode.prototype.updateColorRange = function(colorRange) {
   var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
   if (!isNaN(colorVal)) {
     colorRange.min = Math.min(colorRange.min, colorVal);
@@ -280,15 +291,14 @@ rhizo.layout.treemap.TreeMapNode.prototype.nestedBoundingRect = function() {
   // 39px: 4px padding, 15px header space, retain a minimum height of 20px for
   //       rendering nested contents.
 
-  var dims = this.rendering_.getDimensions();
-  if (this.isHidden() || dims.width < 24 || dims.height < 39) {
+  if (this.isHidden() || this.width_ < 24 || this.height_ < 39) {
     // Setting boundingRect dimensions to 0 will nullify areaRatio, which in turn
     // zeroes nodes' area, causing them to be hidden.
     return {width: 0, height: 0};
   } else {
     return {
-      width: dims.width - 4,  // 4px left and right padding
-      height: dims.height - 19  // 4px top/bottom padding + 15px header space
+      width: this.width_ - 4,  // 4px left and right padding
+      height: this.height_ - 19  // 4px top/bottom padding + 15px header space
     };
   }
 };
@@ -564,8 +574,9 @@ rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
 /**
  * Lays out models.
  *
- * @param {*} container jQuery object pointing to the HTML container where
- *     layout-specific UI elements should be added.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
  * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
  *     the layout should occur.
  * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
@@ -577,7 +588,7 @@ rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
  * @param {*} options The composition of project-wide configuration options and
  *     layout-specific ones.
  */
-rhizo.layout.TreeMapLayout.prototype.layout = function(container,
+rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
                                                        layoutBox,
                                                        supermodels,
                                                        allmodels,
@@ -628,6 +639,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(container,
 
   // Actual layout occurs here.
   this.numHiddenModels_ = this.layoutNestedMap_(
+      pipeline,
       {width: layoutBox.width, height: layoutBox.height},
       treeRoot,
       {x:0, y:0},
@@ -694,13 +706,24 @@ rhizo.layout.TreeMapLayout.prototype.toString = function() {
  * since every level needs bounding rectangles and anchoring information from
  * the above one.
  *
- * @param {rhizo.layout.TreeNode} treeRoot
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
+ * @param {*} boundingRect An object exposing 'width' and 'height' properties
+ *     that define the area this treemap level should cover.
+ * @param {rhizo.layout.TreeNode} treeRoot The tree node whose children are to
+ *     be laid out, in breadth-first recursive fashion.
+ * @param {*} anchorDelta An object exposing 'x' and 'y' properties identifying
+ *     the position (with respect to the overall container that contains the
+ *     whole treemap layout) to which the top-left corner of the nested bounding
+ *     rectangle should be anchored to.
+ * @param {number} deepness
  * @return {number} The number of models that this layout wants to hide because
  *     their pixel area is too small to properly display on screen.
  * @private
  */
 rhizo.layout.TreeMapLayout.prototype.layoutNestedMap_ = function(
-    boundingRect, treeRoot, anchorDelta, deepness) {
+    pipeline, boundingRect, treeRoot, anchorDelta, deepness) {
   var numHiddenModels = 0;
 
   if (treeRoot.numChilds == 0) {
@@ -708,7 +731,7 @@ rhizo.layout.TreeMapLayout.prototype.layoutNestedMap_ = function(
   }
 
   // Layout all the models at the current hierarchy level.
-  var slices = this.layoutFlatMap_(boundingRect, treeRoot);
+  var slices = this.layoutFlatMap_(pipeline, boundingRect, treeRoot);
   for (var i = 0; i < slices.length; i++) {
 
     // Draw the slices at the current level.
@@ -726,10 +749,12 @@ rhizo.layout.TreeMapLayout.prototype.layoutNestedMap_ = function(
       treenode.treemapnode = node;
 
       // Recurse
-      numHiddenModels += this.layoutNestedMap_(node.nestedBoundingRect(),
+      numHiddenModels += this.layoutNestedMap_(pipeline,
+                                               node.nestedBoundingRect(),
                                                treenode,
                                                node.nestedAnchor(),
-                                               deepness+1);
+                                               deepness+1,
+                                               pipeline);
     }
   }
   return numHiddenModels;
@@ -749,12 +774,18 @@ rhizo.layout.TreeMapLayout.prototype.sortByAreaDesc_ = function(firstTreeNode,
  * Lays out all the given models at the current hierachy according to the
  * treemap algorithm, with no nesting.
  *
- * @private
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
+ * @param {*} boundingRect An object exposing 'width' and 'height' properties
+ *     that define the area this treemap level should cover.
  * @param {rhizo.layout.TreeNode} treeRoot The tree node whose children are to
  *     be laid out.
  * @return {Array.<rhizo.layout.treemap.TreeMapSlice>}
+ * @private
  */
-rhizo.layout.TreeMapLayout.prototype.layoutFlatMap_ = function(boundingRect,
+rhizo.layout.TreeMapLayout.prototype.layoutFlatMap_ = function(pipeline,
+                                                               boundingRect,
                                                                treeRoot) {
   var slices = [];
 
@@ -796,6 +827,7 @@ rhizo.layout.TreeMapLayout.prototype.layoutFlatMap_ = function(boundingRect,
   // the algorithm.
   treenodes.sort(this.sortByAreaDesc_);
   var node = new rhizo.layout.treemap.TreeMapNode(treenodes[modelsCount++],
+                                                  pipeline,
                                                   areaRatio);
   if (node.area() <= 0.0) {
     node.hide();
@@ -804,6 +836,7 @@ rhizo.layout.TreeMapLayout.prototype.layoutFlatMap_ = function(boundingRect,
 
   while (modelsCount < treenodes.length) {
     node = new rhizo.layout.treemap.TreeMapNode(treenodes[modelsCount++],
+                                                pipeline,
                                                 areaRatio);
     if (node.area() <= 0.0) {
       node.hide();
@@ -911,12 +944,12 @@ rhizo.layout.TreeMapLayout.prototype.computeColorRange_ = function(treeNode,
     }
     if (!hasVisibleChilds) {
       if (!treeNode.is_root) {
-        treeNode.treemapnode.assignColorRange(colorRange);
+        treeNode.treemapnode.updateColorRange(colorRange);
       }
     }
   } else if (!treeNode.is_root) {
     // visible leaf node.
-    treeNode.treemapnode.assignColorRange(colorRange);
+    treeNode.treemapnode.updateColorRange(colorRange);
   }
   return true;
 };
