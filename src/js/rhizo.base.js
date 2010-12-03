@@ -68,7 +68,8 @@ rhizo.Project.prototype.metaReady = function() {
 rhizo.Project.prototype.initializeLayoutEngines_ = function() {
   this.curLayoutName_ = 'flow'; // default layout engine
   this.layoutEngines_ = {};
-  this.renderingPipeline_ = null;
+  this.renderingPipeline_ = new rhizo.ui.RenderingPipeline(
+      this, this.gui_.universe);
   for (var layoutName in rhizo.layout.layouts) {
     var engine = new rhizo.layout.layouts[layoutName](this);
     var enableEngine = true;
@@ -634,8 +635,12 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
     dirty = lastLayoutEngine.cleanup(
         lastLayoutEngine == layoutEngine, options) || dirty;
   }
-  if (this.renderingPipeline_) {
-    this.renderingPipeline_.cleanup();
+
+  this.renderingPipeline_.cleanup();
+  if (lastLayoutEngine != layoutEngine) {
+    // Restore all models to their original sizes and styles, if we are moving
+    // to a different layout engine.
+    this.renderingPipeline_.backupManager().restoreAll();
   }
 
   this.logger_.info('laying out...');
@@ -644,8 +649,6 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
   this.gui_.universe.move(0, 0, {'bottom': 0, 'right': 0});
 
   // layout only non filtered models
-  this.renderingPipeline_ = new rhizo.ui.RenderingPipeline(
-      this, this.gui_.universe);
   var freeModels = jQuery.grep(this.models_, function(model) {
     return model.isAvailableForLayout();
   });

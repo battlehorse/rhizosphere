@@ -122,12 +122,19 @@ rhizo.ui.RenderingOp = {
  * Typically used to accumulate all operations that are part of a layout
  * request.
  *
+ * A RenderingPipeline by default keeps backup copies of the renderings
+ * it modifies and subsequently restore them.
+ * See also rhizo.ui.RenderingBackupManager.
+ *
  * @param {rhizo.Project} project The visualization project.
  * @param {*} container The jQuery object pointing to a container where
  *     rendering artifacts will be added (typically the visualization universe).
  * @constructor
  */
 rhizo.ui.RenderingPipeline = function(project, container) {
+  this.project_ = project;
+  this.container_ = container;
+
   /**
    * Maps model ids to the list of operations to be applied onto them.
    * @type {Object.<*, Array.<*>>}
@@ -152,8 +159,58 @@ rhizo.ui.RenderingPipeline = function(project, container) {
    */
   this.artifactLayer_ = $('<div />').
       css('visibility', 'hidden').
-      appendTo(container);
-  this.project_ = project;
+      appendTo(this.container_);
+
+  this.backupEnabled_ = true;
+  this.backupManager_ = new rhizo.ui.RenderingBackupManager();
+};
+
+/**
+ * Clears the pipeline.
+ */
+rhizo.ui.RenderingPipeline.prototype.cleanup = function() {
+  this.artifactLayer_.remove();
+  this.artifactLayer_ = $('<div />').
+      css('visibility', 'hidden').
+      appendTo(this.container_);
+
+  this.artifacts_ = [];
+  this.renderingOps_ = {};
+};
+
+/**
+ * @return {?rhizo.ui.RenderingBackupManager} The backup manager associated
+ *     to the pipeline, if backups are enabled.
+ */
+rhizo.ui.RenderingPipeline.prototype.backupManager = function() {
+  return this.backupEnabled_ ? this.backupManager_ : null;
+};
+
+/**
+ * Enables or disables backup functionality for the pipeline. Backups are
+ * enabled by default.
+ *
+ * @param {boolean} enabled Whether to enable or disable backups.
+ */
+rhizo.ui.RenderingPipeline.prototype.setBackupEnabled = function(enabled) {
+  if (!enabled) {
+    this.backupManager_.clear();
+  }
+  this.backupEnabled_ = enabled;
+};
+
+/**
+ * If backups are enabled, backs up the given model.
+ * @param {*} modelId The id of the model to backup.
+ * @return {boolean} if the model rendering was added to the backups.
+ * @private
+ */
+rhizo.ui.RenderingPipeline.prototype.backup_ = function(modelId) {
+  if (this.backupEnabled_) {
+    return this.backupManager_.backup(
+        modelId, this.project_.model(modelId).rendering());
+  }
+  return false;
 };
 
 /**
@@ -194,6 +251,7 @@ rhizo.ui.RenderingPipeline.prototype.move = function(
     left: left
   };
   if (opt_elevation_key !== undefined && opt_elevation_value !== undefined) {
+    this.backup_(modelId);
     op.elevation = {key: opt_elevation_key, value: opt_elevation_value};
   }
   modelOps.push(op);
@@ -202,6 +260,8 @@ rhizo.ui.RenderingPipeline.prototype.move = function(
 
 /**
  * Appends a rendering resize request to the current pipeline.
+ * The method assumes that the rendering accepts resizing to the given size,
+ * as defined by rhizo.ui.Rendering.prototype.canRescaleTo().
  *
  * @param {*} modelId The id of the model to resize.
  * @param {number} width The width (in pixels) the rendering should be resized
@@ -211,6 +271,7 @@ rhizo.ui.RenderingPipeline.prototype.move = function(
  * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
  */
 rhizo.ui.RenderingPipeline.prototype.resize = function(modelId, width, height) {
+  this.backup_(modelId);
   this.getModelOps_(modelId).push({
     op: rhizo.ui.RenderingOp.RESIZE,
     width: width,
@@ -228,6 +289,7 @@ rhizo.ui.RenderingPipeline.prototype.resize = function(modelId, width, height) {
  * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
  */
 rhizo.ui.RenderingPipeline.prototype.style = function(modelId, styleProps) {
+  this.backup_(modelId);
   this.getModelOps_(modelId).push({
     op: rhizo.ui.RenderingOp.STYLE,
     styleProps: styleProps
@@ -255,13 +317,6 @@ rhizo.ui.RenderingPipeline.prototype.style = function(modelId, styleProps) {
 rhizo.ui.RenderingPipeline.prototype.artifact =  function(artifact) {
   this.artifactLayer_.append(artifact);
   return this;
-};
-
-/**
- * Removes all artifacts that were added to the pipeline.
- */
-rhizo.ui.RenderingPipeline.prototype.cleanup = function() {
-  this.artifactLayer_.remove();
 };
 
 /**
@@ -349,6 +404,187 @@ rhizo.ui.RenderingPipeline.prototype.computeBoundingRectangleArea_ = function(
 
 
 /**
+ * A backup manager saves Renderings original attributes and restores them once
+ * any applied change is no longer needed.
+ *
+ * Backup managers are used to revert the changes pushed onto renderings by
+ * the execution of RenderingPipelines.
+ *
+ * Rendering pipelines, used by layout operations, may affect the aspect
+ * of Renderings, such as their size or styles (in contrast with only changing
+ * their position), which will then be restored once the layout changes.
+ *
+ * A backup manager can be preserved through multiple consequent executions
+ * of a RenderingPipeline. Depending on the condition:
+ * - Only the delta of models between the two executions is restored
+ *   (removed from backup models) or added to the set (such as when the same
+ *   layout is applied twice).
+ * - All backup models are restored (see restoreAll()).
+ * - when a new RenderingPipeline is created, the set of associated backup
+ *   models is initially empty and populated during the pipeline buildup.
+ *
+ * @constructor
+ */
+rhizo.ui.RenderingBackupManager = function() {
+
+  /**
+   * @type {Object.<string, rhizo.layout.treemap.RenderingBackup>}
+   * @private
+   */
+  this.renderingBackups_ = {};
+  this.numBackups_ = 0;
+};
+
+/**
+ * Clears all the currently stored backups, without restoring them.
+ */
+rhizo.ui.RenderingBackupManager.prototype.clear = function() {
+  this.renderingBackups_ = {};
+  this.numBackups_ = 0;
+};
+
+/**
+ * Adds a new rendering to the backup, if it is not already in there.
+ * @param {*} mid The unique id of the model bound to this rendering.
+ * @param {rhizo.ui.Rendering} rendering The rendering to backup.
+ * @return {boolean} if the rendering was added to the backups.
+ */
+rhizo.ui.RenderingBackupManager.prototype.backup = function(
+    mid, rendering) {
+  if (!(mid in this.renderingBackups_)) {
+    this.renderingBackups_[mid] =
+        new rhizo.ui.RenderingBackup(rendering);
+    this.numBackups_++;
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Removes a rendering from the backup (if present) without restoring it.
+ * @param {string} mid The id of the model whose rendering is to remove.
+ */
+rhizo.ui.RenderingBackupManager.prototype.removeBackup = function(
+    mid) {
+  if (mid in this.renderingBackups_) {
+    delete this.renderingBackups_[mid];
+    this.numBackups_--;
+  }
+};
+
+/**
+ * Partially restores the set of currently backed up models by comparing the
+ * backups stored so far and all the models the are potentially going to be
+ * affected. All the models that are in the former set but not in the latter
+ * will be restored.
+ *
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of models that will
+ *     be (potentially) affected from now on.
+ * @param {boolean} styleReset Whether we are still required to restore all
+ *     style changes on all backed up models.
+ */
+rhizo.ui.RenderingBackupManager.prototype.restore = function(
+      supermodels, styleReset) {
+  if (this.numBackups_ > 0) {
+    var survivingModelIds = {};
+    for (var i = 0; i < supermodels.length; i++) {
+      survivingModelIds[supermodels[i].id] = true;
+    }
+    var restorableModels = {};
+    for (var mid in this.renderingBackups_) {
+      if (!(mid in survivingModelIds)) {
+        restorableModels[mid] = true;
+      }
+    }
+    this.restoreInternal_(restorableModels, true, true, true);
+
+    if (styleReset) {
+      this.restoreInternal_(
+          this.renderingBackups_,
+          /*sizes=*/ false, /*elevation=*/ false, /*styles=*/ true);
+    }
+  }
+};
+
+/**
+ * Restores all the backups.
+ */
+rhizo.ui.RenderingBackupManager.prototype.restoreAll = function() {
+  this.restoreInternal_(this.renderingBackups_, true, true, true);
+  this.renderingBackups_ = {};  // just in case.
+  this.numBackups_ = 0;
+};
+
+/**
+ * Restores a specified set of models from their backups.
+ * @param {Object<*, rhizo.ui.RenderingBackup>} modelsMap A map of models to
+ *     restore, mapping from the model id to the associated backup.
+ * @param {boolean} restoreSizes Whether to restore the size of the rendering.
+ * @param {boolean} restoreElevation Whether to restore the rendering elevation
+ *     map.
+ * @param {boolean} restoreStyles Whether to restore the styles of the
+ *     rendering.
+ * @private
+ */
+rhizo.ui.RenderingBackupManager.prototype.restoreInternal_ =
+    function(modelsMap, restoreSizes, restoreElevation, restoreStyles) {
+  for (var mid in modelsMap) {
+    this.renderingBackups_[mid].restore(restoreSizes,
+                                        restoreElevation,
+                                        restoreStyles);
+    if (restoreSizes && restoreElevation && restoreStyles) {
+      delete this.renderingBackups_[mid];
+      this.numBackups_--;
+    }
+  }
+};
+
+
+/**
+ * A wrapper around a supermodel Rendering to backup relevant attributes that
+ * will need to be restored once we clean up a RenderingPipeline.
+ *
+ * @param {rhizo.ui.Rendering} rendering The rendering to backup.
+ * @constructor
+ */
+rhizo.ui.RenderingBackup = function(rendering) {
+  this.rendering_ = rendering;
+  this.originalDimensions_ = jQuery.extend({}, rendering.getDimensions());
+
+  // NOTE: background-color is the only style that Rhizosphere layouts and
+  // RenderingPipelines actually change, so we take the shortcut here of
+  // tracking the initial value of just this style attribute.
+  this.originalBackground_ = rendering.nakedCss('background-color');
+
+  this.originalElevation_ = this.rendering_.cloneElevation();
+};
+
+/**
+ * Restores the model managed by this backup.
+ * @param {boolean} restoreSizes Whether to restore the size of the rendering.
+ * @param {boolean} restoreElevation Whether to restore the rendering elevation
+ *     map.
+ * @param {boolean} restoreStyles Whether to restore the styles of the
+ *     rendering.
+ */
+rhizo.ui.RenderingBackup.prototype.restore = function(
+    restoreSizes, restoreElevation, restoreStyles) {
+  if (restoreStyles) {
+    this.rendering_.setNakedCss({backgroundColor: this.originalBackground_},
+                                /* revert hint */ true);
+  }
+  if (restoreSizes) {
+    this.rendering_.rescaleRendering(this.originalDimensions_.width,
+                                     this.originalDimensions_.height);
+
+  }
+  if (restoreElevation) {
+    this.rendering_.restoreElevation(this.originalElevation_);
+  }
+};
+
+
+/**
  * Manages a max-heap of renderings' named elevations (z-indexes when applied to
  * HTML elements). A rendering can be raised to different elevations, with
  * the highest one being the one that is effectively used.
@@ -364,6 +600,13 @@ rhizo.ui.Elevation = function() {
   // An offset that will always be added to the returned elevation values.
   // Should match the base z-index used by Rhizosphere models.
   this.elevation_offset_ = 50;
+};
+
+rhizo.ui.Elevation.prototype.clone = function() {
+  var el = new rhizo.ui.Elevation();
+  el.elevations_ = $.extend({}, this.elevations_);
+  el.elevation_top_ = this.elevation_top_;
+  return el;
 };
 
 /**
@@ -781,6 +1024,31 @@ rhizo.ui.Rendering.prototype.popElevation = function(elevation_key) {
         'z-index',
         this.elevation_.empty() ? '' : this.elevation_.top());
   }
+};
+
+/**
+ * Returns a clone of the rendering current elevation map.
+ *
+ * This method is intended for internal use only by the rendering backup
+ * features.
+ *
+ * @return {rhizo.ui.Elevation} A clone of the rendering current elevation map.
+ */
+rhizo.ui.Rendering.prototype.cloneElevation = function() {
+  return this.elevation_.clone();
+};
+
+/**
+ * Replaces the rendering current elevation map with another one, adjusting the
+ * rendering z-index as a consequence.
+ *
+ * @param {rhizo.ui.Elevation} elevation The new Rendering elevation map to use.
+ */
+rhizo.ui.Rendering.prototype.restoreElevation = function(elevation) {
+  this.elevation_ = elevation;
+  this.raw_node_.css(
+      'z-index',
+      this.elevation_.empty() ? '' : this.elevation_.top());
 };
 
 /**
