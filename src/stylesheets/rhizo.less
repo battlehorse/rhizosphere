@@ -353,6 +353,32 @@
 }
 
 /******************
+  Layout controls, and related tweaks
+ *****************/
+.rhizo-layout-control {
+  white-space: nowrap;
+}
+
+.rhizo-layout-control LABEL {
+  min-width: 5em;
+  display: inline-block;
+}
+
+/* When inside a floating panel */
+.rhizo-floating-panel .rhizo-layout-extra-options {
+  margin-top: 3px;
+}
+
+.rhizo-floating-panel .rhizo-layout-control {
+  display: inline-block;
+  margin-right: 0.3em;
+}
+
+.rhizo-floating-panel .rhizo-layout-control LABEL {
+  min-width: 0;
+}
+
+/******************
   Filters, and related tweaks
  *****************/
 .rhizo-filter {
@@ -385,10 +411,6 @@
 /* When inside a floating panel */
 .rhizo-floating-panel .rhizo-slider {
   margin-right: 5px;
-}
-
-.rhizo-floating-panel .rhizo-layout-extra-options {
-  margin-top: 3px;
 }
 
 .rhizo-floating-panel .rhizo-filter {
