@@ -45,6 +45,11 @@ To define a new meta-type:
   Returns negative, 0, or positive number if the first element is smaller,
   equal or bigger than the second.
 
+- implement a toFilterScale() / toModelScale() function pair (optional).
+  Define how to convert the scale of model values respectively to/from a user
+  facing scale. For example, a logarithmic conversion may be applied to
+  normalize model values that span a range that would otherwise be too wide.
+
 - update the rhizo.meta.Kind structure.
 */
 
@@ -295,11 +300,11 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
   this.metadataMin_ = metadata.min;
   this.metadataMax_ = metadata.max;
 
-  var minFilterScale = this.toFilterScale_(metadata.min);
-  var maxFilterScale = this.toFilterScale_(metadata.max);
+  var minFilterScale = this.toFilterScale(metadata.min);
+  var maxFilterScale = this.toFilterScale(metadata.max);
   var steppingFilterScale;
   if (metadata.stepping) {
-    steppingFilterScale = this.toFilterScale_(metadata.stepping);
+    steppingFilterScale = this.toFilterScale(metadata.stepping);
   }
 
   // wrap slide handler into a closure to preserve access to the RangeKind
@@ -308,14 +313,14 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
       if (ui.values[0] != minFilterScale) {
         // min slider has moved
         this.minLabel_.
-            text(this.toHumanLabel_(this.toModelScale_(ui.values[0]))).
+            text(this.toHumanLabel_(this.toModelScale(ui.values[0]))).
             addClass("rhizo-slider-moving");
         this.maxLabel_.removeClass("rhizo-slider-moving");
       }
       if (ui.values[1] != maxFilterScale) {
         // max slider has moved
         this.maxLabel_.
-            text(this.toHumanLabel_(this.toModelScale_(ui.values[1]))).
+            text(this.toHumanLabel_(this.toModelScale(ui.values[1]))).
             addClass("rhizo-slider-moving");
         this.minLabel_.removeClass("rhizo-slider-moving");
       }
@@ -324,8 +329,8 @@ rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
   // wrap change handler into a closure to preserve access to the RangeKind
   // filter.
   var stopCallback = jQuery.proxy(function(ev, ui) {
-      var minSlide = Math.max(this.toModelScale_(ui.values[0]), metadata.min);
-      var maxSlide = Math.min(this.toModelScale_(ui.values[1]), metadata.max);
+      var minSlide = Math.max(this.toModelScale(ui.values[0]), metadata.min);
+      var maxSlide = Math.min(this.toModelScale(ui.values[1]), metadata.max);
       this.minLabel_.text(this.toHumanLabel_(minSlide)).removeClass(
           "rhizo-slider-moving");
       this.maxLabel_.text(this.toHumanLabel_(maxSlide)).removeClass(
@@ -365,7 +370,7 @@ rhizo.meta.RangeKind.prototype.setFilterValue = function(value) {
   this.maxLabel_.text(this.toHumanLabel_(value.max));
   this.slider_.slider(
       'values',
-      [this.toFilterScale_(value.min), this.toFilterScale_(value.max)]);
+      [this.toFilterScale(value.min), this.toFilterScale(value.max)]);
 };
 
 /**
@@ -392,26 +397,26 @@ rhizo.meta.RangeKind.prototype.isNumeric =
     rhizo.meta.NumberKind.prototype.isNumeric;
 
 /**
-   Converts a value as returned from the slider into a value in the model range.
-   This method, and the subsequent one, are particularly useful when the range
-   of Model values is not suitable for a slider (which accepts only integer
-   ranges). For example, when dealing with small decimal scales.
-
-   The default implementation of this method is a no-op. Custom filters
-   extending the range slider should customize this method according to their
-   needs.
-   @param {number} filterValue the value received from the filter.
+ * Converts a value as returned from the slider into a value in the model range.
+ * This method, and the subsequent one, are particularly useful when the range
+ * of Model values is not suitable for a slider (which accepts only integer
+ * ranges). For example, when dealing with small decimal scales.
+ *
+ * The default implementation of this method is a no-op. Custom filters
+ * extending the range slider should customize this method according to their
+ * needs.
+ * @param {number} filterValue the value received from the filter.
  */
-rhizo.meta.RangeKind.prototype.toModelScale_ = function(filterValue) {
+rhizo.meta.RangeKind.prototype.toModelScale = function(filterValue) {
   return filterValue;
 };
 
 /**
-   Converts a value as read from the model into a value in the slider scale.
-   This is the inverse method of the previous one.
-   @param {number} modelValue the value received from the model.
+ * Converts a value as read from the model into a value in the slider scale.
+ * This is the inverse method of the previous one.
+ * @param {number} modelValue the value received from the model.
  */
-rhizo.meta.RangeKind.prototype.toFilterScale_ = function(modelValue) {
+rhizo.meta.RangeKind.prototype.toFilterScale = function(modelValue) {
   return modelValue;
 };
 

@@ -96,12 +96,12 @@ rhizo.meta.DecimalRangeKind.prototype.compare =
 rhizo.meta.DecimalRangeKind.prototype.cluster =
     rhizo.meta.DecimalKind.prototype.cluster;
 
-rhizo.meta.DecimalRangeKind.prototype.toModelScale_ = function(filterValue) {
+rhizo.meta.DecimalRangeKind.prototype.toModelScale = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
   return parseFloat((filterValue / this.scale_).toFixed(this.precision_));
 };
 
-rhizo.meta.DecimalRangeKind.prototype.toFilterScale_ = function(modelValue) {
+rhizo.meta.DecimalRangeKind.prototype.toFilterScale = function(modelValue) {
   return Math.round(modelValue * this.scale_);
 };
 
@@ -120,14 +120,14 @@ rhizo.meta.LogarithmRangeKind = function(opt_precision, opt_oneplus) {
 };
 rhizo.inherits(rhizo.meta.LogarithmRangeKind, rhizo.meta.DecimalRangeKind);
 
-rhizo.meta.LogarithmRangeKind.prototype.toModelScale_ = function(filterValue) {
+rhizo.meta.LogarithmRangeKind.prototype.toModelScale = function(filterValue) {
   // toFixed() returns a string, hence the need to parseFloat()
   var delta = this.oneplus_ ? -1 : 0;
   return parseFloat(
     Math.pow(10, filterValue / this.scale_).toFixed(this.precision_)) +  delta;
 };
 
-rhizo.meta.LogarithmRangeKind.prototype.toFilterScale_ = function(modelValue) {
+rhizo.meta.LogarithmRangeKind.prototype.toFilterScale = function(modelValue) {
   modelValue = this.oneplus_ ? modelValue+1 : modelValue;
   return Math.round(rhizo.util.log10_(modelValue) * this.scale_);
 };
