@@ -187,13 +187,16 @@ rhizo.layout.treemap.TreeMapNode.prototype.nestedAnchor = function() {
  */
 rhizo.layout.treemap.TreeMapNode.prototype.getBackgroundColor_ = function(
     colorVal, colorRange) {
+  var rescaler = colorRange.kind.toFilterScale ?
+      jQuery.proxy(colorRange.kind.toFilterScale, colorRange.kind) :
+      function(val) { return val; };
   var channels = ['r', 'g', 'b'];
   var outputColor = {};
   for (var i = 0; i < channels.length; i++) {
     var channel = channels[i];
     outputColor[channel] = colorRange.colorMin[channel] +
       (colorRange.colorMax[channel] - colorRange.colorMin[channel])*
-      (colorVal - colorRange.min)/(colorRange.max - colorRange.min);
+      (rescaler(colorVal) - rescaler(colorRange.min))/(rescaler(colorRange.max) - rescaler(colorRange.min));
   }
   return 'rgb(' + Math.round(outputColor.r) + ',' +
       Math.round(outputColor.g) + ',' +
@@ -510,6 +513,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
       min: Number.MAX_VALUE,
       max: Number.MIN_VALUE,
       meta: colorMeta,
+      kind: this.project_.metaModel()[colorMeta].kind,
       colorMin: {r: 237, g: 76, b: 95},
       colorMax: {r: 122, g: 255, b: 115},
       colorGroup: 'transparent'
