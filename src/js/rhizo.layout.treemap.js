@@ -882,9 +882,8 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
     append("<option value=''>-</option>").
     change(jQuery.proxy(this.updateState_, this));
   details.
-      append("Area: ").append(this.areaSelector_).
-      append(" Color:").append(this.colorSelector_);
-
+      append(this.renderSelector_('Area: ', this.areaSelector_)).
+      append(this.renderSelector_('Color: ', this.colorSelector_));
   if (hasParentKeys) {
     this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
         this.project_,
@@ -892,11 +891,23 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
         rhizo.layout.parentMatcher).
       append("<option value=''>-</option>").
       change(jQuery.proxy(this.updateState_, this));
-
-    details.append(" Parent: ").append(this.parentKeySelector_);
+    details.append(this.renderSelector_('Parent: ', this.parentKeySelector_));
   }
-
   return details;
+};
+
+/**
+ * Renders an option selector, by grouping together a label and a combobox in
+ * a single element.
+ * @param {string} label Text label to associate to the SELECT element.
+ * @param {*} selector jQuery object pointing to a SELECT element.
+ * @return {*} JQuery object pointing to the grouped control.
+ * @private
+ */
+rhizo.layout.TreeMapLayoutUI.prototype.renderSelector_ = function(
+    label, selector) {
+  return $('<div />', {'class': 'rhizo-layout-control'}).
+      append($('<label />').text(label)).append(selector);
 };
 
 /**
