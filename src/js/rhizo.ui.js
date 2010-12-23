@@ -517,7 +517,7 @@ rhizo.ui.RenderingBackupManager.prototype.restoreAll = function() {
 
 /**
  * Restores a specified set of models from their backups.
- * @param {Object<*, rhizo.ui.RenderingBackup>} modelsMap A map of models to
+ * @param {Object.<*, rhizo.ui.RenderingBackup>} modelsMap A map of models to
  *     restore, mapping from the model id to the associated backup.
  * @param {boolean} restoreSizes Whether to restore the size of the rendering.
  * @param {boolean} restoreElevation Whether to restore the rendering elevation
