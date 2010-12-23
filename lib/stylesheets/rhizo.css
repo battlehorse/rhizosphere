@@ -30,6 +30,11 @@
 .rhizo-logo P{margin:0;padding:0;display:none;}
 .rhizo-floating-panel.rhizo-logo P{display:block;}
 .rhizo-floating-panel.rhizo-logo H1{cursor:auto;padding-top:0.5em;}
+.rhizo-layout-control{white-space:nowrap;}
+.rhizo-layout-control LABEL{min-width:5em;display:inline-block;}
+.rhizo-floating-panel .rhizo-layout-extra-options{margin-top:3px;}
+.rhizo-floating-panel .rhizo-layout-control{display:inline-block;margin-right:0.3em;}
+.rhizo-floating-panel .rhizo-layout-control LABEL{min-width:0;}
 .rhizo-filter{padding:4px 0 5px 5px;border-bottom:1px solid #bbbbbb;clear:both;}
 .rhizo-filter-container .rhizo-filter SELECT{max-width:250px;}
 .rhizo-filter-selector{width:100%;}
@@ -37,7 +42,6 @@
 .rhizo-slider-label{font-weight:bold;}
 .rhizo-slider{margin:5px 30px 0 5px;}
 .rhizo-floating-panel .rhizo-slider{margin-right:5px;}
-.rhizo-floating-panel .rhizo-layout-extra-options{margin-top:3px;}
 .rhizo-floating-panel .rhizo-filter{margin-top:0;padding:0 4px;border:0;height:100%;width:80%;clear:left;}
 .rhizo-floating-panel.rhizo-filter-container{overflow:hidden;}
 .rhizo-floating-panel.rhizo-filter-container .rhizo-filter SELECT{max-height:190px;}
@@ -61,7 +65,7 @@
 .rhizo-device-ipad .rhizo-selection-trigger{width:20px;height:20px;}
 .rhizo-selection-trigger:hover{background-color:#ffee88;cursor:pointer;}
 .rhizo-selection-mode .rhizo-selection-trigger{background-color:#ffee88;}
-.rhizo-selection-mode{background-color:#d9f2db !important;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#d9f2db), to(#c8e1ca)) !important;background-image:-moz-linear-gradient(-90deg, #d9f2db, #c8e1ca) !important;cursor:crosshair !important;}
+.rhizo-viewport.rhizo-selection-mode{background-color:#d9f2db !important;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#d9f2db), to(#c8e1ca)) !important;background-image:-moz-linear-gradient(-90deg, #d9f2db, #c8e1ca) !important;cursor:crosshair !important;}
 .rhizo-actions{margin-top:5px;}
 .rhizo-action{border:1px solid #6391de;-moz-border-radius:3px;border-radius:3px;margin-top:5px;background-color:#ffffff;height:40px;padding-top:20px;text-align:center;}
 .rhizo-action:hover{cursor:pointer;}
@@ -110,10 +114,9 @@
 .ar-col-4m,.ar-col-4{padding:3px;background-color:#C3FCCA;}
 .ar-col-5m,.ar-col-5{padding:3px;background-color:#B1FCCA;}
 .ar-col-legend{border:1px solid #6391de;}
-.rhizo-broadcast P{margin:0;vertical-align:middle;}
+.rhizo-broadcast P{margin-top:0;margin-left:0;margin-right:0;vertical-align:middle;}
 .rhizo-broadcast BUTTON{float:right;}
 .rhizo-broadcast-url{font-size:0.9em;width:19em;display:none;}
-.rhizo-platform-mobile .rhizo-bottom-bar .rhizo-maximize-icon{display:none;}
 .rhizo-template-bottom .rhizo-viewport{left:0;right:0;}
 .rhizo-template-bottom .rhizo-bucket-header{font-size:1.2em;margin-bottom:3px;width:160px;}
 .rhizo-template-bottom .rhizo-selection-trigger{top:0;}
