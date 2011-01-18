@@ -17,6 +17,34 @@
 // RHIZODEP=rhizo.meta,rhizo.autorender
 namespace("rhizo.gviz");
 
+/**
+ * Wrapper to expose Rhizosphere as a Google Visualization.
+ *
+ * @param {HTMLElement} container The element that will contain the
+ *    visualization.
+ * @constructor
+ */
+rhizo.gviz.Rhizosphere = function(container) {
+  this.container_ = container;
+};
+
+/**
+ *
+ * @param {google.visualization.DataTable} datatable
+ * @param {*} opt_options
+ */
+rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
+  var bootstrapper = new rhizo.bootstrap.Bootstrap(this.container_, opt_options);
+
+  // TODO(battlehorse): replace with proper logger.
+  var logger = {warn: function() {}};
+  var initializer = new rhizo.gviz.Initializer(datatable, logger, opt_options);
+  bootstrapper.prepare();
+  bootstrapper.deployExplicit(initializer.metamodel,
+                              initializer.renderer,
+                              initializer.models);
+};
+
 rhizo.gviz.Initializer = function(dataTable,
                                   logger,
                                   opt_options,
@@ -24,7 +52,12 @@ rhizo.gviz.Initializer = function(dataTable,
   this.dt_ = dataTable;
   this.logger_ = logger;
   this.options_ = opt_options || {};
-  this.customRenderer_ = opt_customRenderer;
+  
+  if (this.options_.renderer) {
+	  this.customRenderer_ = this.options_.renderer;
+  } else {
+	  this.customRenderer_ = opt_customRenderer;
+  }
 
   this.init_();
 };
