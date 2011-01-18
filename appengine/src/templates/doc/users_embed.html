@@ -26,24 +26,24 @@
 <p class="note">
   <strong>Note</strong>. When using the following snippets in your webpages
   remember to change the URLs to point to your domain instead of
-  <code>rhizospherejs.appspot.com</code>.
+  <code>www.rhizospherejs.com</code>.
 </p>
 <pre class="prettyprint lang-html">
 ...
 &lt;head&gt;
   &lt;link rel="stylesheet"
-        href="http://rhizospherejs.appspot.com/static/shared/stylesheets/jquery-ui-1.8.4.custom.css"
+        href="http://www.rhizospherejs.com/static/shared/stylesheets/jquery-ui-1.8.6.custom.css"
         type="text/css"&gt;
   &lt;link rel="stylesheet" 
-        href="http://rhizospherejs.appspot.com/static/lib/stylesheets/rhizo.css"
+        href="http://www.rhizospherejs.com/static/lib/stylesheets/rhizo.css"
         type="text/css"&gt;
-  &lt;script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-1.4.2.min.js"
+  &lt;script src="http://www.rhizospherejs.com/static/shared/js/jquery-1.4.4.min.js"
           type="text/javascript"
           charset="utf-8"&gt;&lt;/script&gt;
-  &lt;script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-ui-1.8.4.custom.min.js"
+  &lt;script src="http://www.rhizospherejs.com/static/shared/js/jquery-ui-1.8.6.custom.min.js"
           type="text/javascript"
           charset="utf-8"&gt;&lt;/script&gt;
-  &lt;script src="http://rhizospherejs.appspot.com/static/lib/js/rhizo.pack.js"
+  &lt;script src="http://www.rhizospherejs.com/static/lib/js/rhizo.pack.js"
           type="text/javascript"
           charset="utf-8"&gt;&lt;/script&gt;
 &lt;/head&gt;
@@ -110,7 +110,7 @@
   the URI of the datasource that cointains the items that you want to visualize.
   Rhizosphere support various datasources: this includes Google Spreadsheets,
   Google Visualization API datasources and plain javascript files written
-  according to Rhizosphere own <a href="users_jsformat.html">data format</a>.
+  according to Rhizosphere own <a href="/doc/users_jsformat.html">data format</a>.
 </p>
 <p>
   For example, if you want to use a Google Spreadsheet as datasource, first
@@ -137,7 +137,7 @@ http://spreadsheets.google.com/tq?range=A1:K14&amp;headers=-1&amp;key=0Av88pFrCT
   initialization options as its second parameter, after the container
   specification. You can use these options to tune Rhizosphere behavior.
   You can find a complete list of supported options in the
-  <a href="contrib_tables.html">Reference tables</a>.
+  <a href="/doc/contrib_tables.html">Reference tables</a>.
 </p>
 <p>
   Here is an example of passing initialization options to the bootstrapper:
@@ -145,7 +145,7 @@ http://spreadsheets.google.com/tq?range=A1:K14&amp;headers=-1&amp;key=0Av88pFrCT
 <pre class="prettyprint lang-js">
 var init_options = {
   cacheDimensions: true,
-  noAnims: true
+  enableAnims: false
 };
 var datasource_uri = '...';  // your datasource here
 var bootstrapper = new rhizo.bootstrap.Bootstrap(
@@ -189,8 +189,8 @@ bootstrapper.prepareAndDeploy(datasource_uri);
   <dd>
     Initializes a Rhizosphere visualization by explicitly declaring the models,
     metamodels and renderer the visualization must use. Refer to
-    <a href="devel_concepts.html">Concepts</a> and 
-    <a href="users_jsformat.html">Rhizosphere data format</a> for details about
+    <a href="/doc/devel_concepts.html">Concepts</a> and
+    <a href="/doc/users_jsformat.html">Rhizosphere data format</a> for details about
     the expected parameters. <br />
     <code>rhizo.bootstrap.Bootstrap.prepare()</code> must be invoked before
     calling this method.
@@ -228,18 +228,18 @@ bootstrapper.prepareAndDeploy(datasource_uri);
 <pre class="prettyprint lang-html">
 &lt;html&gt;
   &lt;head&gt;
-    &lt;script type="text/javascript" src="http://www.google.com/jsapi"&gt;&lt;/script&gt;
+    <strong>
+    &lt;!-- Early loading of the Google Visualization API libraries --&gt;
+    &lt;script
+      type="text/javascript"
+      src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"&gt;
+    &lt;/script&gt;
+    </strong>
     ...
   &lt;/head&gt;
   &lt;body&gt;
     ...
     &lt;script&gt;
-      // Early loading of the Google Visualization API libraries
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-      
       $(document).ready(function() {
         var datasource_uri = '...';  // your datasource here.
         var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
@@ -249,6 +249,13 @@ bootstrapper.prepareAndDeploy(datasource_uri);
   &lt;/body&gt;
 &lt;/html&gt;
 </pre>
+
+<p class="note">
+  <strong>Note</strong>. The <code>src</code> URL of the script that loads the
+  Google Visualization API should be fully urlencoded. The above URL,
+  for example, reads:
+  <code>http://www.google.com/jsapi?autoload={modules:[{name:visualization,version:1}]}</code>
+</p>
 
 <h3>Iframing</h3>
 <p>
@@ -323,6 +330,6 @@ bootstrapper.prepareAndDeploy(datasource_uri);
 <h2>Next ...</h2>
 <p>
   Learn more about Rhizosphere internals browsing the
-  <a href="devel_overview.html">library reference documentation</a>.
+  <a href="/doc/devel_overview.html">library reference documentation</a>.
 </p>
 {% endblock %}

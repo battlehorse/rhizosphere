@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.ui.component
+// RHIZODEP=rhizo.ui.component,rhizo
 // GUI Namespace
 namespace("rhizo.ui.gui");
 
@@ -26,7 +26,7 @@ namespace("rhizo.ui.gui");
  * @param {string} platform The platform we are currently running on (e.g.:
  *     'mobile', 'default' ... ).
  * @param {string} device The device we are currently running on (e.g.:
- *     'ipad', 'iphone', 'default' ... ).
+ *     'ipad', 'iphone', 'android', 'default' ... ).
  * @constructor
  */
 rhizo.ui.gui.GUI = function(container, platform, device) {
@@ -46,7 +46,6 @@ rhizo.ui.gui.GUI = function(container, platform, device) {
   // by Rhizosphere. A universe must always exist in a Rhizosphere
   // visualization.
   this.universe = null;
-  this.universeTargetPosition_ = {top: 0, left: 0};
 
   // The viewport component defines which part of the universe is visible to
   // the user. The universe may be bigger than the current visible area,
@@ -67,7 +66,8 @@ rhizo.ui.gui.GUI = function(container, platform, device) {
 };
 
 rhizo.ui.gui.GUI.prototype.done = function() {
-  if (/kb=(true|yes|1)/.test(document.location.href)) {
+  var kbParam = rhizo.util.urlParams()['kb'];
+  if (kbParam && /true|yes|1/.test(kbParam)) {
     this.activateOnscreenKeyboard();
   }
 };
@@ -155,22 +155,6 @@ rhizo.ui.gui.GUI.prototype.toggleSelectionMode = function() {
 
 rhizo.ui.gui.GUI.prototype.disableFx = function(disabled) {
   this.noFx = disabled;
-};
-
-rhizo.ui.gui.GUI.prototype.moveUniverse = function(position) {
-  this.universeTargetPosition_ = {top: position.top, left: position.left};
-  this.universe.stop().css(this.universeTargetPosition_);
-};
-
-rhizo.ui.gui.GUI.prototype.panUniverse = function(yMagnitude,
-                                                  xMagnitude,
-                                                  timestamp) {
-  var scale = Math.round(this.viewport.get(0).offsetHeight / 10);
-  this.universeTargetPosition_ = {
-    top: yMagnitude*scale + this.universeTargetPosition_.top,
-    left: xMagnitude*scale + this.universeTargetPosition_.left
-  };
-  this.universe.stop().animate(this.universeTargetPosition_);
 };
 
 rhizo.ui.gui.GUI.prototype.activateOnscreenKeyboard = function() {

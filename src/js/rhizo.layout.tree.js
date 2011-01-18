@@ -21,6 +21,8 @@
     left to right, top to bottom, hence this class uses the 'traditional' set of
     positioning coordinates (top, left, width, height).
 
+  - TreeLayoutUI: Helper class to manage layout UI controls.
+
   - TreeNode: a simple datastructure representing a node in the tree. It is used
     also to store some rendering information about the node, such as the
     bounding rectangle which can contain the rendering of the node itself and
@@ -47,51 +49,176 @@
 // RHIZODEP=rhizo.layout
 
 /**
+ * Helper class that handles TreeLayout ui controls.
+ * @param {rhizo.layout.TReeLayout} layout
+ * @param {rhizo.Project} project
+ */
+rhizo.layout.TreeLayoutUI = function(layout, project) {
+  this.layout_ = layout;
+  this.project_ = project;
+
+  this.directionSelector_ = null;
+  this.metaModelKeySelector_ = null;
+};
+
+rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
+  var parentKeys = this.getParentKeys_();
+  var details = $("<div />");
+  if (parentKeys.length == 0) {
+    // should never happen because of verifyMetaModel
+    details.append("No parent-child relationships exist");
+    return details;
+  }
+
+  details.append(" arrange ");
+  this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
+  this.directionSelector_.append("<option value='hor'>Horizontally</option>");
+  this.directionSelector_.append("<option value='ver'>Vertically</option>");
+  this.directionSelector_.change(jQuery.proxy(this.updateState_, this));
+  details.append(this.directionSelector_);
+
+  if (parentKeys.length > 1) {
+    this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
+        this.project_,
+        'rhizo-treelayout-parentKey',
+        rhizo.layout.parentMatcher);
+    this.metaModelKeySelector_.change(jQuery.proxy(this.updateState_, this));
+    details.append(" by ").append(this.metaModelKeySelector_);
+  } else if (parentKeys.length == 1) {
+    this.metaModelKeySelector_ =
+        $("<input type='hidden' />").val(parentKeys[0]);
+  }
+  return details;
+};
+
+/**
+ * @return {Array.<string>} The list of all metamodel keys which can be used
+ *     to arrange models in a tree structure (i.e., the point to parent-child
+ *     relationships).
+ * @private
+ */
+rhizo.layout.TreeLayoutUI.prototype.getParentKeys_ = function() {
+  var parentKeys = [];
+  for (var key in this.project_.metaModel()) {
+    if (rhizo.layout.parentMatcher(key, this.project_.metaModel()[key])) {
+      parentKeys.push(key);
+    }
+  }
+  return parentKeys;
+};
+
+rhizo.layout.TreeLayoutUI.prototype.setState = function(state) {
+  this.directionSelector_.val(state.direction);
+  if (this.metaModelKeySelector_) {
+    this.metaModelKeySelector_.val(state.parentKey);
+  }
+};
+
+/**
+ * Updates the layout state whenever the user modifies the controls.
+ * @private
+ */
+rhizo.layout.TreeLayoutUI.prototype.updateState_ = function() {
+  var state = {
+    direction: this.directionSelector_.val()
+  };
+  if (this.metaModelKeySelector_) {
+    state.parentKey = this.metaModelKeySelector_.val();
+  }
+  this.layout_.setStateFromUI(state);
+};
+
+
+/**
+ * A layout that arranges models in a tree structure.
+ *
+ * @param {rhizo.Project} project
  * @constructor
  */
 rhizo.layout.TreeLayout = function(project) {
   this.project_ = project;
-  this.directionSelector_ = null;
-  this.metaModelKeySelector_ = null;
-
-  this.parentKeys_ = [];
 
   /**
+   * Map that accumulates all the nodes matching the models being laid out.
    * @type {Object.<string, rhizo.layout.TreeNode>}
    * @private
    */
   this.globalNodesMap_ = null;
+  rhizo.layout.GUILayout.call(this, project,
+                              new rhizo.layout.TreeLayoutUI(this, project));
 };
+rhizo.inherits(rhizo.layout.TreeLayout, rhizo.layout.GUILayout);
 
+
+/**
+ * Verifies whether this layout can be used, given the project metamodel.
+ * The project metamodel must define at least one model attribute that specifies
+ * parent-child relationships, so that trees can be built.
+ *
+ * @param {*} meta The project metamodel.
+ */
 rhizo.layout.TreeLayout.prototype.verifyMetaModel = function(meta) {
   for (var key in meta) {
-    if (!!meta[key].isParent) {
-      this.parentKeys_.push(key);
+    if (rhizo.layout.parentMatcher(key, meta[key])) {
+      return true;
     }
   }
-  return this.parentKeys_.length > 0;
+  return false;
 };
 
-rhizo.layout.TreeLayout.prototype.layout = function(container,
+/**
+ * @private
+ */
+rhizo.layout.TreeLayout.prototype.defaultState_ = function() {
+  return {
+    direction: 'ver',
+    parentKey : rhizo.layout.firstMetamodelKey(
+        this.project_, rhizo.layout.parentMatcher)
+  };
+};
+
+/**
+ * Validates a layout state. A valid state must have a 'parentKey' property
+ * pointing to the metamodel key that contains parent-child relationships to
+ * create the layout tree.
+ *
+ * @param {*} otherState
+ * @private
+ */
+rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
+  return this.validateStateAttributePresence_(otherState, 'parentKey') &&
+         this.validateMetamodelPresence_(
+             otherState.parentKey, rhizo.layout.parentMatcher);
+};
+
+/**
+ * Lays out models.
+ *
+ * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
+ *     accumulates all the layout operations to perform as part of this layout
+ *     request.
+ * @param {rhizo.layout.LayoutBox} layoutBox The bounding rectangle inside which
+ *     the layout should occur.
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of the SuperModels
+ *     that will participate in the layout.
+ * @param {Object.<*, rhizo.model.SuperModel>} allmodels A map of all
+ *     visualization models, mapping from the model id the associated SuperModel
+ *     instance.
+ * @param {*} meta The project metamodel.
+ * @param {*} options The composition of project-wide configuration options and
+ *     layout-specific ones.
+ */
+rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
+                                                    layoutBox,
                                                     supermodels,
                                                     allmodels,
                                                     meta,
                                                     options) {
-  // detect parent
-  var parentKey;
-  if (this.parentKeys_.length == 0) {
-    this.project_.logger().error(
-        'Unable to identify parent-child relationships');
-    return false;
-  } else if (this.parentKeys_.length == 1) {
-    parentKey = this.parentKeys_[0];
-  } else {
-    parentKey = this.metaModelKeySelector_.val();
-  }
+  var parentKey = this.getState().parentKey;
   this.project_.logger().info("Creating tree by " + parentKey);
 
   // detect rendering direction
-  var vertical = this.directionSelector_.val() == 'ver';
+  var vertical = this.getState().direction == 'ver';
   this.treePainter_ = new rhizo.layout.TreePainter(vertical);
 
   try {
@@ -115,7 +242,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
           this.treePainter_.toAbsoluteCoords_(unrotatedBoundingRect);
 
       // 'return carriage' if needed
-      if (drawingOffset.left + boundingRect.w > container.width()) {
+      if (drawingOffset.left + boundingRect.w > layoutBox.width) {
         drawingOffset.left = 0;
         drawingOffset.top += maxHeight + (maxHeight > 0 ? 5 : 0);
       }
@@ -123,7 +250,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
       // Flip the drawing offset back into the gd-od coordinate set
       // and draw the tree.
       this.treePainter_.draw_(
-          container, roots[id],
+          pipeline, roots[id],
           this.treePainter_.toRelativeCoords_(drawingOffset));
 
       // update offset positions
@@ -140,63 +267,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(container,
   return false;
 };
 
-rhizo.layout.TreeLayout.prototype.details = function() {
-  var details = $("<div />");
-  if (this.parentKeys_.length == 0) {
-    details.append("No parent-child relationships exist");
-    return details;
-  }
-
-  details.append(" arrange ");
-  this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
-  this.directionSelector_.append("<option value='hor'>Horizontally</option>");
-  this.directionSelector_.append("<option value='ver'>Vertically</option>");
-  details.append(this.directionSelector_);
-
-  if (this.parentKeys_.length > 1) {
-    this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_, 'rhizo-treelayout-parentKey', function(key, meta) {
-        return !!meta.isParent;
-      });
-    details.append(" by ").append(this.metaModelKeySelector_);
-  }
-  return details;
-};
-
-rhizo.layout.TreeLayout.prototype.getState = function() {
-  var state = {
-    direction: this.directionSelector_.val()
-  };
-  if (this.parentKeys_.length > 1) {
-    state.parentKey = this.metaModelKeySelector_.val();
-  }
-  return state;
-};
-
-rhizo.layout.TreeLayout.prototype.setState = function(state) {
-  if (state) {
-    this.directionSelector_.val(state.direction);
-    if (this.parentKeys_.length > 1) {
-      this.metaModelKeySelector_.val(state.parentKey);
-    }
-  } else {
-    this.directionSelector_.find('option:first').attr('selected', 'selected');
-    if (this.parentKeys_.length > 1) {
-      this.metaModelKeySelector_.find('option:first').attr('selected',
-                                                           'selected');
-    }
-  }
-};
-
 rhizo.layout.TreeLayout.prototype.toString = function() {
   return "Tree";
-};
-
-rhizo.layout.TreeLayout.prototype.cleanup = function(sameEngine, options) {
-  if (this.treePainter_) {
-    this.treePainter_.cleanup_();
-  }
-  return false;
 };
 
 rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
@@ -244,7 +316,6 @@ rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
  * @constructor
  */
 rhizo.layout.TreePainter = function(vertical) {
-  this.connectors_ = [];
   this.vertical_ = vertical;
 
   // translate coordinate names and distances into gd-od names
@@ -260,7 +331,7 @@ rhizo.layout.TreePainter = function(vertical) {
     this.odLength_ = 'height';
 
   }
-}
+};
 
 /**
  * Given the dimensions of a rendering, which is a DOM block element with
@@ -370,33 +441,34 @@ rhizo.layout.TreePainter.prototype.calculateBoundingRect_ = function(treenode) {
  *
  * @private
  */
-rhizo.layout.TreePainter.prototype.draw_ = function(container,
+rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
                                                     treenode,
                                                     offset,
                                                     parentOffset,
                                                     parentNode) {
-  var r = treenode.superModel.rendering();
   var dims = treenode.renderingDimensions();
 
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
   if (this.vertical_) {
-    r.move(offset.gd + 5, offset.od);
+    pipeline.move(treenode.superModel.id, offset.gd + 5, offset.od);
 
     // draw connector if needed
     if (parentOffset != null) {
-      this.drawConnector_(container,
+      this.drawConnector_(pipeline,
         this.packedCenter_(offset, dims),
         this.packedCenter_(parentOffset,
                            parentNode.renderingDimensions()));
     }
   } else {
-    r.move(offset.od + 5,
-           offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
+    pipeline.move(
+        treenode.superModel.id,
+        offset.od + 5,
+        offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
 
     // draw connector if needed
     if (parentOffset != null) {
-      this.drawConnector_(container,
+      this.drawConnector_(pipeline,
         this.evenCenter_(offset, dims, treenode.boundingRect),
         this.evenCenter_(parentOffset,
                          parentNode.renderingDimensions(),
@@ -413,7 +485,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
       od: offset.od + this.od_(dims) + 20,
       gd: progressiveGd
     };
-    this.draw_(container, childNode, childOffset, offset, treenode);
+    this.draw_(pipeline, childNode, childOffset, offset, treenode);
     progressiveGd += childNode.boundingRect.gd + 5;
   }
 };
@@ -428,7 +500,7 @@ rhizo.layout.TreePainter.prototype.draw_ = function(container,
  * @param parentCenter the gd-od coordinate of the center of its parent node
  * @private
  */
-rhizo.layout.TreePainter.prototype.drawConnector_ = function(container,
+rhizo.layout.TreePainter.prototype.drawConnector_ = function(pipeline,
                                                              curCenter,
                                                              parentCenter) {
   var gdCssAttrs = {position: 'absolute'};
@@ -451,15 +523,8 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(container,
                         'class': 'rhizo-tree-connector',
                         css: odCssAttrs});
 
-  this.connectors_.push(gdconnector);
-  this.connectors_.push(odconnector);
-  container.append(gdconnector);
-  container.append(odconnector);
-};
-
-rhizo.layout.TreePainter.prototype.cleanup_ = function() {
-  $.each(this.connectors_, function() { this.remove(); });
-  this.connectors_ = [];
+  pipeline.artifact(gdconnector);
+  pipeline.artifact(odconnector);
 };
 
 

@@ -71,6 +71,7 @@ rhizo.ui.eventToModel = function(ev, project) {
   return project.model($(ev.currentTarget).data('id'));
 };
 
+
 /**
  * Extracts the associated model from an HTMLElement.
  * @param {HTMLElement} element
@@ -82,6 +83,7 @@ rhizo.ui.elementToModel = function(element, project) {
   return project.model($(element).data('id'));
 };
 
+
 /**
  * Defines the visibility states that models can have.
  * @enum {number}
@@ -91,6 +93,496 @@ rhizo.ui.Visibility = {
   GREY: 1,    // model filterer, filter is not committed yet.
   VISIBLE: 2  // model unfiltered, visible.
 };
+
+
+/**
+ * Defines all the rendering operations supported by a RenderingPipeline.
+ * @enum {string}
+ */
+rhizo.ui.RenderingOp = {
+  // Request to add an artifact (i.e. any UI control or element which is not a
+  // SuperModel) to the layout.
+  ARTIFACT: 'artifact',
+
+  // Request to move a SuperModel rendering.
+  MOVE: 'move',
+
+  // Request to resize a SuperModel rendering.
+  RESIZE: 'resize',
+
+  // Request to change the style of a SuperModel rendering.
+  STYLE: 'style'
+};
+
+
+/**
+ * A RenderingPipeline accumulates operations to be performed on the project
+ * renderings, and applies all of the at once when requested.
+ *
+ * Typically used to accumulate all operations that are part of a layout
+ * request.
+ *
+ * A RenderingPipeline by default keeps backup copies of the renderings
+ * it modifies and subsequently restore them.
+ * See also rhizo.ui.RenderingBackupManager.
+ *
+ * @param {rhizo.Project} project The visualization project.
+ * @param {*} container The jQuery object pointing to a container where
+ *     rendering artifacts will be added (typically the visualization universe).
+ * @constructor
+ */
+rhizo.ui.RenderingPipeline = function(project, container) {
+  this.project_ = project;
+  this.container_ = container;
+
+  /**
+   * Maps model ids to the list of operations to be applied onto them.
+   * @type {Object.<*, Array.<*>>}
+   * @private
+   */
+  this.renderingOps_ = {};
+
+  /**
+   * The list of artifacts the must be added to the container as part of the
+   * pipeline execution.
+   *
+   * @type {Array.<*>}
+   * @private
+   */
+  this.artifacts_ = [];
+
+  /**
+   * jQuery object pointing to the container where all artifacts will be added
+   * to.
+   * @type {*}
+   * @private
+   */
+  this.artifactLayer_ = $('<div />').
+      css('visibility', 'hidden').
+      appendTo(this.container_);
+
+  this.backupEnabled_ = true;
+  this.backupManager_ = new rhizo.ui.RenderingBackupManager();
+};
+
+/**
+ * Clears the pipeline.
+ */
+rhizo.ui.RenderingPipeline.prototype.cleanup = function() {
+  this.artifactLayer_.remove();
+  this.artifactLayer_ = $('<div />').
+      css('visibility', 'hidden').
+      appendTo(this.container_);
+
+  this.artifacts_ = [];
+  this.renderingOps_ = {};
+};
+
+/**
+ * @return {?rhizo.ui.RenderingBackupManager} The backup manager associated
+ *     to the pipeline, if backups are enabled.
+ */
+rhizo.ui.RenderingPipeline.prototype.backupManager = function() {
+  return this.backupEnabled_ ? this.backupManager_ : null;
+};
+
+/**
+ * Enables or disables backup functionality for the pipeline. Backups are
+ * enabled by default.
+ *
+ * @param {boolean} enabled Whether to enable or disable backups.
+ */
+rhizo.ui.RenderingPipeline.prototype.setBackupEnabled = function(enabled) {
+  if (!enabled) {
+    this.backupManager_.clear();
+  }
+  this.backupEnabled_ = enabled;
+};
+
+/**
+ * If backups are enabled, backs up the given model.
+ * @param {*} modelId The id of the model to backup.
+ * @return {boolean} if the model rendering was added to the backups.
+ * @private
+ */
+rhizo.ui.RenderingPipeline.prototype.backup_ = function(modelId) {
+  if (this.backupEnabled_) {
+    return this.backupManager_.backup(
+        modelId, this.project_.model(modelId).rendering());
+  }
+  return false;
+};
+
+/**
+ * Returns the list of operations currently queued for a given model.
+ * @param {*} modelId The model id.
+ * @return {Array.<*>} The list of operations currently queued for the model.
+ * @private
+ */
+rhizo.ui.RenderingPipeline.prototype.getModelOps_ = function(modelId) {
+  if (!(modelId in this.renderingOps_)) {
+    this.renderingOps_[modelId] = [];
+  }
+  return this.renderingOps_[modelId];
+};
+
+/**
+ * Appends a rendering movement request to the current pipeline.
+ *
+ * @param {*} modelId The id of the model to move.
+ * @param {number} top The top coordinate where the top-left corner of the
+ *     model rendering should be moved to (with respect to the visualization
+ *     universe top-left corner position).
+ * @param {number} left The left coordinate where the top-left corner of the
+ *     model rendering should be moved to (with respect to the visualization
+ *     universe top-left corner position).
+ * @param {?string} opt_elevation_key An optional elevation key to change the
+ *     rendering elevation.
+ * @param {?number} opt_elevation_value An optional elevation value to set
+ *     elevation to, for the given elevation_key.
+ * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
+ */
+rhizo.ui.RenderingPipeline.prototype.move = function(
+    modelId, top, left, opt_elevation_key, opt_elevation_value) {
+  var modelOps = this.getModelOps_(modelId);
+  var op = {
+    op: rhizo.ui.RenderingOp.MOVE,
+    top: top,
+    left: left
+  };
+  if (opt_elevation_key !== undefined && opt_elevation_value !== undefined) {
+    this.backup_(modelId);
+    op.elevation = {key: opt_elevation_key, value: opt_elevation_value};
+  }
+  modelOps.push(op);
+  return this;
+};
+
+/**
+ * Appends a rendering resize request to the current pipeline.
+ * The method assumes that the rendering accepts resizing to the given size,
+ * as defined by rhizo.ui.Rendering.prototype.canRescaleTo().
+ *
+ * @param {*} modelId The id of the model to resize.
+ * @param {number} width The width (in pixels) the rendering should be resized
+ *     to.
+ * @param {number} height The height (in pixels) the rendering should be resized
+ *     to.
+ * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
+ */
+rhizo.ui.RenderingPipeline.prototype.resize = function(modelId, width, height) {
+  this.backup_(modelId);
+  this.getModelOps_(modelId).push({
+    op: rhizo.ui.RenderingOp.RESIZE,
+    width: width,
+    height: height
+  });
+  return this;
+};
+
+/**
+ * Appends a request to the current pipeline to change a rendering style.
+ *
+ * @param {*} modelId The id of the model to change.
+ * @param {*} styleProps The styles to set, in the form of a plain javascript
+ *     object mapping CSS property names to their target values.
+ * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
+ */
+rhizo.ui.RenderingPipeline.prototype.style = function(modelId, styleProps) {
+  this.backup_(modelId);
+  this.getModelOps_(modelId).push({
+    op: rhizo.ui.RenderingOp.STYLE,
+    styleProps: styleProps
+  });
+  return this;
+};
+
+/**
+ * Adds an artifact. An artifact is any HTML element which needs to be added to
+ * the visualization viewport when applying the pipeline.
+ *
+ * Technically, artifacts are immediately added to an invisible pane when this
+ * method is called, and then only displayed when the pipeline is applied.
+ *
+ * This allows the caller to access the true artifact dimensions immediately
+ * after this method call.
+ *
+ * This includes, for instance, reference elements such as headers and
+ * connectors, used by layouts.
+ *
+ * @param {*} artifact The HTML element, or jQuery object pointing to it,
+ *     representing the artifact to add.
+ * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
+ */
+rhizo.ui.RenderingPipeline.prototype.artifact =  function(artifact) {
+  this.artifactLayer_.append(artifact);
+  return this;
+};
+
+/**
+ * Applies the pipeline, executing all the queued operations.
+ *
+ * @return {*} An object containing 'top', 'left', 'width' and 'height'
+ *   properties, representing the area (in pixels) occupied by all the models'
+ *   renderings that were part of this pipeline. The top,left coords define
+ *   the offset between the top-left corner of the bounding rectangle and
+ *   the top-left corner of the visualization universe.
+ */
+rhizo.ui.RenderingPipeline.prototype.apply = function() {
+  var boundingRect = {
+      top: Number.POSITIVE_INFINITY,
+      left: Number.POSITIVE_INFINITY,
+      width: 0,
+      height: 0
+  };
+  for (var modelId in this.renderingOps_) {
+    var ops = this.renderingOps_[modelId];
+    for (var i = ops.length-1; i >= 0; i--) {
+      var rendering = this.project_.model(modelId).rendering();
+      switch (ops[i].op) {
+        case rhizo.ui.RenderingOp.MOVE:
+          rendering.move(ops[i].top, ops[i].left);
+          if (ops[i].elevation) {
+            rendering.pushElevation(ops[i].elevation.key,
+                                    ops[i].elevation.value);
+          }
+          break;
+        case rhizo.ui.RenderingOp.RESIZE:
+          rendering.rescaleRendering(ops[i].width, ops[i].height);
+          break;
+        case rhizo.ui.RenderingOp.STYLE:
+          rendering.setNakedCss(ops[i].styleProps);
+          break;
+        default:
+          throw("Unrecognized rendering op: " + ops[i].op);
+      }
+    }
+    this.updateBoundingRectangleCorner_(rendering, boundingRect);
+  }
+  this.computeBoundingRectangleArea_(boundingRect);
+  this.artifactLayer_.css('visibility', 'visible');
+  return boundingRect;
+};
+
+/**
+ * Updates the bounding rectangle top-left coordinates including the position
+ * of the given rendering.
+ *
+ * @param {rhizo.ui.Rendering} rendering The rendering under inspection.
+ * @param {*} boundingRect
+ * @private
+ */
+rhizo.ui.RenderingPipeline.prototype.updateBoundingRectangleCorner_ = function(
+    rendering, boundingRect) {
+  var renderingPosition = rendering.position();
+  boundingRect.top = Math.min(renderingPosition.top, boundingRect.top);
+  boundingRect.left = Math.min(renderingPosition.left, boundingRect.left);
+
+};
+
+/**
+ * Updates the width and height of the bounding rectangle from the position
+ * and sizes of all the renderings managed by the pipeline.
+ *
+ * @param {*} boundingRect
+ * @private
+ */
+rhizo.ui.RenderingPipeline.prototype.computeBoundingRectangleArea_ = function(
+    boundingRect) {
+  for (var modelId in this.renderingOps_) {
+    var rendering = this.project_.model(modelId).rendering();
+    var renderingDimensions = rendering.getDimensions();
+    var renderingPosition = rendering.position();
+    boundingRect.width = Math.max(
+        boundingRect.width,
+        renderingDimensions.width + renderingPosition.left - boundingRect.left);
+    boundingRect.height = Math.max(
+        boundingRect.height,
+        renderingDimensions.height + renderingPosition.top - boundingRect.top);
+  }
+};
+
+
+/**
+ * A backup manager saves Renderings original attributes and restores them once
+ * any applied change is no longer needed.
+ *
+ * Backup managers are used to revert the changes pushed onto renderings by
+ * the execution of RenderingPipelines.
+ *
+ * Rendering pipelines, used by layout operations, may affect the aspect
+ * of Renderings, such as their size or styles (in contrast with only changing
+ * their position), which will then be restored once the layout changes.
+ *
+ * A backup manager can be preserved through multiple consequent executions
+ * of a RenderingPipeline. Depending on the condition:
+ * - Only the delta of models between the two executions is restored
+ *   (removed from backup models) or added to the set (such as when the same
+ *   layout is applied twice).
+ * - All backup models are restored (see restoreAll()).
+ * - when a new RenderingPipeline is created, the set of associated backup
+ *   models is initially empty and populated during the pipeline buildup.
+ *
+ * @constructor
+ */
+rhizo.ui.RenderingBackupManager = function() {
+
+  /**
+   * @type {Object.<string, rhizo.layout.treemap.RenderingBackup>}
+   * @private
+   */
+  this.renderingBackups_ = {};
+  this.numBackups_ = 0;
+};
+
+/**
+ * Clears all the currently stored backups, without restoring them.
+ */
+rhizo.ui.RenderingBackupManager.prototype.clear = function() {
+  this.renderingBackups_ = {};
+  this.numBackups_ = 0;
+};
+
+/**
+ * Adds a new rendering to the backup, if it is not already in there.
+ * @param {*} mid The unique id of the model bound to this rendering.
+ * @param {rhizo.ui.Rendering} rendering The rendering to backup.
+ * @return {boolean} if the rendering was added to the backups.
+ */
+rhizo.ui.RenderingBackupManager.prototype.backup = function(
+    mid, rendering) {
+  if (!(mid in this.renderingBackups_)) {
+    this.renderingBackups_[mid] =
+        new rhizo.ui.RenderingBackup(rendering);
+    this.numBackups_++;
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Removes a rendering from the backup (if present) without restoring it.
+ * @param {string} mid The id of the model whose rendering is to remove.
+ */
+rhizo.ui.RenderingBackupManager.prototype.removeBackup = function(
+    mid) {
+  if (mid in this.renderingBackups_) {
+    delete this.renderingBackups_[mid];
+    this.numBackups_--;
+  }
+};
+
+/**
+ * Partially restores the set of currently backed up models by comparing the
+ * backups stored so far and all the models the are potentially going to be
+ * affected. All the models that are in the former set but not in the latter
+ * will be restored.
+ *
+ * @param {Array.<rhizo.model.SuperModel>} supermodels List of models that will
+ *     be (potentially) affected from now on.
+ * @param {boolean} styleReset Whether we are still required to restore all
+ *     style changes on all backed up models.
+ */
+rhizo.ui.RenderingBackupManager.prototype.restore = function(
+      supermodels, styleReset) {
+  if (this.numBackups_ > 0) {
+    var survivingModelIds = {};
+    for (var i = 0; i < supermodels.length; i++) {
+      survivingModelIds[supermodels[i].id] = true;
+    }
+    var restorableModels = {};
+    for (var mid in this.renderingBackups_) {
+      if (!(mid in survivingModelIds)) {
+        restorableModels[mid] = true;
+      }
+    }
+    this.restoreInternal_(restorableModels, true, true, true);
+
+    if (styleReset) {
+      this.restoreInternal_(
+          this.renderingBackups_,
+          /*sizes=*/ false, /*elevation=*/ false, /*styles=*/ true);
+    }
+  }
+};
+
+/**
+ * Restores all the backups.
+ */
+rhizo.ui.RenderingBackupManager.prototype.restoreAll = function() {
+  this.restoreInternal_(this.renderingBackups_, true, true, true);
+  this.renderingBackups_ = {};  // just in case.
+  this.numBackups_ = 0;
+};
+
+/**
+ * Restores a specified set of models from their backups.
+ * @param {Object.<*, rhizo.ui.RenderingBackup>} modelsMap A map of models to
+ *     restore, mapping from the model id to the associated backup.
+ * @param {boolean} restoreSizes Whether to restore the size of the rendering.
+ * @param {boolean} restoreElevation Whether to restore the rendering elevation
+ *     map.
+ * @param {boolean} restoreStyles Whether to restore the styles of the
+ *     rendering.
+ * @private
+ */
+rhizo.ui.RenderingBackupManager.prototype.restoreInternal_ =
+    function(modelsMap, restoreSizes, restoreElevation, restoreStyles) {
+  for (var mid in modelsMap) {
+    this.renderingBackups_[mid].restore(restoreSizes,
+                                        restoreElevation,
+                                        restoreStyles);
+    if (restoreSizes && restoreElevation && restoreStyles) {
+      delete this.renderingBackups_[mid];
+      this.numBackups_--;
+    }
+  }
+};
+
+
+/**
+ * A wrapper around a supermodel Rendering to backup relevant attributes that
+ * will need to be restored once we clean up a RenderingPipeline.
+ *
+ * @param {rhizo.ui.Rendering} rendering The rendering to backup.
+ * @constructor
+ */
+rhizo.ui.RenderingBackup = function(rendering) {
+  this.rendering_ = rendering;
+  this.originalDimensions_ = jQuery.extend({}, rendering.getDimensions());
+
+  // NOTE: background-color is the only style that Rhizosphere layouts and
+  // RenderingPipelines actually change, so we take the shortcut here of
+  // tracking the initial value of just this style attribute.
+  this.originalBackground_ = rendering.nakedCss('background-color');
+
+  this.originalElevation_ = this.rendering_.cloneElevation();
+};
+
+/**
+ * Restores the model managed by this backup.
+ * @param {boolean} restoreSizes Whether to restore the size of the rendering.
+ * @param {boolean} restoreElevation Whether to restore the rendering elevation
+ *     map.
+ * @param {boolean} restoreStyles Whether to restore the styles of the
+ *     rendering.
+ */
+rhizo.ui.RenderingBackup.prototype.restore = function(
+    restoreSizes, restoreElevation, restoreStyles) {
+  if (restoreStyles) {
+    this.rendering_.setNakedCss({backgroundColor: this.originalBackground_},
+                                /* revert hint */ true);
+  }
+  if (restoreSizes) {
+    this.rendering_.rescaleRendering(this.originalDimensions_.width,
+                                     this.originalDimensions_.height);
+
+  }
+  if (restoreElevation) {
+    this.rendering_.restoreElevation(this.originalElevation_);
+  }
+};
+
 
 /**
  * Manages a max-heap of renderings' named elevations (z-indexes when applied to
@@ -108,6 +600,13 @@ rhizo.ui.Elevation = function() {
   // An offset that will always be added to the returned elevation values.
   // Should match the base z-index used by Rhizosphere models.
   this.elevation_offset_ = 50;
+};
+
+rhizo.ui.Elevation.prototype.clone = function() {
+  var el = new rhizo.ui.Elevation();
+  el.elevations_ = $.extend({}, this.elevations_);
+  el.elevation_top_ = this.elevation_top_;
+  return el;
 };
 
 /**
@@ -201,6 +700,7 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
 
   this.renderer_ = renderer;
   this.renderingHints_ = renderingHints;
+  this.rendererSizeChecker_ = null;
   this.rendererRescaler_ = null;
   this.rendererStyleChanger_ = null;
   this.setRendererHelpers_();
@@ -214,6 +714,10 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
 
   // The rendering position, at the time of the last move() call.
   this.position_ = {};
+
+  // A position mark, that can be used to remember a previous position occupied
+  // by the rendering.
+  this.mark_ = null;
 
   // whether the rendering is visible or not. Multiple states might exist,
   // as defined in the rhizo.ui.Visibility enum.
@@ -234,6 +738,9 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
  * @private
  */
 rhizo.ui.Rendering.prototype.setRendererHelpers_ = function() {
+  if (typeof(this.renderer_.minSize) == 'function') {
+    this.rendererSizeChecker_ = this.renderer_.canRescaleTo;
+  }
   if (typeof(this.renderer_.rescale) == 'function') {
     this.rendererRescaler_ = this.renderer_.rescale;
   }
@@ -300,27 +807,27 @@ rhizo.ui.Rendering.prototype.move = function(top, left, opt_instant) {
 };
 
 /**
- * Moves the rendering back to last pinned position.
+ * Moves the rendering back to last marked position.
  * @param {?boolean} opt_instant Whether the move should be instantaneous
  *   (no animations) or not.
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.moveToPin = function(opt_instant) {
-  if (this.pin_ !== null) {
-    this.move(this.pin_.top, this.pin_.left, opt_instant);
+rhizo.ui.Rendering.prototype.moveToMark = function(opt_instant) {
+  if (this.mark_ !== null) {
+    this.move(this.mark_.top, this.mark_.left, opt_instant);
   }
   return this;
 };
 
 /**
- * Moves the rendering of a {top, left} delta distance from the last pinned
- * position (if no pin exists, the move is relative to the universe top-left
+ * Moves the rendering of a {top, left} delta distance from the last marked
+ * position (if no mark exists, the move is relative to the universe top-left
  * corner).
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.moveFromPin = function(top, left, opt_instant) {
-  if (this.pin_ != null) {
-    this.move(this.pin_.top + top, this.pin_.left + left, opt_instant);
+rhizo.ui.Rendering.prototype.moveFromMark = function(top, left, opt_instant) {
+  if (this.mark_ != null) {
+    this.move(this.mark_.top + top, this.mark_.left + left, opt_instant);
   } else {
     this.move(top, left, opt_instant);
   }
@@ -328,11 +835,11 @@ rhizo.ui.Rendering.prototype.moveFromPin = function(top, left, opt_instant) {
 };
 
 /**
- * Pins the current model position.
+ * Marks the current model position.
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.pinPosition = function() {
-  this.pin_ = {
+rhizo.ui.Rendering.prototype.markPosition = function() {
+  this.mark_ = {
     top: parseInt(this.raw_node_.css('top'), 10),
     left: parseInt(this.raw_node_.css('left'), 10)
   };
@@ -340,22 +847,22 @@ rhizo.ui.Rendering.prototype.pinPosition = function() {
 };
 
 /**
- * Discards the current pin, if any.
+ * Discards the current mark, if any.
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
-rhizo.ui.Rendering.prototype.unpinPosition = function() {
-  this.pin_ = null;
+rhizo.ui.Rendering.prototype.unmarkPosition = function() {
+  this.mark_ = null;
   return this;
 };
 
 /**
  * @return {*} A {top,left} distance from the given {top, left} position and
- *   this rendering pin position. Returns null if no pin exists.
+ *   this rendering mark position. Returns null if no mark exists.
  */
-rhizo.ui.Rendering.prototype.distanceFromPin = function(top, left) {
-  if (this.pin_ != null) {
-    return {left: left - this.pin_.left,
-            top: top - this.pin_.top};
+rhizo.ui.Rendering.prototype.distanceFromMark = function(top, left) {
+  if (this.mark_ != null) {
+    return {left: left - this.mark_.left,
+            top: top - this.mark_.top};
   } else {
     return null;
   }
@@ -437,9 +944,26 @@ rhizo.ui.Rendering.prototype.getDimensions = function() {
  *     appended to the raw rendering.
  */
 rhizo.ui.Rendering.prototype.startExpandable = function(expander) {
+  if (!this.expandableByModel_()) {
+    return;
+  }
   expander.data("id", this.id);
   this.raw_node_.append(expander);
   this.expandable_ = true;
+};
+
+/**
+ * @return {boolean} Whether the specific model attached to this rendering
+ *     supports expansion.
+ * @private
+ */
+rhizo.ui.Rendering.prototype.expandableByModel_ = function() {
+  if (typeof(this.renderer_.expandableByModel) == 'function') {
+    return this.renderer_.expandableByModel(this.model_.unwrap(),
+                                            this.renderingHints_);
+  } else {
+    return true;
+  }
 };
 
 /**
@@ -465,6 +989,13 @@ rhizo.ui.Rendering.prototype.toggleExpanded = function() {
   this.expanded_ = !this.expanded_;
   this.reRender_();
   return this;
+};
+
+/**
+ * Updates the rendering after a change that occurred to the underlying model.
+ */
+rhizo.ui.Rendering.prototype.modelChanged = function() {
+  this.reRender_();
 };
 
 /**
@@ -496,22 +1027,45 @@ rhizo.ui.Rendering.prototype.popElevation = function(elevation_key) {
 };
 
 /**
- * Resizes this rendering. By default, only the raw rendering is resized. If
- * the project renderer includes a rescaler, then the rescaler is asked to
- * resize the naked rendering too.
+ * Returns a clone of the rendering current elevation map.
  *
- * Resizing can fail, if we determine that the requested target dimensions are
- * too small for a proper rendering display.
+ * This method is intended for internal use only by the rendering backup
+ * features.
+ *
+ * @return {rhizo.ui.Elevation} A clone of the rendering current elevation map.
+ */
+rhizo.ui.Rendering.prototype.cloneElevation = function() {
+  return this.elevation_.clone();
+};
+
+/**
+ * Replaces the rendering current elevation map with another one, adjusting the
+ * rendering z-index as a consequence.
+ *
+ * @param {rhizo.ui.Elevation} elevation The new Rendering elevation map to use.
+ */
+rhizo.ui.Rendering.prototype.restoreElevation = function(elevation) {
+  this.elevation_ = elevation;
+  this.raw_node_.css(
+      'z-index',
+      this.elevation_.empty() ? '' : this.elevation_.top());
+};
+
+/**
+ * Checks whether the rendering can be resized to the requested dimensions.
+ *
+ * Resizing can fail, for example if we determine that the requested target
+ * dimensions are too small for a proper rendering display.
  *
  * @param {number} width The target width.
  * @param {number} height The target height.
  * @param {?Function} opt_failure_callback callback invoked whenever the
  *   requested rescaling is not possible.
- * @return {boolean} Whether the rescaling was successful.
+ * @return {boolean} Whether rescaling to the desired dimensions is possible.
  */
-rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
-                                                         height,
-                                                         opt_failure_callback) {
+rhizo.ui.Rendering.prototype.canRescaleTo = function(width,
+                                                     height,
+                                                     opt_failure_callback) {
   // The raw_node_ is guaranteed to be marginless and paddingless, with a
   // 1px border (unless someone tampers the .rhizo-model class), so we
   // programmatically know that internal dimensions need to be resized
@@ -524,17 +1078,47 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
     }
     return false;
   }
-  this.cachedDimensions_ = {width: width, height: height};
 
+  if (this.rendererSizeChecker_) {
+    // Give the original model renderer a chance to veto rescaling, if a
+    // size checker has been defined.
+    //
+    // Like this method, the size checker too receives outer dimensions.
+    var canResize = this.rendererSizeChecker_(this.naked_node_,
+                                              width - 2,
+                                              height - 2);
+    if (!canResize && opt_failure_callback) {
+      opt_failure_callback();
+    }
+    return canResize;
+  }
+  return true;
+};
+
+/**
+ * Resizes this rendering. By default, only the raw rendering is resized. If
+ * the project renderer includes a rescaler, then the rescaler is asked to
+ * resize the naked rendering too.
+ *
+ * This method assumes that canRescaleTo() has already been invoked and
+ * successfully returned.
+ *
+ * @param {number} width The target width.
+ * @param {number} height The target height.
+ * @return {rhizo.ui.Rendering} this object, for chaining.
+ */
+rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
+                                                         height) {
+  this.cachedDimensions_ = {width: width, height: height};
   this.raw_node_.width(width - 2).height(height - 2);
   if (this.rendererRescaler_) {
     // Give the original model renderer a chance to rescale the naked render,
     // if a rescaler has been defined.
     //
     // Like this method, the rescaler too receives outer dimensions.
-    this.rendererRescaler_(width - 2, height - 2);
+    this.rendererRescaler_(this.naked_node_, width - 2, height - 2);
   }
-  return true;
+  return this;
 };
 
 /**
@@ -543,14 +1127,17 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
  * are applied directly on the naked rendering.
  *
  * @param {*} props CSS styles to apply, in the form of a plain javascript
- *   object.
+ *     object.
+ * @param {?boolean} opt_hintRevert An optional boolean hint to indicate that
+ *     the rendering properties are being reverted to their original state,
+ *     to cancel the effects of a previous call to this function.
  */
-rhizo.ui.Rendering.prototype.setNakedCss = function(props) {
+rhizo.ui.Rendering.prototype.setNakedCss = function(props, opt_hintRevert) {
   if (typeof props != 'object') {
     throw 'setNakedCss() expects a map of properties.';
   }
   if (this.rendererStyleChanger_) {
-    this.rendererStyleChanger_(props);
+    this.rendererStyleChanger_(this.naked_node_, props, opt_hintRevert);
   } else {
     this.naked_node_.css(props);
   }
@@ -831,7 +1418,8 @@ rhizo.ui.RenderingBootstrap.prototype.startExpandable_ = function(
     rawRenderings) {
   var expander = $('<div />',
                    {'class': 'rhizo-expand-model ' +
-                       'rhizo-icon rhizo-maximize-icon'});
+                       'rhizo-icon rhizo-maximize-icon',
+                    title: 'Maximize'});
   for (var i = this.renderings_.length-1; i >= 0; i--) {
     this.renderings_[i].startExpandable(expander.clone());
   }
@@ -866,6 +1454,11 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
       model.rendering().removeMode('__dragging__');
       return false;
     }
+
+    if (ev.target.nodeName == 'A') {
+      // If a link was clicked, let the event bubble up.
+      return;
+    }
     this.project_.toggleSelect(model.id);
     return false;
   }, this));
@@ -885,7 +1478,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
       model.rendering().
           setMode('__dragging__').
-          pinPosition().
+          markPosition().
           pushElevation('__dragging__', 10000);
 
       // figure out all the initial positions for the selected elements
@@ -893,19 +1486,19 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       if (this.project_.isSelected(model.id)) {
         var all_selected = this.project_.allSelected();
         for (var id in all_selected) {
-          this.project_.model(id).rendering().pinPosition();
+          this.project_.model(id).rendering().markPosition();
         }
       }
     }, this),
     drag: jQuery.proxy(function(ev, ui) {
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
       if (this.project_.isSelected(model.id)) {
-        var delta = model.rendering().distanceFromPin(ui.position.top,
+        var delta = model.rendering().distanceFromMark(ui.position.top,
                                                       ui.position.left);
         var all_selected = this.project_.allSelected();
         for (var id in all_selected) {
           if (id != model.id) {
-            all_selected[id].rendering().moveFromPin(
+            all_selected[id].rendering().moveFromMark(
                 delta.top, delta.left, true);
           }
         }
@@ -915,7 +1508,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
       var modelPositions = [];
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
       model.rendering().
-          unpinPosition().
+          unmarkPosition().
           refreshPosition().
           popElevation('__dragging__');
 
@@ -931,7 +1524,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
               top: all_selected[id].rendering().position().top,
               left: all_selected[id].rendering().position().left
           });
-          all_selected[id].rendering().unpinPosition();
+          all_selected[id].rendering().unmarkPosition();
         }
       }
 

@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Rhizosphere : Multisphere</title>
+    <!-- Rhizosphere libraries and styles -->
     {% include "rhizo_head.html" %}
     <style>
       * {
@@ -33,6 +34,7 @@
         border-bottom: 1px solid #7aa5d6;
       }
     </style>
+    {% include "ga.html" %}
   </head>
   <body>
     <h1><span class="bluelight">Multi</span>sphere</h1>
@@ -45,24 +47,18 @@
     <div id="rhizo-third" class="rhizo-multi"></div>
 
     <script type="text/javascript" charset="utf-8">
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-
       $(document).ready(function() {
         var divs = ['#rhizo-first', '#rhizo-second', '#rhizo-third'];
-        var samples = ['sample/picasa.js', 'sample/bugs.js', 'sample/books.js' ];
+        var samples = ['sample/picasa.js', 'sample/people.js', 'sample/books.js' ];
         for (var i = 0; i < divs.length; i++) {
           new rhizo.bootstrap.Bootstrap(
               $(divs[i]),
-              {forceTemplate: 'bottom',
-               forcePlatform: 'default',
-               forceDevice: 'default'
+              {template: 'bottom',
+               platform: 'default',
+               device: 'default'
               }).prepareAndDeploy(samples[i]);
         }
       });
     </script>
-    {% include "ga.html" %}  
   </body>
 </html>

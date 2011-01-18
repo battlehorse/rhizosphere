@@ -6,9 +6,32 @@
 <p>The Rhizosphere codebase is structured in the following directories:</p>
 <dl>
   <dt><code>appengine</code></dt>
-  <dd>Appengine application to serve the Rhizosphere library. Also hosts
-    the documentation and everything you see in the Rhizosphere
-    <a href="http://rhizospherejs.appspot.com">demo site</a>.
+  <dd>
+    <p>
+      Appengine application to serve the Rhizosphere library. Also hosts
+      the documentation and everything you see in the Rhizosphere
+      <a href="http://www.rhizospherejs.com">demo site</a>.
+    </p>
+
+    <p>
+      Two further subdirectories exist: <code>src/</code> contains the
+      application source code, <code>shared/</code> contains shared, third-party
+      libraries required by it.
+    </p>
+
+    <p>
+      The <code>src/</code> directory is further subdivided into these ones:
+    </p>
+    <ul>
+      <li><code>src/py/handlers</code>: Request handlers that serve web
+          requests.</li>
+      <li><code>src/py/models</code>: Model objects used by handlers.</li>
+      <li><code>src/static</code>: Static resources, such as images, javascript
+          bundles and stylesheets. Most of the subdirectories are symlinks
+          to the other directories listed here (such as <code>lib/</code>)</li>
+      <li><code>src/templates</code>: page templates (includes Rhizosphere
+          documentation in <code>src/templates/doc</code>).</li>
+    </ul>
   </dd>
 
   <dt><code>lib</code></dt>
@@ -26,10 +49,18 @@
   </dd>
 
   <dt><code>samples</code></dt>
-  <dd>Source code for Rhizosphere demos with sample datasets.</dd>
+  <dd>
+    Source code for Rhizosphere demos with sample datasets. Each sample
+    illustrate a basic aspect of Rhizosphere, or uses simplified datasets
+    to keep the demo easy to understand.
+   </dd>
 
-  <dt><code>doc</code></dt>
-  <dd>Documentation.</dd>
+  <dt><code>showcase</code></dt>
+  <dd>
+    Source code for Rhizosphere showcase applications. Showcase apps are more
+    complex that samples and demonstrate complete applications that leverage
+    multiple Rhizosphere capabilities.
+  </dd>
 </dl>
 
 <h2>Library structure</h2>
@@ -116,6 +147,12 @@
     Allows Rhizosphere to ingest data from Google Visualization API datasources.
   </dd>
 
+  <dt>rhizo.broadcast</dt>
+  <dd>
+    Visualization broadcasting support. Allows users to broadcast live
+    Rhizosphere visualizations and have multiple attendants follow them.
+  </dd>
+
   <dt>rhizo.keyboard</dt>
   <dd>On-screen keyboard (for keyboard-less touchscreens).</dd>
 
@@ -131,7 +168,7 @@
 <p class="note">
   <strong>Note</strong>. In addition to the included samples, Rhizosphere can
   also ingest any (reasonably formatted) Google Spreadsheet. See the
-  <a href="users_spreadsheets.html">Use with Google Spreadsheets</a> section for
+  <a href="/doc/users_spreadsheets.html">Use with Google Spreadsheets</a> section for
   more info.
 </p>
 <dl>
@@ -145,9 +182,6 @@
 
   <dt>books.js</dt>
   <dd>Shopping demo.</dd>
-
-  <dt>bugs.js</dt>
-  <dd>Agile project tracker demo.</dd>
 
   <dt>usa.js</dt>
   <dd>shows the USA states and major cities.
@@ -165,6 +199,41 @@
   <dt>autorender.js</dt>
   <dd>
     Explains the AutoRenderer capabilities, automated legend and color coding.
+  </dd>
+</dl>
+
+<h2>Showcase Apps</h2>
+<p>
+  Rhizosphere includes some showcase applications to demonstrate the library
+  capabilities in more complex cases that the samples described above.
+  These are complete applications that leverage multiple Rhizosphere
+  capabilities for their purpose.
+</p>
+<p>
+  All Showcase applications live in these directories:
+  <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/showcase">
+    <code>showcase/</code></a> and
+  <a href=""></a>
+</p>
+<ul>
+  <li>
+    <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/showcase">
+    <code>showcase/</code></a>: static resources (images, javascript, styles)
+  </li>
+  <li>
+    <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/appengine/src/py/handlers/showcase">
+      <code>appengine/src/py/handlers/showcase</code></a>: web request handlers</li>
+  <li>
+    <a href="http://code.google.com/p/rhizosphere/source/browse/#hg/appengine/src/templates/showcase">
+      <code>appengine/src/templates/showcase</code></a>: page templates.</li>
+</ul>
+<dl>
+  <dt>Google Code Hosting</dt>
+  <dd>
+    A card-based agile project management tool built with Rhizosphere, capable of
+    loading data from Google Code Hosting projects. You can also access it at
+    <a href="http://codetracker.rhizospherejs.com">
+      http://codetracker.rhizospherejs.com</a>
   </dd>
 </dl>
 {% endblock %}

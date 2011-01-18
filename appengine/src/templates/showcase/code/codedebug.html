@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <title>Rhizosphere Showcase :: GData Debug</title>
+  <style type="text/css">
+    * {
+      font-family: sans-serif;
+    }
+
+    P {
+      margin: 0;
+    }
+
+    .issue {
+    background-color: #efefef;
+    border: 1px solid #ccc;
+    margin-bottom: 0.5em;
+    }
+
+    .issue .summary {
+      margin: 0.3em 1em;
+    }
+
+    .issue .content {
+      border: 1px solid #66f;
+      background-color: #eef;
+      font-size: 0.9em;
+    }
+
+    .issue .id A {
+      font-size: 2em;
+      font-weight: bold;
+      float: right;
+    }
+
+    .issue .atom_id {
+      color: #666;
+      font-size: 0.9em;
+      font-weight: normal;
+    }
+
+    .open {
+      color: red;
+    }
+
+    .closed, .label {
+      color: green;
+    }
+  </style>
+  {% include "../../ga.html" %}
+</head>
+<body>
+  {% for issue in issues %}
+    <div class="issue">
+      <p class="id">
+        <a href="{{issue.html_link}}">{{issue.issue_id}}</a>
+        <span class="atom_id">{{ issue.atom_id }}</span>
+      </p>
+
+      {% if issue.blockedon_ids %}
+        <p>
+        Blocked on:
+        {% for blockedon_id in issue.blockedon_ids %}
+          {{ blockedon_id }},
+        {% endfor %}
+        </p>
+      {% endif %}
+      <p>
+        Reporter:
+        {% if issue.reporter.uri %}
+          <a href="{{ issue.reporter.uri}}">{{issue.reporter.name}}</a>
+        {% else %}
+          {{issue.reporter.name}}
+        {% endif %} <br />
+        Owner:
+        {% if issue.owner %}
+          {% if issue.owner.uri %}
+            <a href="{{ issue.owner.uri}}">{{issue.owner.name}}</a>
+          {% else %}
+            {{issue.owner.name}}
+          {% endif %}
+        {% else %}
+          Unassigned
+        {% endif %}
+      </p>
+      <p class="summary">
+        {% ifequal issue.state 'open' %}
+          <span class="open">Open</span>
+        {% endifequal %}
+        {% ifequal issue.state 'closed' %}
+          <span class='closed'>Closed</span>
+        {% endifequal %}
+        <strong>
+          {{issue.summary}}
+        </strong>
+        ({{issue.stars}} stars)
+      </p>
+      <p class="content">
+        {{ issue.content.text|escape|linebreaksbr }}
+      </p>
+      <p>
+        Status: <code>{{ issue.status }}</code>
+      </p>
+      <p>
+        Labels:
+        {% for label in issue.labels %}
+          <span class="label">
+          {% if label.is_composite %}
+            <strong>{{label.prefix}}</strong>-{{label.suffix}}
+          {% else %}
+            {{label.text}}
+          {% endif %}
+          </span>,
+        {% endfor %}
+      </p>
+      <p>
+        Created: {{ issue.created.date_yyyy_mm_dd }} ({{issue.created.days_ago}} days ago) <br />
+        Updated: {{ issue.updated.date_yyyy_mm_dd }} ({{issue.updated.days_ago}} days ago)
+        {% ifequal issue.state 'closed' %}
+        <br />Closed: {{ issue.closed_date.date_yyyy_mm_dd}} ({{issue.closed_date.days_ago}} days ago)
+        {% endifequal %}
+      </p>
+    </div>
+  {% endfor %}
+</body>
+</html>

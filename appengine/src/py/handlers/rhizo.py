@@ -31,30 +31,26 @@ class RhizoHandler(webapp.RequestHandler):
         return allowedvalues[0]
       return opt
 
-    def _getPlatformDevice(self):
-      platform, device = None, None
-      user_agent = self.request.headers.get('User-Agent', '').lower()
-      if 'ipad' in user_agent:
-          platform, device = 'mobile', 'ipad'
-      elif 'iphone' in user_agent:
-          platform, device = 'mobile', 'iphone'
-      if not platform:
-        platform = self._getOptionFromUrl('forcePlatform',
-                                          ['default', 'mobile'])
-      if not device:
-        device = self._getOptionFromUrl('forceDevice',
-                                        ['default', 'ipad', 'iphone'])
-      return platform, device
-
     def get(self):
         # Startup options
-        forcePlatform, forceDevice = self._getPlatformDevice()
-        forceTemplate = self.request.get('forceTemplate')
+        platform, device = rhizoglobals.IdentifyPlatformDevice(
+            self.request)
+        uitemplate = self.request.get('template')
+
+        # Experimental features
+        experimental = rhizoglobals.GetOptionFromUrl(self.request,
+                                                     'exp', ['0', '1'])
+        if experimental == '1':
+          use_channels = True
+        else:
+          use_channels = False
+
         template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
-            'forceTemplate': forceTemplate,
-            'forceDevice': forceDevice,
-            'forcePlatform': forcePlatform,
+            'template': uitemplate,
+            'device': device,
+            'platform': platform,
+            'use_channels': use_channels,
         })
         path = os.path.join(os.path.dirname(__file__),
                             '../../templates%s' % self.request.path)

@@ -187,6 +187,15 @@ rhizo.state.MasterOverlord.prototype.attachProject = function(project,
 };
 
 /**
+ * Returns the project overlord assigned to the given project.
+ * @param {rhizo.Project} project
+ * @return {rhizo.state.ProjectOverlord}
+ */
+rhizo.state.MasterOverlord.prototype.projectOverlord = function(project) {
+  return this.projectOverlords_[project.uuid()];
+};
+
+/**
  * @param {rhizo.Project} project
  * @return {rhizo.state.ProjectStateBinder} The binding object that expose the
  *     state management interface for the project.
@@ -217,16 +226,23 @@ rhizo.state.MasterOverlord.prototype.setState = function(state) {
  * @param {rhizo.state.Bindings} ownerKey The component which is setting the
  *     initial state.
  * @param {*} state The initial state.
+ * @param {?boolean} opt_replace Whether the given state should replace a
+ *     previous initial state (if defined) or not.
  */
 rhizo.state.MasterOverlord.prototype.setInitialState = function(ownerKey,
-                                                                state) {
-  var numProjectStates = 0;  // projects that have already set their state.
-  for (var uuid in this.state_.uuids) {
-    numProjectStates++;
-  }
-  if (numProjectStates > 0) {
-    throw('Initial state received by ' + ownerKey +
-          ' after a state change was already issued.')
+                                                                state,
+                                                                opt_replace) {
+  var replace = !!opt_replace;
+  if (!replace) {
+    // We are trying to set the initial state without forcing a replace.
+    // If an initial state already exists, don't change anything.
+    var numProjectStates = 0;  // projects that have already set their state.
+    for (var uuid in this.state_.uuids) {
+      numProjectStates++;
+    }
+    if (numProjectStates > 0) {
+      return;
+    }
   }
   this.initialStateOwner_ = ownerKey;
   this.setState(state);
@@ -235,7 +251,7 @@ rhizo.state.MasterOverlord.prototype.setInitialState = function(ownerKey,
   // state management.
   for (var uuid in this.state_.uuids) {
     if (uuid in this.projectOverlords_) {
-      this.projectOverlords_[uuid].broadcast(ownerKey, null);
+      this.projectOverlords_[uuid].broadcast(ownerKey, null, opt_replace);
     }
   }
 };
@@ -321,6 +337,32 @@ rhizo.state.ProjectOverlord.prototype.master = function() {
 };
 
 /**
+ * Adds a new binder to the list of bindings attached to this overlord.
+ * Upon attachment, the binder receives the full state to be able to sync itself
+ * to the current visualization state.
+ *
+ * @param {rhizo.state.StateBinder} binder The StateBinder to add.
+ */
+rhizo.state.ProjectOverlord.prototype.addBinding = function(binder) {
+  if (!(binder.key() in this.bindings_)) {
+    this.bindings_[binder.key()] = binder;
+  }
+  if (this.uuid_ in this.master_.state().uuids) {
+    binder.onTransition(null, this.master_.state());
+  }
+};
+
+/**
+ * Removes a binding from the list of bindings this overlord is serving.
+ * @param {string} binder_key The key of the binder to remove.
+ */
+rhizo.state.ProjectOverlord.prototype.removeBinding = function(binder_key) {
+  var binder = this.bindings_[binder_key];
+  delete this.bindings_[binder_key];
+  return binder;
+};
+
+/**
  * Applies a state transition requested by one binder and broadcast the changes
  * to all the other binders.
  *
@@ -371,20 +413,20 @@ rhizo.state.ProjectOverlord.prototype.transition = function(sourceKey,
  *
  * @param {rhizo.state.Bindings} sourceKey The key that identifies the binder
  *     where the last state change originated from.
- * @param {*} delta An optional key-value map that describes a delta change
+ * @param {*} opt_delta An optional key-value map that describes a delta change
  *     that occurred. See transition() for this object attributes.
  * @param {boolean} opt_replace Hints that the target state reached by this
  *     delta transition should replace the current one, instead of being a
  *     transition from it.
  */
 rhizo.state.ProjectOverlord.prototype.broadcast = function(sourceKey,
-                                                           delta,
+                                                           opt_delta,
                                                            opt_replace) {
   // Propagate the change to all the other binders to keep them in sync.
   for (var binderKey in this.bindings_) {
     if (binderKey != sourceKey) {
       this.bindings_[binderKey].onTransition(
-          delta, this.master_.state(), opt_replace);
+          opt_delta, this.master_.state(), opt_replace);
     }
   }
 };
@@ -410,7 +452,7 @@ rhizo.state.StateBinder.prototype.key = function() {
 
 /**
  * Callback to notify this binder that a state transition occurred elsewhere.
- * @param {*} delta Defines that facet that changed state and its associated
+ * @param {*} opt_delta Defines that facet that changed state and its associated
  *     changes. See the parameter documentation for
  *     rhizo.state.ProjectOverlord.prototype.transition. null if the change
  *     affected multiple facets at the same time.
@@ -419,7 +461,7 @@ rhizo.state.StateBinder.prototype.key = function() {
  *     delta transition should replace the current one, instead of being a
  *     transition from it.
  */
-rhizo.state.StateBinder.prototype.onTransition = function(delta,
+rhizo.state.StateBinder.prototype.onTransition = function(opt_delta,
                                                           state,
                                                           opt_replace) {
   throw("Unimplemented StateBinder.onTransition");
@@ -455,12 +497,12 @@ rhizo.state.ProjectStateBinder = function(overlord, project) {
 };
 rhizo.inherits(rhizo.state.ProjectStateBinder, rhizo.state.StateBinder);
 
-rhizo.state.ProjectStateBinder.prototype.onTransition = function(delta,
+rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
                                                                  state) {
-  if (delta) {
+  if (opt_delta) {
     // If we know exactly what changed to get to the target state, then
     // just apply the delta.
-    this.project_.stateChanged(delta.facet, delta.facetState);
+    this.project_.stateChanged(opt_delta.facet, opt_delta.facetState);
   } else {
     // Otherwise rebuild the full state.
     this.project_.setState(state.uuids[this.overlord_.uuid()]);
@@ -577,7 +619,7 @@ rhizo.state.HistoryStateBinder = function(overlord) {
 };
 rhizo.inherits(rhizo.state.HistoryStateBinder, rhizo.state.StateBinder);
 
-rhizo.state.HistoryStateBinder.prototype.onTransition = function(delta,
+rhizo.state.HistoryStateBinder.prototype.onTransition = function(opt_delta,
                                                                  state,
                                                                  opt_replace) {
   rhizo.state.getHistoryHelper().sync(state, opt_replace);
@@ -677,6 +719,20 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
       return;
     }
 
+    if (this.master_.state().delta.ts == target_state.delta.ts) {
+      // We are receiving the same state twice (assuming timestamp measurement
+      // is granular enough).
+      // This can happen in some weird cases. For example:
+      // - if we are on Chrome/Linux,
+      // - and we set an initial state with replacement (as when resuming the
+      //   the initial following of a remove visualization)
+      // Then:
+      // - a popState event will be fired _after_ the initial state was set.
+      // Since we performed a state replace, the popstate event will contain
+      // the exact state currently in the master.
+      return;
+    }
+
     // Compute the transition required to reach the target state.
     delta = this.diff_(this.master_.state(), target_state);
   }
@@ -767,7 +823,7 @@ rhizo.state.getMasterOverlord = function() {
  * @type {rhizo.state.HistoryHelper}
  * @private
  */
-rhizo.state.histroy_ = null;
+rhizo.state.history_ = null;
 if (window.history && typeof(window.history.pushState) == 'function') {
   rhizo.state.history_ = new rhizo.state.HistoryHelper(
       rhizo.state.getMasterOverlord());

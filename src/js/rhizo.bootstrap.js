@@ -17,6 +17,7 @@
 // RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.jquery,rhizo.ui.gui
 namespace('rhizo.bootstrap');
 
+
 /**
  * Uuid counter to uniquely identify the container of each visualization within
  * the document.
@@ -24,6 +25,7 @@ namespace('rhizo.bootstrap');
  * @private
  */
 rhizo.bootstrap.uuids_ = 0;
+
 
 /**
  * A Bootstrap is the main entry point to start a Rhizosphere visualization.
@@ -33,9 +35,12 @@ rhizo.bootstrap.uuids_ = 0;
  * @param {HTMLElement} container The HTML element that will contain the
  *     visualization.
  * @param {*} opt_options Visualization-wide configuration options.
+ * @param {?function(rhizo.Project)} opt_callback
+ *     Optional callback invoked on the visualization is completely initialized.
+ *     Receives the rhizo.Project managing the visualization as a parameter.
  * @constructor
  */
-rhizo.bootstrap.Bootstrap = function(container, opt_options) {
+rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
   this.container_ = container;
   var containerId = $(container).attr('id');
   if (!containerId || containerId.length == 0) {
@@ -47,10 +52,13 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
     // based on this.
     $(container).attr('rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
   }
-  this.options_ = { selectfilter: '.rhizo-model:visible' };
+  this.options_ = { selectfilter: '.rhizo-model:visible',
+                    enableHTML5History: true,
+                    enableAnims: true};
   if (opt_options) {
     $.extend(this.options_, opt_options);
   }
+  this.ready_callback_ = opt_callback;
 };
 
 /**
@@ -60,10 +68,13 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options) {
  * @param {string} opt_resource The URI of the datasource to load and visualize
  *     with Rhizosphere. If null and the bootstrapper is not allowed to
  *     configure itself from URL parameters, this method behaves like prepare().
+ * @return {rhizo.Project} The visualization Project through which you can
+ *     have programmatic access to the visualization.
  */
 rhizo.bootstrap.Bootstrap.prototype.prepareAndDeploy = function(opt_resource) {
-  this.prepare();
+  var project = this.prepare();
   this.deploy(opt_resource);
+  return project;
 };
 
 /**
@@ -72,13 +83,17 @@ rhizo.bootstrap.Bootstrap.prototype.prepareAndDeploy = function(opt_resource) {
  *
  * Use this method in conjunction with deploy() if you want to be in charge
  * of loading the actual models to visualize.
+ *
+ * @return {rhizo.Project} The visualization Project through which you can
+ *     have programmatic access to the visualization.
  */
 rhizo.bootstrap.Bootstrap.prototype.prepare = function() {
   // Initialize the GUI, project and template.
   this.gui_ = this.initGui_();
   this.project_ = new rhizo.Project(this.gui_, this.options_);
-  this.template_ = this.initTemplate_(this.gui_, this.project_);
+  this.template_ = this.initTemplate_(this.project_, this.gui_, this.options_);
   this.project_.chromeReady();
+  return this.project_;
 };
 
 /**
@@ -133,14 +148,20 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
   this.project_.setMetaModel(metamodel);
   this.project_.setRenderer(renderer);
 
-  if (this.project_.metaReady()) {
-    this.template_.renderDynamic();
-    this.template_.activateDynamic();
-    this.project_.deploy(models);
+  if (renderer.getSizeRange || renderer.getColorRange) {
+    this.template_.addComponent(new rhizo.ui.component.Legend(this.project_,
+                                                              this.options_));
   }
 
+  if (this.project_.metaReady()) {
+    this.template_.metaReady();
+    this.project_.deploy(models);
+    this.template_.ready();
+  }
   this.gui_.done();
-  this.template_.done();
+  if (this.ready_callback_) {
+    this.ready_callback_(this.project_);
+  }
 };
 
 /**
@@ -148,15 +169,17 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
-  if (this.options_.forcePlatform && this.options_.forceDevice) {
-    return {platform: this.options_.forcePlatform,
-            device: this.options_.forceDevice};
+  if (this.options_.platform && this.options_.device) {
+    return {platform: this.options_.platform,
+            device: this.options_.device};
   }
   var ua = navigator.userAgent;
   if (ua.toLowerCase().indexOf('ipad') != -1) {
     return {platform: 'mobile', device: 'ipad'};
   } else if (ua.toLowerCase().indexOf('iphone') != -1) {
     return {platform: 'mobile', device: 'iphone'};
+  } else if (ua.toLowerCase().indexOf('android') != -1) {
+    return {platform: 'mobile', 'device': 'android'};
   }
   return {platform: 'default', device: 'default'};
 };
@@ -164,14 +187,15 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
 /**
  * Identifies the best template to use for the visualization.
  * @param {rhizo.ui.gui.GUI} gui
+ * @param {*} options
  * @return {function(rhizo.Project):rhizo.ui.component.Template} A factory for
  *     the template to use.
  * @private
  */
-rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui) {
-  if (this.options_.forceTemplate &&
-      this.options_.forceTemplate in rhizo.ui.component.templates) {
-    return rhizo.ui.component.templates[this.options_.forceTemplate];
+rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui, options) {
+  if (options.template &&
+      options.template in rhizo.ui.component.templates) {
+    return rhizo.ui.component.templates[options.template];
   }
 
   // No specific template has been forced. Select a specific one based on
@@ -196,9 +220,7 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   var gui = new rhizo.ui.gui.GUI(this.container_,
                                  platformDevice.platform,
                                  platformDevice.device);
-  if (this.options_.noAnims) {
-    gui.disableFx(true);
-  }
+  gui.disableFx(!this.options_.enableAnims);
 
   // Extends jQuery with all the additional behaviors required by Rhizosphere
   // Disable animations and other performance tunings if needed.
@@ -206,27 +228,28 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   // TODO(battlehorse): this must happen at the global level, and not locally
   // for every single visualization.
   // See http://code.google.com/p/rhizosphere/issues/detail?id=68.
-  rhizo.jquery.init(gui, this.options_.noAnims);
+  rhizo.jquery.init(gui, this.options_.enableAnims, true);
 
   return gui;
 };
 
 /**
  * Initializes the template that will render this project chrome.
- * @param {rhizo.ui.gui.GUI} gui
  * @param {rhizo.Project} project
+ * @param {rhizo.ui.gui.GUI} gui
+ * @param {*} options
  * @return {rhizo.ui.component.Template} The project template.
  * @private
  */
-rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(gui, project) {
+rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(project,
+                                                             gui,
+                                                             options) {
   // Identify the target device and template to use.
-  var templateCtor = this.identifyTemplate_(gui);
-  var template = new templateCtor(project);
-  template.setOptions(this.options_);
+  var templateFactory = this.identifyTemplate_(gui, options);
+  var template = templateFactory(project, options);
 
   // Get the minimum chrome up and running.
-  template.renderChrome();
-  template.activateChrome();
+  template.render();
   return template;
 };
 
@@ -244,13 +267,12 @@ rhizo.bootstrap.Bootstrap.prototype.tryInitResourceFromUrl_ = function() {
     return null;
   }
 
-  var regex = new RegExp('(source|src)=([^&#]+)');
-  var results = regex.exec(document.location.href);
-  if (!results || !results[2]) {
+  var urlparams = rhizo.util.urlParams();
+  var resource = urlparams['source'] || urlparams['src'];
+  if (!resource) {
     this.project_.logger().error(
         'Unable to identify datasource from location');
     return null;
-  } else {
-    return decodeURIComponent(results[2]);
   }
+  return decodeURIComponent(resource);
 };

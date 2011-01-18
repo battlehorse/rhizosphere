@@ -4,19 +4,21 @@
     <title>Rhizosphere</title>
     <meta name="viewport" content="width=device-width,user-scalable=no">
     <link rel="stylesheet"
-          href="http://rhizospherejs.appspot.com/static/shared/stylesheets/jquery-ui-1.8.4.custom.css"
+          href="http://www.rhizospherejs.com/static/shared/stylesheets/jquery-ui-1.8.6.custom.css"
           type="text/css">
     <link rel="stylesheet"
-          href="http://rhizospherejs.appspot.com/static/lib/stylesheets/rhizo.css"
+          href="http://www.rhizospherejs.com/static/lib/stylesheets/rhizo.css"
           type="text/css">
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-1.4.2.min.js"
+
+    <!-- Early loading of the Google Visualization API libraries -->
+    <script type="text/javascript" src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"></script>
+    <script src="http://www.rhizospherejs.com/static/shared/js/jquery-1.4.4.min.js"
             type="text/javascript"
             charset="utf-8"></script>
-    <script src="http://rhizospherejs.appspot.com/static/shared/js/jquery-ui-1.8.4.custom.min.js"
+    <script src="http://www.rhizospherejs.com/static/shared/js/jquery-ui-1.8.6.custom.min.js"
             type="text/javascript"
             charset="utf-8"></script>
-    <script src="http://rhizospherejs.appspot.com/static/lib/js/rhizo.pack.js"
+    <script src="http://www.rhizospherejs.com/static/lib/js/rhizo.pack.js"
             type="text/javascript"
             charset="utf-8"></script>
     <style>
@@ -47,12 +49,6 @@
   <body>
     <div id="rhizo-container" class="rhizo-container"></div>
     <script type="text/javascript" charset="utf-8">
-      // Early loading of the Google Visualization API libraries
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-
       var Person = function(id, name, age, male, hobbies, salary, parentId) {
         this.id = id;  // unique model id.
         this.name = name;

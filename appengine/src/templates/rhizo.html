@@ -3,37 +3,62 @@
   <head>
     <title>Rhizosphere</title>
 
+   <!--
+    Google services integration. Autoloads:
+    - google visualization APIs.
+   -->
+    <script type="text/javascript" src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"></script>
+
+    <!-- AppEngine channels -->
+    {% if use_channels %}
+      <script src='/_ah/channel/jsapi'></script>
+    {% endif %}
+
+    <!-- Rhizosphere libraries and styles -->
     {% include "rhizo_head.html" %}
+    {% include "ga.html" %}
   </head>
   <body>
     <div id="rhizo-pangea" style="position: absolute; top: 0; bottom: 0; right: 0; left: 0;">
     </div>
 
     <script type="text/javascript" charset="utf-8">
-      // Force GViz to load early on, as otherwise the loading won't happen
-      // if started inside the bootstrapper (I suspect because the bootstrapper
-      // is itself included inside the JQuery ready() function).
-      // This is reproducible in FF3.5 and Safari4 on Mac.
-      //
-      // Note that I suspect this may cause a possible race condition, since in
-      // the bootstrapper we might be using GViz objects before the loading is
-      // completed (aka, we don't wait the callback to be invoked).
-      if (typeof google != 'undefined') {
-        google.load('visualization', '1');
-        google.setOnLoadCallback(function() {});
-      }
-
       $(document).ready(function() {
+        {% if use_channels %}
+          // TODO(battlehorse): Broadcasting should rely on capabilities to
+          // decide whether to activate itself or not, rather than URL
+          // experimental parameters.
+          rhizo.ui.component.templates['broadcast'] = function(project, options) {
+            var template;
+            if (project.gui().isSmall() || project.gui().isMobile()) {
+              template = new rhizo.ui.component.BottomTemplate(
+                  project, options, 'bottom');
+              template.addtoBottomBar(new rhizo.broadcast.BaseComponent(
+                  project, options));
+            } else {
+              template = new rhizo.ui.component.StandardTemplate(
+                  project, options, 'default');
+              template.addtoLeftBar(new rhizo.broadcast.BaseComponent(
+                  project, options));
+            }
+            return template;
+          };
+        {% endif %}
+
         var options = {
           allowConfigFromUrl: true
-          {% if forceTemplate %}
-          ,forceTemplate: '{{forceTemplate}}'
+          {% if use_channels %}
+            ,template: 'broadcast'
+          {% else %}
+            {% if template %}
+            ,template: '{{template}}'
+            {% endif %}
           {% endif %}
-          {% if forcePlatform %}
-          ,forcePlatform: '{{forcePlatform}}'
+          {% if platform %}
+          ,platform: '{{platform}}'
           {% endif %}
-          {% if forceDevice %}
-          ,forceDevice: '{{forceDevice}}'
+          {% if device %}
+          ,device: '{{device}}'
           {% endif %}
         };
         var bootstrapper = new rhizo.bootstrap.Bootstrap(
@@ -41,6 +66,5 @@
         bootstrapper.prepareAndDeploy();
       });
     </script>
-    {% include "ga.html" %}
   </body>
 </html>

@@ -68,6 +68,8 @@ rhizo.Project.prototype.metaReady = function() {
 rhizo.Project.prototype.initializeLayoutEngines_ = function() {
   this.curLayoutName_ = 'flow'; // default layout engine
   this.layoutEngines_ = {};
+  this.renderingPipeline_ = new rhizo.ui.RenderingPipeline(
+      this, this.gui_.universe);
   for (var layoutName in rhizo.layout.layouts) {
     var engine = new rhizo.layout.layouts[layoutName](this);
     var enableEngine = true;
@@ -116,9 +118,14 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   // already busy creating the whole dom).
   this.gui_.disableFx(true);
 
-  // rebuild visualization state, either from defaults or from history.
+  // Enable HTML5 history (if requested) and rebuild visualization state
+  // (either from defaults or from HTML5 history itself).
+  var bindings = [];
+  if (this.options_.enableHTML5History) {
+    bindings.push(rhizo.state.Bindings.HISTORY);
+  }
   var initialStateRebuilt = rhizo.state.getMasterOverlord().attachProject(
-      this, [rhizo.state.Bindings.HISTORY]);
+      this, bindings);
   this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
   if (!initialStateRebuilt) {
     // The state overlord is not aware of any initial state, so we initialize
@@ -443,6 +450,20 @@ rhizo.Project.prototype.setState = function(state) {
   var layoutName = this.curLayoutName_;
   var filter = false;
   var customModelPositions = null;
+
+  // When restoring a full state, all facets should be reverted to their default
+  // value. Here we set correct defaults for any facet which might be missing
+  // from the full state specification.
+  if (!(rhizo.state.Facets.SELECTION_FILTER in state)) {
+    state[rhizo.state.Facets.SELECTION_FILTER] = [];
+  }
+  for (var key in this.metaModel_) {
+    var facet = rhizo.state.Facets.FILTER_PREFIX + key;
+    if (!(facet in state)) {
+      state[facet] = null;
+    }
+  }
+
   for (var facet in state) {
     if (facet == rhizo.state.Facets.SELECTION_FILTER) {
       filter = true;
@@ -452,7 +473,7 @@ rhizo.Project.prototype.setState = function(state) {
     } else if (facet == rhizo.state.Facets.LAYOUT) {
       var layoutState = state[facet];
       layoutName = layoutState ? layoutState.layoutName : 'flow';
-      this.alignLayoutUI_(layoutName, layoutState);
+      this.alignLayout_(layoutName, layoutState);
       customModelPositions = layoutState.positions;
     } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
       filter = true;
@@ -490,7 +511,7 @@ rhizo.Project.prototype.stateChanged = function(facet, facetState) {
                          {filter: true, forcealign: true});
   } else if (facet == rhizo.state.Facets.LAYOUT) {
     var layoutName = facetState ? facetState.layoutName : 'flow';
-    this.alignLayoutUI_(layoutName, facetState);
+    this.alignLayout_(layoutName, facetState);
     this.layoutInternal_(layoutName);
     if (facetState && facetState.positions) {
       this.moveModels_(facetState.positions);
@@ -552,29 +573,44 @@ rhizo.Project.prototype.moveModels_ = function(positions) {
  *
  * @param {?string} opt_layoutEngineName The name of the layout engine to use.
  *     If undefined, the last known engine will be used.
+ * @param {*} opt_state The state the layout should be set to. The layout state
+ *     describes the set of layout-specific parameters. If undefined, the
+ *     current (possibly default) state the layout has will be used.
  * @param {*} opt_options An optional key-value map of layout directives.
  *    Currently supported ones include:
  *    - 'filter' (boolean): Whether this layout operation is invoked as a result
  *      of a filter being applied.
- *    - 'forceAlign' (boolean): Whether models' visibility should be synced at
+ *    - 'forcealign' (boolean): Whether models' visibility should be synced at
  *      the end of the layout operation.
+ * @return {boolean} Whether the layout operation completed successfully.
  */
-rhizo.Project.prototype.layout = function(opt_layoutEngineName, opt_options) {
+rhizo.Project.prototype.layout = function(opt_layoutEngineName,
+                                          opt_state,
+                                          opt_options) {
   if (opt_layoutEngineName) {
     if (!(opt_layoutEngineName in this.layoutEngines_)) {
       this.logger_.error("Invalid layout engine:" + opt_layoutEngineName);
-      return;
+      return false;
     }
   }
 
   var layoutName = opt_layoutEngineName || this.curLayoutName_;
+  var layoutEngine = this.layoutEngines_[layoutName];
+
   var layoutState = null;
-  if (this.layoutEngines_[layoutName].getState) {
-    layoutState = this.layoutEngines_[layoutName].getState();
+  if (opt_state) {
+    if (!this.alignLayout_(layoutName, opt_state)) {
+      this.logger_.error('Received invalid layout state');
+      return false;
+    }
+    layoutState = opt_state;
+  } else if (layoutEngine.getState) {
+    layoutState = layoutEngine.getState();
   }
   this.state_.pushLayoutChange(layoutName, layoutState);
   this.layoutInternal_(opt_layoutEngineName || this.curLayoutName_,
                        opt_options);
+  return true;
 };
 
 /**
@@ -600,25 +636,53 @@ rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
         lastLayoutEngine == layoutEngine, options) || dirty;
   }
 
+  this.renderingPipeline_.cleanup();
+  if (lastLayoutEngine != layoutEngine) {
+    // Restore all models to their original sizes and styles, if we are moving
+    // to a different layout engine.
+    this.renderingPipeline_.backupManager().restoreAll();
+  }
+
   this.logger_.info('laying out...');
 
   // reset panning
   this.gui_.universe.move(0, 0, {'bottom': 0, 'right': 0});
 
   // layout only non filtered models
-  var nonFilteredModels = jQuery.grep(this.models_, function(model) {
-    return !model.isFiltered();
+  var freeModels = jQuery.grep(this.models_, function(model) {
+    return model.isAvailableForLayout();
   });
-  dirty = layoutEngine.layout(this.gui_.universe,
-                              nonFilteredModels,
+
+  var boundingLayoutBox = new rhizo.layout.LayoutBox(
+      this.gui_.viewport, this.options_.layoutConstraints);
+  dirty = layoutEngine.layout(this.renderingPipeline_,
+                              boundingLayoutBox,
+                              freeModels,
                               this.modelsMap_,
                               this.metaModel_,
                               options) || dirty;
+  var resultLayoutBox = this.renderingPipeline_.apply();
+  this.gui_.universe.css({
+      'width': Math.max(resultLayoutBox.width + resultLayoutBox.left,
+                        this.gui_.viewport.width()),
+      'height': Math.max(resultLayoutBox.height + resultLayoutBox.top,
+                         this.gui_.viewport.height())}).
+      move(0, 0);
   if (dirty || options.forcealign) {
     this.alignVisibility_();
   }
 };
 
+/**
+ * Applies or removes a filter to the visualization, removing from view (or
+ * restoring) all the models that do not survive the filter.
+ *
+ * @param {string} key The metamodel key for the model attribute that is to
+ *     filter.
+ * @param {*} value The value that each model must have on the attribute
+ *     specified by 'key' in order not to be removed. To remove a previously
+ *     set filter, set value to null or undefined.
+ */
 rhizo.Project.prototype.filter = function(key, value) {
   if (this.filterInternal_(key, value)) {
     this.state_.pushFilterChange(key, value);
@@ -638,7 +702,8 @@ rhizo.Project.prototype.filter = function(key, value) {
  * value.
  * @param {string} key The metamodel key for the model attribute that was
  *     filtered.
- * @param {*} value The filter value.
+ * @param {*} value The filter value. Should be null or undefined when the
+ *     filter is to be removed.
  * @return {boolean} Whether the filter status of some models was affected by
  *     this new filter value.
  * @private
@@ -650,7 +715,7 @@ rhizo.Project.prototype.filterInternal_ = function(key, value) {
     // visualization.
     return false;
   }
-  if (value && value != '') {
+  if (value) {
     for (var i = this.models_.length-1; i >= 0; i--) {
       var model = this.models_[i];
       if (this.metaModel_[key].kind.survivesFilter(value, model.unwrap()[key])) {
@@ -674,7 +739,7 @@ rhizo.Project.prototype.filterInternal_ = function(key, value) {
 /**
  * Decides whether models should be repositioned after a filter was applied.
  * This may be necessary either because the filters are in autocommit mode, or
- * because the filter change caused  some models that were completely hidden
+ * because the filter change caused some models that were completely hidden
  * to become visible (hence all the models must be repositioned to accomodate
  * these ones).
  *
@@ -702,21 +767,31 @@ rhizo.Project.prototype.commitFilter = function() {
 };
 
 /**
- * Updates the visualization UI to match the currently selected layout engine
- * and associated state.
+ * Updates the UI and state of the layout engine to match the requested one.
+ *
+ * The layout selector component, if available, is updated to match the
+ * currently selected layout engine. The layout engine itself receives the
+ * updated state (which in turn triggers the update of layout UI controls).
+ *
  * @param {string} layoutName The currently selected layout engine.
  * @param {*} layoutState The layout state, as returned from its getState()
  *     method.
+ * @return {boolean} Whether the operation was successful or errors occurred
+ *     because of a malformed input layoutState.
  * @private
  */
-rhizo.Project.prototype.alignLayoutUI_ = function(layoutName, layoutState) {
-  var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
-  if (ui) {
-    ui.setEngine(layoutName);
-  }
+rhizo.Project.prototype.alignLayout_ = function(layoutName, layoutState) {
+  var success = true;
   if (this.layoutEngines_[layoutName].setState) {
-    this.layoutEngines_[layoutName].setState(layoutState);
+    success = this.layoutEngines_[layoutName].setState(layoutState);
   }
+  if (success) {
+    var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
+    if (ui) {
+      ui.setEngine(layoutName);
+    }
+  }
+  return success;
 };
 
 /**
@@ -745,14 +820,24 @@ rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
   // Verify whether the filter key (which may come from an historical state)
   // still exists in the metaModel.
   if (key in this.metaModel_) {
+    var filterUiExists = true;
+
     // Rebuild and show the affected filter, if needed.
     var ui = this.gui_.getComponent('rhizo.ui.component.FilterStackContainer');
     if (ui) {
-      ui.showFilter(key, this);
+      // A filter is explicitly made visible only if it's not in its default
+      // non-filtering state (i.e., it has a non-null value).
+      if (value) {
+        ui.showFilter(key);
+      }
+      filterUiExists = ui.isFilterActive(key);
     }
 
-    // Restore the filter value.
-    this.metaModel_[key].kind.setFilterValue(value);
+    // Restore the filter value, if the filter currently has an UI
+    // representation.
+    if (filterUiExists) {
+      this.metaModel_[key].kind.setFilterValue(value);
+    }
   }
 };
 
@@ -778,7 +863,7 @@ rhizo.Project.prototype.alignFx = function() {
       numVisibleModels++;
     }
   }
-  this.gui_.disableFx(this.options_.noAnims ||
+  this.gui_.disableFx(!this.options_.enableAnims ||
                       numUnfilteredModels > 200 ||
                       numVisibleModels > 200);
 };

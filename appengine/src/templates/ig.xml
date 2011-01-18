@@ -10,7 +10,7 @@
     >
   </ModulePrefs>
   <UserPref name="_table_query_url" display_name="Data source URL" required="true"/>
-  <UserPref name="useAnims" display_name="Fancy animations" required="true" datatype="bool" default_value="false" />
+  <UserPref name="useAnims" display_name="Fancy animations" required="true" datatype="bool" default_value="true" />
   <UserPref name="arDefaults" display_name="Autoanalyze data:" required="false" datatype="bool" default_value="false" />
   <UserPref name="arNumFields" display_name="When fullscreen, show" required="false" datatype="enum" default_value="3" >
     <EnumValue value="1" display_value="1 field" />
@@ -25,7 +25,7 @@
   <UserPref name="arSize" display_name="Advanced: as Size, use" required="false" datatype="string" />
   <UserPref name="arColor" display_name="Advanced: as Color, use" required="false" datatype="string" />
   <Content type="html" view="home,profile,canvas,default"><![CDATA[
-    <link rel="stylesheet" href="{{ hostname }}/static/shared/stylesheets/jquery-ui-1.8.4.custom.css" type="text/css" media="screen" charset="utf-8">
+    <link rel="stylesheet" href="{{ hostname }}/static/shared/stylesheets/jquery-ui-1.8.6.custom.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/base.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/lib/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
@@ -34,12 +34,15 @@
     </div>
     <!-- Scripts section -->
 
-    <!-- for the GViz loader -->
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <!--
+      Google services integration. Autoloads:
+      - google visualization APIs.
+    -->
+    <script type="text/javascript" src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"></script>
 
     <!-- JQuery specific libraries -->
-    <script src="{{ hostname }}/static/shared/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.4.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/shared/js/jquery-1.4.4.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.6.custom.min.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Rhizosphere libraries -->
     {% if debug %}
@@ -64,6 +67,7 @@
     <script src="{{ hostname }}/static/src/js/rhizo.ui.component.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.bootstrap.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/extra/rhizo.keyboard.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/src/js/extra/rhizo.broadcast.js" type="text/javascript" charset="utf-8"></script>
     {% else %}
     <script src="{{ hostname }}/static/lib/js/rhizo.pack.js" type="text/javascript" charset="utf-8"></script>
     {% endif %}
@@ -71,7 +75,7 @@
 
       var prefs = new _IG_Prefs();
       var globalOptions = {
-        noAnims: !prefs.getBool('useAnims'),
+        enableAnims: prefs.getBool('useAnims'),
         arDefaults: prefs.getBool('arDefaults'),
         arMaster: prefs.getString('arMaster'),
         arSize: prefs.getString('arSize'),
@@ -80,14 +84,8 @@
         allowConfigFromUrl: false
       };
 
-      _IG_RegisterOnloadHandler(loadVisualizationAPI);
-
-      function loadVisualizationAPI() {
-          google.load('visualization', '1');
-          google.setOnLoadCallback(vizLoaded_);
-      }
-
-      function vizLoaded_() {
+      _IG_RegisterOnloadHandler(loadRhizosphere);
+      function loadRhizosphere() {
         $(document).ready(function() {
           var bootstrapper = new rhizo.bootstrap.Bootstrap(
               $('#rhizo-pangea'), globalOptions);

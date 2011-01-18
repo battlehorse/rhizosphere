@@ -353,6 +353,32 @@
 }
 
 /******************
+  Layout controls, and related tweaks
+ *****************/
+.rhizo-layout-control {
+  white-space: nowrap;
+}
+
+.rhizo-layout-control LABEL {
+  min-width: 5em;
+  display: inline-block;
+}
+
+/* When inside a floating panel */
+.rhizo-floating-panel .rhizo-layout-extra-options {
+  margin-top: 3px;
+}
+
+.rhizo-floating-panel .rhizo-layout-control {
+  display: inline-block;
+  margin-right: 0.3em;
+}
+
+.rhizo-floating-panel .rhizo-layout-control LABEL {
+  min-width: 0;
+}
+
+/******************
   Filters, and related tweaks
  *****************/
 .rhizo-filter {
@@ -385,10 +411,6 @@
 /* When inside a floating panel */
 .rhizo-floating-panel .rhizo-slider {
   margin-right: 5px;
-}
-
-.rhizo-floating-panel .rhizo-layout-extra-options {
-  margin-top: 3px;
 }
 
 .rhizo-floating-panel .rhizo-filter {
@@ -564,7 +586,7 @@
   background-color: @warning-background;
 }
 
-.rhizo-selection-mode {
+.rhizo-viewport.rhizo-selection-mode {
   .importantgradient(@alternate-secondary-background, @dark-alternate-secondary-background);
   cursor: crosshair !important;
 }
@@ -812,15 +834,23 @@
 }
 
 /***************************
-  Bottom-bar widgets
+  Broadcasting component
 ***************************/
-.rhizo-platform-mobile .rhizo-bottom-bar .rhizo-maximize-icon {
-  display: none;
+.rhizo-broadcast P {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  vertical-align: middle;
 }
 
-.rhizo-bottom-bar .rhizo-link-help {
-  padding: 0;
-  margin: 0 5px;
+.rhizo-broadcast BUTTON {
+  float: right;
+}
+
+.rhizo-broadcast-url {
+  font-size: 0.9em;
+  width: 19em;
+  display: none;
 }
 
 /***************************

@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+<head>
+  <title>Rhizosphere Showcase :: Google Code</title>
+  <link rel="stylesheet"
+        href="/static/showcase/code/stylesheets/googlecodeindex.css"
+        type="text/css" media="screen" charset="utf-8">  
+
+  <script src="/static/shared/js/jquery-1.4.4.min.js"
+          type="text/javascript" charset="utf-8"></script>
+  {% include "../../ga.html" %}
+</head>
+<body class="googlecode-index">
+  <div id="header">
+    <h1>Google Code <span class="subtitle">Issue Tracking</span></h1>
+  </div>
+  <div class="box boilerplate">
+    <img src="/static/shared/img/rhizosphere_icon.png"
+         style="vertical-align: middle">
+    Powered by the <strong>Rhizosphere</strong> visualization library.
+    <a href="javascript:;" id="learnmore_trigger">Learn more</a>
+
+    <div id="learnmore_details" style="display: none">
+      <img src="/static/showcase/code/img/screenshot.png"
+           width="200px" style="float:right; padding-right: 0.5em"/>
+      <p>
+        <a href="http://sites.google.com/site/rhizosphereui">Rhizosphere</a>
+        is an innovative project to provide in-browser html-based
+        spatial navigation and interaction on structured data.
+      </p>
+      <p>
+        This showcase application integrates Rhizosphere with
+        <a href="http://code.google.com/projecthosting/">
+          Google Code Project Hosting</a> to let you browse and manage issues,
+        tasks and activities associated to your Google Code projects.
+      </p>
+      <p>
+        This application exists to demonstrate Rhizosphere
+        capabilities. Although we aim to provide a useful service, we may not
+        be able to offer a rich enough feature set to cover all project
+        management needs.
+      </p>
+      <p>
+        If you want to learn more, you can browse the
+        <a href="http://sites.google.com/site/rhizosphereui">Rhizosphere site</a>,
+        have a look at the Rhizosphere
+        <a href="http://code.google.com/p/rhizosphere/">source code</a> (it's
+        open source), read the
+        <a href="http://www.rhizospherejs.com/doc">documentation</a> or ask
+        questions in the
+        <a href="http://groups.google.com/group/rhizosphere/topics">
+          discussion group</a>.
+      </p>
+    </div>
+    <div style="clear: right"></div>
+  </div>
+
+  <a href="javascript:$('#form').submit()" id="submit">Go</a>
+  <form action="/showcase/code/rhizo" id="form" method="GET">
+    <div class="box search">
+      <label for="p">Project Name:</label>
+      <input type="text" name="p" id="p" value="{{ qs.p }}"
+             autofocus="autofocus" autocomplete="off">
+
+      <label for="det">Details:</label>
+      <select name="det" id="det">
+        <option value="compressed" {% ifequal qs.det 'compressed' %}selected='selected'{% endifequal %}>few</option>
+        <option value="all" {% ifequal qs.det 'all' %}selected='selected'{% endifequal %}>lots</option>
+      </select>
+      <br/>
+      <span class="hint">Examples:
+        <a href="/showcase/code/rhizo?p=chromium&pub=12m&n=500"
+           title="Up to 500 issues created in the last year">chromium</a>,
+        <a href="/showcase/code/rhizo?p=rhizosphere"
+           title="All Rhizosphere issues">rhizosphere</a>,
+        <a href="/showcase/code/rhizo?p=v8&can=open&upd=12m&n=500"
+           title="Up to 500 open issues changed in the last year">v8</a>
+      </span>
+
+      {% if error %}
+      <p class="error">
+        {{ error }}
+      </p>
+      {% endif %}
+
+      <div id="advanced_details" style="display: none">
+        <label for="n">Max results:</label>
+        <select id="n" name="n">
+          <option value="max" {% ifequal qs.n 'max' %}selected='selected'{% endifequal %}>max</option>
+          <option value="10" {% ifequal qs.n '10' %}selected='selected'{% endifequal %}>10</option>
+          <option value="50" {% ifequal qs.n '50' %}selected='selected'{% endifequal %}>50</option>
+          <option value="100" {% ifequal qs.n '100' %}selected='selected'{% endifequal %}>100</option>
+          <option value="500" {% ifequal qs.n '500' %}selected='selected'{% endifequal %}>500</option>
+          <option value="1000" {% ifequal qs.n '1000' %}selected='selected'{% endifequal %}>1000</option>
+          <option value="2000" {% ifequal qs.n '2000' %}selected='selected'{% endifequal %}>2000</option>
+          <option value="5000" {% ifequal qs.n '5000' %}selected='selected'{% endifequal %}>5000</option>
+          <option value="10000" {% ifequal qs.n '10000' %}selected='selected'{% endifequal %}>10000</option>
+        </select>
+
+        <label for="pub">Created since:</label>
+        <select name="pub" id="pub">
+          <option value="" {% ifequal qs.pub '' %}selected='selected'{% endifequal %}>all time</option>
+          <option value="1d" {% ifequal qs.pub '1d' %}selected='selected'{% endifequal %}>yesterday</option>
+          <option value="1w" {% ifequal qs.pub '1w' %}selected='selected'{% endifequal %}>last week</option>
+          <option value="1m" {% ifequal qs.pub '1m' %}selected='selected'{% endifequal %}>last month</option>
+          <option value="3m" {% ifequal qs.pub '3m' %}selected='selected'{% endifequal %}>last 3 months</option>
+          <option value="6m" {% ifequal qs.pub '6m' %}selected='selected'{% endifequal %}>last 6 months</option>
+          <option value="12m" {% ifequal qs.pub '12m' %}selected='selected'{% endifequal %}>last year</option>
+        </select><br/>
+
+        <label for="can">Canned query:</label>
+        <select name="can" id="can">
+          <option value="all" {% ifequal qs.can 'all' %}selected='selected'{% endifequal %}>all</option>
+          <option value="open" {% ifequal qs.can 'open' %}selected='selected'{% endifequal %}>open</option>
+          <option value="owned" {% ifequal qs.can 'owned' %}selected='selected'{% endifequal %}>owned</option>
+          <option value="reported" {% ifequal qs.can 'reported' %}selected='selected'{% endifequal %}>reported</option>
+          <option value="starred" {% ifequal qs.can 'starred' %}selected='selected'{% endifequal %}>starred</option>
+          <option value="new" {% ifequal qs.can 'new' %}selected='selected'{% endifequal %}>new</option>
+          <option value="to-verify" {% ifequal qs.can 'to-verify' %}selected='selected'{% endifequal %}>to-verify</option>
+        </select>
+
+        <label for="upd">Updated since:</label>
+        <select name="upd" id="upd">
+          <option value="" {% ifequal qs.upd '' %}selected='selected'{% endifequal %}>all time</option>
+          <option value="1d" {% ifequal qs.upd '1d' %}selected='selected'{% endifequal %}>yesterday</option>
+          <option value="1w" {% ifequal qs.upd '1w' %}selected='selected'{% endifequal %}>last week</option>
+          <option value="1m" {% ifequal qs.upd '1m' %}selected='selected'{% endifequal %}>last month</option>
+          <option value="3m" {% ifequal qs.upd '3m' %}selected='selected'{% endifequal %}>last 3 months</option>
+          <option value="6m" {% ifequal qs.upd '6m' %}selected='selected'{% endifequal %}>last 6 months</option>
+          <option value="12m" {% ifequal qs.upd '12m' %}selected='selected'{% endifequal %}>last year</option>
+        </select>
+        <p id="authnotice" style="display: none">
+          We will need access to your authenticated project feeds for this extraction.
+        </p>        
+      </div>
+    </div>
+
+    <a id="advanced_trigger" href="javascript:;">Advanced options</a>
+  </form>
+
+  <div class="footer">
+    <p>
+    We support the following browsers:
+    <img src="/static/welcome/img/chrome_mono.png"> Google Chrome
+    <img src="/static/welcome/img/firefox_mono.png"> Mozilla Firefox
+    <img src="/static/welcome/img/safari_mono.png"> Safari
+    <img src="/static/welcome/img/opera_mono.png"> Opera
+    <br />
+    Using Internet Explorer? Please install
+    <a href="http://code.google.com/chrome/chromeframe/">
+      Google Chrome Frame</a>.
+    </p>
+    <p>
+      The Rhizosphere library and this issue tracker showcase are
+      <strong>experimental</strong>. Expect bugs. Or consider
+      <a href="http://www.rhizospherejs.com/doc/contrib_overview.html">
+        contributing</a> to Rhizosphere development.
+    </p>
+  </div>
+  <script>
+    $(document).ready(function() {
+      $('#p').focus();
+      $('#advanced_trigger').click(function() {
+        $(this).fadeOut(200);
+        $('#advanced_details').show(200);
+      });
+      $('#learnmore_trigger').click(function() {
+        $('#header').animate({'margin-top': 30});
+        $('#learnmore_details').slideDown('fast');
+      });
+      $('#can').change(function() {
+        if ($(this).val() == 'owned' ||
+            $(this).val() == 'reported' ||
+            $(this).val() == 'starred') {
+          $('#authnotice').show();
+        } else {
+          $('#authnotice').hide();
+        }
+      });
+
+
+      {% if qs.pub %}{% ifnotequal qs.pub '' %}
+        $('#advanced_trigger').hide(); $('#advanced_details').show();
+      {% endifnotequal %}{% endif %}
+      {% if qs.can %}{% ifnotequal qs.can 'all' %}
+        $('#advanced_trigger').hide(); $('#advanced_details').show();
+      {% endifnotequal %}{% endif %}
+      {% if qs.n %}{% ifnotequal qs.n 'max' %}
+        $('#advanced_trigger').hide(); $('#advanced_details').show();
+      {% endifnotequal %}{% endif %}
+      {% if qs.upd %}{% ifnotequal qs.upd '' %}
+        $('#advanced_trigger').hide(); $('#advanced_details').show();
+      {% endifnotequal %}{% endif %}
+    });
+  </script>
+</body>
+</html>

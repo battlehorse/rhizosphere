@@ -86,9 +86,24 @@
     to always define this option to match the selectable items as narrowly as
     possible.
   </dd>
-  <dt>noAnims (boolean, default: false)</dt>
+  <dt>enableAnims (boolean, default: true)</dt>
   <dd>
-    Disable all animations to improve performance.
+    <p>
+      Whether Rhizosphere should use animations to smooth transitions such
+      as layouts and dynamic filtering.
+    </p>
+    <p>
+      Rhizosphere will automatically reduce animations to improve performance
+      when too many models are visualized on screen, but you can explicitly set
+      this to disable all animations from the start to further improve
+      performance.
+    </p>
+  </dd>
+  <dt>enableHTML5History (boolean, default: true)</dt>
+  <dd>
+    Whether to use <a href="http://www.w3.org/TR/html5/history.html">
+    HTML5 History</a> (if supported by the browser) to keep track of Rhizosphere
+    state.
   </dd>
   <dt>cacheDimensions (boolean: default: unset)</dt>
   <dd>
@@ -97,25 +112,54 @@
     models you are visualizing change their rendering dimensions arbitrarily
     after the visualization initialization.
   </dd>
-  <dt>forcePlatform (string, default: unset, allowed values: 'default'|'mobile')</dt>
+  <dt>platform (string, default: unset, allowed values: 'default'|'mobile')</dt>
   <dd>
     Forces Rhizosphere UI to adapt itself to the specified target platform.
   </dd>
   <dt>
-    forceDevice
-    (string, default: unset, allowed values: 'default'|'iphone'|'ipad')</dt>
+    device
+    (string, default: unset, allowed values: 'default'|'iphone'|'ipad'|'android')
+  </dt>
   <dd>
     Forces Rhizosphere UI to adapt itself to the specified target device,
     bypassing device detection from the user-agent.
   </dd>
   <dt>
-    forceTemplate
+    template
     (string, default: unset, allowed values: rhizo.ui.component.templates enum)
   </dt>
   <dd>
     Forces Rhizosphere UI to use the specified layout template and chrome. This
     parameter can be set to any template name registered in the
     <code>rhizo.ui.component.templates</code> enumeration.
+  </dd>
+  <dt>
+    layoutConstraints
+    (object, default: unset,
+    allowed keys: top, bottom, left, right, width, height)
+  </dt>
+  <dd>
+    <p>
+      Specifies a map of constraints for the area that Rhizosphere will use to
+      lay out models' renderings. By default Rhizosphere will use the entire
+      available viewport area for its layouts.
+    </p>
+    <p>
+      With this option you can limit the part of the viewport that Rhizosphere
+      will fill when laying out models' renderings. The following keys are
+      accepted: <code>top</code>, <code>bottom</code>, <code>left</code>,
+      <code>right</code>, <code>width</code> and <code>height</code>. Each value
+      in the <code>[0.0, 1.0)</code> range is considered relative to the
+      viewport width and height. It is otherwise assumed to be an absolute number
+      of pixels otherwise. <code>width</code> and <code>height</code> properties
+      take precedence respectively over <code>right</code> and
+      <code>bottom</code>.
+    </p>
+
+    <p>
+      Example:
+      <code>{layoutConstraints: {top: 0.2, left: 0.2, width: 600, height: 600}}</code>
+    </p>
   </dd>
 </dl>
 

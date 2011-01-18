@@ -21,6 +21,7 @@
 // RHIZODEP=rhizo.log,rhizo.meta
 namespace("rhizo.layout");
 
+
 /**
  * Creates a dropdown control that enumerates all the metaModel keys.
  * @param {rhizo.Project} project
@@ -43,6 +44,174 @@ rhizo.layout.metaModelKeySelector = function(project, className, opt_matcher) {
   return select;
 };
 
+
+/**
+ * Returns the first key of the project metamodel, optionally satisfying a
+ * required constraint.
+ * @param {rhizo.Project} project
+ * @param {function(string, Object):boolean} opt_matcher Optional function to
+ *     decide whether to the given metaModel key is acceptable or not.
+ *     Receives as parametes the key itself and the associated metamodel entry.
+ * @return {string} The metamodel key, or null if no acceptable key could be
+ *     found.
+ */
+rhizo.layout.firstMetamodelKey = function(project, opt_matcher) {
+  for (var key in project.metaModel()) {
+    if (!opt_matcher || opt_matcher(key, project.metaModel()[key])) {
+      return key;
+    }
+  }
+  return null;
+};
+
+/**
+ * A function that matches metamodel keys that identify parent-child
+ * relationships between models (specifically, a key whose value points to
+ * parent model of a given one).
+ * @param {string} key The key to check.
+ * @param {*} meta The metamodel entry associated to this key.
+ */
+rhizo.layout.parentMatcher = function(key, meta) {
+  return !!meta.isParent;
+};
+
+/**
+ * A function that matches metamodel keys that identify numeric model
+ * attributes.
+ * @param {string} key The key to check.
+ * @param {*} meta The metamodel entry associated to this key.
+ */
+rhizo.layout.numericMatcher = function(key, meta) {
+  return meta.kind.isNumeric();
+};
+
+
+/**
+ * Defines the bounding rectangle inside which models' layout should occur.
+ * The bounding rectangle is guaranteed to remain within the container limits.
+ *
+ * @param {HTMLElement} container The HTML element whose width and height define
+ *     the maximum width and height of the layout rectangle. This will typically
+ *     be the visualization viewport.
+ * @param {*} opt_layoutConstraints An optional map of constraints for the
+ *     layout bounding rectangle. The following keys are accepted: top, bottom,
+ *     left, right, width and height. Each value in the [0.0,1.0) range is
+ *     considered relative to the container width and height, and assumed to
+ *     be absolute values otherwise. 'width' and 'height' takes precedence
+ *     respectively over 'right' and 'bottom'.
+ * @constructor
+ */
+rhizo.layout.LayoutBox = function(container, opt_layoutConstraints) {
+  /**
+   * The distance (in pixels) of the layout rectangle from the container top
+   * border.
+   * @type {number}
+   */
+  this.top = 0;
+
+  /**
+   * The distance (in pixels) of the layout rectangle from the container bottom
+   * border.
+   * @type {number}
+   */
+  this.bottom = 0;
+
+  /**
+   * The distance (in pixels) of the layout rectangle from the container left
+   * border.
+   * @type {number}
+   */
+  this.left = 0;
+
+  /**
+   * The distance (in pixels) of the layout rectangle from the container right
+   * border.
+   * @type {number}
+   */
+  this.right = 0;
+
+  /**
+   * The layout rectangle width (in pixels).
+   * @type {number}
+   */
+  this.width = 0;
+
+  /**
+   * The layout rectangle height (in pixels).
+   * @type {number}
+   */
+  this.height = 0;
+
+  this.maxWidth_ = $(container).width();
+  this.maxHeight_ = $(container).height();
+  this.computeLayoutBox_(opt_layoutConstraints || {});
+};
+
+/**
+ * Computes the top,bottom,left,right,width and height attributes of the layout
+ * rectangle, given the surrounding container size and any externally provided
+ * constraints.
+ *
+ * @param {*} layoutConstraints Map of constraints for the layout bounding
+ *     rectangle.
+ * @private
+ */
+rhizo.layout.LayoutBox.prototype.computeLayoutBox_ = function(
+    layoutConstraints) {
+  this.top = this.getAbsoluteDimension_(layoutConstraints.top,
+                                        this.maxHeight_);
+  if (layoutConstraints.height) {
+    this.height = this.getAbsoluteDimension_(layoutConstraints.height,
+                                             this.maxHeight_);
+    this.bottom = this.maxHeight_ - this.top - this.height;
+  } else {
+    this.bottom = this.clamp_(
+        this.getAbsoluteDimension_(layoutConstraints.bottom, this.maxHeight_),
+        this.top, this.maxHeight_);
+    this.height = this.maxHeight_ - this.top - this.bottom;
+  }
+
+  this.left = this.getAbsoluteDimension_(layoutConstraints.left,
+                                         this.maxWidth_);
+  if (layoutConstraints.width) {
+    this.width = this.getAbsoluteDimension_(layoutConstraints.width,
+                                            this.maxWidth_);
+    this.right = this.maxWidth_ - this.left - this.width;
+  } else {
+    this.right = this.clamp_(
+        this.getAbsoluteDimension_(layoutConstraints.right, this.maxWidth_),
+        this.left, this.maxWidth_);
+    this.width = this.maxWidth_ - this.left - this.right;
+  }
+};
+
+/**
+ * Converts a value relative to the container size into an absolute value (in
+ * pixels).
+ * @param {number} value The value to convert.
+ * @param {number} maxValue The maximum acceptable value.
+ * @return {number} An absolute number (in pixel units) that is guaranteed to
+ *     be in the [0, maxValue] range.
+ * @private
+ */
+rhizo.layout.LayoutBox.prototype.getAbsoluteDimension_ = function(value, maxValue) {
+  value = value || 0;
+  var multiplier = value < 1.0 ? maxValue : 1;
+  return this.clamp_(Math.round(value * multiplier), 0, maxValue);
+};
+
+/**
+ * Clamps the given value between the minimum and maximum range limits.
+ * @param {number} val
+ * @param {number} min
+ * @param {number} max
+ * @private
+ */
+rhizo.layout.LayoutBox.prototype.clamp_ = function(val, min, max) {
+  return Math.min(max, Math.max(min, val));
+};
+
+
 /**
  * Converter that turns an unorganized set of rhizo.model.SuperModel instances
  * into a tree, according to a model attribute (parentKey) that defines the
@@ -57,7 +226,7 @@ rhizo.layout.Treeifier = function(parentKey) {
 
 /**
  * Builds a hierarchical structure of TreeNodes. Raises exceptions
- * if cycles are found within the tree. Deals automatically with "filtered"
+ * if cycles are found within the tree. Deals automatically with "unavailable"
  * parts of the tree.
  * 
  * @param {Array.<rhizo.model.SuperModel>} supermodels A list of all supermodels
@@ -81,8 +250,8 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
 
   var root = new rhizo.layout.TreeNode();
 
-  // supermodels contains only the _visible_ models, while allmodels contains
-  // all the known models.
+  // supermodels contains only the models that can be laid out, while allmodels
+  // contains all the known models.
   for (var i = 0, l = supermodels.length; i < l; i++) {
     if (!globalNodesMap[supermodels[i].unwrap().id].traversed_) {
 
@@ -100,7 +269,7 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
         localNodesMap[model.id] = true;
         globalNodesMap[model.id].traversed_ = true;
 
-        var parentSuperModel = this.findFirstVisibleParent_(
+        var parentSuperModel = this.findFirstAvailableParent_(
             allmodels,
             allmodels[model[this.parentKey_]]);
         if (parentSuperModel && parentSuperModel.id != model.id) {
@@ -118,10 +287,12 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
 };
 
 /**
- * From a given model, returns the first non-filtered model in the tree
- * hierarchy defined according to parentKey. If the given model itself is not
- * filtered, it is returned without further search. If a cycle is detected while
- * traversing filtered parents, an exception is raised.
+ * From a given model, returns the first model in the tree hierarchy defined
+ * according to parentKey which is available for layout. Models can be
+ * unavailable for various reasons, such as being filtered or pinned.
+ * If the given model itself is available, it is returned without further
+ * search. If a cycle is detected while traversing unavailable parents,
+ * an exception is raised.
  *
  * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
  *     model ids to SuperModel instances, for all models currently known to the
@@ -129,14 +300,14 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
  * @param {rhizo.model.SuperModel} superParent the model to start the search from.
  * @private
  */
-rhizo.layout.Treeifier.prototype.findFirstVisibleParent_ = function(allmodels,
-                                                                    superParent) {
+rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
+    allmodels, superParent) {
   if (!superParent) {
     return null;
   }
 
   var localNodesMap = {};
-  while (superParent.isFiltered()) {
+  while (!superParent.isAvailableForLayout()) {
     if (localNodesMap[superParent.id]) {
       // cycle detected
       throw new rhizo.layout.TreeCycleException(

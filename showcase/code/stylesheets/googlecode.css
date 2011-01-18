@@ -1,0 +1,249 @@
+/*
+  Copyright 2010 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
+/* Overrides for Rhizosphere default styles */
+.rhizo-viewport {
+    background-color: #fff;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#f2f2f2));
+    background-image: -moz-linear-gradient(-90deg, #fff, #f2f2f2);
+}
+
+.rhizo-model {
+    border: 1px solid #6a7eac;
+    -webkit-box-shadow: 5px 5px 5px rgba(33, 33, 33, 0.2);
+    -moz-box-shadow: 5px 5px 5px rgba(33, 33, 33, 0.2);
+    box-shadow: 5px 5px 5px rgba(33, 33, 33, 0.2);
+}
+
+/* Visualization container */
+.googlecode-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Custom logo section */
+.googlecode-project-logo IMG {
+  max-width: 55px;
+  max-height: 55px;
+  float: left;
+  margin: 0.5em;
+  border: 1px solid #6391de;
+}
+
+.googlecode-project-logo H1 {
+  font-size: 1.5em;
+  margin: 0;
+  padding: 0;
+}
+
+.googlecode-project-logo H1 A,
+.googlecode-project-logo H1 A:visited {
+  color: #426dc9;
+  text-decoration: none;
+}
+
+.googlecode-project-logo H1 A:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.googlecode-project-logo H1 .tag {
+  color: #aaa;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.googlecode-project-logo P {
+  margin: 0.2em 0;
+  padding: 0;
+}
+
+.googlecode-project-logo P.poweredby {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+.googlecode-project-logo .poweredby A,
+.googlecode-project-logo .poweredby A:visited {
+  color: #777;
+}
+
+/* base Rendering class */
+.googlecode {
+    height: 100%;
+    width: 100%;
+    background-color: #fff;
+}
+
+.googlecode .summary { /* issue summary */
+    padding: 0.3em 0.5em;
+    margin: 0;
+    height: 3.3em;
+    background-color: #ebeff9;
+    background-image: -webkit-gradient(linear, 0 50%, 0 100%, from(#ebeff9), to(#D1DDF9));
+    background-image: -moz-linear-gradient(-90deg, #ebeff9, #D1DDF9);
+    border-bottom: 1px solid #6a7eac;
+    overflow: hidden;
+}
+
+/* issue summary overrides, when issue is selected */
+.ui-selected .googlecode .summary,
+.ui-selecting .googlecode .summary,
+.ui-selected .googlecode.custom .summary,
+.ui-selecting .googlecode.custom .summary {
+    background-color: #F796FF;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#F796FF), to(#D280D9));
+    background-image: -moz-linear-gradient(-90deg, #F796FF, #D280D9);
+    border-color: #7E18AC;
+}
+
+/* issue sumamry override, when custom styles are applied to the issue */
+.googlecode.custom .summary {
+    background-color: rgba(33, 33, 33, 0.2);
+    background-image: none;
+    border-color: rgba(33, 33, 33, 0.5);
+}
+
+/* Issue id */
+.googlecode .id {
+    float: left;
+    font-size: 1.4em;
+    padding: 0 0.1em 0.2em 0.1em;
+    margin-right: 0.4em;
+}
+
+.googlecode .id A,.googlecode .id A:visited {
+    color: black;
+    text-decoration: none;
+}
+
+.googlecode .id A:hover {
+    text-decoration: underline;
+}
+
+/* Issue status */
+.googlecode .status {
+    font-size: 0.9em;
+    margin: 0 0 0.3em 0;
+    padding: 0 0 2px 0;
+    clear: left;
+    font-weight: bold;
+}
+
+.googlecode.open .status {
+    background-color: #F2EA00;
+    border-bottom: 1px solid #D9D200;
+}
+
+.googlecode.closed .status {
+    background-color: #00A339;
+    color: #fff;
+    border-bottom: 1px solid #008a30;
+}
+
+/* Issue status overrides, when issue is selected */
+.ui-selected .googlecode.open .status,
+.ui-selecting .googlecode.open .status {
+    background-color: #F9B0FF;
+    border-color: #C78DCC;
+}
+
+.ui-selected .googlecode.closed .status,
+.ui-selecting .googlecode.closed .status {
+    background-color: #7E18AC;
+    border-color: #6A1491;
+}
+
+/* issue status override, when custom styles are applied to the issue */
+.googlecode.custom .status {
+    background-color: rgba(33, 33, 33, 0.3);
+    background-image: none;
+    border-color: rgba(33, 33, 33, 0.5);
+}
+
+/* Issue labels */
+.googlecode .labels {
+    font-size: 0.9em;
+    margin: 0.1em;
+    margin-top: 0.5em;
+    line-height: 150%;
+}
+
+.googlecode .label {
+    white-space: nowrap;
+    border: 1px solid rgba(66, 109, 201, 0.7);
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    margin: 0.2em 0.2em 0 0;
+}
+
+.googlecode .label .suffix {
+    background-color: rgba(66, 109, 201, 0.2);
+    color: #2e4987;
+    font-weight: bold;
+}
+
+.googlecode .label .prefix {
+    color:white;
+    background-color: rgba(66, 109, 201, 0.7);
+}
+
+/* Issue stars, dates, users and blocked-by information */
+.googlecode .stars, .googlecode .dates,
+.googlecode .users, .googlecode .blocked {
+    margin: 0;
+    font-size: 0.9em;
+    padding: 2px 0 2px 16px;
+}
+
+.googlecode .stars {
+    background: transparent url('/static/showcase/code/img/star.png') no-repeat top left;
+}
+
+.googlecode .dates {
+    background: transparent url('/static/showcase/code/img/calendar.png') no-repeat top left;
+}
+
+.googlecode .users {
+    background: transparent url('/static/showcase/code/img/user-silhouette.png') no-repeat top left;
+}
+
+.googlecode .blocked {
+    background: transparent url('/static/showcase/code/img/slash-button.png') no-repeat top left;
+}
+
+.googlecode .nextdate, .googlecode .owner {
+    background: transparent url('/static/showcase/code/img/control-000-small.png') no-repeat center left;
+    padding-left: 16px;
+}
+
+/* Style overrides, when the 'compressed' rendering is used. */
+.googlecode.nodetail .summary {
+    height: 100%;
+    border: 0;
+}
+.googlecode.nodetail .id {
+    background-color: rgba(33, 33, 33, 0.1);
+    border: 1px solid rgba(33,33,33, 0.2);
+    font-size: 1.3em;
+}
+
+.googlecode.nodetail .status {
+    margin: 0;
+}

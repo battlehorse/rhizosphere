@@ -65,3 +65,89 @@ rhizo.util.orderOfMagnitude = function(num) {
   // and consequently floored to 5. And we cannot remove floor().
   return Math.floor(Math.round(rhizo.util.log10_(Math.abs(num))*100)/100);
 };
+
+/**
+ * Parses an URI extracting the different parts that compose it.
+ *
+ * This function comes straight from Steven Levithan's parseURI library
+ * (http://blog.stevenlevithan.com/archives/parseuri), released under the MIT
+ * license. See the NOTICE file for further info.
+ * @param {string} str The URI to parse.
+ * @return {Object.<string, string>} A key-value map for all the composing
+ *     parts of the parsed URI, like 'protocol', 'host', 'path' and so forth.
+ */
+rhizo.util.parseUri = function(str) {
+  var o = rhizo.util.parseUri.options_;
+  var m = o.parser[o.strictMode ? "strict" : "loose"].exec(str);
+  var uri = {};
+  var i   = 14;
+
+  while (i--) uri[o.key[i]] = m[i] || "";
+
+  uri[o.q.name] = {};
+  uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+    if ($1) uri[o.q.name][$1] = $2;
+  });
+
+  return uri;
+};
+
+/**
+ * Configuration options for rhizo.util.parseUri
+ * @type {*}
+ * @private
+ */
+rhizo.util.parseUri.options_ = {
+  strictMode: false,
+  key: ["source","protocol","authority","userInfo","user","password","host",
+        "port","relative","path","directory","file","query","anchor"],
+  q: {
+    name:   "queryKey",
+    parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+  },
+  parser: {
+    strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+    loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+  }
+};
+
+/**
+ * @return {Object.<stirng, string>} A key-value map of all the URL parameters
+ *     in the current document URL.
+ */
+rhizo.util.urlParams = function() {
+  return rhizo.util.parseUri(document.location.href).queryKey;
+};
+
+/**
+ * Creates a new url by adding extra query parameters to a base url.
+ *
+ * @param {string} opt_url The base url to build the new one from. Defaults to
+ *     document.location.href if unspecified.
+ * @param {Object.<string, string>} opt_extra_params A key-value map of
+ *     query parameters that will be added to the url.
+ * @return {string} The newly built url.
+ */
+rhizo.util.buildUrl = function(opt_url, opt_extra_params) {
+  var url = opt_url || document.location.href;
+  if (!opt_extra_params) {
+    return url;
+  }
+  urlData = rhizo.util.parseUri(url);
+  var newUrl = [
+      urlData.protocol, '://',
+      urlData.authority,
+      urlData.path, '?',
+      urlData.query ];
+  for (var key in opt_extra_params) {
+    newUrl.push('&');
+    newUrl.push(key);
+    newUrl.push('=');
+    newUrl.push(encodeURIComponent(opt_extra_params[key]))
+  }
+  if (urlData.anchor.length > 0) {
+    newUrl.push('#');
+    newUrl.push(urlData.anchor)
+  }
+  return newUrl.join('');
+};

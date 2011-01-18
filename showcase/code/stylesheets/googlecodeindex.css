@@ -1,0 +1,182 @@
+/*
+  Copyright 2010 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
+.googlecode-index {
+  font-family: sans-serif;
+  margin: auto;
+  width: 960px;
+  background-color: #ebeff9;
+  background-image: -webkit-gradient(linear, 0 0, 0 50, from(#d3dcf5), to(#ebeff9));
+  background-image: -moz-linear-gradient(-90deg, #d3dcf5 0px, #ebeff9 50px, #ebeff9 100%);
+  background-repeat: no-repeat;
+}
+
+/* Headers */
+.googlecode-index #header {
+  margin-top: 20%;
+  z-index: 10;
+  position: relative;
+}
+
+.googlecode-index H1 {
+  background-color: #6391de;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#6391de), to(#426dc9));
+  background-image: -moz-linear-gradient(-90deg, #6391de, #426dc9);
+  color: #fff;
+  text-shadow: 1px 1px 2px #2e4987;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  font-size: 2em;
+  padding: 0.2em;
+  margin: 0;
+  font-weight: bold;
+  -webkit-box-shadow: 2px 2px 2px #ccc;
+  -moz-box-shadow: 2px 2px 2px #ccc;
+  box-shadow: 2px 2px 2px #ccc;
+}
+
+.googlecode-index H1 .subtitle {
+  color: #ebeff9;
+  font-size: 0.8em;
+}
+
+/* Boxes and containers */
+.googlecode-index .box {
+  border: 1px solid #d3dcf5;
+  -webkit-box-shadow: 1px 1px 2px #ccc;
+  -moz-box-shadow: 1px 1px 2px #ccc;
+  box-shadow: 1px 1px 2px #ccc;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  background-color: #fff;
+  padding: 0.5em 0.2em 0.2em 0.5em;
+}
+
+.googlecode-index .boilerplate {
+  font-size: 0.8em;
+  color: #666;
+  margin: -5px 0 0 0;
+  position: relative;
+}
+
+.googlecode-index .search {
+  padding: 0.5em;
+  margin: 10px 0;
+  width: 870px;
+  min-height: 4em;
+}
+
+.googlecode-index .footer {
+  position: absolute;
+  bottom: 2em;
+  font-size: 0.7em;
+  color: #666;
+  opacity: 0.7;
+  padding: 0 0.5em;
+
+  width: 960px;
+  background-color: rgba(150, 150, 180, 0.2);
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+}
+
+/* Form elements */
+.googlecode-index LABEL {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.googlecode-index .search INPUT {
+  border-width: 0;
+  width: 26em;
+  outline: none;
+  color: #000;
+  font-size: 1.5em;
+}
+
+/* Form submit */
+.googlecode-index #submit {
+  background-color: #6391de;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#6391de), to(#426dc9));
+  background-image: -moz-linear-gradient(-90deg, #6391de, #426dc9);
+  color: #fff;
+  text-shadow: 1px 1px 2px #2e4987;
+  font-size: 2em;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  margin: 10px 0;
+  padding: 0.5em 0.2em;
+  -webkit-box-shadow: 2px 2px 2px #ccc;
+  -moz-box-shadow: 2px 2px 2px #ccc;
+  box-shadow: 2px 2px 2px #ccc;
+  float: right;
+  display: inline-block;
+  min-height: 1.5em;
+}
+
+.googlecode-index #submit:hover {
+  cursor: pointer;
+}
+
+/* Form Advanced options (trigger and details) */
+.googlecode-index #advanced_trigger {
+  font-size: 0.8em;
+  color: #333;
+  padding-left: 0.5em;
+}
+
+.googlecode-index #advanced_details {
+  font-size: 0.8em;
+  margin-top: 1em;
+  border: 1px solid #d3dcf5;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
+}
+
+.googlecode-index #advanced_details LABEL {
+  width: 8em;
+  text-align: right;
+  display: inline-block;
+}
+
+.googlecode-index #advanced_details SELECT {
+  width: 8em;
+}
+
+/* Hints, errors and authentication notice */
+.googlecode-index .hint {
+  font-size: 0.7em;
+  color: #666;
+}
+
+.googlecode-index .hint A, .googlecode-index .hint A:visited {
+  color: #333;
+}
+
+.googlecode-index .error {
+  color: red;
+  font-size: 0.8em;
+}
+
+.googlecode-index #authnotice {
+  margin: 0;
+  padding: 0.2em 0.5em;
+  font-size: 0.8em;
+  color: #666;
+}
+
