@@ -693,7 +693,13 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   this.model_ = model;
   this.id = model.id;
   this.raw_node_ = rawNode;
-  this.naked_node_ = rawNode.children();
+
+  /**
+   * The naked rendering, as returned by the renderer render() call.
+   * @type {Element}
+   * @private
+   */
+  this.naked_node_ = rawNode.children().get(0);
 
   // Bind the model id to each rendering
   this.raw_node_.data('id', model.id);
@@ -793,7 +799,7 @@ rhizo.ui.Rendering.prototype.reRender_ = function() {
   // Must wrap in $() in case renderer returns raw strings.
   this.naked_node_ = $(this.renderer_.render(this.model_.unwrap(),
                                              this.expanded_,
-                                             this.renderingHints_));
+                                             this.renderingHints_)).get(0);
 
   // keep expanded items above the others.
   // Remove any rescaling that might have been applied to the rendering.
@@ -1171,7 +1177,7 @@ rhizo.ui.Rendering.prototype.setNakedCss = function(props, opt_hintRevert) {
                                props, 
                                opt_hintRevert);
   } else {
-    this.naked_node_.css(props);
+    $(this.naked_node_).css(props);
   }
 };
 
@@ -1183,7 +1189,7 @@ rhizo.ui.Rendering.prototype.nakedCss = function(propName) {
   if (typeof propName != 'string') {
     throw 'nakedCss() expects a string of the property to access.';
   }
-  return this.naked_node_.css(propName);
+  return $(this.naked_node_).css(propName);
 };
 
 /**
