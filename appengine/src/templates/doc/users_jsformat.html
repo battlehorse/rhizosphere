@@ -218,7 +218,11 @@ var renderer = {
   <dd>
     <p>
       Returns an HTML representation of a model, either in the form of a plain
-      string, an HTML element or a jQuery object.
+      string, an HTML element or a jQuery object.<br />
+      The returned representation must contain only one root HTML element (such
+      as a <code>&lt;div/&gt;</code> enclosing the entire rendering). If
+      multiple top-level HTML elements are returned, inconsistencies may appear
+      under certain conditions (such as rendering maximization/minimization).
     </p>
     <dl class="arguments">
       <dt>model (Object)</dt>
@@ -317,7 +321,7 @@ var renderer = {
       </dd>
     </dl>
   </dd>
-  <dt>canRescaleTo(model, jquery_object, width, height)</dt>
+  <dt>canRescaleTo(model, element, width, height)</dt>
   <dd>
     <p>Decides whether a given rendering can be rescaled to a certain size.
       This is invoked only in the context of layout operations that dynamically
@@ -331,10 +335,10 @@ var renderer = {
       <dd>
         The model whose rendering is about to being rescaled.
       </dd>
-      <dt>jquery_object (JQuery object)</dt>
+      <dt>element (HTML element)</dt>
       <dd>
-        A JQuery object (i.e., what you get by calling <code>$()</code> on the
-        results of the <code>render()</code> function) matching the rendering
+        The HTML element that encloses the rendering (i.e., the root HTML
+        element returned by the <code>renderer.render()</code> function)
         which is going to be affected by the proposed rescaling.
       </dd>
       <dt>width</dt>
@@ -348,7 +352,7 @@ var renderer = {
     </dl>
 
   </dd>
-  <dt>rescale(model, jquery_object, width, height)</dt>
+  <dt>rescale(model, element, width, height)</dt>
   <dd>
     <p>Requests the renderer to rescale the given rendering to a specific size.
       This is invoked only in the context of layout operations that dynamically
@@ -361,10 +365,10 @@ var renderer = {
       <dd>
         The model whose rendering is being rescaled.
       </dd>
-      <dt>jquery_object (JQuery object)</dt>
+      <dt>element (HTML element)</dt>
       <dd>
-        A JQuery object (i.e., what you get by calling <code>$()</code> on the
-        results of the <code>render()</code> function) matching the rendering
+        The HTML element that encloses the rendering (i.e., the root HTML
+        element returned by the <code>renderer.render()</code> function)
         which is going to be affected by the rescaling.
       </dd>
       <dt>width</dt>
@@ -377,7 +381,7 @@ var renderer = {
       </dd>
     </dl>
   </dd>
-  <dt>changeStyle(model, jquery_object, styles, opt_hintRevert)</dt>
+  <dt>changeStyle(model, element, styles, opt_hintRevert)</dt>
   <dd>
     <p>
       Requests the renderer to apply (or revert) temporary style changes to
@@ -390,10 +394,10 @@ var renderer = {
       <dd>
         The model whose rendering is being restyled.
       </dd>
-      <dt>jquery_object (JQuery object)</dt>
+      <dt>element (HTML element)</dt>
       <dd>
-        A JQuery object (i.e., what you get by calling <code>$()</code> on the
-        results of the <code>render()</code> function) matching the rendering
+        The HTML element that encloses the rendering (i.e., the root HTML
+        element returned by the <code>renderer.render()</code> function)
         which is going to be affected by the style changes.
       </dd>
       <dt>styles (Object)</dt>
