@@ -128,7 +128,7 @@ http://spreadsheets.google.com/tq?range=A1:K14&amp;headers=-1&amp;key=0Av88pFrCT
   initialization allows flexible configuration to match different initialization
   needs. For a complete overview of the alternatives, please refer to the
   <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.bootstrap.js">
-    <code>rhizo.bootstra.Bootstrap</code> source code</a>.
+    <code>rhizo.bootstrap.Bootstrap</code> source code</a>.
 </p>
 
 <h3>Initialization options</h3>
@@ -184,14 +184,16 @@ bootstrapper.prepareAndDeploy(datasource_uri);
     calling this method.
   </dd>
   <dt>
-    rhizo.bootstrap.Bootstrap.deployExplicit(metamodel, renderer, models)
+    rhizo.bootstrap.Bootstrap.deployExplicit(models, opt_metamodel, opt_renderer)
   </dt>
   <dd>
     Initializes a Rhizosphere visualization by explicitly declaring the models,
     metamodels and renderer the visualization must use. Refer to
     <a href="/doc/devel_concepts.html">Concepts</a> and
     <a href="/doc/users_jsformat.html">Rhizosphere data format</a> for details about
-    the expected parameters. <br />
+    the expected parameters. Both the metamodel and the renderer can be also
+    specified as configuration options, and can therefore be omitted here in
+    such case.<br />
     <code>rhizo.bootstrap.Bootstrap.prepare()</code> must be invoked before
     calling this method.
   <dd>

@@ -40,9 +40,9 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
       new rhizo.NativeLogger() :  new rhizo.NoOpLogger();
   var initializer = new rhizo.gviz.Initializer(datatable, logger, opt_options);
   bootstrapper.prepare();
-  bootstrapper.deployExplicit(initializer.metamodel,
-                              initializer.renderer,
-                              initializer.models);
+  bootstrapper.deployExplicit(initializer.models,
+                              initializer.metamodel,
+                              initializer.renderer);
 };
 
 rhizo.gviz.Initializer = function(dataTable,

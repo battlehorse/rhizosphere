@@ -101,7 +101,7 @@
       $(document).ready(function() {
         var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
         bootstrapper.prepare();
-        bootstrapper.deployExplicit(metamodel, renderer, models);
+        bootstrapper.deployExplicit(models, metamodel, renderer);
       });
     </script>
   </body>
