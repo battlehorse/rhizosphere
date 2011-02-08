@@ -703,6 +703,7 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   this.rendererSizeChecker_ = null;
   this.rendererRescaler_ = null;
   this.rendererStyleChanger_ = null;
+  this.rendererAttachListener_ = null;
   this.setRendererHelpers_();
 
   this.expandable_ = false;  // Whether the rendering supports expansion or not.
@@ -732,13 +733,14 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
    * @private
    */
   this.modes_ = {};
+  this.notifyAttach_(true);
 };
 
 /**
  * @private
  */
 rhizo.ui.Rendering.prototype.setRendererHelpers_ = function() {
-  if (typeof(this.renderer_.minSize) == 'function') {
+  if (typeof(this.renderer_.canRescaleTo) == 'function') {
     this.rendererSizeChecker_ = this.renderer_.canRescaleTo;
   }
   if (typeof(this.renderer_.rescale) == 'function') {
@@ -746,6 +748,9 @@ rhizo.ui.Rendering.prototype.setRendererHelpers_ = function() {
   }
   if (typeof(this.renderer_.changeStyle) == 'function') {
     this.rendererStyleChanger_ = this.renderer_.changeStyle;
+  }
+  if (typeof(this.renderer_.onAttach) == 'function') {
+    this.rendererAttachListener_ = this.renderer_.onAttach;
   }
 };
 
@@ -758,12 +763,32 @@ rhizo.ui.Rendering.prototype.raw_ = function() {
   return this.raw_node_.get(0);
 };
 
+
+/**
+ * Notifies the renderer that the rendering of a particular model has been
+ * attached to or removed from the DOM. 
+ * 
+ * @param {boolean} attached Whether this rendering was attached to or detached
+ *     from the DOM.
+ * @private
+ */
+rhizo.ui.Rendering.prototype.notifyAttach_ = function(attached) {
+  if (this.rendererAttachListener_) {
+    this.rendererAttachListener_(this.model_.unwrap(), attached);
+  }
+};
+
+
 /**
  * Regenerates the naked and raw renderings for the model managed by this
  * rendering.
  * @private
  */
 rhizo.ui.Rendering.prototype.reRender_ = function() {
+  // Detach the old rendering.
+  this.notifyAttach_(false);
+  this.raw_node_.children(':not(.rhizo-expand-model)').remove();  
+  
   // re-render. rendered expects the naked model.
   // Must wrap in $() in case renderer returns raw strings.
   this.naked_node_ = $(this.renderer_.render(this.model_.unwrap(),
@@ -781,8 +806,8 @@ rhizo.ui.Rendering.prototype.reRender_ = function() {
   }
 
   // replace the old rendering
-  this.raw_node_.children(':not(.rhizo-expand-model)').remove();
   this.raw_node_.append(this.naked_node_);
+  this.notifyAttach_(true);
   this.refreshCachedDimensions_();
 };
 
@@ -1084,7 +1109,8 @@ rhizo.ui.Rendering.prototype.canRescaleTo = function(width,
     // size checker has been defined.
     //
     // Like this method, the size checker too receives outer dimensions.
-    var canResize = this.rendererSizeChecker_(this.naked_node_,
+    var canResize = this.rendererSizeChecker_(this.model_.unwrap(),
+                                              this.naked_node_,
                                               width - 2,
                                               height - 2);
     if (!canResize && opt_failure_callback) {
@@ -1116,7 +1142,10 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
     // if a rescaler has been defined.
     //
     // Like this method, the rescaler too receives outer dimensions.
-    this.rendererRescaler_(this.naked_node_, width - 2, height - 2);
+    this.rendererRescaler_(this.model_.unwrap(), 
+                           this.naked_node_, 
+                           width - 2,
+                           height - 2);
   }
   return this;
 };
@@ -1137,7 +1166,10 @@ rhizo.ui.Rendering.prototype.setNakedCss = function(props, opt_hintRevert) {
     throw 'setNakedCss() expects a map of properties.';
   }
   if (this.rendererStyleChanger_) {
-    this.rendererStyleChanger_(this.naked_node_, props, opt_hintRevert);
+    this.rendererStyleChanger_(this.model_.unwrap(), 
+                               this.naked_node_, 
+                               props, 
+                               opt_hintRevert);
   } else {
     this.naked_node_.css(props);
   }
@@ -1220,8 +1252,9 @@ rhizo.ui.RenderingBootstrap = function(renderer, gui, project, options) {
  */
 rhizo.ui.RenderingBootstrap.prototype.buildRenderings = function(models) {
   var rawRenderings = [];
+  var hasCustomDragHandle = this.getDragHandleSelector_() != null;
   for (var i = 0;  i < models.length; i++) {
-    this.rawrender_(models[i], rawRenderings);
+    this.rawrender_(models[i], rawRenderings, hasCustomDragHandle);
   }
   if (rawRenderings.length == 0) {
     this.logger_.error("No renderings.");
@@ -1271,20 +1304,26 @@ rhizo.ui.RenderingBootstrap.prototype.renderings = function() {
  *
  * @param {rhizo.model.SuperModel} model
  * @param {Array.<*>} rawRenderings
+ * @param {boolean} hasCustomDragHandle Whether the renderings will have
+ *     a custom drag handler, or otherwise the entire rendering is draggable.
  * @private
  */
-rhizo.ui.RenderingBootstrap.prototype.rawrender_ = function(model,
-                                                            rawRenderings) {
+rhizo.ui.RenderingBootstrap.prototype.rawrender_ = function(
+    model, rawRenderings, hasCustomDragHandle) {
   var naked_render = this.renderer_.render(model.unwrap(),
                                            model.expanded,
                                            this.gui_.allRenderingHints());
+  var renderingClass =
+      'rhizo-model' + (hasCustomDragHandle ? '' : ' rhizo-drag-handle');
   if (typeof naked_render == 'string') {
-    rawRenderings.push('<div class="rhizo-model">');
+    rawRenderings.push('<div class="');
+    rawRenderings.push(renderingClass);
+    rawRenderings.push('">');
     rawRenderings.push(naked_render);
     rawRenderings.push('</div>');
   } else {
     // Assume it's a jQuery object.
-    var shell = $('<div class="rhizo-model"></div>');
+    var shell = $('<div />', {'class': renderingClass});
     shell.append(naked_render);
     rawRenderings.push(shell);
   }
@@ -1353,6 +1392,22 @@ rhizo.ui.RenderingBootstrap.prototype.sanityCheck_ = function(rawRenderings,
     return false;
   }
   return true;
+};
+
+/**
+ * @return {boolean} Whether the renderer declares a custom drag handle
+ *     selector or not (in which case, the entire rendering will be used as a
+ *     drag handle.
+ * @private
+ */
+rhizo.ui.RenderingBootstrap.prototype.getDragHandleSelector_ = function() {
+  if (typeof(this.renderer_.dragHandle) == 'string') {
+    return this.renderer_.dragHandle;
+  } else if (typeof(this.renderer_.dragHandle) == 'function') {
+    return this.renderer_.dragHandle();
+  } else {
+    return null;
+  }
 };
 
 rhizo.ui.RenderingBootstrap.prototype.decorateRenderings_ = function(
@@ -1459,6 +1514,14 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
       // If a link was clicked, let the event bubble up.
       return;
     }
+    
+    if ($(ev.target).is('.rhizo-stop-propagation') ||
+        $(ev.target).parents('.rhizo-stop-propagation').length > 0) {
+      // Stop propagation if the event originated within a node that explicitly
+      // requests so.
+      return false;
+    }
+    
     this.project_.toggleSelect(model.id);
     return false;
   }, this));
@@ -1472,6 +1535,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
     rawRenderings) {
   rawRenderings.draggable({
     cursor: 'pointer',
+    handle: this.getDragHandleSelector_() || 'rhizo-drag-handle',
     distance: 3,
     addClasses: false,
     start: jQuery.proxy(function(ev, ui) {
