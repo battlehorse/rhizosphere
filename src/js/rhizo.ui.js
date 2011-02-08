@@ -780,7 +780,8 @@ rhizo.ui.Rendering.prototype.raw_ = function() {
  */
 rhizo.ui.Rendering.prototype.notifyAttach_ = function(attached) {
   if (this.rendererAttachListener_) {
-    this.rendererAttachListener_(this.model_.unwrap(), attached);
+    this.rendererAttachListener_(
+        this.model_.unwrap(), this.naked_node_, attached);
   }
 };
 
