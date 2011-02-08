@@ -42,6 +42,7 @@ rhizo.bootstrap.uuids_ = 0;
  */
 rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
   this.container_ = container;
+  this.deployed_ = false;
   var containerId = $(container).attr('id');
   if (!containerId || containerId.length == 0) {
     // Generates a unique element id for the visualization container if one
@@ -50,7 +51,7 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
     // bootstrap calls does not change over time when multiple visualizations
     // are present), since long-lived Rhizosphere state representations are
     // based on this.
-    $(container).attr('rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
+    $(container).attr('id', 'rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
   }
   this.options_ = { selectfilter: '.rhizo-model:visible',
                     enableHTML5History: true,
@@ -59,6 +60,13 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
     $.extend(this.options_, opt_options);
   }
   this.ready_callback_ = opt_callback;
+};
+
+/**
+ * @return {boolean} Whether deployment of models has already occurred or not.
+ */
+rhizo.bootstrap.Bootstrap.prototype.isDeployed = function() {
+  return this.deployed_;
 };
 
 /**
@@ -162,6 +170,7 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
   if (this.ready_callback_) {
     this.ready_callback_(this.project_);
   }
+  this.deployed_ = true;
 };
 
 /**
@@ -276,3 +285,4 @@ rhizo.bootstrap.Bootstrap.prototype.tryInitResourceFromUrl_ = function() {
   }
   return decodeURIComponent(resource);
 };
+
