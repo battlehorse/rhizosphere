@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.meta,rhizo.autorender
+// RHIZODEP=rhizo.meta,rhizo.autorender,rhizo.log
 namespace("rhizo.gviz");
 
 /**
@@ -36,8 +36,8 @@ rhizo.gviz.Rhizosphere = function(container) {
 rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
   var bootstrapper = new rhizo.bootstrap.Bootstrap(this.container_, opt_options);
 
-  // TODO(battlehorse): replace with proper logger.
-  var logger = {warn: function() {}};
+  var logger = rhizo.nativeConsoleExists() ?
+      new rhizo.NativeLogger() :  new rhizo.NoOpLogger();
   var initializer = new rhizo.gviz.Initializer(datatable, logger, opt_options);
   bootstrapper.prepare();
   bootstrapper.deployExplicit(initializer.metamodel,
