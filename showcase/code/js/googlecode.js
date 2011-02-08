@@ -368,12 +368,15 @@ googlecode.Renderer.prototype.renderAllDetails = function() {
 /**
  * Callback invoked by the rendering framework whenever the CSS attributes of
  * a specific rendering needs to be changed.
+ * @param {*} model The plain Javascript object representing the 'issue' whose
+ *     rendering is to be restyled.
  * @param {*} node The jQuery object pointing to the rendering to modify.
  * @param {*} props A key-value map of CSS properties to set on the rendering.
  * @param {?boolean} opt_hintRevert An optional boolean hint to indicate that
  *     the rendering properties are being reverted to their original state.
  */
-googlecode.Renderer.prototype.changeStyle = function(node,
+googlecode.Renderer.prototype.changeStyle = function(unused_model,
+                                                     node,
                                                      props,
                                                      opt_hintRevert) {
   $(node).css(props);

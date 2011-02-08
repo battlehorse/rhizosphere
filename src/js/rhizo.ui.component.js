@@ -73,7 +73,7 @@ rhizo.ui.component.Progress = function() {};
 rhizo.ui.component.Progress.prototype.render = function(container) {
   this.pbarPanel_ = $('<div/>', {'class': 'rhizo-progressbar-panel'}).
       appendTo(container);
-
+  
   // center the progress bar.
   this.pbarPanel_.css({
     'top': Math.round((container.height() - this.pbarPanel_.height()) / 2),
@@ -783,6 +783,7 @@ rhizo.ui.component.Viewport.prototype.render = function() {
 
 rhizo.ui.component.Viewport.prototype.ready = function() {
   this.viewport_.draggable({
+    cancel: '.rhizo-model',
     helper: jQuery.proxy(function() {
       return $("<div />").appendTo(this.viewport_);
     }, this),
