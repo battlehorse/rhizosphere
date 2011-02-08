@@ -154,7 +154,18 @@ rhizo.Project.prototype.metaModel = function() {
 };
 
 rhizo.Project.prototype.setMetaModel = function(metaModel) {
-  this.metaModel_ = metaModel;
+  // Clone the metamodel so we can manipulate it.
+  this.metaModel_ = $.extend({}, metaModel);
+  
+  // Delete all spurious metamodel keys that have no attached kind.
+  // This includes, for instance, GWT-generated keys like __gwt_ObjectId.
+  // (this implies the cloned metamodel object cannot be passed back to GWT
+  // code).
+  for (var key in this.metaModel_) {
+    if (!this.metaModel_[key].kind) {
+      delete this.metaModel_[key];
+    }
+  }
 
   // Convert all 'kind' specifications that are specified as factories into
   // single instances.
@@ -416,6 +427,10 @@ rhizo.Project.prototype.checkModels_ = function() {
 rhizo.Project.prototype.checkMetaModel_ = function() {
   var allKinds = [];
   for (var key in this.metaModel_) {
+    if (!this.metaModel_[key].kind) {
+      this.logger_.error('Verify your metamodel: missing kind for ' + key);
+      return false;
+    }
     allKinds.push(this.metaModel_[key].kind);
   }
 
