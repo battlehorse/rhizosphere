@@ -1535,7 +1535,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
     rawRenderings) {
   rawRenderings.draggable({
     cursor: 'pointer',
-    handle: this.getDragHandleSelector_() || 'rhizo-drag-handle',
+    handle: this.getDragHandleSelector_() || '.rhizo-drag-handle',
     distance: 3,
     addClasses: false,
     start: jQuery.proxy(function(ev, ui) {

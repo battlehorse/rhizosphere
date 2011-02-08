@@ -144,19 +144,22 @@ rhizo.bootstrap.Bootstrap.prototype.deployWithLoader = function(loader) {
  * managed by this bootstrapper. The boostrapper must have already been
  * prepared before invoking this method.
  *
- * @param {*} metamodel A descriptor for the attributes and properties that
- *     each model in the visualization has.
- * @param {*} renderer A component capable of creating HTML representation of
- *     model instances.
  * @param {Array.<*>} models The list of data items to visualize.
+ * @param {*} opt_metamodel A descriptor for the attributes and properties that
+ *     each model in the visualization has. Can be omitted if the metamodel has
+ *     been specified via configuration options.
+ * @param {*} opt_renderer A component capable of creating HTML representation
+ *     of model instances. Can be omitted if the renderer has been specified via
+ *     configuration options.
  */
-rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(metamodel,
-                                                              renderer,
-                                                              models) {
-  this.project_.setMetaModel(metamodel);
-  this.project_.setRenderer(renderer);
+rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(models,
+                                                              opt_metamodel,
+                                                              opt_renderer) {
+  this.project_.setMetaModel(this.options_.metamodel || opt_metamodel);
+  this.project_.setRenderer(this.options_.renderer || opt_renderer);
 
-  if (renderer.getSizeRange || renderer.getColorRange) {
+  if (this.project_.renderer().getSizeRange ||
+      this.project_.renderer().getColorRange) {
     this.template_.addComponent(new rhizo.ui.component.Legend(this.project_,
                                                               this.options_));
   }

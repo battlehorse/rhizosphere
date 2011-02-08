@@ -161,6 +161,34 @@
       <code>{layoutConstraints: {top: 0.2, left: 0.2, width: 600, height: 600}}</code>
     </p>
   </dd>
+  <dt>
+    metamodel (object, default: unset, allowed values: see
+    <a href="/doc/users_jsformat.html#metamodel">definition</a>)
+  </dt>
+  <dd>
+    <p>Explicitly define the metamodel that Rhizosphere will use to interpret
+      the data to visualize. Metamodels defined this way will override other
+      metamodels passed to the bootstrapper during Rhizosphere initialization.
+    </p>
+    <p>Use this option to provide a metamodel when the loader you are using
+      does not define one, or you want to customize it further.
+    </p>
+  </dd>
+  <dt>
+    renderer (object, default: unset, allowed values: see
+    <a href="/doc/users_jsformat.html#renderer">definition</a>)
+  </dt>
+  <dd>
+    <p>Explicitly define the renderer that Rhizosphere will use to draw
+      the models in the dataset. Renderers defined this way will override other
+      renderers passed to the bootstrapper during Rhizosphere initialization.
+    </p>
+    <p>Use this option to provide a renderer when the loader you are using
+      does not define one, or you want to customize it further (for example,
+      when you are loading resources from a Google Visualization API
+      datasource).
+    </p>
+  </dd>
 </dl>
 
 <h4>Autorender-specific options</h4>

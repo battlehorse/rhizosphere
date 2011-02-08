@@ -154,6 +154,7 @@ rhizo.Project.prototype.metaModel = function() {
 };
 
 rhizo.Project.prototype.setMetaModel = function(metaModel) {
+  //TODO(battlehorse): raise error if the metamodel is not valid or null.
   // Clone the metamodel so we can manipulate it.
   this.metaModel_ = $.extend({}, metaModel);
   
@@ -180,6 +181,7 @@ rhizo.Project.prototype.renderer = function() {
 };
 
 rhizo.Project.prototype.setRenderer = function(renderer) {
+  // TODO(battlehorse): raise error if the renderer is not valid or null.
   this.renderer_ = renderer;
 };
 

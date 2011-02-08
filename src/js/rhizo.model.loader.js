@@ -23,8 +23,11 @@
  *
  * - A list of models: This is the list of data items we want to visualize.
  * - A metamodel: A metamodel describes that attributes and properties that
- *     each model in the above list has.
- * - A renderer: A renderer creates HTML representations of models.
+ *     each model in the above list has. The metamodel is optional if the
+ *     visualization has already received one via configuration options.
+ * - A renderer: A renderer creates HTML representations of models. The
+ *     renderer is optional if the visualization has already received one via
+ *     configuration options.
  *
  * A loader is a Javascript object that exposes the following constructor and
  * methods:
@@ -34,10 +37,11 @@
  *     Rhizosphere models from the given resource URI.
  * - load(function callback, options, logger): Loads Rhizosphere models from the
  *     resource URI and invokes the callback once loading completes. The
- *     callback function accepts the metamodel, renderer and loaded models as
- *     parameters. 'options' contains visualization-wide configuration options
- *     that can be used to tune the loading. 'logger' is a generic logger that
- *     exposes error(), warn() and info() methods.
+ *     callback function accepts the loaded models, the optional metamodel, and
+ *     the optional renderer as parameters.
+ *     'options' contains visualization-wide configuration options that can be
+ *     used to tune the loading. 'logger' is a generic logger that exposes
+ *     error(), warn() and info() methods.
  *
  * Loaders should be registered in the rhizo.model.loader.loaders array.
  * When Rhizosphere is bootstrapped with a generic URI and an explicit loader is
@@ -87,9 +91,9 @@ rhizo.model.loader.JSONP.prototype.load = function(callback,
 };
 
 rhizo.model.loader.JSONP.prototype.loadDone = function(payload) {
-  this.callback_(payload.metamodel,
-                 payload.renderer,
-                 payload.models);
+  this.callback_(payload.models,
+                 payload.metamodel,
+                 payload.renderer);
   $globalJSONPLoaderMap[this.loaderCount_] = null;
 };
 
@@ -130,9 +134,9 @@ rhizo.model.loader.GViz.prototype.handleQueryResponse_ =
                                                logger, options);
 
 
-  callback(initializer.metamodel,
-           initializer.renderer,
-           initializer.models);
+  callback(initializer.models,
+           initializer.metamodel,
+           initializer.renderer);
 };
 
 // Google Spreadsheets loader (which follows the GViz spec).
