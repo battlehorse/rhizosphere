@@ -105,7 +105,7 @@ var models = [
 ];
 </pre>
 
-<h2>Defining the metamodel</h2>
+<a name="metamodel"><h2>Defining the metamodel</h2></a>
 <p>
   The next step is to describe the characteristics and behavior of each model
   attribute. To do so, you create the so-called <code>metamodel</code>.
@@ -166,7 +166,7 @@ var metamodel = {
   </li>
 </ul>
 
-<h2>Defining the renderer</h2>
+<a name="renderer"><h2>Defining the renderer</h2></a>
 <p>
   The final step is to define the visualization <code>renderer</code>. This
   step is optional. If you want you can rely on an automated (albeit basic)
@@ -214,7 +214,7 @@ var renderer = {
   behavior. The complete signature is: 
 </p>
 <dl class="apireference">
-  <dt>render(model, expanded, renderingHints</dt>
+  <dt>render(model, expanded, renderingHints)</dt>
   <dd>
     <p>
       Returns an HTML representation of a model, either in the form of a plain
@@ -245,15 +245,11 @@ var renderer = {
 </dl>
 
 <p>
-  Additionally, the renderer might exposes further attributes for Rhizosphere
-  to use:
+  Additionally, the renderer might exposes further attributes and functions for
+  Rhizosphere to use. All these additional attributes and functions are
+  optional:
 </p>
 <dl class="apireference">
-  <dt>expandable (boolean)</dt>
-  <dd>
-    Whether the renderer is capable of rendering models in both normal and
-    expanded (i.e. maximized) mode.
-  </dd>
   <dt>cacheDimensions (boolean)</dt>
   <dd>
     Whether Rhizosphere should cache renderings' dimensions.
@@ -261,6 +257,158 @@ var renderer = {
     models you are visualizing change their rendering dimensions arbitrarily
     after the visualization initialization.
   </dd>
+  <dt>expandable (boolean or function)</dt>
+  <dd>
+    <p>Whether the renderer is capable of rendering models in both normal and
+      expanded (i.e. maximized) mode.
+    </p>
+    <p>If you specify the expandable setting with a function, this will receive
+      a <code>renderingHints</code> parameter (see above) and should return
+      a boolean value.
+    </p>
+  </dd>
+  <dt>expandableByModel(model, renderingHints)</dt>
+  <dd>
+    <p>Defines the 'expandable' status on a model basis. Lets you define which
+      models can be maximized and which ones cannot. If you use this function,
+      the <code>expandable</code> property of the renderer must be set to true.
+    </p>
+    <dl class="arguments">
+      <dt>model (Object)</dt>
+      <dd>
+        The model for which to decide the 'expandable' status.
+      </dd>
+      <dt>renderingHints (Object)</dt>
+      <dd>
+        Key-vlaue map of additional flags that may affect the decision.
+        See <code>rhizo.ui.gui.GUI.allRenderingHints</code> for the whole list.
+      </dd>
+    </dl>
+  </dd>
+  <dt>dragHandle (string or function)</dt>
+  <dd>
+    <p>Whether the renderer defines a custom drag handler to let the user grab
+      the rendering and move it around in the visualization workspace.
+    </p>
+    <p>If not defined, the user will be able to start a drag operation by
+      clicking anywhere on the rendering surface. This might cause issues if
+      the rendering contains widgets that negatively interact with drag'n'drop
+      operations (such as trapping mousedown, mouseup events).
+    </p>
+    <p>If defined, it should be a string defining a CSS selector (or a no-arg
+      function returning such selector) that identifies the elements to use
+      as drag handles within the rendering.
+    </p>
+  </dd>
+  <dt>onAttach(model, attached)</dt>
+  <dd>
+    Defines a callback that will be invoked whenever the rendering associated
+    to the model passed as parameter is attached or detached from the DOM.
+    Use this if your renderer needs to perform cleanup operations, such as
+    removing event listeners when a rendering is removed from the DOM.
+    <dl class="arguments">
+      <dt>model (Object)</dt>
+      <dd>
+        The model whose rendering has been attached or removed from the DOM.
+      </dd>
+      <dt>attached (boolean)</dt>
+      <dd>
+        Whether the rendering was attached or removed from the DOM.
+      </dd>
+    </dl>
+  </dd>
+  <dt>canRescaleTo(model, jquery_object, width, height)</dt>
+  <dd>
+    <p>Decides whether a given rendering can be rescaled to a certain size.
+      This is invoked only in the context of layout operations that dynamically
+      alter renderings (such as treemaps).
+      Returns a boolean to allow / disallow rescaling to the requested
+      dimensions.
+    </p>
+
+    <dl class="arguments">
+      <dt>model (Object)</dt>
+      <dd>
+        The model whose rendering is about to being rescaled.
+      </dd>
+      <dt>jquery_object (JQuery object)</dt>
+      <dd>
+        A JQuery object (i.e., what you get by calling <code>$()</code> on the
+        results of the <code>render()</code> function) matching the rendering
+        which is going to be affected by the proposed rescaling.
+      </dd>
+      <dt>width</dt>
+      <dd>
+        The width (in pixels) to which the rendering should be rescaled to.
+      </dd>
+      <dt>height</dt>
+      <dd>
+        The height (in pixels) to which the rendering should be rescaled to.
+      </dd>
+    </dl>
+
+  </dd>
+  <dt>rescale(model, jquery_object, width, height)</dt>
+  <dd>
+    <p>Requests the renderer to rescale the given rendering to a specific size.
+      This is invoked only in the context of layout operations that dynamically
+      alter renderings (such as treemaps).
+      Does not return anything.
+    </p>
+
+    <dl class="arguments">
+      <dt>model (Object)</dt>
+      <dd>
+        The model whose rendering is being rescaled.
+      </dd>
+      <dt>jquery_object (JQuery object)</dt>
+      <dd>
+        A JQuery object (i.e., what you get by calling <code>$()</code> on the
+        results of the <code>render()</code> function) matching the rendering
+        which is going to be affected by the rescaling.
+      </dd>
+      <dt>width</dt>
+      <dd>
+        The width (in pixels) to which the rendering should be rescaled to.
+      </dd>
+      <dt>height</dt>
+      <dd>
+        The height (in pixels) to which the rendering should be rescaled to.
+      </dd>
+    </dl>
+  </dd>
+  <dt>changeStyle(model, jquery_object, styles, opt_hintRevert)</dt>
+  <dd>
+    <p>
+      Requests the renderer to apply (or revert) temporary style changes to
+      the given rendering. This is invoked only in the context of layout
+      operations that dynamically alter renderings (such as treemaps).
+      Does not return anything.
+    </p>
+    <dl class="arguments">
+      <dt>model (Object)</dt>
+      <dd>
+        The model whose rendering is being restyled.
+      </dd>
+      <dt>jquery_object (JQuery object)</dt>
+      <dd>
+        A JQuery object (i.e., what you get by calling <code>$()</code> on the
+        results of the <code>render()</code> function) matching the rendering
+        which is going to be affected by the style changes.
+      </dd>
+      <dt>styles (Object)</dt>
+      <dd>
+        A key-value map of the requested style changes, such as
+        <code>{backgroundColor: '#ff0000'}</code>.
+      </dd>
+      <dt>opt_hintRevert (boolean)</dt>
+      <dd>
+        If present, and true, notifies the renderer that the requested changes
+        are reverting the rendering back to its original style.
+      </dd>
+    </dl>
+  </dd>
+
 </dl>
 
 <p>A more capable renderer might then look like this:</p>
@@ -271,13 +419,13 @@ var renderer = {
       // The visualization has reduced screen estate, limit the amount of
       // information shown.
       return $("&lt;div class='rhizo-sample'&gt;" +
-               "&lt;p&gt;&lt;b&gt;&lt;span style='color:" +
+               "&lt;p&gt;&lt;b&gt;&lt;span class='rhizo-drag-handle' style='color:" +
                (model.male ? "blue" : "pink") + "'&gt;"+
                model.name + "&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;" +
                "&lt;/div&gt;");
     } else {
       return $("&lt;div class='rhizo-sample'&gt;" +
-               "&lt;p&gt;&lt;b&gt;&lt;span style='color:" +
+               "&lt;p&gt;&lt;b&gt;&lt;span class='rhizo-drag-handle' style='color:" +
                (model.male ? "blue" : "pink") + "'&gt;"+
                model.name + "&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;" +
                "&lt;p&gt;&lt;span class='dim'&gt;Age:&lt;/span&gt;" + model.age + "&lt;/p&gt;" +
@@ -287,7 +435,12 @@ var renderer = {
                "&lt;/div&gt;");
     }
   },
-  cacheDimensions: true
+  // renderings' dimensions can be cached.
+  cacheDimensions: true,
+  // renderings support a 'maximized' state.
+  expandable: true,
+  // renderings can be dragged only from the &lt;span&gt; marked with this selector.
+  dragHandle: '.rhizo-drag-handle'
 };  
 </pre>
 
@@ -299,8 +452,38 @@ visualization.
 <pre class="prettyprint lang-js">
 var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
 bootstrapper.prepare();
-bootstrapper.deployExplicit(metamodel, renderer, models);
+bootstrapper.deployExplicit(models, metamodel, renderer);
 </pre>
+
+<p>Alternatively, you can also pass the <code>metamodel</code> and
+<code>renderer</code> as configuration options, and only pass the
+<code>models</code> to the bootstrapper:
+</p>
+
+<pre class="prettyprint lang-js">
+var options = {
+  // metamodel as defined above,
+  metamodel: {
+    name: { kind: rhizo.meta.Kind.STRING, label: "Name" },
+    ...
+  }
+  // renderer as defined above,
+  renderer: {
+    render: function() { ... }
+  },
+  // ... other configuration options
+};
+var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'), options);
+bootstrapper.prepare();
+bootstrapper.deployExplicit(models);
+</pre>
+
+<p class="note">
+  <strong>Note</strong>. <code>metamodels</code> and <code>renderers</code>
+  defined via configuration options always take precedence over the ones
+  received by the bootstrapper (either via <code>deployExplicit()</code> or
+  other initialization methods, such as by using a custom loader).
+</p>
 
 <h2>Everything put together</h2>
 This <a href="/static/doc/txt/rhizosphere_sample_people.html.txt">
