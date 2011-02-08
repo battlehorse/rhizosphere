@@ -304,7 +304,7 @@ var renderer = {
       as drag handles within the rendering.
     </p>
   </dd>
-  <dt>onAttach(model, attached)</dt>
+  <dt>onAttach(model, element, attached)</dt>
   <dd>
     Defines a callback that will be invoked whenever the rendering associated
     to the model passed as parameter is attached or detached from the DOM.
@@ -314,6 +314,12 @@ var renderer = {
       <dt>model (Object)</dt>
       <dd>
         The model whose rendering has been attached or removed from the DOM.
+      </dd>
+      <dt>element (HTML element)</dt>
+      <dd>
+        The HTML element that encloses the rendering (i.e., the root HTML
+        element returned by the <code>renderer.render()</code> function)
+        which is going to be attached or removed from the DOM.
       </dd>
       <dt>attached (boolean)</dt>
       <dd>
