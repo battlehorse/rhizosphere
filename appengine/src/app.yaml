@@ -13,6 +13,9 @@ handlers:
 - url: /multi.html
   script: py/handlers/rhizo.py
 
+- url: /google_visualization.html
+  script: py/handlers/rhizo.py
+
 - url: /ig
   script: py/handlers/rhizo.py
 

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Rhizosphere : Google Visualization</title>
+
+  <!-- Google Services integration. Load the Google Visualization APIs -->
+  <script type="text/javascript" src="http://www.google.com/jsapi" ></script>
+
+  <!-- Rhizosphere libraries and styles -->
+  {% include "rhizo_head.html" %}
+  <style>
+    * {
+      font-family: sans-serif;
+    }
+
+    H1 {
+      margin: 0.2em 0;
+      padding: 0;
+      font-size: 1.2em;
+    }
+
+    P.tagline {
+      margin: 0 0 0.2em 0;
+      color: #999;
+      font-size: 0.8em;
+    }
+
+    P.description {
+      font-size: 0.8em;
+      max-width: 60em;
+    }
+
+    .bluelight {
+      color: #6b90da;
+    }
+
+    PRE {
+      font-family: monospace;
+      color: green;
+      background-color: #eee;
+      border: 1px solid #aaa;
+      max-width: 60em;
+      margin: 0.5em;
+    }
+
+    #rhizo_div {
+      position: relative;
+      width: 800px;
+      height: 400px;
+      font-size: 0.7em;
+      border: 1px solid #6391de;
+    }
+
+    .rhizo-sample {
+      font-size: 11px;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .rhizo-sample P {
+      margin: 0;
+      padding: 0;
+    }
+
+    .dim {
+      color: #888;
+    }
+
+    #output P {
+      font-size: 0.8em;
+      margin: 0;
+      color: #999;
+    }
+
+    #datatable {
+      display: none;
+    }
+  </style>
+  {% include "ga.html" %}
+</head>
+<body>
+  <h1><span class="bluelight">Google Visualization</span> :: Rhizosphere</h1>
+  <p class="tagline">
+    Rhizosphere accessed via the
+    <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+      Google Visualization APIs</a>.<br />
+    Demonstrates how you can use Rhizosphere in the same way you do with other
+    standard Google Visualizations.
+    <a href="/doc/users_gviz.html">Learn more</a>.
+  </p>
+
+  <p class="description">
+    This page contains 3 visualizations compatible with the Google Visualization
+    API: Rhizosphere, a Google Visualization Table and a Google Visualization
+    Scatterchart. All of them are initialized from the same
+    <a href="http://code.google.com/apis/visualization/documentation/reference.html#DataTable">
+      google.visualization.DataTable</a>, which you can see
+    <a href="javascript:;" onclick="document.getElementById('datatable').style.display='block';">
+      here</a>.
+  </p>
+
+  <div id='datatable'>
+    <pre>
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name', 'name');
+      data.addColumn('number', 'Age', 'age');
+      data.addColumn('number', 'Weight', 'weight');
+      data.addColumn('string', 'Gender', 'gender');
+      data.addRows([
+          ['Bob', 8, 12, 'male'],
+          ['Alice', 4, 5.5, 'female'],
+          ['Mary', 11, 14, 'female'],
+          ['Mark', 4, 4.5, 'male'],
+          ['Victoria', 3, 3.5, 'female'],
+          ['Robert', 6.5, 7, 'male'],
+          ['Paul', 13, 16, 'male'],
+          ['Jenny', 7, 9, 'female'],
+          ['Dorothy', 10, 9, 'female'],
+          ['Marcel', 9.5, 15, 'male'],
+          ['Sara', 15, 18, 'female']
+      ]);
+    </pre>
+  </div>
+  <table>
+    <tr style="vertical-align: top">
+      <td>
+        <div id="table_div"></div>
+      </td>
+      <td>
+        <div id="chart_div"></div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <div id="rhizo_div"></div>
+      </td>
+    </tr>
+  </table>
+  <div id="output"></div>
+
+
+
+  <script type="text/javascript">
+    google.load("visualization", "1", {packages:['corechart', 'table']});
+    google.setOnLoadCallback(visualizationApiLoaded);
+      function visualizationApiLoaded() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Name', 'name');
+        data.addColumn('number', 'Age', 'age');
+        data.addColumn('number', 'Weight', 'weight');
+        data.addColumn('string', 'Gender', 'gender');
+        data.addRows([
+            ['Bob', 8, 12, 'male'],
+            ['Alice', 4, 5.5, 'female'],
+            ['Mary', 11, 14, 'female'],
+            ['Mark', 4, 4.5, 'male'],
+            ['Victoria', 3, 3.5, 'female'],
+            ['Robert', 6.5, 7, 'male'],
+            ['Paul', 13, 16, 'male'],
+            ['Jenny', 7, 9, 'female'],
+            ['Dorothy', 10, 9, 'female'],
+            ['Marcel', 9.5, 15, 'male'],
+            ['Sara', 15, 18, 'female']
+        ]);
+
+        var view = new google.visualization.DataView(data);
+        view.setColumns([1, 2]);
+
+        var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+        google.visualization.events.addListener(chart, 'ready', chart_ready);
+        chart.draw(view, {width: 400, height: 240,
+                          title: 'Age vs. Weight comparison',
+                          hAxis: {title: 'Age', minValue: 0, maxValue: 15},
+                          vAxis: {title: 'Weight', minValue: 0, maxValue: 20},
+                          legend: 'none'
+                         });
+
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+        google.visualization.events.addListener(table, 'ready', table_ready);
+        table.draw(data, {width: 400});
+
+
+        var renderer = {
+          render: function(model) {
+            return $("<div class='rhizo-sample'>" +
+                 "<p><b><span style='color:" +
+                 (model.gender == 'male' ? "blue" : "pink") + "'>"+
+                 model.name + "</span></b></p>" +
+                 "<p><span class='dim'>Age:</span>" + model.age + "</p>" +
+                 "<p><span class='dim'>Weight:</span>" + model.weight + "</p>" +
+                 "</div>");
+          },
+          cacheDimensions: true
+        };
+
+        var metamodelFragment = {
+          gender: { kind: rhizo.meta.Kind.CATEGORY, label: 'Gender' ,
+               categories: [ 'male', 'female']},
+          weight: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Weight', min: 0, max: 20}
+        };
+
+        var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo_div'));
+        google.visualization.events.addListener(rhizosphere, 'ready', rhizosphere_ready);
+        rhizosphere.draw(data, {
+          renderer: renderer,
+          metamodelFragment: metamodelFragment,
+          template: 'default'
+        });
+      }
+
+      function chart_ready() {
+        appendLog('Chart is ready.');
+      }
+
+      function table_ready() {
+        appendLog('Table is ready.');
+      }
+
+      function rhizosphere_ready() {
+        appendLog('Rhizosphere is ready.');
+      }
+
+      function appendLog(message) {
+        var p = document.createElement('P');
+        p.innerHTML = message;
+        document.getElementById('output').appendChild(p);
+
+      }
+  </script>
+</body>
+</html>

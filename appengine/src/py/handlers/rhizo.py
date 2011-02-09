@@ -72,6 +72,7 @@ class IGoogleHandler(webapp.RequestHandler):
 application = webapp.WSGIApplication(
     [('/rhizo.html', RhizoHandler),
      ('/multi.html', RhizoHandler),
+     ('/google_visualization.html', RhizoHandler),
      ('/ig', IGoogleHandler),
     ],
     debug=rhizoglobals.appenginedebug)
