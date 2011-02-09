@@ -1,3 +1,4 @@
+
 /*
   Copyright 2009 The Rhizosphere Authors. All Rights Reserved.
 
@@ -33,8 +34,12 @@ rhizo.bootstrap.uuids_ = 0;
  * ui elements for the visualization, and bind all the necessary event handlers.
  *
  * @param {HTMLElement} container The HTML element that will contain the
- *     visualization.
- * @param {*} opt_options Visualization-wide configuration options.
+ *     visualization. It must have an explicit CSS position set (either
+ *     'relative' or 'absolute'). You are free to set its width and height and
+ *     Rhizosphere will render itself within the given constraints.
+ * @param {*} opt_options Visualization-wide configuration options, as
+ *     described at
+ *     http://www.rhizospherejs.com/doc/contrib_tables.html#options.
  * @param {?function(rhizo.Project)} opt_callback
  *     Optional callback invoked on the visualization is completely initialized.
  *     Receives the rhizo.Project managing the visualization as a parameter.
@@ -155,7 +160,11 @@ rhizo.bootstrap.Bootstrap.prototype.deployWithLoader = function(loader) {
 rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(models,
                                                               opt_metamodel,
                                                               opt_renderer) {
-  this.project_.setMetaModel(this.options_.metamodel || opt_metamodel);
+  var metamodel = this.options_.metamodel || opt_metamodel;
+  if (this.options_.metamodelFragment) {
+    $.extend(metamodel, this.options_.metamodelFragment);
+  }
+  this.project_.setMetaModel(metamodel);
   this.project_.setRenderer(this.options_.renderer || opt_renderer);
 
   if (this.project_.renderer().getSizeRange ||
