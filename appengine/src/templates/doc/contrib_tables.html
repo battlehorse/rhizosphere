@@ -64,12 +64,13 @@
   <dd>Fits models in <a href="http://en.wikipedia.org/wiki/Treemapping">TreeMaps</a>.</dd>
 </dl>
 
-<h3>Runtime configuration options</h3>
+<a name="options"><h3>Runtime configuration options</h3></a>
 <p>
   You can configure Rhizosphere behavior via runtime options that you can
   pass in at visualization bootstrap time, when you instantiate a new
-  <code>rhizo.bootstrap.Bootstrap</code> instance. Options are passed as a
-  plain javascript object which is treated as a key-value map.
+  <code>rhizo.bootstrap.Bootstrap</code> or <code>rhizo.gviz.Rhizosphere</code>
+  instance. Options are passed as a plain javascript object which is treated as
+  a key-value map.
 </p>
 <h4>Global options</h4>
 <dl class="apireference">
@@ -167,11 +168,32 @@
   </dt>
   <dd>
     <p>Explicitly define the metamodel that Rhizosphere will use to interpret
-      the data to visualize. Metamodels defined this way will override other
-      metamodels passed to the bootstrapper during Rhizosphere initialization.
+      the data to visualize. Metamodels defined this way will
+      <strong>override</strong> other metamodels passed to the bootstrapper
+      during Rhizosphere initialization.
     </p>
     <p>Use this option to provide a metamodel when the loader you are using
       does not define one, or you want to customize it further.
+    </p>
+  </dd>
+  <dt>
+    metamodelFragment (object, default: unset, allowed values: see
+    <a href="/doc/users_jsformat.html#metamodel">definition</a>)
+  </dt>
+  <dd>
+    <p>
+      Similarly to <code>metamodel</code>, use this option to partially modify
+      the metamodel that Rhizosphere will use to interpret
+      the data to visualize. Metamodels defined this way will
+      <strong>extend</strong> other metamodels passed to the bootstrapper
+      during Rhizosphere initialization. Any metamodel key defined within
+      this option will override the equivalent key present in the
+      bootstrapper-provided metamodel.
+    </p>
+    <p>
+      Use this option to customize a metamodel when the loader you are using
+      does not define an entirely acceptable one, and you want to customize or
+      revise parts of it.
     </p>
   </dd>
   <dt>

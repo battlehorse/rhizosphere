@@ -221,42 +221,25 @@ bootstrapper.prepareAndDeploy(datasource_uri);
 &lt;meta name="viewport" content="width=device-width,user-scalable=no"&gt;
 </pre>
 
-<h3>Google Visualization API datasources</h3>
+<h3>Google Visualization API integration</h3>
 <p>
-  If your Rhizosphere visualization is consuming a Google Visualization API
-  datasource, you must load the Google Visualization javascript libraries before
-  activating Rhizosphere.
+  Rhizosphere tightly integrates with
+  <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+    Google Visualization APIs</a>:
 </p>
-<pre class="prettyprint lang-html">
-&lt;html&gt;
-  &lt;head&gt;
-    <strong>
-    &lt;!-- Early loading of the Google Visualization API libraries --&gt;
-    &lt;script
-      type="text/javascript"
-      src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"&gt;
-    &lt;/script&gt;
-    </strong>
-    ...
-  &lt;/head&gt;
-  &lt;body&gt;
-    ...
-    &lt;script&gt;
-      $(document).ready(function() {
-        var datasource_uri = '...';  // your datasource here.
-        var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-container'));
-        bootstrapper.prepareAndDeploy(datasource_uri);
-      });      
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-</pre>
-
-<p class="note">
-  <strong>Note</strong>. The <code>src</code> URL of the script that loads the
-  Google Visualization API should be fully urlencoded. The above URL,
-  for example, reads:
-  <code>http://www.google.com/jsapi?autoload={modules:[{name:visualization,version:1}]}</code>
+<ul>
+  <li>Rhizosphere conforms to the
+    <a href="http://code.google.com/apis/visualization/documentation/reference.html#standardproperties">
+      Google Visualization API standards</a>, which means you can feed it a
+    <code>google.visualization.DataTable</code> via a standard
+    <code>draw()</code> method,</li>
+  <li>Rhizosphere can consume data returned from any standard Google
+    Visualization datasource, such as Google Spreadsheets or any custom
+    datasource defined by you or other third parties.</li>
+</ul>
+<p>
+  Refer to the "<a href="/doc/users_gviz.html">Rhizosphere and Google
+  Visualization API</a>" section of the documentation for further info.
 </p>
 
 <h3>Iframing</h3>
