@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Rhizosphere</title>
+    <link rel="stylesheet"
+        href="http://www.rhizospherejs.com/static/shared/stylesheets/jquery-ui-1.8.6.custom.css"
+        type="text/css">
+    <link rel="stylesheet"
+        href="http://www.rhizospherejs.com/static/lib/stylesheets/rhizo.css"
+        type="text/css">
+    <script src="http://www.rhizospherejs.com/static/shared/js/jquery-1.4.4.min.js"
+        type="text/javascript"
+        charset="utf-8"></script>
+    <script src="http://www.rhizospherejs.com/static/shared/js/jquery-ui-1.8.6.custom.min.js"
+        type="text/javascript"
+        charset="utf-8"></script>
+    <script src="http://www.rhizospherejs.com/static/lib/js/rhizo.pack.js"
+        type="text/javascript"
+        charset="utf-8"></script>
+
+    <!-- Early loading of the Google Visualization API libraries -->
+    <script
+      type="text/javascript"
+      src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D">
+    </script>
+
+    <style>
+      #rhizo-container {
+        position: relative; height: 500px; width: 800px;
+        font-family: sans-serif;
+      }
+
+      .rhizo-sample {
+        width: 100%;
+        height: 100%;
+      }
+
+      .rhizo-sample P {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- This div will contain the Rhizosphere visualization -->
+    <div id="rhizo-container"></div>
+
+    <script>
+      var data = new google.visualization.DataTable();
+      // addColumn(type, name, column_id)
+      data.addColumn('string', 'Name', 'name');
+      data.addColumn('number', 'Age', 'age');
+      data.addColumn('number', 'Weight', 'weight');
+      data.addColumn('string', 'Gender', 'gender');
+      data.addRows([
+        ['Bob', 8, 12, 'male'],
+        ['Alice', 4, 5.5, 'female'],
+        ['Mary', 11, 14, 'female'],
+        ['Mark', 4, 4.5, 'male'],
+        ['Victoria', 3, 3.5, 'female'],
+        ['Robert', 6.5, 7, 'male'],
+        ['Paul', 13, 16, 'male'],
+        ['Jenny', 7, 9, 'female'],
+        ['Dorothy', 10, 9, 'female'],
+        ['Marcel', 9.5, 15, 'male'],
+        ['Sara', 15, 18, 'female']
+      ]);
+
+      var metamodelFragment = {
+        gender: { kind: rhizo.meta.Kind.CATEGORY, label: 'Gender' , categories: [ 'male', 'female']},
+        weight: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Weight', min: 0, max: 20}
+      };
+
+      var renderer = {
+        render: function(model) {
+          return $("<div class='rhizo-sample'>" +
+                   "<p><b><span style='color:" +
+                   (model.gender == 'male' ? "blue" : "pink") + "'>"+
+                   model.name + "</span></b></p>" +
+                   "<p><span class='dim'>Age:</span>" + model.age + "</p>" +
+                   "<p><span class='dim'>Weight:</span>" + model.weight + "</p>" +
+                   "</div>");
+        },
+        cacheDimensions: true
+      };
+
+      var options = {
+        metamodelFragment: metamodelFragment,
+        renderer: renderer
+      };
+
+      var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo-container'));
+      google.visualization.events.addListener(rhizosphere, 'ready', rhizosphere_ready);
+      rhizosphere.draw(data, options);
+
+      function rhizosphere_ready() {
+        alert('Rhizosphere is ready');
+        // Rhizosphere is ready for user interaction.
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,450 @@
+{% extends "../docshell.html" %}
+{% block title %}Access Rhizosphere via Google Visualization API{% endblock %}
+{% block navigation %}{% include 'navigation.html' %}{% endblock %}
+{% block content %}
+<h1>Access Rhizosphere via Google Visualization API</h1>
+<p>
+  This page describes how Rhizosphere integrates with
+  <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+    Google Visualization APIs</a> and how you can use Rhizosphere as a standard
+    Google Visualization.
+</p>
+
+<h2>Contents</h2>
+<ul class="page_toc">
+  <li><a href="#visualization">Use Rhizosphere as a Google Visualization</a></li>
+  <li><a href="#datasources">Consume Google Visualization datasources</a></li>
+</ul>
+
+<a name="visualization"><h2>Use Rhizosphere as a Google Visualization</h2></a>
+<p>
+  If you already work with Google Visualization APIs, you are likely to have
+  your data organized in terms of <code>google.visualization.DataTable</code>
+  instances and feed them to visualizations that conform to the
+  <a href="http://code.google.com/apis/visualization/documentation/reference.html#standardproperties">
+    Google Visualization standards</a>.
+  This section describes how you can use Rhizosphere in the same way.
+</p>
+<p>
+  Rhizosphere visualizes a DataTable by rendering each <strong>row</strong> as a
+  separate visual element in the visualization and assumes each
+  <strong>column</strong> represents an attribute of said element.
+  This works best when each row of your DataTable represents an identifiable
+  data point, with given attributes, out of the entire set defined by the
+  DataTable.
+</p>
+<p>
+  Consider a DataTable containing the height, weight, name and gender of a
+  number of persons. You can organize it by having a separate row for each
+  person and specifying each attribute in a separate column. The following
+  screenshot shows how different Google Visualizations and Rhizosphere can
+  represent such dataset.
+</p>
+<p>
+  You can access a <a href="/google_visualization.html">live version of this
+  example</a>. The rest of the section will guide you in setting up Rhizosphere
+  to visualize your custom datatables, using this example as a guide.
+</p>
+<img src="/static/doc/img/rhizosphere_gviz.png"
+     class="screenshot" style="border: 1px solid #bbb">
+<p>
+  To get started, make sure you have Rhizosphere libraries included in the HTML
+  page where you want to insert the visualization, as described in the
+  <a href="/doc/users_embed.html">Embedding Rhizosphere</a> section. You will
+  end up with an initial page that looks like this:
+</p>
+<p class="note">
+  <strong>Note</strong>. When using the following snippets in your webpages
+  remember to change the URLs to point to your domain instead of
+  <code>www.rhizospherejs.com</code>.
+</p>
+<pre class="prettyprint lang-html">
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Rhizosphere&lt;/title&gt;
+    &lt;link rel="stylesheet"
+        href="http://www.rhizospherejs.com/static/shared/stylesheets/jquery-ui-1.8.6.custom.css"
+        type="text/css"&gt;
+    &lt;link rel="stylesheet"
+        href="http://www.rhizospherejs.com/static/lib/stylesheets/rhizo.css"
+        type="text/css"&gt;
+    &lt;script src="http://www.rhizospherejs.com/static/shared/js/jquery-1.4.4.min.js"
+        type="text/javascript"
+        charset="utf-8"&gt;&lt;/script&gt;
+    &lt;script src="http://www.rhizospherejs.com/static/shared/js/jquery-ui-1.8.6.custom.min.js"
+        type="text/javascript"
+        charset="utf-8"&gt;&lt;/script&gt;
+    &lt;script src="http://www.rhizospherejs.com/static/lib/js/rhizo.pack.js"
+        type="text/javascript"
+        charset="utf-8"&gt;&lt;/script&gt;
+    &lt;style&gt;
+      #rhizo-container {
+        position: relative; height: 500px; width: 800px;
+        font-family: sans-serif;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;!-- This div will contain the Rhizosphere visualization --&gt;
+    &lt;div id="rhizo-container"&gt;&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+  Then you have to make sure that Google Visualization javascript libraries
+  are loaded before activating Rhizosphere. Add the following
+  <code>&lt;script/&gt;</code> tag at the bottom of your
+  <code>&lt;head/&gt;</code> section.
+</p>
+<pre class="prettyprint lang-html">
+  &lt;head&gt;
+    ...
+    <strong>
+    &lt;!-- Early loading of the Google Visualization API libraries --&gt;
+    &lt;script
+      type="text/javascript"
+      src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"&gt;
+    &lt;/script&gt;
+    </strong>
+    ...
+  &lt;/head&gt;
+</pre>
+<p class="note">
+  <strong>Note</strong>. The <code>src</code> URL of the script that loads the
+  Google Visualization API should be fully urlencoded. The above URL,
+  for example, reads:
+  <code>http://www.google.com/jsapi?autoload={modules:[{name:visualization,version:1}]}</code>
+</p>
+<p>
+  The above script ensures that the Google Visualization API are fully loaded.
+  It uses autoloading to fetch the Visualization libraries with a single script
+  inclusion at page load. Alternatively you can load the APIs dinamically via
+  <code>google.load()</code> calls as described in the
+  <a href="http://code.google.com/apis/visualization/documentation/using_overview.html#load_your_libraries">
+    Google Visualization API usage guide</a>.
+</p>
+
+<p>
+  You can now create a <code>google.visualization.DataTable</code> with the
+  data you want to visualize. Add this example script to the bottom your
+  <code>&lt;body/&gt;</code> section, replacing the DataTable definition with
+  the one you need.
+</p>
+<pre class="prettyprint lang-html">
+  &lt;script&gt;
+  var data = new google.visualization.DataTable();
+        // addColumn(type, name, column_id)
+        data.addColumn('string', 'Name', 'name');
+        data.addColumn('number', 'Age', 'age');
+        data.addColumn('number', 'Weight', 'weight');
+        data.addColumn('string', 'Gender', 'gender');
+        data.addRows([
+            ['Bob', 8, 12, 'male'],
+            ['Alice', 4, 5.5, 'female'],
+            ['Mary', 11, 14, 'female'],
+            ['Mark', 4, 4.5, 'male'],
+            ['Victoria', 3, 3.5, 'female'],
+            ['Robert', 6.5, 7, 'male'],
+            ['Paul', 13, 16, 'male'],
+            ['Jenny', 7, 9, 'female'],
+            ['Dorothy', 10, 9, 'female'],
+            ['Marcel', 9.5, 15, 'male'],
+            ['Sara', 15, 18, 'female']
+        ]);
+  ...
+  &lt;/script&gt;
+</pre>
+
+<p>
+  Finally you can instantiate a Rhizosphere visualization, using the dedicated
+  <code>rhizo.gviz.Rhizosphere</code> constructor that conforms to the
+  Google Visualization APIs standard. Continue the script above with the
+  following:
+</p>
+<pre class="prettyprint lang-javascript">
+  var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo-container'));
+  rhizosphere.draw(data);
+</pre>
+
+<h3>Configuration options</h3>
+<p>
+  In the previous example, you did not pass any configuration options to the
+  visualization. In such case, Rhizosphere will try to identify sensible
+  defaults from the input DataTable.
+</p>
+<p>
+  If you want to override Rhizosphere defaults, you can pass an options object
+  to the <code>draw()</code> method.
+</p>
+<pre class="prettyprint lang-javascript">
+  var options = {
+    enableAnims: true,
+    template: 'bottom',
+    ...
+  };
+  var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo-container'));
+  rhizosphere.draw(data, options);
+</pre>
+
+<p>
+  You can view the full list of supported options from the
+  <a href="/doc/contrib_tables.html#options">Reference Tables</a> section.
+</p>
+<p>
+  The options that you are most likely to specify are
+  <code>metamodel</code>, <code>metamodelFragment</code> and
+  <code>renderer</code>. Rhizosphere analyzes the input DataTable to
+  assemble to important components: the <strong>metamodel</strong>, which
+  describes the characteristics of your data (such as column types, ranges for
+  numeric columns, etc...), and the <strong>renderer</strong> that defines how
+  a single datapoint is rendered as a visual element. You can learn more
+  about these components in the <a href="/doc/devel_concepts.html">Concepts</a>
+  section.
+</p>
+
+<h4>Custom metamodel</h4>
+<p>
+  By specifying your custom <code>metamodelFragment</code> in the options object
+  you can force a specific configuration for each datatable column. Say
+  for example you want Rhizosphere to show a different kind of range slider
+  to let users filter the <strong>weight</strong> datatable column, you would
+  use the following option:
+</p>
+<pre class="prettyprint lang-javascript">
+  var options = {
+    metamodelFragment: {
+      weight: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Weight', min: 0, max: 20}
+    }
+  };
+</pre>
+<p class="note">
+  <strong>Note</strong>. Specific columns in the datatable are identified by their
+  column id, <i>weight</i> in the example above.
+</p>
+<p>
+  The <code>metamodelFragment</code> option lets you override only selected
+  parts of the metamodel inferred by Rhizosphere from the datatable. Use the
+  <code>metamodel</code> option to replace the entire metamodel with a custom
+  one you provide.
+</p>
+<p>
+  Refer to the <a href="/doc/users_jsformat.html#metamodel">Metamodel
+  specification</a> section to learn the syntax to define your custom
+  metamodel variations.
+</p>
+
+<h4>Custom renderer</h4>
+<p>
+  Similarly, you can specify a custom renderer that Rhizosphere will use to
+  render every datapoint of the dataset. If not specified Rhizosphere will use
+  a default, albeit basic, renderer. The following code defines a custom one:
+</p>
+<pre class="prettyprint lang-javascript">
+var renderer = {
+  render: function(model) {
+    return $("&lt;div class='rhizo-sample'&gt;" +
+             "&lt;p&gt;&lt;b&gt;&lt;span style='color:" +
+             (model.gender == 'male' ? "blue" : "pink") + "'&gt;"+
+             model.name + "&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;" +
+             "&lt;p&gt;&lt;span class='dim'&gt;Age:&lt;/span&gt;" + model.age + "&lt;/p&gt;" +
+             "&lt;p&gt;&lt;span class='dim'&gt;Weight:&lt;/span&gt;" + model.weight + "&lt;/p&gt;" +
+             "&lt;/div&gt;");
+  },
+  cacheDimensions: true
+};
+</pre>
+<p class="note">
+  <strong>Note</strong>. A <code>model</code> represents a single row from the
+  input datatable. Specific columns are identified by their column id, and
+  are available as attributes of the <code>model</code> object. For example,
+  <code>model.name</code>, <code>model.age</code>.
+</p>
+<p>
+  Refer to the <a href="/doc/users_jsformat.html#renderer">Renderer
+  specification</a> section to learn the syntax to define your custom
+  renderers.
+</p>
+
+<h3>Events</h3>
+<p>
+  Like other Google Visualizations, Rhizosphere fires the
+  <a href="http://code.google.com/apis/visualization/documentation/events.html#The_Ready_Event">
+  <code>ready</code> event</a> to notify when it is ready for interaction by the
+  user. You can register a listener on said event:
+</p>
+<pre class="prettyprint lang-javascript">
+  var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo_div'));
+  <strong>google.visualization.events.addListener(rhizosphere, 'ready', rhizosphere_ready);</strong>
+  rhizosphere.draw(data, options);
+
+  function rhizosphere_ready() {
+    // Rhizosphere is ready for user interaction.
+  }
+</pre>
+
+<h3>Everything put together</h3>
+<p>
+  This <a href="/static/doc/txt/rhizosphere_gviz.html.txt">HTML page code</a>
+  contains all the above snippets put together in a single file.
+  Use it as a template to use Rhizosphere as a Google Visualization in your
+  webpages. Alternatively, you can access a
+  <a href="/google_visualization.html">live version of the example</a> used
+  in this page.
+</p>
+
+<a name="datasources"><h2>Consume Google Visualization datasources</h2></a>
+<p>
+  In addition to the direct usage of <code>google.visualization.DataTable</code>
+  instances described so far, you can also have Rhizosphere interact directly
+  with remote datasources that conform with the Google Visualization API
+  <a href="http://code.google.com/apis/visualization/documentation/dev/implementing_data_source_overview.html">
+    datasource specification
+  </a>.
+</p>
+
+<p>
+  For example, if you want to use a Google Spreadsheet as datasource, you can
+  identify the datasource URL associated to the spreadsheet using
+  <a href="http://code.google.com/apis/visualization/documentation/spreadsheets.html#Google_Spreadsheets_as_a_Data_Source">
+    these instructions</a>. The datasource URL will look like this one:
+</p>
+<pre>
+http://spreadsheets.google.com/tq?range=A1:K14&amp;headers=-1&amp;key=0Av88pFrCTjLhcC1JRXlYN25nME9DOU5fVTdxRWlfVnc&amp;gid=0
+</pre>
+
+<p>
+  Assuming you have a <em>datasource_url</em> with the URL of a Google
+  Visualization datasource you want to visualize, you can proceed in multiple
+  ways.
+</p>
+
+<h3>Extracting a DataTable from the datasource</h3>
+<p>
+  The simplest way to proceed is to use a Google Visualization Query to
+  explicitly extract a DataTable from the datasource.
+  <a href="http://code.google.com/apis/visualization/documentation/queries.html">
+    These instructions</a> illustrate the process in detail.
+</p>
+<p>
+  Once you receive a response from the query you issued, you can extract a
+  DataTable from it and proceed in the same way as shown in the previous
+  section. Your code will be similar to the following:
+</p>
+
+<pre class="prettyprint lang-javascript">
+function extractDataTable(datasource_url) {
+  var query = new google.visualization.Query(datasource_url);
+
+  // Optionally request to return only a specific subset of the data hold
+  // by the datasource.
+  // query.setQuery('select C, sum(B) group by C');
+
+  // Send the query with a callback function.
+  query.send(handleQueryResponse);
+}
+
+function handleQueryResponse(response) {
+  // Called when the query response is returned.
+  if (response.isError()) {
+    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+
+  var data = response.getDataTable();
+  var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo-container'));
+  rhizosphere.draw(data);
+}
+</pre>
+
+<h3>Direct loading of known datasources</h3>
+<p>
+  You can save yourself some typing and rely on Rhizosphere automated querying
+  capabilities to achieve the same result. For datasources Rhizosphere knows,
+  like Google Spreadsheets, you can feed the datasource URL directly to
+  Rhizosphere and it will take care of extracting the Datatable from it.
+</p>
+<p>
+  Assuming you have already included the Rhizosphere and Google Visualization
+  javascript libraries in your page like shown above, you can use the
+  <code>rhizo.bootstrap.Bootstrap</code> entry point and feed it with the
+  datasource_url.
+</p>
+<pre class="prettyprint lang-javascript">
+var options = {
+  cacheDimensions: true,
+  enableAnims: false,
+  ...
+};
+var datasource_url = '...';  // your datasource here
+var bootstrapper = new rhizo.bootstrap.Bootstrap(
+    document.getElementById('container'), options);
+bootstrapper.prepareAndDeploy(datasource_uri);
+</pre>
+<p>
+  See the <a href="/doc/users_embed.html">Embedding Rhizosphere</a> section for
+  a more detailed overview of this Rhizosphere instantiation method.
+</p>
+
+<h3>Direct loading of custom datasources</h3>
+<p>
+  If you have a custom datasource of yours which is exposed at a URL that
+  Rhizosphere does not recognize, you can still have Rhizosphere extract data
+  directly from it by using a <code>rhizo.bootstrap.Bootstrap</code> instance
+  with a custom <strong>loader</strong>.
+</p>
+<p>
+  First define a loader as follows:
+</p>
+<pre class="prettyprint lang-javascript">
+// Define a constructor for your loader that will take the datasource_url as
+// only parameter. Have it extend rhizo.model.loader.GViz using the
+// rhizo.inherits() function to reuse Rhizosphere loading facilities.
+MyLoader = function(datasource_url) {
+  rhizo.model.loader.GViz.call(this, datasource_url);
+};
+rhizo.inherits(MyLoader, rhizo.model.loader.GViz);
+
+// Register your loader so that Rhizosphere is aware of it.
+rhizo.model.loader.loaders.push(MyLoader);
+
+// Extend the match function to decide whether the received datasource_url
+// belongs to your custom datasource (in which case the match function should
+// return true).
+MyLoader.prototype.match = function() {
+  if (this.datasource_url.indexOf('http://www.mydomain.com/datasource') == 0) {
+    return true;
+  }
+  return false;
+};
+</pre>
+<p>
+  The above snippet makes Rhizosphere aware that datasources whose url matches
+  the requirements of your <code>match()</code> function should be treated as
+  GViz datasources. When Rhizosphere is instructed to load resources from a
+  given datasource_url, it will scan all the registered loaders to find
+  a suitable one. When <code>MyLoader</code> is selected, Rhizosphere will then
+  use its internal GViz loading logic to process the datasource.
+</p>
+<p>
+  You can then instantiate a Rhizosphere instance like in the previous example:
+</p>
+<pre class="prettyprint lang-javascript">
+var options = {
+  cacheDimensions: true,
+  enableAnims: false,
+  ...
+};
+<strong>var datasource_url = 'http://www.mydomain.com/datasource1234';</strong>
+var bootstrapper = new rhizo.bootstrap.Bootstrap(
+    document.getElementById('container'), options);
+bootstrapper.prepareAndDeploy(datasource_uri);
+</pre>
+
+<p>
+  The benefit of this approach is that it lets you define a single loader for
+  an entire class of possible datasource urls, which might be useful if you
+  are using Rhizosphere to visualize multiple datasources you maintain.
+</p>
+
+{% endblock %}

@@ -360,12 +360,31 @@ structure of a Rhizosphere visualization.
     </p>
   </dd>
 
+  <dt>Google Visualization API facade</dt>
+  <dd>
+    <p>
+      The Google Visualization API facade, implemented by
+      <code>rhizo.gviz.Rhizosphere</code> makes Rhizosphere accessible using
+      the standard
+      <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+        Google Visualization APIs</a>. It enhances Rhizosphere to
+      digest <code>google.visualization.DataTable</code> instances and behave
+      according to the other GViz API standards (such as event handling).
+      See the <a href="/doc/users_gviz.html">documentation</a>.
+    </p>
+    <p>
+      Internally, it delegates DataTable parsing and visualization bootstrapping
+      respectively to <code>rhizo.gviz.Initializer</code> and
+      <code>rhizo.bootstrap.Bootstrap</code> components.
+    </p>
+  </dd>
+
   <dt>Google Visualization API initializer</dt>
   <dd>
     <p>
       In the context of visualization bootstrapping,
-      <code>rhizo.gviz.Initializer</code> is the component which is responsible
-      for translating the Google Visualization API datamodel into
+      <code>rhizo.gviz.Initializer</code> is the internal component which is
+      responsible for translating the Google Visualization API datamodel into
       <a href="/doc/users_jsformat.html">Rhizosphere data format</a>.
     </p>
   </dd>
