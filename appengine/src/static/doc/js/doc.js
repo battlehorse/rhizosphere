@@ -17,3 +17,21 @@ function findCurrentDoc(el_id) {
     }
   }
 }
+
+function trackScrollingForToc(toc_id) {
+  var toc = document.getElementById(toc_id);
+  var tocTop = toc.offsetTop;
+  if (toc.offsetHeight < window.innerHeight) {
+    window.onscroll = function() {
+      var scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+      var toc = document.getElementById(toc_id);
+      if (scrollTop >= tocTop) {
+        toc.style.position = 'fixed';
+        toc.style.top = 0;
+      } else {
+        toc.style.position = 'relative';
+        toc.style.top = '';
+      }
+    }
+  }
+}

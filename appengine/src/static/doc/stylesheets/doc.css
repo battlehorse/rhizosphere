@@ -48,6 +48,7 @@ BODY {
   border-right: 3px solid rgb(229, 236, 249);
   margin: 0;
   padding: 1em 0 1em 1em;
+  width: 14em;
 }
 
 .toc H3 {
