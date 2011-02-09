@@ -18,23 +18,52 @@
 namespace("rhizo.gviz");
 
 /**
- * Wrapper to expose Rhizosphere as a Google Visualization.
+ * Exposes Rhizosphere as a visualization compatible with the Google
+ * Visualization APIs.
+ *
+ * See http://code.google.com/apis/visualization/interactive_charts.html for
+ * an introduction to the Google Visualization APIs and
+ * http://code.google.com/apis/visualization/documentation/using_overview.html
+ * for more detailed information about using Google Visualizations.
+ *
+ * The visualization fires a 'ready' event once it has finished loading and is
+ * ready to accept user interaction.
  *
  * @param {HTMLElement} container The element that will contain the
- *    visualization.
+ *    visualization. It must have an explicit CSS position set (either
+ *     'relative' or 'absolute'). You are free to set its width and height and
+ *     Rhizosphere will render itself within the given constraints.
  * @constructor
  */
 rhizo.gviz.Rhizosphere = function(container) {
+  if (typeof google == 'undefined' ||
+      typeof google.visualization == 'undefined') {
+    throw 'Google Visualization APIs not available. Please load them first.'
+  }
   this.container_ = container;
 };
 
 /**
+ * Initializes and draws the Rhizosphere visualization with the given Google
+ * Visualization datatable.
  *
- * @param {google.visualization.DataTable} datatable
- * @param {*} opt_options
+ * Rhizosphere accepts any well-formed Google Visualization datatable and
+ * automatically extracts relevant metadata to set up the visualization.
+ *
+ * If you are not comfortable with the automatic selection of metadata and/or
+ * rendering algorithm, you can provide your own custom metadata and rendering
+ * via configuration options.
+ * See http://www.rhizospherejs.com/doc/contrib_tables.html#options.
+ *
+ * @param {google.visualization.DataTable} datatable The dataset to visualize
+ *     in Rhizosphere.
+ * @param {*} opt_options key-value map of Visualization-wide configuration
+ *     options, as described at
+ *     http://www.rhizospherejs.com/doc/contrib_tables.html#options.
  */
 rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
-  var bootstrapper = new rhizo.bootstrap.Bootstrap(this.container_, opt_options);
+  var bootstrapper = new rhizo.bootstrap.Bootstrap(
+      this.container_, opt_options, jQuery.proxy(this.ready_, this));
 
   var logger = rhizo.nativeConsoleExists() ?
       new rhizo.NativeLogger() :  new rhizo.NoOpLogger();
@@ -45,35 +74,50 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
                               initializer.renderer);
 };
 
+/**
+ * Fires the Google Visualization 'ready' event to notify visualization users
+ * that Rhizosphere is ready for interaction.
+ *
+ * @param {rhizo.Project} unused_project unused.
+ * @private
+ */
+rhizo.gviz.Rhizosphere.prototype.ready_= function(unused_project) {
+  google.visualization.events.trigger(this, 'ready', {});
+};
+
+
+/**
+ * Builder to extract Rhizosphere datastructures (models, metamodel and
+ * renderer) from a Google Visualization datatable.
+ *
+ * @param {google.visualization.DataTable} dataTable The dataset to extract
+ *     Rhizosphere metamodel and models from.
+ * @param {*} logger A logger object that exposes error(), warn() and info()
+ *     methods.
+ * @param {*} opt_options key-value map of Visualization-wide configuration
+ *     options.
+ */
 rhizo.gviz.Initializer = function(dataTable,
                                   logger,
-                                  opt_options,
-                                  opt_customRenderer) {
+                                  opt_options) {
   this.dt_ = dataTable;
   this.logger_ = logger;
   this.options_ = opt_options || {};
-  
-  if (this.options_.renderer) {
-	  this.customRenderer_ = this.options_.renderer;
-  } else {
-	  this.customRenderer_ = opt_customRenderer;
-  }
-
   this.init_();
 };
 
 rhizo.gviz.Initializer.prototype.init_ = function() {
   this.metamodel = this.buildMetaModel_();
   this.models = this.loadModels_(this.metamodel);
-  this.renderer = this.customRenderer_ ?
-                  this.customRenderer_ :
+  this.renderer = this.options_.renderer ?
+                  this.options_.renderer :
                   this.createDefaultRenderer_(this.metamodel, this.models);
 };
 
 rhizo.gviz.Initializer.prototype.buildMetaModel_ = function() {
   var metamodel = {};
   for (var i = 0, len = this.dt_.getNumberOfColumns(); i < len; i++) {
-    var id = this.dt_.getColumnId(i);
+    var id = this.getColumnId_(i);
     metamodel[id] = {};
 
     // parsing label
@@ -128,6 +172,14 @@ rhizo.gviz.Initializer.prototype.buildMetaModel_ = function() {
   return metamodel;
 };
 
+/**
+ * Returns a unique identifier for a specific datatable column.
+ * @param {number} columnNum The column number.
+ * @private
+ */
+rhizo.gviz.Initializer.prototype.getColumnId_ = function(columnNum) {
+  return this.dt_.getColumnId(columnNum) || ('col_' + columnNum);
+};
 
 rhizo.gviz.Initializer.prototype.parseSingleCategory_ = function(value) {
   var categoriesMap = {};
@@ -222,10 +274,10 @@ rhizo.gviz.Initializer.prototype.loadModels_ = function(metamodel) {
     for (var j = 0, clen = this.dt_.getNumberOfColumns(); j < clen; j++) {
       model.id = "gviz-" + i;
       var value = this.dt_.getValue(i, j);
-      if (metamodel[this.dt_.getColumnId(j)].kind == rhizo.meta.Kind.CATEGORY) {
-        model[this.dt_.getColumnId(j)] = this.parseSingleCategory_(value);
+      if (metamodel[this.getColumnId_(j)].kind == rhizo.meta.Kind.CATEGORY) {
+        model[this.getColumnId_(j)] = this.parseSingleCategory_(value);
       } else {
-        model[this.dt_.getColumnId(j)] = value;
+        model[this.getColumnId_(j)] = value;
       }
 
     }
@@ -247,10 +299,19 @@ rhizo.gviz.DebugRenderer = function(dataTable) {
   this.dt_ = dataTable;
 };
 
+/**
+ * Returns a unique identifier for a specific datatable column.
+ * @param {number} columnNum The column number.
+ * @private
+ */
+rhizo.gviz.DebugRenderer.prototype.getColumnId_ = function(columnNum) {
+  return this.dt_.getColumnId(columnNum) || ('col_' + columnNum);
+};
+
 rhizo.gviz.DebugRenderer.prototype.render = function(model) {
   var div = $("<div />");
   for (var j = 0, clen = this.dt_.getNumberOfColumns(); j < clen; j++) {
-    div.append("<p>" + model[this.dt_.getColumnId(j)] + "</p>");
+    div.append("<p>" + model[this.getColumnId_(j)] + "</p>");
   }
   return div;
 };
