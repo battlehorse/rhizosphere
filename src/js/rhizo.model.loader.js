@@ -100,6 +100,9 @@ rhizo.model.loader.JSONP.prototype.loadDone = function(payload) {
 // Generic Google Visualization API (GViz) loader
 rhizo.model.loader.GViz = function(resource) {
   this.resource_ = resource;
+
+  // Expose the resource URI with a friendlier name for Gviz users.
+  this.datasource_url = resource;
 };
 rhizo.model.loader.loaders.push(rhizo.model.loader.GViz);
 
