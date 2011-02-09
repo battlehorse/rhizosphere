@@ -26,7 +26,7 @@ def DefaultTemplate(request):
     # Should we serve compiled or uncompiled resources?
     'debug': request.get('d', '0') == '1',
     'analytics_id': analytics_id,
-    'copyright_year': '2010'
+    'copyright_year': '2010-2011'
   }
 
 
