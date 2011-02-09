@@ -78,6 +78,11 @@ BODY {
   color: black;
 }
 
+UL.page_toc LI {
+  list-style-type: none;
+  font-weight: bold;
+}
+
 .content {
   margin-left: 16em;
 }
