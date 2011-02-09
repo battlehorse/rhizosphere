@@ -520,9 +520,11 @@ rhizo.meta.CategoryKind.prototype.setFilterValue = function(value) {
 
 rhizo.meta.CategoryKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
-  // This function relies on Javascript 1.6 for the indexOf() method to be
-  // present both on Arrays and Strings (since models can use both to define
-  // the value of a CategoryKind meta).
+  // Models can use both Arrays and Strings for CategoryKind fields, hence we
+  // have to convert everything to Array for the filter to work properly.
+  if (!$.isArray(modelValue)) {
+    modelValue = [modelValue];
+  }
 
   // AND-filter
 
