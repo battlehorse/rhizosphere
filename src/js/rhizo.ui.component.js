@@ -295,6 +295,7 @@ rhizo.ui.component.Container.prototype.addComponent = function(component,
       new_renderings = this.renderSingleComponent(component, opt_position);
       component.metaReady();
       component.ready();
+      break;
     default:
       break;
   }
@@ -1460,6 +1461,9 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ =
  */
 rhizo.ui.component.FilterStackContainer.prototype.isFilterActive =
     function(key) {
+  if (!this.filterSelector_) {
+    return true;
+  }
   return key in this.activeFilters_;
 };
 
