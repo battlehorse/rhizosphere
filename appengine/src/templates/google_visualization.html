@@ -1,3 +1,4 @@
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -136,13 +137,19 @@
       </td>
     </tr>
   </table>
+  <div>
+    <button id="redraw_button">Redraw all</button>
+  </div>
   <div id="output"></div>
-
 
 
   <script type="text/javascript">
     google.load("visualization", "1", {packages:['corechart', 'table']});
     google.setOnLoadCallback(visualizationApiLoaded);
+    var chart, table, rhizosphere;
+    var chartOptions, tableOptions, rhizosphereOptions;
+    var chartData, tableData, rhizosphereData;
+
       function visualizationApiLoaded() {
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Name', 'name');
@@ -163,23 +170,30 @@
             ['Sara', 15, 18, 'female']
         ]);
 
-        var view = new google.visualization.DataView(data);
-        view.setColumns([1, 2]);
-
-        var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+        // Chart setup
+        chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
         google.visualization.events.addListener(chart, 'ready', chart_ready);
-        chart.draw(view, {width: 400, height: 240,
-                          title: 'Age vs. Weight comparison',
-                          hAxis: {title: 'Age', minValue: 0, maxValue: 15},
-                          vAxis: {title: 'Weight', minValue: 0, maxValue: 20},
-                          legend: 'none'
-                         });
 
-        var table = new google.visualization.Table(document.getElementById('table_div'));
+        chartData = new google.visualization.DataView(data);
+        chartData.setColumns([1, 2]);
+
+        chartOptions = {
+            width: 400, height: 240,
+            title: 'Age vs. Weight comparison',
+            hAxis: {title: 'Age', minValue: 0, maxValue: 15},
+            vAxis: {title: 'Weight', minValue: 0, maxValue: 20},
+            legend: 'none'};
+        chart.draw(chartData, chartOptions);
+
+        // Table setup
+        table = new google.visualization.Table(document.getElementById('table_div'));
         google.visualization.events.addListener(table, 'ready', table_ready);
-        table.draw(data, {width: 400});
 
+        tableData = data;
+        tableOptions = {width: 400};
+        table.draw(tableData, tableOptions);
 
+        // Rhizosphere setup
         var renderer = {
           render: function(model) {
             return $("<div class='rhizo-sample'>" +
@@ -199,13 +213,17 @@
           weight: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Weight', min: 0, max: 20}
         };
 
-        var rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo_div'));
+        rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo_div'));
         google.visualization.events.addListener(rhizosphere, 'ready', rhizosphere_ready);
-        rhizosphere.draw(data, {
-          renderer: renderer,
-          metamodelFragment: metamodelFragment,
-          template: 'default'
-        });
+
+        rhizosphereData = data;
+        rhizosphereOptions = {
+            renderer: renderer,
+            metamodelFragment: metamodelFragment,
+            template: 'default'
+        };
+
+        rhizosphere.draw(rhizosphereData, rhizosphereOptions);
       }
 
       function chart_ready() {
@@ -224,8 +242,16 @@
         var p = document.createElement('P');
         p.innerHTML = message;
         document.getElementById('output').appendChild(p);
-
       }
+
+      $().ready(function() {
+        $('#redraw_button').click(function() {
+          appendLog("Redraw.");
+          chart.draw(chartData, chartOptions);
+          table.draw(tableData, tableOptions);
+          rhizosphere.draw(rhizosphereData, rhizosphereOptions);
+        })
+      })
   </script>
 </body>
 </html>
