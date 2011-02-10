@@ -72,6 +72,21 @@ rhizo.ui.gui.GUI.prototype.done = function() {
   }
 };
 
+/**
+ * Reverts the Rhizosphere container back to its original state, before the
+ * Rhizosphere visualization was assembled inside it, removing indiscriminately
+ * any DOM element contained within.
+ */
+rhizo.ui.gui.GUI.prototype.destroy = function() {
+  var classes = this.container.get(0).className.split(' ');
+  for (var i = 0; i < classes.length; i++) {
+    if (classes[i].indexOf('rhizo') == 0) {
+      this.container.removeClass(classes[i]);
+    }
+  }
+  this.container.children().remove();
+};
+
 rhizo.ui.gui.GUI.prototype.initContainer_ = function() {
   // Enable device-specific and platform-specific styles.
   this.container.

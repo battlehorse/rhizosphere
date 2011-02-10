@@ -819,6 +819,14 @@ rhizo.ui.Rendering.prototype.reRender_ = function() {
 };
 
 /**
+ * Notifies the rendering that it is about to be destroyed and removed from
+ * the DOM. Any cleanup should occur here, before the DOM removal takes place.
+ */
+rhizo.ui.Rendering.prototype.beforeDestroy = function() {
+  this.notifyAttach_(false);
+};
+
+/**
  * Moves the rendering.
  * @param {number} top The target y coordinate of the top-left corner of the
  *     rendering, relative to the universe top-left corner.
@@ -1224,7 +1232,6 @@ rhizo.ui.Rendering.prototype.removeMode = function(mode) {
 rhizo.ui.Rendering.prototype.isMode = function(mode) {
   return !!this.modes_[mode];
 };
-
 
 
 /**
