@@ -41,6 +41,12 @@ rhizo.gviz.Rhizosphere = function(container) {
     throw 'Google Visualization APIs not available. Please load them first.'
   }
   this.container_ = container;
+
+  /**
+   * @type {rhizo.Project}
+   * @private
+   */
+  this.project_ = null;
 };
 
 /**
@@ -62,13 +68,19 @@ rhizo.gviz.Rhizosphere = function(container) {
  *     http://www.rhizospherejs.com/doc/contrib_tables.html#options.
  */
 rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
+  if (this.project_) {
+    // Google Visualizations can be redrawn multiple times. Rhizosphere does
+    // not properly support redraws, so the easiest (and crudest) way to achieve
+    // it is to destroy and rebuild the entire visualization.
+    this.project_.destroy();
+  }
   var bootstrapper = new rhizo.bootstrap.Bootstrap(
       this.container_, opt_options, jQuery.proxy(this.ready_, this));
 
   var logger = rhizo.nativeConsoleExists() ?
       new rhizo.NativeLogger() :  new rhizo.NoOpLogger();
   var initializer = new rhizo.gviz.Initializer(datatable, logger, opt_options);
-  bootstrapper.prepare();
+  this.project_ = bootstrapper.prepare();
   bootstrapper.deployExplicit(initializer.models,
                               initializer.metamodel,
                               initializer.renderer);

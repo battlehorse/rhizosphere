@@ -187,6 +187,26 @@ rhizo.state.MasterOverlord.prototype.attachProject = function(project,
 };
 
 /**
+ * Disables state management for this project.
+ *
+ * NOTE that you cannot repeatedly enable/disable state management for a
+ * project. You can enable and disable it just once, otherwise the initial
+ * state received after re-enabling state management may be out-of-sync.
+ *
+ * @param {rhizo.Project} project
+ */
+rhizo.state.MasterOverlord.prototype.detachProject = function(project) {
+  var uuid = project.uuid();
+  if (uuid in this.projectOverlords_) {
+    this.projectOverlords_[uuid].removeAllBindings();
+    delete this.projectOverlords_[uuid];
+  }
+  if (uuid in this.state_.uuids) {
+    delete this.state_.uuids[uuid];
+  }
+};
+
+/**
  * Returns the project overlord assigned to the given project.
  * @param {rhizo.Project} project
  * @return {rhizo.state.ProjectOverlord}
@@ -358,8 +378,22 @@ rhizo.state.ProjectOverlord.prototype.addBinding = function(binder) {
  */
 rhizo.state.ProjectOverlord.prototype.removeBinding = function(binder_key) {
   var binder = this.bindings_[binder_key];
+  binder.onRemove();
   delete this.bindings_[binder_key];
   return binder;
+};
+
+/**
+ * Removes all the bindings from this overlord.
+ *
+ * After this call, the overlord will be effectively blind to any changes that
+ * affect the project it was bound to, even the ones originating from the
+ * project itself.
+ */
+rhizo.state.ProjectOverlord.prototype.removeAllBindings = function() {
+  for (var binder_key in this.bindings_) {
+    this.removeBinding(binder_key);
+  }
 };
 
 /**
@@ -483,6 +517,13 @@ rhizo.state.StateBinder.prototype.makeDelta = function(facet, facetState) {
   };
 };
 
+/**
+ * Callback to notify this binder that is being removed from its overlord.
+ * Therefore it won't be sent further state transitions, and it should stop
+ * pushing state changes to the overlord.
+ */
+rhizo.state.StateBinder.prototype.onRemove = function() {};
+
 
 /**
  * Binds the visualization state to the rhizo.Project that manages the
@@ -494,11 +535,20 @@ rhizo.state.StateBinder.prototype.makeDelta = function(facet, facetState) {
 rhizo.state.ProjectStateBinder = function(overlord, project) {
   rhizo.state.StateBinder.call(this, overlord, rhizo.state.Bindings.PROJECT);
   this.project_ = project;
+  this.removed_ = false;
 };
 rhizo.inherits(rhizo.state.ProjectStateBinder, rhizo.state.StateBinder);
 
+rhizo.state.ProjectStateBinder.prototype.onRemove = function() {
+  this.removed_ = true;
+};
+
 rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
                                                                  state) {
+  if (this.removed_) {
+    throw("ProjectStateBinder received a transition after being removed from " +
+          "overlord.");
+  }
   if (opt_delta) {
     // If we know exactly what changed to get to the target state, then
     // just apply the delta.
@@ -526,6 +576,10 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
  */
 rhizo.state.ProjectStateBinder.prototype.pushLayoutChange = function(
     layoutName, layoutState, opt_positions) {
+  if (this.removed_) {
+    throw("ProjectStateBinder cannot issue transitions after removal from " +
+          "overlord");
+  }
   var facetState = jQuery.extend({layoutName: layoutName}, layoutState);
   var replace = !!opt_positions && this.curLayoutHasPositions_();
   if (opt_positions) {
@@ -585,6 +639,10 @@ rhizo.state.ProjectStateBinder.prototype.mergePositions_ = function(positions) {
  */
 rhizo.state.ProjectStateBinder.prototype.pushFilterSelectionChange = function(
     filteredModels) {
+  if (this.removed_) {
+    throw("ProjectStateBinder cannot issue transitions after removal from " +
+          "overlord");
+  }
   var delta = this.makeDelta(rhizo.state.Facets.SELECTION_FILTER,
                              filteredModels);
   this.overlord_.transition(this.key(), delta);
@@ -598,6 +656,10 @@ rhizo.state.ProjectStateBinder.prototype.pushFilterSelectionChange = function(
  */
 rhizo.state.ProjectStateBinder.prototype.pushFilterChange = function(key,
                                                                      value) {
+  if (this.removed_) {
+    throw("ProjectStateBinder cannot issue transitions after removal from " +
+          "overlord");
+  }
   var delta = this.makeDelta(rhizo.state.Facets.FILTER_PREFIX + key,
                              value);
   this.overlord_.transition(this.key(), delta);
@@ -623,6 +685,11 @@ rhizo.state.HistoryStateBinder.prototype.onTransition = function(opt_delta,
                                                                  state,
                                                                  opt_replace) {
   rhizo.state.getHistoryHelper().sync(state, opt_replace);
+};
+
+
+rhizo.state.HistoryStateBinder.prototype.onRemove = function() {
+  rhizo.state.getHistoryHelper().removeListener(this.overlord_.uuid());
 };
 
 
@@ -652,6 +719,18 @@ rhizo.state.HistoryHelper = function(masterOverlord) {
  */
 rhizo.state.HistoryHelper.prototype.addListener = function(uuid, callback) {
   this.listeners_[uuid] = callback;
+};
+
+/**
+ * Deregisters a callback from being invoked on history-originated changes
+ * affecting the given visualization.
+ *
+ * @param {string} uuid The id of the visualization to stop tracking.
+ */
+rhizo.state.HistoryHelper.prototype.removeListener = function(uuid) {
+  if (uuid in this.listeners_) {
+    delete this.listeners_[uuid];
+  }
 };
 
 /**
@@ -737,8 +816,21 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
     delta = this.diff_(this.master_.state(), target_state);
   }
 
-  // Notify the listener that is responsible for the affected visualization.
-  this.listeners_[delta.uuid](delta, target_state);
+  if (delta.uuid in this.listeners_) {
+    // If a listener responsible for the affected visualization still exists,
+    // notify it and rely on it to update the master state.
+    this.listeners_[delta.uuid](delta, target_state);
+  } else {
+    // Nobody is tracking history changes for this visualization anymore,
+    // update the master state directly.
+    // (even though no longer useful, we cannot miss this state, because
+    // delta computations in diff() must operate on consecutive states).
+    if (target_state) {
+      this.master_.setState(target_state);
+    } else {
+      this.master_.pushDelta(delta);
+    }
+  }
 };
 
 /**

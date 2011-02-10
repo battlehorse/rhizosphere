@@ -137,6 +137,25 @@ rhizo.Project.prototype.finalizeUI_ = function() {
 };
 
 /**
+ * Destroys the Rhizosphere visualization managed by this project.
+ *
+ * This includes removal of all renderings, visualization Chrome and other
+ * UI elements, and reverting the DOM element that contains the visualization
+ * back to its original state.
+ */
+rhizo.Project.prototype.destroy = function() {
+  rhizo.state.getMasterOverlord().detachProject(this);
+  for (var i = this.models_.length-1; i >= 0; i--) {
+    var rendering = this.models_[i].rendering();
+    if (rendering) {
+      // Give renderings a chance to cleanup.
+      rendering.beforeDestroy();
+    }
+  }
+  this.gui_.destroy();
+};
+
+/**
  * @return {string} A unique document-wide identifier for this project. We rely
  *     on an unique id being assigned to the HTML element that contains the
  *     visualization this project manages.
