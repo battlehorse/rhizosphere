@@ -139,6 +139,7 @@
   </table>
   <div>
     <button id="redraw_button">Redraw all</button>
+    <button id="redraw_alternate_button">Redraw Rhizosphere with no options</button>
   </div>
   <div id="output"></div>
 
@@ -250,8 +251,13 @@
           chart.draw(chartData, chartOptions);
           table.draw(tableData, tableOptions);
           rhizosphere.draw(rhizosphereData, rhizosphereOptions);
-        })
-      })
+        });
+
+        $('#redraw_alternate_button').click(function() {
+          appendLog("Redrawing Rhizosphere with no options.");
+          rhizosphere.draw(rhizosphereData);
+        });
+      });
   </script>
 </body>
 </html>
