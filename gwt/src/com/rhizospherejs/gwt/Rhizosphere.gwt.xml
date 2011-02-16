@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 20111 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<module rename-to='rhizosphere'>
+  <inherits name='com.google.gwt.user.User'/>
+  <inherits name="com.google.gwt.resources.Resources" />
+  
+  <!--  Required by Rhizosphere to accept JSONObjects -->
+  <inherits name='com.google.gwt.json.JSON'/>
+  
+  <!-- Required by RhizosphereLoader -->
+  <inherits name="com.google.gwt.ajaxloader.AjaxLoader" />
+  
+  <!-- Required by RhizosphereVisualization -->
+  <inherits name="com.google.gwt.visualization.Visualization" />
+  
+  <public path="jsni" />
+  
+  <define-property name="rhizosphere.debug" values="true,false" />
+  
+  <replace-with class="com.rhizospherejs.gwt.client.resources.ProdResourcesInjector">
+    <when-type-is class="com.rhizospherejs.gwt.client.resources.ResourcesInjector"/>
+  </replace-with>
+  
+  <replace-with class="com.rhizospherejs.gwt.client.resources.DebugResourcesInjector">
+    <when-type-is class="com.rhizospherejs.gwt.client.resources.ResourcesInjector"/>
+    <any>
+      <when-property-is name="rhizosphere.debug" value="true" />
+    </any>
+  </replace-with>
+  
+  <generate-with class="com.rhizospherejs.gwt.rebind.RhizosphereGenerator">
+    <when-type-assignable class="com.rhizospherejs.gwt.client.RhizosphereModel"/>
+  </generate-with>
+</module>
