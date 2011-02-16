@@ -1,0 +1,82 @@
+<project name="rhizosphere-gwt" basedir="../" default="pack">
+  <!-- Load externally configurable properties -->
+  <loadproperties srcfile="build/build.properties" />
+  <property name="ant-work-dir" value="work" />
+
+  <!-- Internal properties -->
+  <property name="rhizogwt.target.package" value="src/com/rhizospherejs/gwt/jsni/rhizosphere" />
+  <property name="rhizo.source.dir" value="../" />
+  <property name="lib-output-dir" value="lib/" />
+
+  <!-- Derived properties -->
+  <property name="compile-output-dir" value="${ant-work-dir}/classes" />
+  <property name="exploded-output-dir" value="${ant-work-dir}/exploded" />
+
+  <!-- Path definitions -->
+  <path id="classpath.compile">
+    <pathelement location="${compile-output-dir}"/>
+    <pathelement location="${gwt-sdk}/gwt-user.jar"/>
+    <pathelement location="${gwt-sdk}/gwt-dev.jar"/>
+    <pathelement location="${gwt-visualization-jar}"/>
+  </path>
+
+  <!-- Clean the build output -->
+  <target name="clean">
+    <delete dir="${ant-work-dir}">
+    </delete>
+  </target>
+
+  <!-- Removes the Rhizosphere library source code from the GWT tree -->
+  <target name="clean-rhizosphere-js-css" >
+    <delete dir="${rhizogwt.target.package}/src" />
+    <delete dir="${rhizogwt.target.package}/shared" />
+    <delete dir="${rhizogwt.target.package}/lib" />
+  </target>
+
+  <!-- Copies the Rhizosphere library source code into the GWT tree -->
+  <target name="copy-rhizosphere-js-css" >
+    <mkdir dir="${rhizogwt.target.package}/src" />
+    <copy todir="${rhizogwt.target.package}/src" >
+      <fileset dir="${rhizo.source.dir}/src" />
+    </copy>
+
+    <mkdir dir="${rhizogwt.target.package}/lib" />
+    <copy todir="${rhizogwt.target.package}/lib" >
+      <fileset dir="${rhizo.source.dir}/lib" />
+    </copy>
+
+    <mkdir dir="${rhizogwt.target.package}/shared" />
+    <copy todir="${rhizogwt.target.package}/shared" >
+      <fileset dir="${rhizo.source.dir}/shared" />
+    </copy>  	
+  </target>
+
+  <target name="prepare-output-folders" depends="clean">
+    <mkdir dir="${compile-output-dir}" />
+    <mkdir dir="${exploded-output-dir}" />
+  </target>
+
+  <target name="compile" depends="prepare-output-folders,copy-rhizosphere-js-css">
+    <javac srcdir="src" destdir="${compile-output-dir}" source="5" target="5" verbose="true">
+      <classpath refid="classpath.compile" />
+    </javac>
+  </target>
+
+  <target name="explode" depends="compile">
+    <!-- copy XML descriptor, java source files and static resources -->
+    <copy todir="${exploded-output-dir}" failonerror="true">
+      <fileset dir="src"></fileset>
+    </copy>
+
+    <!-- copy classes -->
+    <copy todir="${exploded-output-dir}">
+      <fileset dir="${compile-output-dir}"></fileset>
+    </copy>
+  </target>
+
+  <target name="pack" depends="explode">
+    <jar file="${lib-output-dir}/gwt-rhizosphere.jar">
+      <fileset dir="${exploded-output-dir}"></fileset>
+    </jar>
+  </target>
+</project>
