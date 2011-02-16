@@ -167,7 +167,7 @@ rhizo.layout.LayoutBox.prototype.computeLayoutBox_ = function(
   } else {
     this.bottom = this.clamp_(
         this.getAbsoluteDimension_(layoutConstraints.bottom, this.maxHeight_),
-        this.top, this.maxHeight_);
+        0, this.maxHeight_ - this.top);
     this.height = this.maxHeight_ - this.top - this.bottom;
   }
 
@@ -180,7 +180,7 @@ rhizo.layout.LayoutBox.prototype.computeLayoutBox_ = function(
   } else {
     this.right = this.clamp_(
         this.getAbsoluteDimension_(layoutConstraints.right, this.maxWidth_),
-        this.left, this.maxWidth_);
+        0, this.maxWidth_ - this.left);
     this.width = this.maxWidth_ - this.left - this.right;
   }
 };
