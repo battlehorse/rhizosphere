@@ -156,15 +156,11 @@ public class JsoBuilder {
     target[attribute] = value;
   }-*/;
 
-  private <T extends JavaScriptObject> T createNativeArray() {
-    return JavaScriptObject.createArray().cast();
-  }
-
   private JsArrayMixed convertToJsArrayObject(Object[] value) {
     if (value == null) {
       return null;
     }
-    JsArrayMixed array = createNativeArray();
+    JsArrayMixed array = JavaScriptObject.createArray().cast();
     for (int i = 0; i < value.length; i++) {
       nativeArrayPush(array, value[i]);
     }
