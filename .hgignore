@@ -6,6 +6,10 @@ syntax: glob
 .idea
 appengine/shared/atom
 appengine/shared/gdata
+gwt/work
+gwt/bin
+gwt/.classpath
+gwt/.project
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/lib
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/shared
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/src
