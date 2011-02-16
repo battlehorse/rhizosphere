@@ -3,4 +3,8 @@
 # Names should be added to this file like so:
 # Name and/or Organization <email address>
 
+# Main authors
 Riccardo Govoni, Google Inc. <battlehorse@google.com>, <battlehorse@gmail.com>
+
+# Contributors to Rhizosphere-GWT integration.
+Dino Derek Hughes, Google Inc. <dinoderek@google.com>
