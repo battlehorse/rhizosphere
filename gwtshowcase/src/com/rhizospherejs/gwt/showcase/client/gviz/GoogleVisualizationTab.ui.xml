@@ -1,0 +1,84 @@
+<!--
+  Copyright 20111 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+     xmlns:g='urn:import:com.google.gwt.user.client.ui'
+     xmlns:dp='urn:import:com.google.gwt.user.datepicker.client'>
+  <ui:with field='res' type='com.rhizospherejs.gwt.showcase.client.resources.Resources'/>
+  <ui:style>
+    .form { margin: 1em; }
+    .formfield { display: inline-block; white-space: nowrap; }
+    .formlabel { display: inline-block; width: 6em; color: #666; }
+    .errormessage { color: red; }
+    .visualization {
+      width: 400px;
+      height: 400px;
+      border: 1px solid #ccc;
+      -moz-box-shadow: 2px 2px 2px #ddd;
+      -webkit-box-shadow: 2px 2px 2px #ddd;
+      box-shadow: 2px 2px 2px #ddd;
+      margin: 0 1em;
+    }
+  </ui:style>
+  <g:HTMLPanel addStyleNames='{res.tabsCss.expandToFill}'>
+    <h3>Google Visualization API demo</h3>
+    <p class='{res.tabsCss.demoOverview}'>
+      This tab demonstrates how you can use Rhizosphere together with the
+      Google Visualization APIs.
+    </p>
+    <p class='{res.tabsCss.demoOverview}'>
+      Both visualizations in this page (the Scatter plot and Rhizosphere)
+      are powered by the same Google Visualization DataTable. Use the input
+      form to add new entries to the DataTable and the <em>Delete</em>
+      buttons inside the Rhizosphere visualization to remove them. 
+    </p>
+    <p class='{res.tabsCss.demoOverview}'>
+      The Rhizosphere visualization uses a GWT UiBinder template to
+      customize the rendering of each <em>card</em>. 
+    </p>
+    <p class='{res.tabsCss.demoOverview}'>
+      Relevant source code files:
+    </p>
+
+    <form class='{style.form}'>
+      <div class='{style.formfield}'>
+        <label class='{style.formlabel}'>Name:</label>
+        <g:TextBox ui:field='nameInput' />
+      </div>
+      <div class='{style.formfield}'>
+        <label class='{style.formlabel}'>Weight (kg):</label>
+        <g:TextBox ui:field='weightInput' />
+      </div>
+      <div class='{style.formfield}'>
+        <label class='{style.formlabel}'>Height (cm):</label>
+        <g:TextBox ui:field='heightInput' />
+      </div>
+      <div class='{style.formfield}'>
+        <label class='{style.formlabel}'>Date of Birth:</label>
+        <dp:DateBox ui:field='dobInput' />
+        <g:Button ui:field='submitButton' >Create</g:Button>
+      </div>
+      <g:Label ui:field='message' addStyleNames='{style.errormessage}' />
+    </form>
+    <g:HorizontalPanel>
+      <g:SimplePanel ui:field='rhizosphereContainer' addStyleNames='{style.visualization}'>
+        <g:Label>Rhizosphere loading...</g:Label>
+      </g:SimplePanel>    
+      <g:SimplePanel ui:field='chartContainer' addStyleNames='{style.visualization}'>
+        <g:Label>Chart loading...</g:Label>
+      </g:SimplePanel>
+    </g:HorizontalPanel>
+  </g:HTMLPanel>
+</ui:UiBinder>
