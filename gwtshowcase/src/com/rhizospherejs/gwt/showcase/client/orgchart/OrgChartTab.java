@@ -88,6 +88,7 @@ public class OrgChartTab extends Composite {
             // Create some default options.
             RhizosphereOptions<Employee> options = RhizosphereOptions.create();
             options.setTemplate("default");
+            options.setEnableHTML5History(false);
 
             // Create a new Rhizosphere visualization suited to display Employee objects.
             Rhizosphere<Employee> rhizosphere = new Rhizosphere<Employee>(options);
