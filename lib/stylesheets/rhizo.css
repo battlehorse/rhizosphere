@@ -89,7 +89,8 @@
 .rhizo-expand-model{background-color:rgba(255, 255, 255, 0.6);position:absolute;visibility:hidden;top:2px;right:2px;}
 .rhizo-expand-model:hover{border-color:#6a7eac;}
 .rhizo-device-ipad .ui-selected .rhizo-expand-model{visibility:visible !important;opacity:0.6;}
-.rhizo-model{border:1px solid #6391de;-moz-border-radius:3px;border-radius:3px;background-color:#ffffff;margin:0;padding:0;cursor:pointer;overflow:hidden;position:absolute;-webkit-box-shadow:1px 1px 2px #dadee8;-moz-box-shadow:1px 1px 2px #dadee8;box-shadow:1px 1px 2px #dadee8;z-index:50;visibility:hidden;opacity:0;}
+.rhizo-model{border:1px solid #6391de;-moz-border-radius:3px;border-radius:3px;background-color:#ffffff;margin:0;padding:0;overflow:hidden;position:absolute;-webkit-box-shadow:1px 1px 2px #dadee8;-moz-box-shadow:1px 1px 2px #dadee8;box-shadow:1px 1px 2px #dadee8;z-index:50;visibility:hidden;opacity:0;}
+.rhizo-drag-handle{cursor:pointer;}
 .rhizo-autorender{color:#222222;width:100%;height:100%;}
 .rhizo-autorender .rhizo-autorender-label{color:#888888;font-size:0.9em;}
 .rhizo-autorender P{margin:0;padding:0;}
