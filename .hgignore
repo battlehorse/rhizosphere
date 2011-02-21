@@ -13,3 +13,10 @@ gwt/.project
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/lib
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/shared
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/src
+gwtshowcase/.classpath
+gwtshowcase/.project
+gwtshowcase/.gwt
+gwtshowcase/.settings
+gwtshowcase/war/RhizosphereGwtShowcase
+gwtshowcase/war/WEB-INF/classes
+gwtshowcase/war/WEB-INF/deploy
