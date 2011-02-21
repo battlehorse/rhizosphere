@@ -51,7 +51,8 @@
         <h3>Org Chart demo</h3>
         <p class='{res.tabsCss.demoOverview}'>
           This tab demonstrates the simplest way to use Rhizosphere and mimics
-          the equivalent Javascript demo. It shows employees of a fictional
+          the equivalent <a href="http://www.rhizospherejs.com/rhizo.html?src=sample/people.js">
+          Javascript demo</a>. It shows employees of a fictional
           organization. Try choosing the <strong>tree</strong> layout from the
           <em>Display</em> section, and then play with filters to see the
           tree rearrange on the fly.
@@ -60,8 +61,12 @@
           In this demo Rhizosphere uses annotated POJOs to define both
           the data to visualize and their metadata.
         </p>
-        <p class='{res.tabsCss.demoOverview}'>Relevant source code files:</p>
-      </g:HTMLPanel>     
+        <p class='{res.tabsCss.demoOverview}'>Relevant source code files:
+          <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/orgchart/OrgChartTab.java">OrgChartTag.java</a>,
+          <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/orgchart/Employee.java">Employee.java</a>,
+          <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/orgchart/EmployeeRenderer.java">EmployeeRenderer.java</a>
+        </p>
+      </g:HTMLPanel>
     </g:north>
     <g:center>
       <g:SimplePanel 

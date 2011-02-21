@@ -46,7 +46,8 @@
         Demos</a> and samples,</li>
       <li><a href="http://docs.rhizospherejs.com" target="_blank">
         Library documentation</a>: for both end users and developers,</li>
-      <li><a href="" target="_blank">Javadocs</a> for the GWT integration,</li>
+      <li><a href="http://www.rhizospherejs.com/gwt/javadoc/index.html" target="_blank">
+        Javadocs</a> for the GWT integration,</li>
       <li>Rhizosphere <a href="http://code.rhizospherejs.com" target="_blank">
         source code</a>.</li>
     </ul>
