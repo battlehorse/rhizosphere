@@ -1,0 +1,10 @@
+com.rhizospherejs.gwt.client
+com.rhizospherejs.gwt.client.bootstrap
+com.rhizospherejs.gwt.client.bridge
+com.rhizospherejs.gwt.client.gviz
+com.rhizospherejs.gwt.client.handlers
+com.rhizospherejs.gwt.client.meta
+com.rhizospherejs.gwt.client.renderer
+com.rhizospherejs.gwt.client.resources
+com.rhizospherejs.gwt.jsni
+com.rhizospherejs.gwt.rebind
