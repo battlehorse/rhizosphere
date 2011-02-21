@@ -79,4 +79,25 @@
       <fileset dir="${exploded-output-dir}"></fileset>
     </jar>
   </target>
+
+  <target name="javadoc">
+    <javadoc
+        access="package"
+        author="true"
+        destdir="javadoc"
+        doctitle="Rhizosphere GWT Documentation"
+        nodeprecated="false"
+        nodeprecatedlist="false"
+        noindex="false"
+        nonavbar="false"
+        notree="false"
+        source="1.5"
+        sourcepath="src"
+        splitindex="true"
+        use="true"
+        version="true">
+      <classpath refid="classpath.compile" />
+      <packageset dir="src" />
+    </javadoc>
+  </target>
 </project>
