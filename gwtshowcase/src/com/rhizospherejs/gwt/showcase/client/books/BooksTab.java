@@ -212,6 +212,7 @@ public class BooksTab extends Composite {
         // Create some default options.
         RhizosphereOptions<Book> options = RhizosphereOptions.create();
         options.setTemplate("default");
+        options.setEnableHTML5History(false);
 
         // Create a new Rhizosphere visualization suited to display Book objects.
         Rhizosphere<Book> rhizo = new Rhizosphere<Book>(options);

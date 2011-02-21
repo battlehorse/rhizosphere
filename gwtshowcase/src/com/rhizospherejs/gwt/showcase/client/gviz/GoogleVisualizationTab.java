@@ -260,6 +260,7 @@ public class GoogleVisualizationTab extends Composite implements DataTableChange
     // Defines a custom renderer via configuration options.
     rhizosphereOptions.setRenderer(new PersonRenderer(this));
     rhizosphereOptions.setCacheDimensions(true);
+    rhizosphereOptions.setEnableHTML5History(false);    
 
     // Enhance the metamodel Rhizosphere automatically generates from the
     // DataTable. In particular, configure Rhizosphere to use a Date data type
