@@ -1,0 +1,77 @@
+<!--
+  Copyright 20111 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+     xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <ui:with field='res' type='com.rhizospherejs.gwt.showcase.client.resources.Resources'/>
+  <ui:style>
+    .form { 
+      padding: 0.5em;
+      margin: 0;
+      border-bottom: 1px solid #999;
+      background-color: #fff;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    .formfield { display: inline-block; white-space: nowrap; }
+    .formlabel { display: inline-block; color: #666; }
+    .loading { display: inline-block; }
+    .stayover {
+      z-index: 300;
+    }
+    .branding {
+      float: right;
+    }
+  </ui:style>
+  <g:DockLayoutPanel addStyleNames='{res.tabsCss.expandToFill}' unit='EM'>
+    <g:north size='13'>
+      <g:HTMLPanel addStyleNames='{style.stayover}'>
+      <h3>Google Books integration demo</h3>
+      <p class='{res.tabsCss.demoOverview}'>
+        This tab demonstrates how you can use Rhizosphere to visualize JSON data
+        fetched from a remote service (Google Book Search). Enter some topics
+        in the search box to add relevant books to Rhizosphere. You can
+        do multiple searches to add more books to Rhizosphere.
+      </p>
+      <p class='{res.tabsCss.demoOverview}'>
+        In this demo Rhizosphere defines a custom metamodel to describe the
+        JSON feed and a custom widget-based renderer to display each book.
+      </p>
+      <p class='{res.tabsCss.demoOverview}'>Relevant source code files:</p> 
+
+      <div class='{style.form}'>
+        <div class='{style.formfield}'>
+          <label class='{style.formlabel}'>Find books about:</label>
+          <g:TextBox ui:field='searchInput' />
+          <g:Button ui:field='submitButton' >Catch'em all</g:Button>
+          <g:Button ui:field='clearButton' visible='false' >Clear</g:Button>
+          <g:Label ui:field='loadingMessage' addStyleNames='{style.loading}' visible='false'>
+            Loading...
+          </g:Label>
+        </div>
+        <div id='booksBranding' class='{style.branding}'></div>
+      </div>
+
+      </g:HTMLPanel>
+    </g:north>
+    <g:center>
+      <g:SimplePanel
+          ui:field='rhizosphereContainer'
+          addStyleNames='{res.booksCss.bookVisualization}'></g:SimplePanel>
+    </g:center>
+  </g:DockLayoutPanel>
+</ui:UiBinder>

@@ -1,0 +1,60 @@
+<!--
+  Copyright 20111 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <div>
+    <h1>Welcome</h1>
+    <p>
+      <a href="http://site.rhizospherejs.com"><strong>Rhizosphere</strong></a>
+      is an innovative project to provide in-browser html-based spatial
+      navigation and interaction on structured data.
+      It is a data visualization tool: it lets you visualize, browse,
+      filter and act upon datasets of your choice.
+      Rhizosphere is available both as as <strong>javascript</strong> library
+      and as a <strong>Google Web Toolkit</strong> module.
+    </p>
+    <p>
+      This site demonstrates how to use the Rhizosphere library
+      within a <a href="http://code.google.com/webtoolkit/">
+        Google Web Toolkit</a> application.
+      Use the tabs above to navigate between different examples of GWT
+      integration.
+    </p>
+    <p>
+      Rhizosphere is open source code, released under the terms of the
+      <strong>Apache License, version 2.0</strong>.
+    </p>
+    <p>
+      You can find more info about it by following these links:
+    </p>
+    <ul>
+      <li><a href="http://site.rhizospherejs.com" target="_blank">
+        Rhizosphere website</a>: news and announcements about the project,</li>
+      <li><a href="http://www.rhizospherejs.com" target="_blank">
+        Demos</a> and samples,</li>
+      <li><a href="http://docs.rhizospherejs.com" target="_blank">
+        Library documentation</a>: for both end users and developers,</li>
+      <li><a href="" target="_blank">Javadocs</a> for the GWT integration,</li>
+      <li>Rhizosphere <a href="http://code.rhizospherejs.com" target="_blank">
+        source code</a>.</li>
+    </ul>
+    <p>
+      If you are interested in contributing and helping with the project, have
+      a look at the 
+      <a href="http://www.rhizospherejs.com/doc/contrib_overview.html">
+      information for contributors</a>.
+    </p>
+  </div>
+</ui:UiBinder>

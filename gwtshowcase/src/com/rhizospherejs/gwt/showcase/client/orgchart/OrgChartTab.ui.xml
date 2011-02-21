@@ -1,0 +1,72 @@
+<!--
+  Copyright 20111 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+     xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <ui:with field='res' type='com.rhizospherejs.gwt.showcase.client.resources.Resources'/>
+  <ui:style>
+    @external .rhizo-sample, .rhizo-sample-expanded, .dim;
+    .rhizo-sample {
+      font-size: 2em;
+      width: 100%;
+      height: 100%;
+    }
+
+    .rhizo-sample-expanded P {
+      margin: 0;
+      padding: 0;
+    }
+
+    .rhizo-sample-expanded {
+      font-size: 1.5em;
+      width: 100%;
+      height: 100%;
+    }
+
+    .rhizo-sample-expanded .dim {
+      color: #666;
+    }
+
+    .visualization {
+      border: 1px solid #ccc;
+      width: 100%;
+      height: 100%;
+    }
+  </ui:style>
+  <g:DockLayoutPanel addStyleNames='{res.tabsCss.expandToFill}' unit="EM">
+    <g:north size="10">
+      <g:HTMLPanel>
+        <h3>Org Chart demo</h3>
+        <p class='{res.tabsCss.demoOverview}'>
+          This tab demonstrates the simplest way to use Rhizosphere and mimics
+          the equivalent Javascript demo. It shows employees of a fictional
+          organization. Try choosing the <strong>tree</strong> layout from the
+          <em>Display</em> section, and then play with filters to see the
+          tree rearrange on the fly.
+        </p>
+        <p class='{res.tabsCss.demoOverview}'>
+          In this demo Rhizosphere uses annotated POJOs to define both
+          the data to visualize and their metadata.
+        </p>
+        <p class='{res.tabsCss.demoOverview}'>Relevant source code files:</p>
+      </g:HTMLPanel>     
+    </g:north>
+    <g:center>
+      <g:SimplePanel 
+          ui:field='rhizosphereContainer'
+          addStyleNames='{style.visualization}'></g:SimplePanel>
+    </g:center>
+  </g:DockLayoutPanel>
+</ui:UiBinder>
