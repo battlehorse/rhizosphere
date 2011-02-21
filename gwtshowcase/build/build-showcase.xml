@@ -1,0 +1,80 @@
+<project name="rhizosphere-gwt-showcase" basedir="../" default="pack">
+  <!-- Load externally configurable properties -->
+  <loadproperties srcfile="../gwt/build/build.properties" />
+
+  <!-- Internal properties -->
+  <property name="ant-work-dir" value="work" />
+  <property name="lib-output-dir" value="lib/" />
+
+  <!-- Derived properties -->
+  <property name="compile-output-dir" value="${ant-work-dir}/classes" />
+  <property name="gwt-compile-output-dir" value="${ant-work-dir}/gwtout" />
+  <property name="exploded-output-dir" value="${ant-work-dir}/exploded" />
+
+  <!-- Path definitions -->
+  <path id="classpath.compile">
+    <pathelement location="${compile-output-dir}"/>
+    <pathelement location="${gwt-sdk}/gwt-user.jar"/>
+    <pathelement location="${gwt-sdk}/gwt-dev.jar"/>
+    <pathelement location="${gwt-visualization-jar}"/>
+    <pathelement location="../gwt/lib/gwt-rhizosphere.jar"/>
+  </path>
+
+  <!-- Clean the build output -->
+  <target name="clean">
+    <delete dir="${ant-work-dir}">
+    </delete>
+  </target>
+
+  <target name="prepare-output-folders" depends="clean">
+    <mkdir dir="${compile-output-dir}" />
+    <mkdir dir="${gwt-compile-output-dir}" />
+    <mkdir dir="${exploded-output-dir}" />
+  </target>
+
+  <target name="pack-rhizosphere">
+    <ant dir="../gwt/" antfile="build/build.xml" target="pack" inheritAll="false" />
+  </target>
+
+  <target name="compile" depends="pack-rhizosphere, prepare-output-folders">
+    <javac srcdir="src" destdir="${compile-output-dir}" source="5" target="5" verbose="true">
+      <classpath refid="classpath.compile" />
+    </javac>
+  </target>
+
+  <target name="gwt-compile" depends="compile">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="src" />
+        <path refid="classpath.compile" />
+      </classpath>
+      <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+      <jvmarg value="-Xmx256M" />
+      <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+      <arg line="${gwt-compiler-args} -war ${gwt-compile-output-dir}" />
+
+      <!-- Entry point module -->
+      <arg value="com.rhizospherejs.gwt.showcase.RhizosphereShowcase" />
+    </java>
+  </target>
+
+  <target name="explode" depends="gwt-compile">
+    <copy todir="${exploded-output-dir}" failonerror="true">
+      <!-- html page and web.xml -->
+      <fileset dir="war">
+        <include name="WEB-INF/web.xml" />
+        <include name="*.html" />
+      </fileset>
+
+      <!-- GWT compilation output -->
+      <fileset dir="${gwt-compile-output-dir}"/>
+    </copy>
+  </target>
+
+  <target name="pack" depends="explode">
+    <jar file="${lib-output-dir}/rhizosphere-gwt-sample.war">
+      <fileset dir="${exploded-output-dir}" />
+    </jar>
+  </target>
+
+</project>
