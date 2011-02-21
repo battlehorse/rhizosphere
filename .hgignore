@@ -13,6 +13,7 @@ gwt/.project
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/lib
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/shared
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/src
+gwtshowcase/work
 gwtshowcase/.classpath
 gwtshowcase/.project
 gwtshowcase/.gwt
