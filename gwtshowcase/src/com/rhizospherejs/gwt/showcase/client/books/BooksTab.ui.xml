@@ -43,15 +43,21 @@
       <h3>Google Books integration demo</h3>
       <p class='{res.tabsCss.demoOverview}'>
         This tab demonstrates how you can use Rhizosphere to visualize JSON data
-        fetched from a remote service (Google Book Search). Enter some topics
-        in the search box to add relevant books to Rhizosphere. You can
-        do multiple searches to add more books to Rhizosphere.
+        fetched from a remote service (
+        <a href="http://code.google.com/apis/books/">Google Book Search</a>).
+        Enter some topics in the search box to add relevant books to
+        Rhizosphere. You can do multiple searches to add more books to
+        Rhizosphere.
       </p>
       <p class='{res.tabsCss.demoOverview}'>
         In this demo Rhizosphere defines a custom metamodel to describe the
         JSON feed and a custom widget-based renderer to display each book.
       </p>
-      <p class='{res.tabsCss.demoOverview}'>Relevant source code files:</p> 
+      <p class='{res.tabsCss.demoOverview}'>Relevant source code files:
+        <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/books/BooksTab.java">BooksTab.java</a>,
+        <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/books/Book.java">Book.java</a>,
+        <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/books/BookRenderer.java">BookRenderer.java</a>
+      </p>
 
       <div class='{style.form}'>
         <div class='{style.formfield}'>

@@ -36,13 +36,16 @@
     <h3>Google Visualization API demo</h3>
     <p class='{res.tabsCss.demoOverview}'>
       This tab demonstrates how you can use Rhizosphere together with the
-      Google Visualization APIs.
+      <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+      Google Visualization APIs</a>.
     </p>
     <p class='{res.tabsCss.demoOverview}'>
       Both visualizations in this page (the Scatter plot and Rhizosphere)
-      are powered by the same Google Visualization DataTable. Use the input
-      form to add new entries to the DataTable and the <em>Delete</em>
-      buttons inside the Rhizosphere visualization to remove them. 
+      are powered by the same Google Visualization
+      <a href="http://code.google.com/apis/visualization/documentation/reference.html#DataTable">
+      DataTable</a>. Use the input form to add new entries to the DataTable and
+      the <em>Delete</em> buttons inside the Rhizosphere visualization to remove
+      them. 
     </p>
     <p class='{res.tabsCss.demoOverview}'>
       The Rhizosphere visualization uses a GWT UiBinder template to
@@ -50,6 +53,8 @@
     </p>
     <p class='{res.tabsCss.demoOverview}'>
       Relevant source code files:
+      <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/gviz/GoogleVisualizationTab.java">GoogleVisualizationTab.java</a>,
+      <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/gviz/PersonWidget.java">PersonWidget.java</a>
     </p>
 
     <form class='{style.form}'>
