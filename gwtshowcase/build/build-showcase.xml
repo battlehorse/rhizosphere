@@ -63,6 +63,7 @@
       <!-- html page and web.xml -->
       <fileset dir="war">
         <include name="WEB-INF/web.xml" />
+        <include name="WEB-INF/appengine-web.xml" />
         <include name="*.html" />
       </fileset>
 
