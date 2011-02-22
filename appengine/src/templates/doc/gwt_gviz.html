@@ -3,4 +3,301 @@
 {% block navigation %}{% include 'navigation.html' %}{% endblock %}
 {% block content %}
 <h1>GWT and Google Visualization API</h1>
+<p>
+  This page describes how Rhizosphere integrates
+  <a href="http://code.google.com/apis/visualization/interactive_charts.html">
+    Google Visualization APIs</a> when used within a Google Web Toolkit
+  application.
+</p>
+
+<p>
+  When used in its native javascript form, Rhizosphere integrates nicely with
+  Google Visualization API, as described in <a href="/doc/users_gviz.html">this
+  documentation page</a>. The same applies when Rhizosphere is used within a
+  GWT application.
+</p>
+<a href="/static/doc/img/rhizosphere_gwt_gviz.png">
+  <img src="/static/doc/img/rhizosphere_gwt_gviz.png" width="600px" class="screenshot"></a>
+
+<h2>Overview</h2>
+<p>
+  When discussing Rhizosphere integration with Google Visualization API in the
+  context of a GWT application, we assume the following:
+</p>
+<ul>
+  <li>You already have your data organized in terms of
+    <a href="http://gwt-google-apis.googlecode.com/svn/javadoc/visualization/1.1/com/google/gwt/visualization/client/AbstractDataTable.html">
+      <code>com.google.gwt.visualization.client.AbstractDataTable</code></a>
+    instances,</li>
+  <li>You want to use Rhizosphere in a way that conforms with the
+    <a href="http://code.google.com/docreader/#p=gwt-google-apis&s=gwt-google-apis&t=ChartTools">
+      Google Chart Tools library for GWT</a> (part of the
+    <a href="http://code.google.com/p/gwt-google-apis/">
+      Google API libraries for Google Web Toolkit</a>)</li>
+</ul>
+<p>
+  Rhizosphere visualizes a DataTable by rendering each <strong>row</strong>
+  as a separate visual element in the visualization and assumes each
+  <strong>column</strong> represents an attribute of said element. This works
+  best when each row of your DataTable represents an identifiable data point,
+  with given attributes, out of the entire set defined by the DataTable.
+</p>
+<p>
+  In this page we will use the Google Visualization demo contained in the
+  <a href="http://rhizospheregwt.appspot.com">Demo GWT application</a> (see
+  the screenshot above), which visualizes data from a DataTable like the
+  following one:
+</p>
+<pre class="prettyprint lang-java">
+  dataTable = com.google.gwt.visualization.client.DataTable.create();
+
+  dataTable.addColumn(ColumnType.STRING, "Name", "name");
+  dataTable.addColumn(ColumnType.NUMBER, "Weight", "weight");
+  dataTable.addColumn(ColumnType.NUMBER, "Height", "height");
+  dataTable.addColumn(ColumnType.DATE, "Date Of Birth", "dob");
+  dataTable.addRows(5);
+  dataTable.setValue(0, 0, "Bob");
+  dataTable.setValue(0, 1, 8);
+  dataTable.setValue(0, 2, 65);
+  dataTable.setValue(0, 3, new Date(109, 9, 16));
+
+  dataTable.setValue(1, 0, "Alice");
+  dataTable.setValue(1, 1, 4);
+  dataTable.setValue(1, 2, 56);
+  dataTable.setValue(1, 3, new Date(110, 11, 4));
+
+  dataTable.setValue(2, 0, "Mary");
+  dataTable.setValue(2, 1, 11);
+  dataTable.setValue(2, 2, 72);
+  dataTable.setValue(2, 3, new Date(109, 6, 21));
+
+  dataTable.setValue(3, 0, "Victoria");
+  dataTable.setValue(3, 1, 3);
+  dataTable.setValue(3, 2, 51);
+  dataTable.setValue(3, 3, new Date(110, 3, 28));
+
+  dataTable.setValue(4, 0, "Robert");
+  dataTable.setValue(4, 1, 6);
+  dataTable.setValue(4, 2, 60);
+  dataTable.setValue(4, 3, new Date(108, 2, 3));
+</pre>
+
+<p>
+  The steps to instantiate a Rhizosphere visualization compliant with the
+  Google Visualization APIs for GWT is not significantly different from the
+  one described in the general <a href="/doc/gwt_usage.html">Usage</a> section.
+</p>
+
+<a name="download"><h2>Download and Module inclusion</h2></a>
+<p>
+  In addition to downloading the <code>gwt-rhizosphere.jar</code> library as
+  described in the <a href="/doc/gwt_usage.html">Usage</a> page, make sure you
+  also download and include in your classpath the Google
+  <a href="http://code.google.com/p/gwt-google-apis/downloads/list"></a>
+    <code>gwt-visualization.jar</code></a> package, containing the
+  Visualization APIs.
+</p>
+<p>
+  Also, remember to add both the Rhizosphere and Google Visualization modules
+  in your GWT module definition:
+</p>
+<pre class="prettyprint lang-xml">
+  &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  &lt;module rename-to='MyGwtApp'&gt;
+    &lt;inherits name='com.google.gwt.user.User' /&gt;
+    <strong>&lt;inherits name='com.rhizospherejs.gwt.Rhizosphere' /&gt;</strong>
+    <strong>&lt;set-property name="rhizosphere.debug" value="false" /&gt;</strong>
+    <strong>&lt;inherits name='com.google.gwt.visualization.Visualization' /&gt;</strong>
+
+    &lt;inherits name='com.google.gwt.user.theme.standard.Standard' /&gt;
+    ...
+  &lt;/module&gt;
+</pre>
+<a name="loader"><h2>Load the Rhizosphere library</h2></a>
+<p>
+  Since you want to use both Rhizosphere and Google Visualization API, you have
+  to ensure that both are loaded before instantiating a Rhizosphere
+  visualization. You can  do so with a chained callback:
+</p>
+<pre class="prettyprint lang-java">
+  public class GwtAppEntryPoint implements EntryPoint {
+
+    @Override
+    public void onModuleLoad() {
+      <strong>
+      // Ensures that both the Google Visualization APIs and Rhizosphere libraries
+      // are loaded.
+      VisualizationUtils.loadVisualizationApi(new Runnable() {
+        public void run() {
+          RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+            public void run() {</strong>
+              // Populate the DataTable with some sample data.
+              initDataTable();
+              rhizosphere = new GVizRhizosphere(dataTable, rhizosphereOptions);
+              rhizosphere.setWidth("400px");
+              rhizosphere.setHeight("400px");
+              rhizosphereContainer.add(rhizosphere);
+            <strong>}
+          });
+        }
+      });</strong>
+    }
+  }
+</pre>
+<p>
+  Again, this loading code does not necessarily have to execute during the
+  EntryPoint initialization, but you can move to other widgets and have it
+  lazy load on demand.
+</p>
+
+<a name="widget"><h2>Instantiate the Rhizosphere widget</h2></a>
+<p>
+  The next step is to instantiate a
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/gviz/GVizRhizosphere.html">
+    GVizRhizosphere</a> widget. GVizRhizosphere is a custom-tailored version
+  of Rhizosphere that conforms to the Google Visualization APIs for GWT.
+  It accepts a DataTable and a set of configuration options as input, and
+  you can attach it to a widget container to display it.
+</p>
+<pre class="prettyprint lang-java">
+  public class GwtAppEntryPoint implements EntryPoint {
+
+    @Override
+    public void onModuleLoad() {
+      // Ensures that both the Google Visualization APIs and Rhizosphere libraries
+      // are loaded.
+      VisualizationUtils.loadVisualizationApi(new Runnable() {
+        public void run() {
+          RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+            public void run() {
+              <strong>// Populate the DataTable with some sample data.
+              initDataTable();
+              rhizosphere = new GVizRhizosphere(dataTable, rhizosphereOptions);
+              rhizosphere.setWidth("400px");
+              rhizosphere.setHeight("400px");
+              rhizosphereContainer.add(rhizosphere);</strong>
+            }
+          });
+        }
+      });
+    }
+  }
+</pre>
+<p>
+  Like other Google Visualizations, you can call its <code>draw()</code>
+  method multiple times to redraw the Rhizosphere visualization whenever the
+  data changes.
+</p>
+
+<a name="options"><h2>Configuration Options</h2></a>
+<p>
+  Rhizosphere preferred way of specifying configuration options is via the
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereOptions.html">
+    RhizosphereOptions</a> class, whose methods match the options described in
+  the <a href="/doc/contrib_tables.html#options">Reference Tables</a>.
+</p>
+<p>
+  If needed, you can transform RhizosphereOptions into the Google Visualization
+  standard <code>com.google.gwt.visualization.client.AbstractDrawOptions</code>
+  via a wrapper method:
+</p>
+<pre class="prettyprint lang-java">
+  GVizRhizosphere.Options.wrap(rhizosphereOptions);
+</pre>
+<p>
+  When using Rhizosphere as Google Visualization via the
+  <code>GVizRhizosphere</code> class, you don't have access to Rhizosphere
+  specific methods to customize the visualization metamodel and renderer
+  (like <code>Rhizosphere.setRenderer()</code>). You can still do so by using
+  dedicated fields in the configuration options.
+</p>
+
+<h4>Customize the visualization metamodel</h4>
+<p>
+  Rhizosphere will automatically build a suitable metamodel by looking at the
+  characteristics of the DataTable it has to visualize. If the automated parsing
+  is not enough for your needs, you can customize the metamodel via the
+  <code>metamodel</code> and <code>metamodelFragment</code> configuration
+  options. The following snippets shows an example on how to customize the
+  inferred metamodel for the sample DataTable introduced above:
+</p>
+<pre class="prettyprint lang-java">
+  rhizosphereOptions = RhizosphereOptions.create();
+
+  // Enhance the metamodel Rhizosphere automatically generates from the
+  // DataTable. In particular, configure Rhizosphere to use a Date data type
+  // and selector for the 'dob' column.
+  RhizosphereMetaModel meta = RhizosphereMetaModel.create();
+  meta.newAttribute("dob").
+    setKind(RhizosphereKind.DATE).
+    setLabel("Date of Birth").
+    setYearRange(2005, 2011);
+
+  // Extend the automatically generated metamodel with the provided info.
+  rhizosphereOptions.setMetaModelFragment(meta);
+
+  ...
+  gvizRhizosphere.draw(datatable, GVizRhizosphere.Options.wrap(rhizosphereOptions));
+
+</pre>
+
+<h4>Customize the visualization renderer</h4>
+<p>
+  Similarly, Rhizosphere uses a default (albeit basic) renderer if no specific
+  one has been specified via options. You can override the default using the
+  <code>renderer</code> option and providing a subclass of
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/gviz/GVizRhizosphere.GVizRenderer.html">
+    GVizRenderer</a>:
+</p>
+<pre class="prettyprint lang-java">
+  // A renderer to customize how each entry in the DataTable should be
+  // visualized. Since we are dealing with Google Visualization data, the
+  // renderer extends GVizRenderer.
+  public static class PersonRenderer implements GVizRenderer {
+
+    @Override
+    public void render(DataTableModel model, boolean expanded, RenderingOutput helper) {
+      ...
+      helper.emitWidget(myWidget);
+    }
+  }
+</pre>
+<p class="note">
+  <strong>Important.</strong> Note that, since Rhizosphere is visualizing data
+  extracted from a Google Visualization DataTable, the model type passed to
+  the renderer is mandatorily set to
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/gviz/GVizRhizosphere.DataTableModel.html">
+    GVizRhizosphere.DataModel</a>, that identifies which row of the DataTable
+  the renderer should provide a visual representation for.
+</p>
+
+<a name="events"><h2>Events</h2></a>
+<p>
+  Like other Google Visualizations, Rhizosphere fires the
+  <a href="http://code.google.com/apis/visualization/documentation/events.html#The_Ready_Event">
+  <code>ready</code> event</a> to notify when it is ready for interaction by the
+  user. You can register listeners via the <code>addReadyHandler()</code> method:
+</p>
+<pre class="prettyprint lang-java">
+  GVizRhizosphere viz = new GVizRhizosphere(table, options);
+  viz.setWidth("600px");
+  viz.setHeight("400px");
+  viz.addReadyHandler(new ReadyHandler() {
+    @Override
+    public void onReady(ReadyEvent event) {
+      GWT.log("Rhizosphere Visualization is ready");
+    }
+  });
+</pre>
+
+<a name="samplecode"><h2>Everything put together</h2></a>
+<p>
+  Have a look at the <strong>Google Visualization</strong> tab of the
+  <a href="http://rhizospheregwt.appspot.com/#orgchart">GWT demo application</a>
+  for an example that covers what has been discussed in this
+  page. You can find its source code
+  <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/gviz/GoogleVisualizationTab.java">
+    here</a>.
+</p>
+
 {% endblock %}

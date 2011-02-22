@@ -3,4 +3,686 @@
 {% block navigation %}{% include 'navigation.html' %}{% endblock %}
 {% block content %}
 <h1>Rhizosphere usage within GWT</h1>
+<p>
+  This section describes how to use Rhizosphere within a GWT application.
+  From an high level perspective, the set of required steps can be summarized
+  as:
+<p>
+<ul>
+  <li>bundle the Rhizosphere library with your app,</li>
+  <li>inject Rhizosphere library javascript payload in your app host page,</li>
+  <li>instantiate a Rhizosphere widget and provide it with the required
+    amount of information it needs to work correctly,</li>
+  <li>Attach the widget to your app widget hierarchy.</li>
+</ul>
+<p>
+  Rhizosphere requires 3 mandatory pieces of information:
+</p>
+<ul>
+  <li>
+    The list of items that form the dataset you want to visualize. This is
+    Rhizosphere list of <code>models</code>.
+  </li>
+  <li>
+    A formal description of the characteristics and attributes that your
+    items have. This is Rhizosphere <code>metamodel</code>.
+  </li>
+  <li>
+    The logic to convert an item from your dataset into a visual
+    representation of it, which is what the user will ultimately see
+    in the visualization. This is Rhizosphere <code>renderer</code>.
+  </li>
+</ul>
+<p>
+  Have a look at Rhizosphere <a href="/doc/devel_concepts.html">concepts</a> for a
+  better understanding of models, metamodels and renderers, and the role they
+  play within a visualization.
+</p>
+<p>
+  This page covers all the above steps. It uses snippets
+  extracted from the <a href="http://rhizospheregwt.appspot.com">GWT demo
+  application</a> to illustrate each step.
+</p>
+
+<h2>Contents</h2>
+<ul class="page_toc">
+  <li><a href="#download">Download the GWT module</a></li>
+  <li><a href="#module">Include the Rhizosphere module in your app</a></li>
+  <li><a href="#loader">Load the Rhizosphere library</a></li>
+  <li><a href="#widget">Instantiate the Rhizosphere widget</a></li>
+  <li><a href="#models">Define your models</a></li>
+  <li><a href="#metamodel">Metamodel setup</a></li>
+  <li><a href="#renderer">Renderer setup</a></li>
+  <li><a href="#options">Additional configuration options</a></li>
+  <li><a href="#samplecode">Everything put together</a></li>
+</ul>
+
+<a name="download"><h2>Download</h2></a>
+<p>
+  The first step is to download the Rhizosphere-GWT module. Grab the
+  <code>gwt-rhizosphere.jar</code> file from the
+  <a href="http://code.google.com/p/rhizosphere/downloads">
+    Rhizosphere donwloads</a> page and include it in the CLASSPATH of the
+  GWT application where you want to use it.
+</p>
+<p class="note">
+  <strong>Note</strong>. Alternatively you can build the Rhizosphere module
+  from source following the instructions in the
+  <a href="/doc/contrib_gwt_setup.html">GWT Development Setup</a> page.
+</p>
+
+<a name="module"><h2>Module inclusion</h2></a>
+<p>
+  Once you have the Rhizosphere module within your GWT app, you have to
+  configure your GWT app to use it. Open the <code>.gwt.xml</code> module
+  file for your application, and have it include the Rhizosphere module:
+</p>
+<pre class="prettyprint lang-xml">
+  &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  &lt;module rename-to='MyGwtApp'&gt;
+    &lt;inherits name='com.google.gwt.user.User' /&gt;
+    <strong>&lt;inherits name='com.rhizospherejs.gwt.Rhizosphere' /&gt;</strong>
+    <strong>&lt;set-property name="rhizosphere.debug" value="false" /&gt;</strong>
+
+    &lt;inherits name='com.google.gwt.user.theme.standard.Standard' /&gt;
+    ...
+  &lt;/module&gt;
+</pre>
+<p>
+  The <code>rhizosphere.debug</code> property defines whether Rhizosphere should
+  operate in debug or production mode. When operating in debug mode, you will
+  have access to the uncompressed and uncompiled Rhizosphere javascript files
+  in your GWT host page. This is helpful if you have to debug any Rhizosphere
+  issues.
+</p>
+<p>
+  For normal operation, you can leave the <code>rhizosphere.debug</code>
+  option set to false. In this case, Rhizosphere will optimize for performance
+  and serve its javascript payload to the user in compressed and compiled form.
+</p>
+<p class="note">
+  <strong>Tip</strong>. You can also specify the <code>rhizosphere.debug</code>
+  property directly in the html host page of your GWT app by adding a
+  <code>&lt;meta name='gwt:property' content='rhizosphere.debug=false'&gt;</code>
+  tag in its head section.
+</p>
+
+<a name="loader"><h2>Load the Rhizosphere library</h2></a>
+<p>
+  Your GWT app is now ready to embed Rhizosphere. Rhizosphere must inject its
+  native javascript payload in the host page of your application before you
+  can use it. To minimize the performance impact, Rhizosphere uses an
+  asynchronous loading mechanism via the
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereLoader.html">
+    RhizosphereLoader</a> class. Use its <code>ensureInjected()</code> method
+  to register a callback that will be invoked once Rhizosphere js payload has
+  been successfully injected in the host page:
+</p>
+<pre class="prettyprint lang-java">
+  public class GwtAppEntryPoint implements EntryPoint {
+
+    @Override
+    public void onModuleLoad() {
+      // your app initialization code...
+      RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+        @Override
+        public void run() {
+          // Rhizosphere payload has been successfully injected.
+        }
+      });
+    }
+  }
+</pre>
+<p>
+  Inside the callback you have the guarantee that Rhizosphere libraries have
+  been successfully injected, and you can start configuring your Rhizosphere
+  visualization.
+  Always protect instantiation of Rhizosphere visualization with a loader
+  callback. Once Rhizosphere libraries have been injected after the first
+  loader invocation, all subsequent invocations will be no-ops that immediately
+  delegate to the registered callback.
+</p>
+<p>
+  You are not forced to invoke the RhizosphereLoader from your
+  entrypoint <code>onModuleLoad()</code> method: you can use the loader from
+  any other part of your GWT app. For example, if you
+  <code>RhizosphereLoader</code> together with a GWT
+  <a href="http://google-web-toolkit.googlecode.com/svn/javadoc/2.2/com/google/gwt/user/client/ui/LazyPanel.html">LazyPanel</a>
+  you can defer Rhizosphere loading and library injection until the very moment
+  when the user tries to access it:
+</p>
+<pre class="prettyprint lang-java">
+public class LazyRhizosphere extends LazyPanel {
+  @Override
+  protected Widget createWidget() {
+    return new RhizospherePanel();
+  }
+}
+
+public class RhizospherePanel extends SimplePanel {
+
+  @Override
+  protected void onLoad() {
+    RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+      @Override
+      public void run() {
+        Rhizosphere rhizosphere = new Rhizosphere();
+        // ... Rhizosphere visualization configuration ...
+        setWidget(rhizosphere);
+      }
+    });
+  }
+}
+</pre>
+<p>
+  The above example will inject the Rhizosphere javascript library and
+  instantiate a Rhizosphere visualization only when the <code>LazyRhizosphere</code>
+  panel is made visible within the application.
+  <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/orgchart/OrgChartTab.java">
+    OrgChartTab.java</a>, from the demo GWT application, shows a real case
+  usage for this technique.
+</p>
+
+<a name="widget"><h2>Instantiate the Rhizosphere widget</h2></a>
+<p>
+  After loading the Rhizosphere library, you can instantiate as many Rhizosphere
+  visualizations as you want. Each visualization lives within a GWT widget, so
+  creating a new Rhizosphere visualization is as easy as the following snippet:
+</p>
+<pre class="prettyprint lang-java">
+  // Create a new Rhizosphere visualization
+  Rhizosphere&lt;T&gt; rhizosphere = new Rhizosphere&lt;T&gt;();
+
+  // Configure it and add items to visualize to it (see later)
+
+  // Add it to a container widget.
+  parentWidgetContainer.add(rhizosphere);
+</pre>
+<p>
+  The <code>&lt;T&gt;</code> type describes the type of objects that the
+  visualization will display. These are called <em>models</em> in Rhizosphere
+  <a href="/doc/devel_concepts.html">terminology</a>. You can choose between
+  different alternatives to define your models:
+</p>
+<ul>
+  <li>Any POJO (plain old java object) of your choice,</li>
+  <li><code>com.google.gwt.core.client.JavaScriptObject</code> instances,</li>
+  <li><code>com.google.gwt.json.client.JSONObject</code> instances or even
+    raw Strings that parse into valid JSON objects.</li>
+</ul>
+<p>
+  By choosing to use custom POJOs you have control over, you can then completely
+  configure how Rhizosphere should handle them with a flexible annotation-based
+  mechanism (not much different from the way object relational mapping
+  frameworks use annotations to map your POJOs onto the underlying databases),
+  as detailed in the <a href="#models">Defining your models</a> paragraph.
+</p>
+<p>
+  On the contrary, if you decide to use opaque objects like
+  <code>JavaScriptObject</code> or <code>JSONObject</code> (which may be handy,
+  for example, if you want to visualize items extracted from a remote JSON feed),
+  you will have to provide Rhizosphere an explicit configuration on how to
+  use and parse them for visualization purposes.
+</p>
+
+<a name="models"><h2>Defining your models</h2></a>
+<p>
+  After instantiating a Rhizosphere instance, you have now to load it with all
+  the items (<em>models</em> in Rhizosphere
+  <a href="/doc/devel_concepts.html">terminology</a>) you want to visualize.
+  As mentioned above, you have to choose whether you want to use custom POJOs
+  to represent your models or opaque objects.
+</p>
+
+<h4>Model definition via custom POJOs</h4>
+<p>
+  To use custom POJOs as Rhizosphere models, you have to follow 3 steps:
+</p>
+<ul>
+  <li>Assign the <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereModel.html">
+    <code>RhizosphereModel</code></a> marker interface to the POJO class,</li>
+  <li>Mark any getter that identifies an attribute you want to expose in the
+    visualization (like a field you want the user to be able to filter upon)
+    with the <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereModelAttribute.html">
+      <code>RhizosphereModelAttribute</code></a> annotation
+    (more on this later),</li>
+  <li>Register your POJO class with the Rhizosphere visualization via its
+    <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/Rhizosphere.html#prepareFor(com.rhizospherejs.gwt.client.RhizosphereMapping)">
+      <code>Rhizosphere.prepareFor()</code></a> method and GWT deferred binding
+    mechanism.</li>
+</ul>
+<p>
+  The last step is critical to let Rhizosphere analyze the POJO. Rhizosphere
+  will parse its annotations and other associated information to automatically
+  extract all the relevant metadata it will later use to populate the
+  visualization UI (such as deciding what kind of filtering and layout
+  operations can be performed on your data).
+</p>
+<p class="note">
+  <strong>Under the hood</strong>.
+  In Rhizosphere terminology, the <code>prepareFor()</code> step is used to
+  assemble the Rhizosphere <em>metamodel</em> which in turn drives the choice
+  of available <em>filters</em> and <em>layouts</em> (refer to the
+  <a href="/doc/devel/concepts.html">Concepts</a> section if any of this sounds
+  obscure).
+</p>
+<p>
+  Finally, you can load all the items you want to visualize into Rhizosphere via
+  its <code>addModel()</code> method. The overall process will be similar to
+  this example:
+</p>
+<pre class="prettyprint lang-java">
+  public class Employee <strong>implements RhizosphereModel</strong> {
+    private String name;
+
+    public Employee(String name) {
+      this.name = name;
+    }
+
+    <strong>@RhizosphereModelAttribute</strong>
+    public String getName() {
+      return name;
+    }
+  }
+
+  public class RhizospherePanel extends SimplePanel {
+
+    @Override
+    protected void onLoad() {
+      RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+        @Override
+        public void run() {
+          <strong>
+          Rhizosphere&lt;Employee&gt; rhizosphere = new Rhizosphere&lt;Employee&gt;();
+          rhizosphere.prepareFor(GWT.create(Employee.class));
+
+          rhizosphere.addModel(new Empoyee("Alice"));
+          rhizosphere.addModel(new Empoyee("Bob"));
+
+          setWidget(rhizosphere);
+          </strong>
+        }
+      });
+    }
+  }
+</pre>
+<p>
+  The above example creates a Rhizosphere visualization that displays 2
+  employees, Alice and Bob, described by the <code>Employee</code> that
+  exposes a String attribute called <code>name</code> (which will
+  result in a string filter being available inside the visualization).
+</p>
+
+<h4>Model definition via opaque objects</h4>
+<p>
+  Alternatively, you can use opaque objects like <code>JavaScriptObject</code>
+  and <code>JSONObject</code> to define the models you want to visualize.
+  In this case, the process of loading Rhizosphere with your data is simpler,
+  but you will have to provide an explicit metamodel definition (since
+  Rhizosphere cannot analyze the internals of the provided opaque objects):
+</p>
+<pre class="prettyprint lang-java">
+  public class RhizospherePanel extends SimplePanel {
+
+    @Override
+    protected void onLoad() {
+      RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+        @Override
+        public void run() {
+          <strong>
+          Rhizosphere&lt;JSONObject&gt; rhizosphere = new Rhizosphere&lt;JSONObject&gt;();
+
+          for (JSONObject model: getJSONObjects()) {
+            rhizosphere.addModel(model);
+          }
+          rhizosphere.setMetaModel(...);  // see next section.
+          </strong>
+          setWidget(rhizosphere);
+        }
+      });
+    }
+
+    private List&lt;JSONObject&gt; getJSONObjects() {
+      // example: retrieve feed of JSON objects from remote source via RPC or
+      // ajax call.
+    }
+  }
+</pre>
+
+<a name="metamodel"><h2>Metamodel setup</h2></a>
+<p>
+  After defining the models that will be part of the visualization, you can
+  proceed to the definition of the visualization <em>metamodel</em>, a
+  description of the characteristics and attributes that your items have.
+</p>
+<p>
+  Rhizosphere uses this information to decide which filters and layouts will
+  be available on the visualized data, and in general to define the scope of
+  possible user interactions with the visualized data (for example, the presence
+  of a numeric attribute on the visualized models might instruct Rhizosphere
+  to show a range filter for such attribute).
+</p>
+<p>
+  When using POJOs for Rhizosphere models, you can define a metamodel either
+  via Java annotations on the POJO themselves or manually. When using opaque
+  objects for Rhizosphere models, manual meamodel definition is the only choice.
+</p>
+
+<h4>Manual metamodel definition</h4>
+<p>
+  The simplest way to define a visualization metamodel is by manually declaring
+  it. You can do so by instantiating a new
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereMetaModel.html">
+    RhizosphereMetaModel</a> instance and adding attributes to it. You can then
+  configure each attribute by specificying its name, type (numeric, string,
+  etc...), user-visible label (under which label the user will address it) and
+  other derived parameters (for example, the range extents when definining a
+  numeric attribute). Consider this example:
+</p>
+<pre class="prettyprint lang-java">
+ public class Person extends JavaScriptObject {
+   protected Person() {}
+
+   public static Person create(String name, int age) {
+     Person p = JavaScriptObject.createObject().cast();
+     nativeSetFields(p, name, age);
+     return p;
+   }
+
+   private static native void nativeSetFields(Person p, String name, int age) /*-{
+     p['name'] = name;
+     p['age'] = age;
+   }-*/;
+ }
+
+ // At visualization creation time.
+ RhizosphereMetaModel meta = RhizosphereMetaModel.create();
+ Attribute nameAttr = meta.newAttribute("name");
+ nameAttr.setLabel("Name").setKind(RhizosphereKind.STRING);
+
+ Attribute ageAttr = meta.newAttribute("age");
+ ageAttr.setLabel("Age").setKind(RhizosphereKind.RANGE).setRange(0, 100, -1, -1);
+
+ Rhizosphere&lt;Person&gt; r = new Rhizosphere&lt;Person&gt;();
+ r.setMetaModel(meta);
+ r.addModel(Person.create("John", 25));
+ r.addModel(Person.create("Sara", 21));
+</pre>
+<p>
+  It defines a <code>Person</code> model that is characterized by 2 attributes:
+  name and age, which are respectively a string and a ranged numeric value that
+  can span between 0 and 100.
+</p>
+<p>
+  Refer to the <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereMetaModel.html">
+    RhizosphereMetaModel</a> and
+  <a href="http://localhost:8080/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereMetaModel.Attribute.html">
+    RhizosphereMetaModel.Attribute</a> javadocs for all the available
+  configuration options.
+</p>
+
+<h4>Annotation-based metamodel definition</h4>
+<p>
+  when using POJOs for Rhizosphere models, the metamodel definition can happen
+  in place via <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereModelAttribute.html">
+      <code>RhizosphereModelAttribute</code></a> annotations. Simply assign
+  the annotation to each getter method on the model POJO to surface the attribute
+  in the Rhizosphere visualization.
+</p>
+<p>
+  Without any additional information, Rhizosphere will try to automatically
+  infer the attribute characteristics (such as its type and label) from the
+  annotated method (for example, by inspecting its return type). You can
+  always customize this process by providing extra information to the annotation.
+  Consider the following example:
+</p>
+<pre class="prettyprint lang-java">
+  public class Employee implements RhizosphereModel {
+
+    public static final int MIN_AGE = 10;
+    public static final int MAX_AGE = 50;
+
+    private String name;
+    private int age;
+
+    public Employee(String name,
+                    int age) {
+      this.name = name;
+      this.age = age;
+    }
+
+    // The employee name. Since no parameters are passed to the
+    // RhizosphereModelAttribute annotation, defaults are used to define how this
+    // attribute will surface in Rhizosphere.
+    @RhizosphereModelAttribute
+    public String getName() {
+      return name;
+    }
+
+    @RhizosphereModelAttribute(descriptor=AgeDescriptor.class)
+    public int getAge() {
+      return age;
+    }
+
+    // Declares that the 'age' attribute should be surfaced as a range-type
+    // attribute ranging from MIN_AGE to MAX_AGE.
+    static class AgeDescriptor implements AttributeDescriptor, HasRange, HasKind {
+      @Override public RhizosphereKind kind() { return RhizosphereKind.RANGE; }
+      @Override public double maxRange() { return MAX_AGE; }
+      @Override public double minRange() { return MIN_AGE; }
+      @Override public double stepping() { return 0; }
+      @Override public double steps() { return 0; }
+    }
+  }
+
+  // At visualization creation time.
+  Rhizosphere&lt;Employee&gt; rhizosphere = new Rhizosphere&lt;Employee&gt;();
+  rhizosphere.prepareFor(GWT.create(Employee.class));
+
+  rhizosphere.addModel(new Empoyee("Alice", 25));
+  rhizosphere.addModel(new Empoyee("Bob", 30));
+</pre>
+<p>
+  The above code uses annotations to export 2 attributes to Rhizosphere: name and
+  age. The characteristics of the former will be automatically determined from
+  the getter the annotation is attached to, while the latter is manually
+  configured by specificying a custom
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/meta/AttributeDescriptor.html">
+    AttributeDescriptor</a>.
+</p>
+<p>
+  Refer to the <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereModelAttribute.html">
+    RhizosphereModelAttribute</a> documentation for all the available
+  configuration options.
+</p>
+
+<h4>Metamodel customization when annotations are not enough</h4>
+<p>
+  Sometimes POJO annotations are not enough to fully describe the visualization
+  metamodel. For example, Rhizosphere can automatically extract metamodel
+  attributes only if the return type of their associated getters is one of the
+  following: <code>boolean</code>, <code>int</code>, <code>float</code>,
+  <code>double</code>, <code>String</code> and <code>java.util.Date</code>.
+  When the annotation framework is not enough, you can manually customized
+  metamodel generation.
+</p>
+<p>
+  To do so, have your model POJO implement both
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/CustomRhizosphereModel.html">
+    CustomRhizosphereModel</a> and
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/CustomRhizosphereMetaModel.html">
+    CustomRhizosphereMetaModel</a>. These interfaces let you manually define
+  additional model attributes and their characteristics, as in the following
+  example:
+</p>
+<pre class="prettyprint lang-java">
+  public class PreferredColors {
+    public String bestColor, alternateColor, worstColor;
+
+    public PreferredColors(String bestColor, String alternateColor, String worstColor) {
+      this.bestColor = bestColor;
+      this.alternateColor = alternateColor;
+      this.worstColor = worstColor;
+    }
+  }
+
+  public class Person implements <strong>CustomRhizosphereModel, CustomRhizosphereMetaModel</strong> {
+
+    private String name;
+
+    // colorPrefence type is not automatically supported by Rhizosphere.
+    private PreferredColors colorPreference;
+
+    public Person(String name, PreferredColors colorPreference) {
+      this.name = name;
+      this.colorPreference = colorPreference;
+    }
+
+    @RhizosphereModelAttribute
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    <strong>public void setCustomRhizosphereAttributes(JsoBuilder builder)</strong> {
+      builder.setString("bestColor", colorPreference.bestColor);
+      builder.setString("alternateColor", colorPreference.alternateColor);
+      builder.setString("worstColor", colorPreference.worstColor);
+    }
+
+    @Override
+    <strong>public void setCustomRhizosphereMetaModelAttributes(RhizosphereMetaModel metaModel)</strong> {
+      String[] colors = new String[] {"red", "pink", "green", "blue"};
+      metaModel.newAttribute("bestColor").
+          setLabel("Best Color").
+          setKind(RhizosphereKind.CATEGORY).
+          setCategories(colors, false);
+
+      metaModel.newAttribute("alternateColor").
+          setLabel("Alternate Color").
+          setKind(RhizosphereKind.CATEGORY).
+          setCategories(colors, false);
+
+      metaModel.newAttribute("worstColor").
+          setLabel("Worst Color").
+          setKind(RhizosphereKind.CATEGORY).
+          setCategories(colors, false);
+    }
+  }
+</pre>
+<p>
+  Here we exported the custom <code>PreferredColors</code> object as 3 separate
+  <code>CATEGORY</code> attributes that Rhizosphere can understand.
+</p>
+
+<a name="renderer"><h2>Renderer setup</h2></a>
+<p>
+  The last step is to supply Rhizosphere a <em>renderer</em>. A renderer
+  converts an item of the dataset into a visual representation of
+  it, which is what the user will ultimately see in the visualization.
+  Typically this resolves to creating a <code>Widget</code> to represent
+  each item.
+</p>
+<p>
+  To do so, provide an implementation of the
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereRenderer.html">
+    RhizosphereRenderer</a> interface. RhizosphereRenderer lets you choose
+  between various alternatives to emit output: HTML Strings, HTML elements or
+  GWT widgets. Consider the following example:
+</p>
+<pre class="prettyprint lang-java">
+  class Person implements RhizosphereModel {
+    private String name;
+    private Date dateOfBirth;
+
+    public Person(String name, Date dateOfBirth) {
+      this.name = name;
+      this.dateOfBirth = dateOfBirth;
+    }
+
+    @RhizosphereModelAttribute
+    public String getName() {
+      return name;
+    }
+
+    @RhizosphereModelAttribute
+    public Date getDateOfBirth() {
+      return dateOfBirth;
+    }
+  }
+
+  class PersonRenderer implements RhizosphereRenderer&lt;Person&gt; {
+    public void render(Person model, boolean expanded, RenderingOutput helper) {
+      HorizontalPanel hp = new HorizontalPanel();
+
+      // Create a panel holding the Person name and a date picker for the
+      // Date of birth.
+      VerticalPanel p = new VerticalPanel();
+      Label nameLabel = new Label();
+      nameLabel.setText(model.getName());
+      p.add(nameLabel);
+
+      DatePicker datepicker = new DatePicker();
+      datepicker.setValue(model.getDateOfBirth());
+      p.add(datepicker);
+      hp.add(p);
+
+      // Emit the root widget for this rendering.
+      <strong>output.emitWidget(hp);</strong>
+    }
+  }
+</pre>
+<p>
+  Within a renderer, use the provided <code>RenderingOutput</code> instance
+  to emit the widget (or HTML elements) you create. 
+</p>
+<p>
+  <code>RhizosphereRenderer</code> defines the minimum requirements for a
+  renderer to implement. Additional functionality and behavior can be defined
+  by co-implementing any of the interfaces defined in the
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/renderer/package-summary.html">
+    <code>com.rhizospherejs.gwt.client.renderer</code></a> package. For example,
+  use the <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/renderer/HasExpandable.html">
+    HasExpandable</a> interface to define whether your renderings support
+  expansion (maximization) or not.
+</p>
+<p>
+  When emitting widgets, you can also take advantage of
+  <a href="http://code.google.com/webtoolkit/doc/latest/DevGuideUiBinder.html">
+    UiBinder templates</a>.
+  Have a look at <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/books/BookRenderer.java">
+   BookRenderer.java</a> (from the GWT demo application) for an example of
+  renderer that emits GWT widgets and
+  <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/gviz/PersonWidget.java">
+    PersonWidget.java</a> for an example of a UiBinder widget used within a
+  Rhizosphere renderer.
+</p>
+
+<a name="options"><h2>Additional configuration options</h2></a>
+<p>
+  <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/Rhizosphere.html">
+    Rhizosphere</a> instances also accept additional configuration options
+  to characterize the overall behavior of the library. These are defined
+  in the <a href="/gwt/javadoc/com/rhizospherejs/gwt/client/RhizosphereOptions.html">
+    RhizosphereOptions</a> class and match the ones described in the
+  <a href="/doc/contrib_tables.html#options">Reference Tables</a>.
+</p>
+
+<a name="samplecode"><h2>Everything put together</h2></a>
+<p>
+  Have a look at the <strong>OrgChart</strong> tab of the
+  <a href="http://rhizospheregwt.appspot.com/#orgchart">GWT demo application</a>
+  for a starting example that covers most of what has been discussed in this
+  page. You can find its source code
+  <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/#client%2Forgchart">
+    here</a>. The other tabs cover other Rhizosphere aspects, so be sure to
+  have a look at them too!
+</p>
+
+<h2>Next ...</h2>
+<p>
+  Have a look at the detailed <a href="/doc/devel_api.html">API reference</a>
+  for more information not covered here, or play with the
+  <a href="http://rhizospheregwt.appspot.com">GWT demo application</a>.
+</p>
 {% endblock %}
