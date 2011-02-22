@@ -142,7 +142,7 @@ import com.google.gwt.core.client.JsArrayString;
  * Attribute ageAttr = meta.newAttribute("age");
  * ageAttr.setLabel("Age").setKind(RhizosphereKind.RANGE).setRange(0, 100, -1, -1);
  *
- * Rhizosphere r = new Rhizosphere();
+ * Rhizosphere&lt;Person&gt; r = new Rhizosphere&lt;Person&gt;();
  * r.setMetaModel(meta);
  * r.addModel(Person.create("John", 25));
  * r.addModel(Person.create("Sara", 21));
