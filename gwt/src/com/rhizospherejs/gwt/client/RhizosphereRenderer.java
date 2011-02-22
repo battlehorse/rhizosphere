@@ -32,8 +32,8 @@ import com.rhizospherejs.gwt.client.renderer.RenderingOutput;
  * additional functionality and behavior can be defined by co-implementing any
  * of the interfaces defined in the
  * {@link com.rhizospherejs.gwt.client.renderer} package. For example,
- * use the {@link com.rhizospherejs.gwt.client.renderer.HasExpandable} to
- * define whether your renderings support expansion (maximization) or not.
+ * use the {@link com.rhizospherejs.gwt.client.renderer.HasExpandable} interface
+ * to define whether your renderings support expansion (maximization) or not.
  * <p>
  * An example renderer:
  * <pre><code>
@@ -55,7 +55,7 @@ import com.rhizospherejs.gwt.client.renderer.RenderingOutput;
  *   }
  * }
  *
- * class PersonRenderer implements RhizosphereRenderer<Person>, HasCustomDragHandlers {
+ * class PersonRenderer implements RhizosphereRenderer&lt;Person&gt;, HasCustomDragHandlers {
  *   public void render(Person model, boolean expanded, RenderingOutput helper) {
  *     HorizontalPanel hp = new HorizontalPanel();
  *

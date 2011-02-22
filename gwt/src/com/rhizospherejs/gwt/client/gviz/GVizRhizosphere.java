@@ -77,7 +77,7 @@ import java.util.HashSet;
  * data.setValue(1, 0, "Sleep");
  * data.setValue(1, 1, 10);
  *
- * RhizosphereOptions<DataTableModel> options = RhizosphereOptions.create();
+ * RhizosphereOptions&lt;DataTableModel&gt; options = RhizosphereOptions.create();
  * RhizosphereMetaModel meta = RhizosphereMetaModel.create();
  * meta.newAttribute("hours").
  *     setLabel("Hours per Day").
@@ -104,7 +104,7 @@ import java.util.HashSet;
  *       public void run() {
  *         // Rhizosphere APIs loaded.
  *         AbstractDataTable table = createDataTable();
- *         RhizosphereOptions<DataTableModel> options = createOptions();
+ *         RhizosphereOptions&lt;DataTableModel&gt; options = createOptions();
  *         GVizRhizosphere viz = new GVizRhizosphere(table, options);
  *         viz.setWidth("600px");
  *         viz.setHeight("400px");
