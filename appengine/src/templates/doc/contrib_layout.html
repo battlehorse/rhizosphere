@@ -3,6 +3,18 @@
 {% block navigation %}{% include 'navigation.html' %}{% endblock %}
 {% block content %}
 <h1>Code layout</h1>
+
+<h2>Contents</h2>
+<ul class="page_toc">
+  <li><a href="#layout">Codebase directories</a></li>
+  <li><a href="#jslibrary">Library structure</a></li>
+  <li><a href="#samples">Samples</a></li>
+  <li><a href="#showcase">Showcase Apps</a></li>
+  <li><a href="#gwtlibrary">GWT Package structure</a></li>
+  <li><a href="#gwtshowcase">GWT Showcase App</a></li>
+</ul>
+
+<a name="layout"><h2>Codebase directories</h2></a>
 <p>The Rhizosphere codebase is structured in the following directories:</p>
 <dl>
   <dt><code>appengine</code></dt>
@@ -61,9 +73,28 @@
     complex that samples and demonstrate complete applications that leverage
     multiple Rhizosphere capabilities.
   </dd>
+
+  <dt><code>gwt</code></dt>
+  <dd>
+    Source code for Rhizosphere GWT module. It is further subdivided in
+    <code>gwt/src</code>, the actual source code, <code>gwt/build</code>, Apache
+    Ant build files, <code>gwt/lib</code>, output directory for packaged
+    versions of the Rhizosphere GWT module, and <code>gwt/javadoc</code>,
+    Javadoc documentation.
+  </dd>
+
+  <dt><code>gwtshowcase</code></dt>
+  <dd>
+    Demo application that shows various samples of Rhizosphere integration
+    within a GWT app. It is further subdivided in <code>gwtshowcase/src</code>,
+    the actual source code, <code>gwt/war</code>, static files and deployment
+    descriptors for the sample application, <code>gwtshowcase/build</code>,
+    Apache Ant build files, and <code>gwt/lib</code>, output directory for
+    packaged (.war format) versions of the Rhizosphere GWT sample.
+  </dd>
 </dl>
 
-<h2>Library structure</h2>
+<a name="jslibrary"><h2>Library structure</h2></a>
 <p>Rhizosphere code is structured as a set of interconnected modules.
   Each module provides a specific functionality, lives in a separate source
   file and may depend on other modules.
@@ -158,7 +189,7 @@
 
 </dl>
 
-<h2>Samples</h2>
+<a name="samples"><h2>Samples</h2></a>
 <p>
   Rhizosphere ships with a number of samples and demo visualizations, located
   in the
@@ -202,7 +233,7 @@
   </dd>
 </dl>
 
-<h2>Showcase Apps</h2>
+<a name="showcase"><h2>Showcase Apps</h2></a>
 <p>
   Rhizosphere includes some showcase applications to demonstrate the library
   capabilities in more complex cases that the samples described above.
@@ -236,4 +267,9 @@
       http://codetracker.rhizospherejs.com</a>
   </dd>
 </dl>
+
+<a name="gwtlibrary"><h2>GWT Package structure</h2></a>
+
+<a name="gwtshowcase"><h2>GWT Showcase App</h2></a>
+
 {% endblock %}
