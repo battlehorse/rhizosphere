@@ -269,7 +269,38 @@
 </dl>
 
 <a name="gwtlibrary"><h2>GWT Package structure</h2></a>
+<p>
+  Refer to the <a href="/gwt/javadoc/index.html">Javadocs</a> for an overview
+  of the package structure of the Rhizosphere GWT module.
+</p>
 
 <a name="gwtshowcase"><h2>GWT Showcase App</h2></a>
-
+<p>
+  Rhizosphere GWT Demo application is divided into 3 main packages, each one
+  demonstrating a specific aspect of the library.
+</p>
+<dl>
+  <dt><code>com.rhizospherejs.gwt.showcase.client.orgchart</code></dt>
+  <dd>
+    Demonstrates how to define Rhizosphere models and metamodels via
+    annotated POJOs. Demonstrates how to define a renderer that emits
+    raw HTML strings.
+  </dd>
+  <dt><code>com.rhizospherejs.gwt.showcase.client.books</code></dt>
+  <dd>
+    Demonstrates how to define Rhizosphere models and metamodels from
+    a remote JSON feed. Demonstrates how to define a renderer that emits
+    GWT Widgets.
+  </dd>
+  <dt><code>com.rhizospherejs.gwt.showcase.client.gviz</code></dt>
+  <dd>
+    Demonstrates how to use Rhizosphere as a visualization conforming to the
+    Google Visualization APIs for GWT. Demonstrates how to define a renderer
+    that emits GWT Widgets built using UiBinder templates.
+  </dd>
+</dl>
+<p>
+  A small number of other classes and packages exist for accessory functions,
+  like resource handling and the intro page.
+</p>
 {% endblock %}

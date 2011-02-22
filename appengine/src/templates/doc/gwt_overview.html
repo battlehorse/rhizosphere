@@ -3,4 +3,81 @@
 {% block navigation %}{% include 'navigation.html' %}{% endblock %}
 {% block content %}
 <h1>Google Web Toolkit integration</h1>
+<p>
+  If you write web applications using
+  <a href="http://code.google.com/webtoolkit/">Google Web Toolkit</a>, you can
+  use Rhizosphere within them thanks to the GWT-Rhizosphere integration library.
+  This section describes how to integrate Rhizosphere with your GWT app.
+</p>
+
+<h2>Overview</h2>
+<p>
+  <a href="/static/doc/img/rhizosphere_gwt.png">
+    <img src="/static/doc/img/rhizosphere_gwt.png" width="600px" class="screenshot"></a><br/>
+  (A screenshot from the <a href="http://rhizospheregwt.appspot.com">
+    GWT demo application</a>, Click to enlarge).
+</p>
+<p>
+  Rhizosphere is available within GWT as a
+  <a href="http://code.google.com/webtoolkit/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
+    GWT module</a> you can embed in your application. It works by providing a
+  Java facade to the underlying Rhizosphere javascript library which will be
+  embedded in your application.
+</p>
+<p>
+  Rhizosphere-GWT gives you access to the entire set of Rhizosphere features
+  via a Java API that hides all the javascript internals. There is no need to
+  write JSNI code, with the exception of a few advanced scenarios.
+  Additionally, it lets you use all the Java and GWT idioms you are already
+  familiar with, such as using Java annotations for configuration, the GWT
+  widget library and
+  <a href="http://code.google.com/webtoolkit/doc/latest/DevGuideUiBinder.html">
+    UiBinder templates</a> for UI definition.
+</p>
+<p>
+  Rhizosphere pays close attention to performance: it is easy to isolate
+  Rhizosphere so that its libraries will only be loaded when effectively
+  needed by the user, therefore not impacting your application load times and
+  responsiveness.
+</p>
+
+<h2>Get Started</h2>
+<p>
+  Rhizosphere-GWT is built on top of the javascript Rhizosphere library.
+  Most of the concepts that are valid for the js library are equally valid for
+  the GWT version. Make yourself familiar with the rest of the documentation
+  and especially with the library
+  <a href="/doc/devel_concepts.html">Concepts</a>.
+</p>
+<p>
+  In addition to the documentation, the following resources are available to
+  help using Rhizosphere in your GWT apps:
+</p>
+<ul>
+  <li>A <a href="http://rhizospheregwt.appspot.com">GWT demo application</a>
+    that showcases various forms of integration and library features,</li>
+  <li>The source code for both the
+  <a href="http://code.google.com/p/rhizosphere/source/browse/#hg%2Fgwtshowcase%2Fsrc%2Fcom%2Frhizospherejs%2Fgwt%2Fshowcase">
+    demo application</a> and the entire
+  <a href="http://code.google.com/p/rhizosphere/source/browse/#hg%2Fgwt%2Fsrc%2Fcom%2Frhizospherejs%2Fgwt">
+    Rhizosphere-GWT</a> module,</li>
+  <li><a href="/gwt/javadoc/index.html">javadocs</a> covering the
+    Rhizosphere-GWT module.</li>
+</ul>
+<p>
+  Adding Rhizosphere to your GWT application is as simple as downloading
+  <code>gwt-rhizosphere.jar</code> from the
+  <a href="http://code.google.com/p/rhizosphere/downloads">
+    Rhizosphere donwloads</a> page and including it in your application
+  classpath. Alternatively you can build it from source following the
+  instructions in the <a href="/doc/contrib_gwt_setup.html">
+    GWT Development Setup</a> page.
+</p>
+
+<h2>Next ...</h2>
+<p>
+  Once you have the Rhizosphere files, you can start
+  <a href="/doc/gwt_usage.html">embedding and using the library</a> in your
+  GWT application.
+</p>
 {% endblock %}

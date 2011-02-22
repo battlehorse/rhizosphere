@@ -3,4 +3,186 @@
 {% block navigation %}{% include 'navigation.html' %}{% endblock %}
 {% block content %}
 <h1>GWT Development Setup</h1>
+<p>
+  These instructions will guide you in setting up a local Rhizosphere
+  development environment on your machine, tailored for GWT development.
+</p>
+<p>
+  The instructions assume you are executing them on a Linux machine.
+</p>
+<p class="note">
+  <strong>Note</strong>. You should also have a look at the
+  <a href="/doc/contrib_setup.html">setup instructions</a> for plain
+  (javascript) Rhizosphere development, if you want to modify any part of
+  the underlying javascript library the GWT framework relies upon.
+</p>
+
+<h2>Environment Setup</h2>
+<p>At the very minimum, you must have these tools installed on your machine,
+  to modify and test Rhizosphere source code on your machine:</p>
+<dl>
+  <dt>
+    Java programming language and development kit
+  </dt>
+  <dd>
+    Available at <a href="http://www.java.com/">www.java.com</a>.
+  </dd>
+  <dt>
+    Google Web Toolkit SDK
+  </dt>
+  <dd>
+    Available at
+    <a href="http://code.google.com/webtoolkit/">code.google.com/webtoolkit</a>.
+  </dd>
+  <dt>
+    Google Chart Tools (aka Visualization) Library for GWT
+  </dt>
+  <dd>
+    Available at
+    <a href="http://code.google.com/p/gwt-google-apis/wiki/Downloads">
+      code.google.com/p/gwt-google-apis</a>
+  </dd>
+  <dt>
+    Apache Ant
+  </dt>
+  <dd>
+    Rhizoshere uses Apache Ant to build and package its source code.
+    Available at <a href="http://ant.apache.org/">ant.apache.org</a>
+  </dd>
+  <dt>
+    Google AppEngine SDK for Java or Jetty
+  </dt>
+  <dd>
+    You need a runtime environment to execute the Demo GWT application that
+    ships with Rhizosphere source code. You can download the AppEngine SDK from
+    <a href="http://code.google.com/appengine/">code.google.com/appengine</a>,
+    or download the Jetty server from
+    <a href="http://jetty.codehaus.org/jetty/">jetty.codehaus.org</a>. Any other
+    servlet container capable of deploying a <code>war</code> archive is equally
+    fine.
+  </dd>
+  <dt>
+    Mercurial
+  </dt>
+  <dd>
+    <a href="http://mercurial.selenic.com/">Mercurial</a> is Rhizosphere's
+    distributed version control system.
+  </dd>
+</dl>
+<p>From now on, let's assume you installed the tools in a
+  <code>$RHIZOSPHERE_TOOLS</code> directory.
+</p>
+
+<h3>Download a local copy of Rhizosphere</h3>
+<p>Download a local copy of the code from the version control system:</p>
+<pre>
+  $ cd
+  $ hg clone https://rhizosphere.googlecode.com/hg rhizosphere
+</pre>
+
+<h3>Serve the Rhizosphere GWT demo application locally</h3>
+<p>
+  To serve the demo application, you first have to compile and build Rhizosphere
+  java code, both for the library module and the sample application.
+</p>
+<p>
+  The first step is to modify the <code>gwt/build/build.properties</code> and
+  adjust the paths contained therein to match your local setup. Then, issue
+  the following command:
+</p>
+<pre>
+  $ cd rhizosphere
+  $ $RHIZOSPHERE_TOOLS/apache-ant-1.8.2/bin/ant -f gwtshowcase/build/build-showcase.xml pack
+</pre>
+<p>
+  This will produce the war file <code>gwtshowcase/lib/rhizosphere-gwt-sample.war</code>
+  which you can feed to Jetty.
+</p>
+<pre>
+  $ cp gwtshowcase/lib/rhizosphere-gwt-sample.war $RHIZOSPHERE_TOOLS/jetty/webapps/
+  $ cd $RHIZOSPHERE_TOOLS/jetty/
+  $ java -jar start.jar
+</pre>
+<p>
+  You can now access the Rhizosphere demo GWT application at
+  <a href="http://localhost:8080/rhizosphere-gwt-sample/">http://localhost:8080/rhizosphere-gwt-sample/</a>.
+  Alternatively, you can run the demo application on Google Appengine, by
+  pointing it to the directory the contains the exploded contents of the war
+  file:
+</p>
+<pre>
+  $ cd rhizosphere
+  $ $RHIZOSPHERE_TOOLS/appengine-java/bin/dev_appserver.sh gwtshowcase/work/exploded/
+</pre>
+<p>
+  You can now access the Rhizosphere demo GWT application at
+  <a href="http://localhost:8080/">localhost:8080/</a>.
+</p>
+
+<h3>Development mode</h3>
+<p>
+  Edit the
+  <code>&lt;meta name='gwt:property' content='rhizosphere.debug=false'&gt;</code>
+  parameter in <code>gwtshowcase/war/gwtshowcase.html</code> to switch between
+  serving Rhizosphere library files in compile or uncompiled mode.
+</p>
+
+<h2>Production deployment</h2>
+<p>
+  Use the following ant build target to compile and package the
+  <code>gwt-rhizosphere.jar</code> module, that you can then include in your
+  production application:
+</p>
+<pre>
+  $ cd rhizosphere
+  $ $RHIZOSPHERE_TOOLS/apache-ant-1.8.2/bin/ant -f gwt/build/build.xml pack
+</pre>
+<p>
+  The packaged module is saved in <code>gwt/lib/gwt-rhizosphere.jar</code>.
+</p>
+
+<h2>Development using Eclipse</h2>
+<p>
+  Life is easier if you use Eclipse for your development activities, since you
+  get nice things like hot code replacement and a decent debugger. Use these
+  instruction to develop using Eclipse. I assume you already have the GWT SDK
+  and the <a href="http://code.google.com/webtoolkit/usingeclipse.html">Google
+    Plugin for Eclipse</a> installed.
+</p>
+<p>First, set up a project for the Rhizosphere GWT module:</p>
+<ul>
+  <li>Create a new Java project using the <code>gwt/</code> directory in the
+    dowloaded Rhizosphere code as its existing source,</li>
+  <li>Eclipse should auto-identify the <code>gwt/src/</code> directory as a
+    source folder and add it. Do it manually if it doesn't happen,</li>
+  <li>Add the GWT SDK and <code>gwt-visualization.jar</code> to the project
+    build path. The project should compile just fine after this step.</li>
+  <li>Rhizosphere GWT module keeps an internal copy of Rhizosphere underlying
+    javascript library. To have Eclipse auto-manage it for you, add a new
+    <strong>Ant Builder</strong> to the project ones,</li>
+  <li>Configure the Ant Builder to use <code>gwt/build/build.xml</code> as its
+    build file and have it run the <code>clean-rhizosphere-js-css</code> target
+    during/after a "Clean", and the <code>copy-rhizosphere-js-css</code> target
+    during a "Build" (both manual and automatic). Make sure the ant builder runs
+    before the Java builder,</li>
+  <li>Perform a clean build of the project, Rhizosphere library files should
+    appear in the <code>com.rhizospherejs.gwt.jsni.rhizosphere</code> package.</li>
+</ul>
+<p>Then, set up a separate project for the Rhizosphere GWT Demo application:</p>
+<ul>
+  <li>Create a new Java project (we'll fix this later) using the
+    <code>gwtshowcase/</code> directory as its existing source,</li>
+  <li>in the project creation wizard, configure <code>war/WEB-INF/classes</code>
+    as the default output folder,</li>
+  <li>Make sure you add the GWT SDK, <code>gwt-visualization.jar</code> and
+  the Rhizosphere GWT project just defined above in the build path of this
+  new project you are configuring,</li>
+  <li>Terminate the wizard, the project should compile just fine,</li>
+  <li>Right-click the project in the package explorer and choose
+    <strong>Google &gt; Web Toolkit Settings</strong>,</li>
+  <li>Check the <strong>Use Google Web Toolkit</strong> checkbox,</li>
+  <li>You should now be able to GWT-compile and Debug the demo application
+    from within Eclipse.</li>
+</ul>
+
 {% endblock %}
