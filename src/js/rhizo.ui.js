@@ -1409,9 +1409,9 @@ rhizo.ui.RenderingBootstrap.prototype.sanityCheck_ = function(rawRenderings,
 };
 
 /**
- * @return {boolean} Whether the renderer declares a custom drag handle
- *     selector or not (in which case, the entire rendering will be used as a
- *     drag handle.
+ * @return {boolean|string|null} Whether the renderer declares a custom drag
+ *     handle selector or not (in which case, the entire rendering will be
+ *     used as a drag handle.
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.getDragHandleSelector_ = function() {

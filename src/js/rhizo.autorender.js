@@ -221,7 +221,7 @@ rhizo.autorender.AR.prototype.render = function(model,
       count++;
     }
 
-    for (key in this.metamodel_) {
+    for (var key in this.metamodel_) {
       if (count >= this.numfields_ && !expanded) {
         break;
       }
