@@ -223,7 +223,7 @@ rhizo.gviz.Initializer.prototype.parseCategories_ = function(columnIndex) {
   }
 
   var categories = [];
-  for (category in categoriesMap) {
+  for (var category in categoriesMap) {
     categories.push(category);
   }
 
