@@ -12,7 +12,7 @@
 
     <!-- Early loading of the Google Visualization API libraries -->
     <script type="text/javascript" src="http://www.google.com/jsapi?autoload=%7Bmodules%3A%5B%7Bname%3Avisualization%2Cversion%3A1%7D%5D%7D"></script>
-    <script src="http://www.rhizospherejs.com/static/shared/js/jquery-1.4.4.min.js"
+    <script src="http://www.rhizospherejs.com/static/shared/js/jquery-1.5.1.min.js"
             type="text/javascript"
             charset="utf-8"></script>
     <script src="http://www.rhizospherejs.com/static/shared/js/jquery-ui-1.8.10.custom.min.js"

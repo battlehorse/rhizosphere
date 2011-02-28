@@ -51,13 +51,13 @@ public class ProdResourcesInjector implements ResourcesInjector {
       // TODO(battlehorse): replace with use com.google.gwt.ajaxloader.client.AjaxLoader once
       // this issue is solved: http://code.google.com/p/gwt-google-apis/issues/detail?id=306.
       jsFiles = new String[] {
-          domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js",
+          domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js",
           domHelper.getProtocol() + 
           "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"
       };
     } else {
       jsFiles = new String[] {
-          "rhizosphere/shared/js/jquery-1.4.4.min.js",
+          "rhizosphere/shared/js/jquery-1.5.1.min.js",
           "rhizosphere/shared/js/jquery-ui-1.8.10.custom.min.js"};
     }
     domHelper.injectJavascriptLibrary(jsFiles, callback);
