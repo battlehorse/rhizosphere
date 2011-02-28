@@ -278,7 +278,7 @@ rhizo.Project.prototype.toggleSelect = function(id) {
 rhizo.Project.prototype.unselectAll = function() {
   // We don't have to care about selection extension when unselecting
   // everything.
-  for (id in this.selectionMap_) {
+  for (var id in this.selectionMap_) {
     this.unselectInternal_(id);
   }
 };

@@ -59,8 +59,8 @@ rhizo.model.loader.loaders = [];
 
 // Global tracking of existing Javascript loaders, necessary to match the
 // JSONP callbacks fired by included scripts to the right loader.
-$globalJSONPLoaderCount = 0;
-$globalJSONPLoaderMap = {};
+var $globalJSONPLoaderCount = 0;
+var $globalJSONPLoaderMap = {};
 
 // Plain Javascript file loader
 rhizo.model.loader.JSONP = function(resource) {

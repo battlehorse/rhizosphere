@@ -428,7 +428,7 @@ rhizo.meta.RangeKind.prototype.toFilterScale = function(modelValue) {
    extending the range slider should customize this method according to their
    needs. rhizo.ui.toHumanLabel() is a useful helper in this case.
 
-   @oaram {number} the value to be converted
+   @param {number} modelValue the value to be converted
  */
 rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
   return modelValue;
