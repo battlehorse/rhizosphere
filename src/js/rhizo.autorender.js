@@ -61,7 +61,7 @@ rhizo.autorender.AR.prototype.getColorRange = function() {
 };
 
 rhizo.autorender.AR.prototype.locateFields_ = function() {
-  for (key in this.metamodel_) {
+  for (var key in this.metamodel_) {
     this.masterField_ = this.masterField_ ||
                         this.getArField_(key, 'master', 'true');
     this.sizeField_ = this.sizeField_ ||
