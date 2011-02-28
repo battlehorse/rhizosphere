@@ -69,7 +69,7 @@ public class DebugResourcesInjector implements ResourcesInjector {
   @Override
   public void injectDependenciesCss() {
     domHelper.injectStyle(
-        "rhizosphere/shared/stylesheets/jquery-ui-1.8.6.custom.css", "stylesheet");
+        "rhizosphere/src/stylesheets/jquery-ui-1.8.10.custom.css", "stylesheet");
   }
  
   @Override
@@ -80,12 +80,12 @@ public class DebugResourcesInjector implements ResourcesInjector {
       // this issue is solved: http://code.google.com/p/gwt-google-apis/issues/detail?id=306.
       jsFiles = new String[] {
           domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js",
-          domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.js"
+          domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.js"
       };
     } else {
       jsFiles = new String[] {
           "rhizosphere/shared/js/jquery-1.4.4.js",
-          "rhizosphere/shared/js/jquery-ui-1.8.6.custom.js"
+          "rhizosphere/shared/js/jquery-ui-1.8.10.custom.js"
       };
     }
     domHelper.injectJavascriptLibrary(jsFiles, callback);
