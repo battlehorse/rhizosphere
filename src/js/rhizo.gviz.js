@@ -205,7 +205,7 @@ rhizo.gviz.Initializer.prototype.parseSingleCategory_ = function(value) {
   }
 
   var categories = [];
-  for (category in categoriesMap) {
+  for (var category in categoriesMap) {
     categories.push(category);
   }
 

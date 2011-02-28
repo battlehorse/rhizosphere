@@ -103,7 +103,7 @@ rhizo.model.SuperModel.prototype.isFiltered = function(opt_key) {
     return this.filters_[opt_key] || false;
   } else {
     var countFilters = 0;
-    for (key in this.filters_) { countFilters++;}
+    for (var key in this.filters_) { countFilters++;}
     return countFilters != 0;
   }
 };

@@ -133,7 +133,7 @@ rhizo.util.buildUrl = function(opt_url, opt_extra_params) {
   if (!opt_extra_params) {
     return url;
   }
-  urlData = rhizo.util.parseUri(url);
+  var urlData = rhizo.util.parseUri(url);
   var newUrl = [
       urlData.protocol, '://',
       urlData.authority,

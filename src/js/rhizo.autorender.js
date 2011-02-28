@@ -203,7 +203,7 @@ rhizo.autorender.AR.prototype.render = function(model,
              model[this.masterField_] + "</span>" +
              "</div>");
   } else {
-    html = [];
+    var html = [];
     html.push("<div class='rhizo-autorender " + colorClass + "'>");
     html.push("<span class='" + fontClass + "'>" +
               model[this.masterField_] + "</span>");
