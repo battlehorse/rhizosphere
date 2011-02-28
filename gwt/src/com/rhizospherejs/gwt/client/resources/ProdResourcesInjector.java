@@ -41,7 +41,7 @@ public class ProdResourcesInjector implements ResourcesInjector {
   @Override
   public void injectDependenciesCss() {
     domHelper.injectStyle(
-        "rhizosphere/shared/stylesheets/jquery-ui-1.8.6.custom.css", "stylesheet");
+        "rhizosphere/src/stylesheets/jquery-ui-1.8.10.custom.css", "stylesheet");
   }
 
   @Override
@@ -53,12 +53,12 @@ public class ProdResourcesInjector implements ResourcesInjector {
       jsFiles = new String[] {
           domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js",
           domHelper.getProtocol() + 
-          "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"
+          "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"
       };
     } else {
       jsFiles = new String[] {
           "rhizosphere/shared/js/jquery-1.4.4.min.js",
-          "rhizosphere/shared/js/jquery-ui-1.8.6.custom.min.js"};
+          "rhizosphere/shared/js/jquery-ui-1.8.10.custom.min.js"};
     }
     domHelper.injectJavascriptLibrary(jsFiles, callback);
   }

@@ -1,7 +1,7 @@
 /*
- * jQuery UI CSS Framework 1.8.6
+ * jQuery UI CSS Framework 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -11,7 +11,7 @@
 /* Layout helpers
 ----------------------------------*/
 .rhizo .ui-helper-hidden { display: none; }
-.rhizo .ui-helper-hidden-accessible { position: absolute; left: -99999999px; }
+.rhizo .ui-helper-hidden-accessible { position: absolute !important; clip: rect(1px 1px 1px 1px); clip: rect(1px,1px,1px,1px); }
 .rhizo .ui-helper-reset { margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }
 .rhizo .ui-helper-clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .rhizo .ui-helper-clearfix { display: inline-block; }
@@ -42,15 +42,15 @@
 
 
 /*
- * jQuery UI CSS Framework 1.8.6
+ * jQuery UI CSS Framework 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
  * http://docs.jquery.com/UI/Theming/API
  *
- * To view and modify this theme, visit http://jqueryui.com/themeroller/?ctl=themeroller&ffDefault=sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=5px&bgColorHeader=426dc9&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=55&borderColorHeader=2e4987&fcHeader=ffffff&iconColorHeader=ebeff9&bgColorContent=fcfdfd&bgTextureContent=06_inset_hard.png&bgImgOpacityContent=100&borderColorContent=2e4987&fcContent=222222&iconColorContent=6391de&bgColorDefault=ebeff9&bgTextureDefault=02_glass.png&bgImgOpacityDefault=85&borderColorDefault=2e4987&fcDefault=2e4987&iconColorDefault=2e4987&bgColorHover=e3e9f7&bgTextureHover=02_glass.png&bgImgOpacityHover=85&borderColorHover=2e4987&fcHover=2e4987&iconColorHover=2e4987&bgColorActive=6391de&bgTextureActive=02_glass.png&bgImgOpacityActive=55&borderColorActive=2e4987&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=fbec88&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=fad42e&fcHighlight=363636&iconColorHighlight=6391de&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
+ * To view and modify this theme, visit http://jqueryui.com/themeroller/?ctl=themeroller&ctl=themeroller&ffDefault=sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=5px&bgColorHeader=426dc9&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=55&borderColorHeader=2e4987&fcHeader=ffffff&iconColorHeader=ebeff9&bgColorContent=fcfdfd&bgTextureContent=06_inset_hard.png&bgImgOpacityContent=100&borderColorContent=2e4987&fcContent=222222&iconColorContent=6391de&bgColorDefault=ebeff9&bgTextureDefault=02_glass.png&bgImgOpacityDefault=85&borderColorDefault=2e4987&fcDefault=2e4987&iconColorDefault=2e4987&bgColorHover=e3e9f7&bgTextureHover=02_glass.png&bgImgOpacityHover=85&borderColorHover=2e4987&fcHover=2e4987&iconColorHover=2e4987&bgColorActive=6391de&bgTextureActive=02_glass.png&bgImgOpacityActive=55&borderColorActive=2e4987&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=fbec88&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=fad42e&fcHighlight=363636&iconColorHighlight=6391de&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
  */
 
 
@@ -293,9 +293,9 @@
 /* Overlays */
 .rhizo .ui-widget-overlay { background: #aaaaaa url(images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); }
 .rhizo .ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa url(images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 8px; -webkit-border-radius: 8px; border-radius: 8px; }/*
- * jQuery UI Selectable 1.8.6
+ * jQuery UI Selectable 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -303,9 +303,9 @@
  */
 .rhizo .ui-selectable-helper { position: absolute; z-index: 100; border:1px dotted black; }
 /*
- * jQuery UI Button 1.8.6
+ * jQuery UI Button 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -341,9 +341,9 @@ input.ui-button { padding: .4em 1em; }
 /* workarounds */
 button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra padding in Firefox */
 /*
- * jQuery UI Slider 1.8.6
+ * jQuery UI Slider 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -364,9 +364,9 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 .rhizo .ui-slider-vertical .ui-slider-range { left: 0; width: 100%; }
 .rhizo .ui-slider-vertical .ui-slider-range-min { bottom: 0; }
 .rhizo .ui-slider-vertical .ui-slider-range-max { top: 0; }/*
- * jQuery UI Progressbar 1.8.6
+ * jQuery UI Progressbar 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *

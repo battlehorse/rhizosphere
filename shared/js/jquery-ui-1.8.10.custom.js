@@ -1,7 +1,7 @@
 /*!
- * jQuery UI 1.8.6
+ * jQuery UI 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -18,7 +18,7 @@ if ( $.ui.version ) {
 }
 
 $.extend( $.ui, {
-	version: "1.8.6",
+	version: "1.8.10",
 
 	keyCode: {
 		ALT: 18,
@@ -307,9 +307,9 @@ $.extend( $.ui, {
 
 })( jQuery );
 /*!
- * jQuery UI Widget 1.8.6
+ * jQuery UI Widget 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -569,9 +569,9 @@ $.Widget.prototype = {
 
 })( jQuery );
 /*!
- * jQuery UI Mouse 1.8.6
+ * jQuery UI Mouse 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -596,8 +596,8 @@ $.widget("ui.mouse", {
 				return self._mouseDown(event);
 			})
 			.bind('click.'+this.widgetName, function(event) {
-				if(self._preventClickEvent) {
-					self._preventClickEvent = false;
+				if (true === $.data(event.target, self.widgetName + '.preventClickEvent')) {
+				    $.removeData(event.target, self.widgetName + '.preventClickEvent');
 					event.stopImmediatePropagation();
 					return false;
 				}
@@ -688,7 +688,11 @@ $.widget("ui.mouse", {
 
 		if (this._mouseStarted) {
 			this._mouseStarted = false;
-			this._preventClickEvent = (event.target == this._mouseDownEvent.target);
+
+			if (event.target == this._mouseDownEvent.target) {
+			    $.data(event.target, this.widgetName + '.preventClickEvent', true);
+			}
+
 			this._mouseStop(event);
 		}
 
@@ -716,9 +720,9 @@ $.widget("ui.mouse", {
 
 })(jQuery);
 /*
- * jQuery UI Draggable 1.8.6
+ * jQuery UI Draggable 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -909,8 +913,8 @@ $.widget("ui.draggable", $.ui.mouse, {
 			this.dropped = false;
 		}
 		
-		//if the original element is removed, don't bother to continue
-		if(!this.element[0] || !this.element[0].parentNode)
+		//if the original element is removed, don't bother to continue if helper is set to "original"
+		if((!this.element[0] || !this.element[0].parentNode) && this.options.helper == "original")
 			return false;
 
 		if((this.options.revert == "invalid" && !dropped) || (this.options.revert == "valid" && dropped) || this.options.revert === true || ($.isFunction(this.options.revert) && this.options.revert.call(this.element, dropped))) {
@@ -1050,10 +1054,10 @@ $.widget("ui.draggable", $.ui.mouse, {
 		var o = this.options;
 		if(o.containment == 'parent') o.containment = this.helper[0].parentNode;
 		if(o.containment == 'document' || o.containment == 'window') this.containment = [
-			0 - this.offset.relative.left - this.offset.parent.left,
-			0 - this.offset.relative.top - this.offset.parent.top,
-			$(o.containment == 'document' ? document : window).width() - this.helperProportions.width - this.margins.left,
-			($(o.containment == 'document' ? document : window).height() || document.body.parentNode.scrollHeight) - this.helperProportions.height - this.margins.top
+			(o.containment == 'document' ? 0 : $(window).scrollLeft()) - this.offset.relative.left - this.offset.parent.left,
+			(o.containment == 'document' ? 0 : $(window).scrollTop()) - this.offset.relative.top - this.offset.parent.top,
+			(o.containment == 'document' ? 0 : $(window).scrollLeft()) + $(o.containment == 'document' ? document : window).width() - this.helperProportions.width - this.margins.left,
+			(o.containment == 'document' ? 0 : $(window).scrollTop()) + ($(o.containment == 'document' ? document : window).height() || document.body.parentNode.scrollHeight) - this.helperProportions.height - this.margins.top
 		];
 
 		if(!(/^(document|window|parent)$/).test(o.containment) && o.containment.constructor != Array) {
@@ -1176,7 +1180,7 @@ $.widget("ui.draggable", $.ui.mouse, {
 });
 
 $.extend($.ui.draggable, {
-	version: "1.8.6"
+	version: "1.8.10"
 });
 
 $.ui.plugin.add("draggable", "connectToSortable", {
@@ -1513,9 +1517,9 @@ $.ui.plugin.add("draggable", "zIndex", {
 
 })(jQuery);
 /*
- * jQuery UI Droppable 1.8.6
+ * jQuery UI Droppable 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -1661,7 +1665,7 @@ $.widget("ui.droppable", {
 });
 
 $.extend($.ui.droppable, {
-	version: "1.8.6"
+	version: "1.8.10"
 });
 
 $.ui.intersect = function(draggable, droppable, toleranceMode) {
@@ -1798,9 +1802,9 @@ $.ui.ddmanager = {
 
 })(jQuery);
 /*
- * jQuery UI Selectable 1.8.6
+ * jQuery UI Selectable 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -2059,14 +2063,14 @@ $.widget("ui.selectable", $.ui.mouse, {
 });
 
 $.extend($.ui.selectable, {
-	version: "1.8.6"
+	version: "1.8.10"
 });
 
 })(jQuery);
 /*
- * jQuery UI Button 1.8.6
+ * jQuery UI Button 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -2355,31 +2359,40 @@ $.widget( "ui.button", {
 				.appendTo( buttonElement.empty() )
 				.text(),
 			icons = this.options.icons,
-			multipleIcons = icons.primary && icons.secondary;
+			multipleIcons = icons.primary && icons.secondary,
+			buttonClasses = [];  
+
 		if ( icons.primary || icons.secondary ) {
-			buttonElement.addClass( "ui-button-text-icon" +
-				( multipleIcons ? "s" : ( icons.primary ? "-primary" : "-secondary" ) ) );
+			buttonClasses.push( "ui-button-text-icon" + ( multipleIcons ? "s" : ( icons.primary ? "-primary" : "-secondary" ) ) );
+
 			if ( icons.primary ) {
 				buttonElement.prepend( "<span class='ui-button-icon-primary ui-icon " + icons.primary + "'></span>" );
 			}
+
 			if ( icons.secondary ) {
 				buttonElement.append( "<span class='ui-button-icon-secondary ui-icon " + icons.secondary + "'></span>" );
 			}
+
 			if ( !this.options.text ) {
-				buttonElement
-					.addClass( multipleIcons ? "ui-button-icons-only" : "ui-button-icon-only" )
-					.removeClass( "ui-button-text-icons ui-button-text-icon-primary ui-button-text-icon-secondary" );
+				buttonClasses.push( multipleIcons ? "ui-button-icons-only" : "ui-button-icon-only" );
+				buttonElement.removeClass( "ui-button-text-icons ui-button-text-icon-primary ui-button-text-icon-secondary" );
+
 				if ( !this.hasTitle ) {
 					buttonElement.attr( "title", buttonText );
 				}
 			}
 		} else {
-			buttonElement.addClass( "ui-button-text-only" );
+			buttonClasses.push( "ui-button-text-only" );
 		}
+		buttonElement.addClass( buttonClasses.join( " " ) );
 	}
 });
 
 $.widget( "ui.buttonset", {
+	options: {
+		items: ":button, :submit, :reset, :checkbox, :radio, a, :data(button)"
+	},
+
 	_create: function() {
 		this.element.addClass( "ui-buttonset" );
 	},
@@ -2397,7 +2410,7 @@ $.widget( "ui.buttonset", {
 	},
 	
 	refresh: function() {
-		this.buttons = this.element.find( ":button, :submit, :reset, :checkbox, :radio, a, :data(button)" )
+		this.buttons = this.element.find( this.options.items )
 			.filter( ":ui-button" )
 				.button( "refresh" )
 			.end()
@@ -2408,13 +2421,11 @@ $.widget( "ui.buttonset", {
 				return $( this ).button( "widget" )[ 0 ];
 			})
 				.removeClass( "ui-corner-all ui-corner-left ui-corner-right" )
-				.filter( ":visible" )
-					.filter( ":first" )
-						.addClass( "ui-corner-left" )
-					.end()
-					.filter( ":last" )
-						.addClass( "ui-corner-right" )
-					.end()
+				.filter( ":first" )
+					.addClass( "ui-corner-left" )
+				.end()
+				.filter( ":last" )
+					.addClass( "ui-corner-right" )
 				.end()
 			.end();
 	},
@@ -2435,9 +2446,9 @@ $.widget( "ui.buttonset", {
 
 }( jQuery ) );
 /*
- * jQuery UI Slider 1.8.6
+ * jQuery UI Slider 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -2745,7 +2756,9 @@ $.widget( "ui.slider", $.ui.mouse, {
 				( parseInt( closestHandle.css("marginTop"), 10 ) || 0)
 		};
 
-		this._slide( event, index, normValue );
+		if ( !this.handles.hasClass( "ui-state-hover" ) ) {
+			this._slide( event, index, normValue );
+		}
 		this._animateOff = true;
 		return true;
 	},
@@ -3019,14 +3032,14 @@ $.widget( "ui.slider", $.ui.mouse, {
 	
 	// returns the step-aligned value that val is closest to, between (inclusive) min and max
 	_trimAlignValue: function( val ) {
-		if ( val < this._valueMin() ) {
+		if ( val <= this._valueMin() ) {
 			return this._valueMin();
 		}
-		if ( val > this._valueMax() ) {
+		if ( val >= this._valueMax() ) {
 			return this._valueMax();
 		}
 		var step = ( this.options.step > 0 ) ? this.options.step : 1,
-			valModStep = val % step,
+			valModStep = (val - this._valueMin()) % step;
 			alignValue = val - valModStep;
 
 		if ( Math.abs(valModStep) * 2 >= step ) {
@@ -3110,14 +3123,14 @@ $.widget( "ui.slider", $.ui.mouse, {
 });
 
 $.extend( $.ui.slider, {
-	version: "1.8.6"
+	version: "1.8.10"
 });
 
 }(jQuery));
 /*
- * jQuery UI Progressbar 1.8.6
+ * jQuery UI Progressbar 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -3131,11 +3144,11 @@ $.extend( $.ui.slider, {
 
 $.widget( "ui.progressbar", {
 	options: {
-		value: 0
+		value: 0,
+		max: 100
 	},
 
 	min: 0,
-	max: 100,
 
 	_create: function() {
 		this.element
@@ -3143,13 +3156,14 @@ $.widget( "ui.progressbar", {
 			.attr({
 				role: "progressbar",
 				"aria-valuemin": this.min,
-				"aria-valuemax": this.max,
+				"aria-valuemax": this.options.max,
 				"aria-valuenow": this._value()
 			});
 
 		this.valueDiv = $( "<div class='ui-progressbar-value ui-widget-header ui-corner-left'></div>" )
 			.appendTo( this.element );
 
+		this.oldValue = this._value();
 		this._refreshValue();
 	},
 
@@ -3179,8 +3193,7 @@ $.widget( "ui.progressbar", {
 		if ( key === "value" ) {
 			this.options.value = value;
 			this._refreshValue();
-			this._trigger( "change" );
-			if ( this._value() === this.max ) {
+			if ( this._value() === this.options.max ) {
 				this._trigger( "complete" );
 			}
 		}
@@ -3194,27 +3207,38 @@ $.widget( "ui.progressbar", {
 		if ( typeof val !== "number" ) {
 			val = 0;
 		}
-		return Math.min( this.max, Math.max( this.min, val ) );
+		return Math.min( this.options.max, Math.max( this.min, val ) );
+	},
+
+	_percentage: function() {
+		return 100 * this._value() / this.options.max;
 	},
 
 	_refreshValue: function() {
 		var value = this.value();
+		var percentage = this._percentage();
+
+		if ( this.oldValue !== value ) {
+			this.oldValue = value;
+			this._trigger( "change" );
+		}
+
 		this.valueDiv
-			.toggleClass( "ui-corner-right", value === this.max )
-			.width( value + "%" );
+			.toggleClass( "ui-corner-right", value === this.options.max )
+			.width( percentage.toFixed(0) + "%" );
 		this.element.attr( "aria-valuenow", value );
 	}
 });
 
 $.extend( $.ui.progressbar, {
-	version: "1.8.6"
+	version: "1.8.10"
 });
 
 })( jQuery );
 /*
- * jQuery UI Effects 1.8.6
+ * jQuery UI Effects 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -3444,8 +3468,7 @@ $.effects.animateClass = function(value, duration, easing, callback) {
 		easing = null;
 	}
 
-	return this.each(function() {
-
+	return this.queue('fx', function() {
 		var that = $(this),
 			originalStyleAttr = that.attr('style') || ' ',
 			originalStyle = filterStyles(getElementStyles.call(this)),
@@ -3473,6 +3496,13 @@ $.effects.animateClass = function(value, duration, easing, callback) {
 			}
 			if (callback) { callback.apply(this, arguments); }
 		});
+
+		// $.animate adds a function to the end of the queue
+		// but we want it at the front
+		var queue = $.queue(this),
+			anim = queue.splice(queue.length - 1, 1)[0];
+		queue.splice(1, 0, anim);
+		$.dequeue(this);
 	});
 };
 
@@ -3514,7 +3544,7 @@ $.fn.extend({
 /******************************************************************************/
 
 $.extend($.effects, {
-	version: "1.8.6",
+	version: "1.8.10",
 
 	// Saves a set of properties in a data storage
 	save: function(element, set) {
@@ -3595,7 +3625,7 @@ $.extend($.effects, {
 					props[pos] = 'auto';
 				}
 			});
-			element.css({position: 'relative', top: 0, left: 0 });
+			element.css({position: 'relative', top: 0, left: 0, right: 'auto', bottom: 'auto' });
 		}
 
 		return wrapper.css(props).show();
@@ -3645,7 +3675,7 @@ function _normalizeArguments(effect, options, speed, callback) {
 
 	speed = speed || options.duration;
 	speed = $.fx.off ? 0 : typeof speed == 'number'
-		? speed : $.fx.speeds[speed] || $.fx.speeds._default;
+		? speed : speed in $.fx.speeds ? $.fx.speeds[speed] : $.fx.speeds._default;
 
 	callback = callback || options.complete;
 
@@ -3953,9 +3983,9 @@ $.extend($.easing,
 
 })(jQuery);
 /*
- * jQuery UI Effects Highlight 1.8.6
+ * jQuery UI Effects Highlight 1.8.10
  *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
