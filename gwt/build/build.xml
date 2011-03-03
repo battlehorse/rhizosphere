@@ -21,7 +21,7 @@
   </path>
 
   <!-- Clean the build output -->
-  <target name="clean">
+  <target name="clean" depends="clean-rhizosphere-js-css">
     <delete dir="${ant-work-dir}">
     </delete>
   </target>
