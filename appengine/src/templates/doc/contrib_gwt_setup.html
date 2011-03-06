@@ -62,11 +62,13 @@
     fine.
   </dd>
   <dt>
-    Mercurial
+    Mercurial or Git
   </dt>
   <dd>
-    <a href="http://mercurial.selenic.com/">Mercurial</a> is Rhizosphere's
-    distributed version control system.
+  	Rhizosphere lets you choose between 
+  	<a href="http://mercurial.selenic.com/">Mercurial</a> or
+  	<a href="http://git-scm.com/">Git</a> as your version control system of
+  	choice.
   </dd>
 </dl>
 <p>From now on, let's assume you installed the tools in a
@@ -74,10 +76,20 @@
 </p>
 
 <h3>Download a local copy of Rhizosphere</h3>
-<p>Download a local copy of the code from the version control system:</p>
+<p>
+	Download a local copy of the code from the version control system.
+	If you are using Mercurial and the Google Code repository:
+</p>
 <pre>
   $ cd
   $ hg clone https://rhizosphere.googlecode.com/hg rhizosphere
+</pre>
+<p>
+	If you are using Git and Rhizosphere Github repository:
+</p>
+<pre>
+  $ cd
+  $ git clone git@github.com:battlehorse/rhizosphere.git rhizosphere
 </pre>
 
 <h3>Serve the Rhizosphere GWT demo application locally</h3>
