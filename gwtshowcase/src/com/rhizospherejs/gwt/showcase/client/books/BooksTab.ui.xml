@@ -30,6 +30,7 @@
     .formfield { display: inline-block; white-space: nowrap; }
     .formlabel { display: inline-block; color: #666; }
     .loading { display: inline-block; }
+    .noresults { display: inline-block; }
     .stayover {
       z-index: 300;
     }
@@ -67,6 +68,9 @@
           <g:Button ui:field='clearButton' visible='false' >Clear</g:Button>
           <g:Label ui:field='loadingMessage' addStyleNames='{style.loading}' visible='false'>
             Loading...
+          </g:Label>
+          <g:Label ui:field='noResultsMessage' addStyleNames='{style.noresults}' visible='false'>
+            No results found.
           </g:Label>
         </div>
         <div id='booksBranding' class='{style.branding}'></div>

@@ -86,6 +86,9 @@ public class BooksTab extends Composite {
 
   @UiField
   Label loadingMessage;
+  
+  @UiField
+  Label noResultsMessage;
 
   @UiField
   SimplePanel rhizosphereContainer;
@@ -124,16 +127,14 @@ public class BooksTab extends Composite {
     books.clear();
     rhizosphereContainer.clear();
     clearButton.setVisible(false);
+    noResultsMessage.setVisible(false);
   }
 
   @UiHandler("submitButton")
   void searchBooks(ClickEvent event) {
     // Disable the search fields and buttons while a search is already in
     // progress.
-    submitButton.setEnabled(false);
-    clearButton.setEnabled(false);
-    searchInput.setEnabled(false);
-    loadingMessage.setVisible(true);
+    showSearchStarted();
 
     String query = searchInput.getValue();
     if (query.length() == 0) {
@@ -146,6 +147,23 @@ public class BooksTab extends Composite {
       return;
     }
     doNativeSearch(this, query);
+  }
+  
+  private void showSearchStarted() {
+    submitButton.setEnabled(false);
+    clearButton.setEnabled(false);
+    searchInput.setEnabled(false);
+    noResultsMessage.setVisible(false);
+    loadingMessage.setVisible(true);    
+  }
+  
+  private void showSearchCompleted(boolean noResults) {
+    submitButton.setEnabled(true);
+    clearButton.setVisible(true);
+    clearButton.setEnabled(true);
+    searchInput.setEnabled(true);
+    loadingMessage.setVisible(false);
+    noResultsMessage.setVisible(noResults);
   }
 
   // Perform a Google Book Search via JSNI (no GWT bindings are available yet
@@ -200,7 +218,12 @@ public class BooksTab extends Composite {
         books.put(b.getBookId(), b);
       }
     }
-    showRhizosphere();
+    if (searchResults.length() == 0) {
+      showSearchCompleted(true);
+    }
+    if (books.size() > 0) {
+      showRhizosphere();
+    }
   }
 
   private void showRhizosphere() {
@@ -223,11 +246,7 @@ public class BooksTab extends Composite {
         rhizo.addReadyHandler(new ReadyEvent.Handler() {
           @Override
           public void onReady(ReadyEvent event) {
-            submitButton.setEnabled(true);
-            clearButton.setVisible(true);
-            clearButton.setEnabled(true);
-            searchInput.setEnabled(true);
-            loadingMessage.setVisible(false);
+            showSearchCompleted(false);
           }
         });
 
