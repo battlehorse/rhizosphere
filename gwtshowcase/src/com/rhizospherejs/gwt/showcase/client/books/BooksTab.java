@@ -220,8 +220,7 @@ public class BooksTab extends Composite {
     }
     if (searchResults.length() == 0) {
       showSearchCompleted(true);
-    }
-    if (books.size() > 0) {
+    } else {
       showRhizosphere();
     }
   }
