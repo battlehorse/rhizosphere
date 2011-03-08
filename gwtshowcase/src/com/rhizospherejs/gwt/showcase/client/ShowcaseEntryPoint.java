@@ -84,21 +84,25 @@ public class ShowcaseEntryPoint implements EntryPoint {
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
       public void onValueChange(ValueChangeEvent<String> event) {
         String historyToken = event.getValue();
-
-        if (historyToken.equals("intro") || historyToken.length() == 0) {
-          tabs.selectTab(0);
-        } else if (historyToken.equals("orgchart")) {
-          tabs.selectTab(1);
-        } else if (historyToken.equals("books")) {
-          tabs.selectTab(2);
-        } else if (historyToken.equals("gviz")) {
-          tabs.selectTab(3);
-        }
+        tabs.selectTab(tabNumberFromToken(historyToken));
       }
     });
-
-    tabs.selectTab(0);
+    
+    tabs.selectTab(tabNumberFromToken(History.getToken()));
     RootLayoutPanel.get().add(dock);
+  }
+  
+  private int tabNumberFromToken(String historyToken) {
+    if (historyToken.equals("intro") || historyToken.length() == 0) {
+      return 0;
+    } else if (historyToken.equals("orgchart")) {
+      return 1;
+    } else if (historyToken.equals("books")) {
+      return 2;
+    } else if (historyToken.equals("gviz")) {
+      return 3;
+    }
+    return 0;  // unrecognized token
   }
 
 }
