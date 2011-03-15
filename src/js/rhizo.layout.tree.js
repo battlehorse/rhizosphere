@@ -225,8 +225,9 @@ rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
   try {
     // builds the tree model and also checks for validity
     this.globalNodesMap_ = {};
-    var roots = new rhizo.layout.Treeifier(parentKey).buildTree(
-        supermodels, allmodels, this.globalNodesMap_).childs;
+    var roots = new rhizo.layout.Treeifier(
+        parentKey, meta[parentKey]['linkKey']).buildTree(
+            supermodels, allmodels, this.globalNodesMap_).childs;
 
     var drawingOffset = { left: 0, top: 0 };
 
