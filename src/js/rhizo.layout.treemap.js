@@ -474,8 +474,9 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
   this.globalNodesMap_ = {};
   if (parentKey) {
     try {
-      treeRoot = new rhizo.layout.Treeifier(parentKey).buildTree(
-          supermodels, allmodels, this.globalNodesMap_);
+      treeRoot = new rhizo.layout.Treeifier(
+          parentKey, meta[parentKey]['linkKey']).buildTree(
+              supermodels, allmodels, this.globalNodesMap_);
     } catch(e) {
       if (e.name == "TreeCycleException") {
         this.project_.logger().error(e);

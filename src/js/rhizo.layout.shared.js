@@ -215,20 +215,28 @@ rhizo.layout.LayoutBox.prototype.clamp_ = function(val, min, max) {
 
 /**
  * Converter that turns an unorganized set of rhizo.model.SuperModel instances
- * into a tree, according to a model attribute (parentKey) that defines the
- * parent-child relationships.
+ * into a tree, according to a model attribute (linkStartKey) that points to
+ * other models, defining child-to-parent relationships.
  * 
- * @param {string} parentKey the name of the model attribute that defines the
- *     parent-child relationship.
+ * @param {string} linkStartKey the name of the model attribute whose value
+ *     points to another model, establishing a child-to-parent relationship.
+ * @param {string} opt_linkEndKey The name of the model attribute whose
+ *     value resolves the links defined by linkStartKey. If
+ *     unspecified, it is assumed that the values of model attributes identified
+ *     by linkStartKey will contain the ids of their parent models.
+ *     If specified, the model values identified by opt_linkEndKey must be
+ *     unique (otherwise it would be possible for a child to link to multiple
+ *     parents).
  */
-rhizo.layout.Treeifier = function(parentKey) {
-  this.parentKey_ = parentKey;
+rhizo.layout.Treeifier = function(linkStartKey, opt_linkEndKey) {
+  this.linkStartKey_ = linkStartKey;
+  this.linkEndKey_ = opt_linkEndKey || 'id';
 };
 
 /**
  * Builds a hierarchical structure of TreeNodes. Raises exceptions
- * if cycles are found within the tree. Deals automatically with "unavailable"
- * parts of the tree.
+ * if cycles are found within the tree or if childs are found to link to
+ * multiple parents. Deals automatically with "unavailable" parts of the tree.
  * 
  * @param {Array.<rhizo.model.SuperModel>} supermodels A list of all supermodels
  *     to treeify.
@@ -243,6 +251,14 @@ rhizo.layout.Treeifier = function(parentKey) {
 rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
                                                       allmodels,
                                                       opt_globalNodesMap) {
+  var linkMap = allmodels;
+  if (this.linkEndKey_ != 'id') {
+    // A key other than the model id is used to resolve child-parent
+    // relationships. Assemble a map pointing from the model values the key
+    // identifies to SuperModel instances.
+    linkMap = this.buildLinkMap_(allmodels);
+  }
+
   var globalNodesMap = opt_globalNodesMap || {};
   for (var i = 0, l = supermodels.length; i < l; i++) {
     globalNodesMap[supermodels[i].id] =
@@ -271,8 +287,8 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
         globalNodesMap[model.id].traversed_ = true;
 
         var parentSuperModel = this.findFirstAvailableParent_(
-            allmodels,
-            allmodels[model[this.parentKey_]]);
+            linkMap,
+            linkMap[model[this.linkStartKey_]]);
         if (parentSuperModel && parentSuperModel.id != model.id) {
           var parentModel = parentSuperModel.unwrap();
           globalNodesMap[parentModel.id].addChild(globalNodesMap[model.id]);
@@ -289,20 +305,21 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
 
 /**
  * From a given model, returns the first model in the tree hierarchy defined
- * according to parentKey which is available for layout. Models can be
- * unavailable for various reasons, such as being filtered or pinned.
+ * by linkStartKey which is available for layout. Models can be unavailable for
+ * various reasons, such as being filtered or pinned.
  * If the given model itself is available, it is returned without further
  * search. If a cycle is detected while traversing unavailable parents,
  * an exception is raised.
  *
- * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
- *     model ids to SuperModel instances, for all models currently known to the
- *     project.
+ * @param {Object.<*, rhizo.model.SuperModel>} linkMap a map associating
+ *     model unique identifiers (either the model id itself, or another unique
+ *     attribute identified by 'linkEndKey') to SuperModel instances, for all
+ *     models currently known to the project.
  * @param {rhizo.model.SuperModel} superParent the model to start the search from.
  * @private
  */
 rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
-    allmodels, superParent) {
+    linkMap, superParent) {
   if (!superParent) {
     return null;
   }
@@ -316,7 +333,7 @@ rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
     }
     localNodesMap[superParent.id] = true;
 
-    superParent = allmodels[superParent.unwrap()[this.parentKey_]];
+    superParent = linkMap[superParent.unwrap()[this.linkStartKey_]];
     if (!superParent) {
       // we reached an hidden root.
       return null;
@@ -325,6 +342,41 @@ rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
 
   return superParent;
 };
+
+/**
+ * Builds a map of SuperModel instances keying them by the value each model has
+ * for the attribute identified by 'linkEndKey'. Raises exceptions if two or
+ * more models share the same value for the 'linkEndKey' attribute, i.e.
+ * whenever it's not possible to build a unique mapping from attribute values to
+ * models.
+ *
+ * @param {Object.<string, rhizo.model.SuperModel>} allmodels A map associating
+ *     model ids to SuperModel instances, for all models currently known to the
+ *     project.
+ * @return {Object.<*, rhizo.model.SuperModel>} A map associating model values
+ *     as extracted from the 'linkEndKey' attribute to SuperModel instances,
+ *     for all models currently known to the project.
+ * @private
+ */
+rhizo.layout.Treeifier.prototype.buildLinkMap_ = function(allmodels) {
+  var linkMap = {};
+  for (var modelId in allmodels) {
+    var model = allmodels[modelId].unwrap();
+    if (!(this.linkEndKey_ in model)) {
+      continue;
+    }
+    if (model[this.linkEndKey_] in linkMap) {
+      // Two or more models share the same value for the 'linkEndKey'
+      // attribute. It's not possible to build a unique mapping.
+      throw new rhizo.layout.TreeCycleException(
+              "Tree is invalid: multiple models have the same value for the " +
+              this.linkEndKey_ + " attribute");
+    }
+    linkMap[model[this.linkEndKey_]] = allmodels[modelId];
+  }
+  return linkMap;
+};
+
 
 /**
  * A class that represents a node in the tree and wraps the superModel

@@ -15,14 +15,14 @@
 */
 
 (function() {
-  var Person = function(id, name, age, male, hobbies, salary, parentId) {
+  var Person = function(id, name, parentName, age, male, hobbies, salary) {
     this.id = id;
     this.name = name;
+    this.parentName = parentName;
     this.age = age;
     this.male = male;
     this.hobbies = hobbies;
     this.salary = salary;
-    this.parentId = parentId;
   };
 
   Person.prototype.toString = function() {
@@ -31,17 +31,17 @@
 
 
   var models = [
-    new Person("1", "john", 30, true, ['fishing', 'soccer'], 100, ''),
-    new Person("2", "mark", 20, true, ['fishing', 'soccer'], 200, "1"),
-    new Person("3", "battlehorse", 20, true,
-               ['computer games', 'soccer'], 300, "1"),
-    new Person("4", "sara", 25, false, ['fishing', 'soccer'], 100, "3"),
-    new Person("5", "jennifer", 25, false, ['fishing', 'soccer'], 200, "3"),
-    new Person("6", "dave", 25, true, [ 'computer games'], 300, "2"),
-    new Person("7", "carl", 25, true, ['cycling' , 'soccer'], 100, "2"),
-    new Person("8", "aaron", 25, true, [ ], 100, "6"),
-    new Person("9", "lucy", 35, false, ['soccer'], 150, "6"),
-    new Person("10", "jacob", 40, true, [], 230, "7")
+    new Person('1', 'john', '', 30, true, ['fishing', 'soccer'], 100),
+    new Person('2', 'mark', 'john', 20, true, ['fishing', 'soccer'], 200),
+    new Person('3', 'battlehorse', 'john', 20, true,
+               ['computer games', 'soccer'], 300),
+    new Person('4', 'sara', 'battlehorse', 25, false, ['fishing', 'soccer'], 100),
+    new Person('5', 'jennifer', 'battlehorse', 25, false, ['fishing', 'soccer'], 200),
+    new Person('6', 'dave', 'mark', 25, true, [ 'computer games'], 300),
+    new Person('7', 'carl', 'mark', 25, true, ['cycling' , 'soccer'], 100),
+    new Person('8', 'aaron', 'dave', 25, true, [ ], 100),
+    new Person('9', 'lucy', 'dave', 35, false, ['soccer'], 150),
+    new Person('10', 'jacob', 'carl', 40, true, [], 230)
   ];
 
   var metamodel = {
@@ -52,7 +52,7 @@
                categories: [ 'fishing', 'soccer', 'computer games' , 'cycling'],
                multiple: true},
     salary: {kind: rhizo.meta.Kind.RANGE, label: "Salary", min:100, max: 300},
-    parentId: { kind: rhizo.meta.Kind.STRING, label: "Parent", isLink: true}
+    parentName: { kind: rhizo.meta.Kind.STRING, label: "Parent", isLink: true, linkKey: 'name'}
   };
 
   var renderer = {
