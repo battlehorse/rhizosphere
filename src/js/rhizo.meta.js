@@ -84,7 +84,8 @@ rhizo.meta.StringKind.prototype.setFilterValue = function(value) {
 rhizo.meta.StringKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
   return filterValue != '' &&
-         modelValue.toLowerCase().indexOf(filterValue.toLowerCase()) != -1;
+         (modelValue || '').toLowerCase().indexOf(
+             filterValue.toLowerCase()) != -1;
 };
 
 rhizo.meta.StringKind.prototype.cluster = function(modelValue) {
