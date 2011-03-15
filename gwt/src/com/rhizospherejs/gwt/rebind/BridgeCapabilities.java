@@ -50,7 +50,7 @@ public class BridgeCapabilities {
    * Annotation that describes the mapping between a Java type and
    * the equivalent {@link com.rhizospherejs.gwt.client.RhizosphereKind}.
    */
-  private static final Class<BridgeType> BRIDGE_TYPE_ANNOTATION = BridgeType.class; 
+  private static final Class<BridgeType> BRIDGE_TYPE_ANNOTATION = BridgeType.class;
 
   /**
    * Name of the class that is capable on setting Java values onto
@@ -150,13 +150,13 @@ public class BridgeCapabilities {
       builderType = oracle.getType(JSO_BUILDER_CLASS);
     } catch (NotFoundException e) {
       logger.log(TreeLogger.ERROR,
-          "Unable to build the bridge methods map. Is the builder class " +
-          JSO_BUILDER_CLASS +
-          " missing?");
+          "Unable to build the bridge methods map. Is the builder class "
+          + JSO_BUILDER_CLASS
+          + " missing?");
       throw new UnableToCompleteException();
     }
 
-    for (JMethod method: builderType.getInheritableMethods()) {
+    for (JMethod method : builderType.getInheritableMethods()) {
       if (isValidBridgeMethod(method)) {
         BridgeMethod bridgeMethod = new BridgeMethod(method);
         String targetType = bridgeMethod.getTargetType().getQualifiedSourceName();

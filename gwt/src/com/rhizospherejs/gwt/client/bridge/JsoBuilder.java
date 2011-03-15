@@ -38,7 +38,8 @@ import java.util.Date;
  * <p>
  * Rhizosphere can be instructed to use custom JsoBuilders if the default one
  * doesn't fit all conversion needs (see
- * {@link com.rhizospherejs.gwt.client.Rhizosphere#prepareFor(com.rhizospherejs.gwt.client.RhizosphereMapping, JsoBuilder)}).
+ * {@link com.rhizospherejs.gwt.client.Rhizosphere#prepareFor(
+ * com.rhizospherejs.gwt.client.RhizosphereMapping, JsoBuilder)}).
  * Subclasses should override #setObject(String, Object) and
  * #setObjectArray(String, Object[]) to define their custom conversion logic
  * for Java types that are unsupported by the default JsoBuilder.

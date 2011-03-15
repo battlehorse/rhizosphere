@@ -14,7 +14,6 @@
   limitations under the License.
 */
 
-
 package com.rhizospherejs.gwt.client.renderer;
 
 /**
@@ -22,13 +21,13 @@ package com.rhizospherejs.gwt.client.renderer;
  * instances to declare whether their renderings support expanded (maximized)
  * status on a model by model basis.
  *
- * Implementors of this interface must return true on the
+ * Implementors of this interface must return {@code true} on the
  * {@link HasExpandable#expandable(RenderingHints)} method defined by the
  * superinterface.
  *
  * @param <T>  The models' type rendered by the
- *     {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} this interface
- *     is attached to.
+ *     {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} tagged with
+ *     this interface.
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public interface HasExpandableByModel<T> extends HasExpandable {

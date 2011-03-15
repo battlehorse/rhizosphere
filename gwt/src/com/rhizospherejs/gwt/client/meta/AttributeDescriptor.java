@@ -20,10 +20,10 @@ package com.rhizospherejs.gwt.client.meta;
 /**
  * Marker interface to identify classes that can describe Rhizosphere model
  * attributes (see
- * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}).
- * Classes implementing this interface should also implement one or more of the
- * other {@code HasXX} interfaces defined in the
- * {@link com.rhizospherejs.gwt.client.meta}  package, for each specific
+ * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}). Classes
+ * implementing this interface should also implement one or more of the other
+ * {@code HasXX} interfaces defined in the
+ * {@link com.rhizospherejs.gwt.client.meta} package, for each specific
  * characteristic of the attribute they describe.
  * <p>
  * An example attribute descriptor:
@@ -74,13 +74,14 @@ package com.rhizospherejs.gwt.client.meta;
  * </code></pre>
  * <p>
  * The above example declares that the {@code amount} field of the sample model
- * is of type {@link com.rhizospherejs.gwt.client.RhizosphereKind#RANGE}, has
- * a given label and its values can extend within the specified range.
+ * is of type {@link com.rhizospherejs.gwt.client.RhizosphereKind#RANGE}, has a
+ * given label and its values can extend within the specified range.
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public interface AttributeDescriptor {
 
-  public static class EMPTY_DESCRIPTOR implements AttributeDescriptor {}
+  public static class EmptyDescriptor implements AttributeDescriptor {
+  }
 
 }

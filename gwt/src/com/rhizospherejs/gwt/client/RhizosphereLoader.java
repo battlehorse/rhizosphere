@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 /**
- * Loader to inject Rhizosphere javascript libraries into the GWT host page.
+ * Loader to inject Rhizosphere javascript libraries into a GWT host page.
  * Exposes a callback mechanism to guarantee code execution after successful
  * library injection.
  *
@@ -46,19 +46,20 @@ public final class RhizosphereLoader {
   }
 
   /**
-   * Whether js library injection is currently ongoing.
+   * Whether JS library injection is currently ongoing.
    */
   private boolean injecting = false;
 
   /**
-   * Whether js library injection has completed and Rhizosphere libraries
-   * are successfully loaded in the gwt host page.
+   * Whether JS library injection has completed and Rhizosphere libraries
+   * are successfully loaded in a GWT host page.
    */
   private boolean loaded = false;
 
   /**
-   * Whether the Google CDN should be used as possible to load Rhizosphere
-   * libraries and its dependencies.
+   * Whether to use the <a href="http://code.google.com/apis/libraries/">
+   * Google CDN</a> as possible to load Rhizosphere libraries and its
+   * dependencies.
    */
   private boolean useGoogleCDN = false;
 
@@ -87,7 +88,7 @@ public final class RhizosphereLoader {
 
   /**
    * Registers a callback to be invoked after Rhizosphere libraries have been
-   * successfully injected into the gwt host page. If Rhizosphere libraries
+   * successfully injected into a GWT host page. If Rhizosphere libraries
    * have already been injected, the callback immediately executes.
    * @param callback The callback to invoke.
    */
@@ -124,7 +125,7 @@ public final class RhizosphereLoader {
 
   private void runAllCallbacks() {
     GWT.log("Rhizosphere loading complete. Firing " + callbacks.size() + " callbacks.");
-    for (Runnable r: callbacks) {
+    for (Runnable r : callbacks) {
       ExceptionHelper.runProtected(r);
     }
   }

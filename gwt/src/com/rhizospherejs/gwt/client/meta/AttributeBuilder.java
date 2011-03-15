@@ -16,13 +16,13 @@
 
 package com.rhizospherejs.gwt.client.meta;
 
-import com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute;
 import com.rhizospherejs.gwt.client.RhizosphereKind;
+import com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute;
 
 /**
  * Exposes methods to fill
  * {@link com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute} instances
- * from {@link AttributeDescriptor} specifications. {@link MetaModelFactory}
+ * from {@link AttributeDescriptor} specifications. The {@link MetaModelFactory}
  * uses it to assemble {@link com.rhizospherejs.gwt.client.RhizosphereMetaModel}
  * from annotated POJOs.
  *

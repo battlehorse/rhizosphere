@@ -143,7 +143,7 @@ public class MappingWriter {
     sw.println("JavaScriptObject target = JavaScriptObject.createObject();");
     sw.println("jsoBuilder.setTarget(target);");
 
-    for (MappableMethod modelMethod: inspector.getMappableModelMethods()) {
+    for (MappableMethod modelMethod : inspector.getMappableModelMethods()) {
       BridgeMethod bridgeMethod = bridgeCapabilities.getBridgeMethod(modelMethod.getReturnType());
       sw.println("jsoBuilder.%s(\"%s\", in.%s());",
           bridgeMethod.getName(), modelMethod.getAttributeName(), modelMethod.getName());

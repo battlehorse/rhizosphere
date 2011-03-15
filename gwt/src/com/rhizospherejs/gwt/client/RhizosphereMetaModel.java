@@ -20,11 +20,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
 /**
- * Enumerates and characterize the attributes of Rhizosphere visualization
+ * Enumerates and characterizes the attributes of Rhizosphere visualization
  * models.
  * <p>
  * A metamodel formally describes the structure of Rhizosphere models. It
- * enumerates the attributes that models have, and associate them with
+ * enumerates the attributes that models have, and associates them with
  * information that Rhizosphere will use to configure the visualization
  * behavior and capabilities.
  * <p>
@@ -102,10 +102,10 @@ import com.google.gwt.core.client.JsArrayString;
  * }
  * </code></pre>
  * <p>
- * The above example results in the definition of a model with 4 attributes: a
- * <em>name</em> attribute, automatically characterized via annotation and the
+ * The above example results in the definition of a model with four attributes:
+ * a <em>name</em> attribute, automatically characterized via annotation and the
  * three manually defined <em>bestColor</em>, <em>alternateColor</em> and
- * <em>worstColor</em> attributes. The 3 manual attributes also receive a
+ * <em>worstColor</em> attributes. The manual attributes also receive a
  * manually defined metamodel where each attribute is characterized as being
  * a CATEGORY type (see {@link RhizosphereKind} for further info about the
  * definition of attribute types).
@@ -149,8 +149,8 @@ import com.google.gwt.core.client.JsArrayString;
  * //...
  * </code></pre>
  * <p>
- * The above example results in the definition of 2 attributes: a string 'name'
- * attribute and a numeric 'age' attribute that will be associated with
+ * The above example results in the definition of two attributes: a string
+ * 'name' attribute and a numeric 'age' attribute that will be associated with
  * range-based UI controls in the visualization (see {@link RhizosphereKind}
  * for further info about the definition of attribute types).
  *
@@ -239,7 +239,7 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
     /**
      * Marks this attribute as establishing a parent-child relationship between
      * visualization models. If set, the values Rhizosphere models will have for
-     * this attribute must point to the unique id of the parent model (see
+     * this attribute must point to the unique ID of the parent model (see
      * {@link RhizosphereModelAttribute#modelId()}).
      * <p>
      * When parent-child relationships exist within visualization models,

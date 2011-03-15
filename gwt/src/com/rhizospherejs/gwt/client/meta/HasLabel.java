@@ -17,8 +17,8 @@
 package com.rhizospherejs.gwt.client.meta;
 
 /**
- * Assigned to an {@link AttributeDescriptor} to specify the user-visible
- * label of the matching
+ * Interface assigned to an {@link AttributeDescriptor} to specify the
+ * user-visible label of the matching
  * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}.
  *
  * @author battlehorse@google.com (Riccardo Govoni)

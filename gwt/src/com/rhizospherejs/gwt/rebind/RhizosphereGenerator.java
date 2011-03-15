@@ -90,18 +90,17 @@ public class RhizosphereGenerator extends Generator {
     if (pw == null) {
       logger.log(TreeLogger.INFO, mappingClassName + " already exists. Nothing to do.");
       return mappingPackageName + "." + mappingClassName;
-    } else {
-      MappingWriter writer = new MappingWriter(
-          logger.branch(TreeLogger.TRACE, "Initializing MappingWriter."),
-          pw,
-          mappingPackageName,
-          modelType.getSimpleSourceName(),
-          bridgeCapabilities,
-          inspector);
-      writer.write();
-      context.commit(logger, pw);
-      return mappingPackageName + "." + mappingClassName;
     }
-  }
 
+    MappingWriter writer = new MappingWriter(
+        logger.branch(TreeLogger.TRACE, "Initializing MappingWriter."),
+        pw,
+        mappingPackageName,
+        modelType.getSimpleSourceName(),
+        bridgeCapabilities,
+        inspector);
+    writer.write();
+    context.commit(logger, pw);
+    return mappingPackageName + "." + mappingClassName;
+  }
 }

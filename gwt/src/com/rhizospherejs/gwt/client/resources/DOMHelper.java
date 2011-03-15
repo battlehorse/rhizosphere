@@ -51,16 +51,21 @@ import com.google.gwt.user.client.Window;
  * <p>
  * References:
  * <ul>
- * <li><a target="_blank" href="http://code.google.com/p/chromium/issues/detail?id=46109">
+ * <li><a target="_blank"
+ *        href="http://code.google.com/p/chromium/issues/detail?id=46109">
  *      Chromium bug 46109</a></li>
- * <li><a target="_blank" href="http://code.google.com/speed/page-speed/docs/rendering.html#PutCSSInHead">
+ * <li><a target="_blank"  
+ *        href="http://code.google.com/speed/page-speed/docs/rendering.html#PutCSSInHead">
  *      Pagespeed docs about CSS placement</a></li>
- * <li><a target="_blank" href="http://code.google.com/speed/page-speed/docs/rtt.html#PutStylesBeforeScripts">
+ * <li><a target="_blank" 
+ *        href="http://code.google.com/speed/page-speed/docs/rtt.html#PutStylesBeforeScripts">
  *      Pagespeed docs about CSS vs JS ordering</a></li>
  * <li><a target="_blank" href="http://www.browserscope.org/">Browserscope</a></li>
- * <li><a target="_blank" href="http://www.stevesouders.com/blog/2009/04/27/loading-scripts-without-blocking/">
+ * <li><a target="_blank"
+ *        href="http://www.stevesouders.com/blog/2009/04/27/loading-scripts-without-blocking/">
  *      Steve Souders' "Loading scripts without blocking"</a></li>
- * <li><a target="_blank" href="http://www.stevesouders.com/blog/2008/12/27/coupling-async-scripts/">
+ * <li><a target="_blank"
+ *        href="http://www.stevesouders.com/blog/2008/12/27/coupling-async-scripts/">
  *      Steve Souders' "Coupling async scripts"</a></li>
  * </ul>
  *
@@ -172,7 +177,7 @@ class DOMHelper {
     script.executed = false;
     head.appendChild(script);
     script.onreadystatechange = function() {
-      if (script.readyState == 'loaded' || script.readyState == 'complete') {
+      if ((script.readyState == 'loaded') || (script.readyState == 'complete')) {
         if (!script.executed) {
           script.executed = true;
           callback.@java.lang.Runnable::run()();

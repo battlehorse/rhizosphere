@@ -19,8 +19,9 @@ package com.rhizospherejs.gwt.client.meta;
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute;
 
 /**
- * Assigned to an {@link AttributeDescriptor} to specify custom parameters on
- * its matching {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}.
+ * Interface assigned to an {@link AttributeDescriptor} to specify custom
+ * parameters on its matching
+ * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}.
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */

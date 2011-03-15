@@ -30,7 +30,7 @@ public class RenderingHints extends JavaScriptObject {
   protected RenderingHints() {}
 
   /**
-   * Creates a new instance from a jsni representation of the same hints.
+   * Creates a new instance from a JSNI representation of the same hints.
    */
   static final RenderingHints create(JavaScriptObject nativeRenderingHints) {
     return nativeRenderingHints.cast();

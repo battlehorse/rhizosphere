@@ -23,7 +23,7 @@ package com.rhizospherejs.gwt.client;
  * This interface is the companion of {@link CustomRhizosphereModel}. While
  * {@link CustomRhizosphereModel} defines the values each model should assign
  * to custom attributes, this interface define the characteristics of said
- * attributes (such as their {@link RhizosphereKind}, label, name, etc...).
+ * attributes (such as their {@link RhizosphereKind}, label, name, etc.).
  * <p>
  * Consider the following example:
  * <pre><code>
@@ -97,5 +97,4 @@ public interface CustomRhizosphereMetaModel {
    *     {@link RhizosphereModelAttribute} annotations.
    */
   void setCustomRhizosphereMetaModelAttributes(RhizosphereMetaModel metaModel);
-
 }

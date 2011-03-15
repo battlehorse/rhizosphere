@@ -23,7 +23,7 @@ import com.google.gwt.event.shared.GwtEvent;
  * Event to notify that a Rhizosphere visualization is ready for user
  * interaction.
  * <p>
- * This is event is supported only by
+ * This event is supported only by
  * {@link com.rhizospherejs.gwt.client.Rhizosphere} instances. If you are
  * accessing Rhizosphere as a Google Visualization via
  * {@link com.rhizospherejs.gwt.client.gviz.GVizRhizosphere} you should then

@@ -19,8 +19,8 @@ package com.rhizospherejs.gwt.client.meta;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
- * Assigned to an {@link AttributeDescriptor} to specify the Rhizosphere data
- * type (kind) of the matching
+ * Interface assigned to an {@link AttributeDescriptor} to specify the
+ * Rhizosphere data type (kind) of the matching
  * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute} via a
  * factory method.
  *
@@ -32,11 +32,10 @@ public interface HasKindFactory {
     * Returns a factory of {@link com.rhizospherejs.gwt.client.RhizosphereKind}
     * instances.
     *
-    * @return A javascript function that will return a valid
+    * @return A Javascript function that will return a valid
     *     {@link com.rhizospherejs.gwt.client.RhizosphereKind}
-    *     ({@code rhizo.meta.kind} instance in Rhizoshere js code) when invoked
+    *     ({@code rhizo.meta.kind} instance in Rhizoshere JS code) when invoked
     *     with no arguments.
     */
   JavaScriptObject kindFactory();
-
 }

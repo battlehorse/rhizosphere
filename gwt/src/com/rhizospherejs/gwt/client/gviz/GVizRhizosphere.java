@@ -121,7 +121,9 @@ import java.util.HashSet;
  * });
  * </code></pre>
  *
- * @see <a target="_blank" href="http://code.google.com/p/gwt-google-apis/wiki/VisualizationGettingStarted">Google Visualization APIs for GWT</a>
+ * @see <a target="_blank"
+ *         href="http://code.google.com/p/gwt-google-apis/wiki/VisualizationGettingStarted">
+ *         Google Visualization APIs for GWT</a>
  * @author battlehorse@google.com (Riccardo Govoni)
  * @author dinoderek@google.com (Dino Derek Hughes)
  */
@@ -200,7 +202,7 @@ public class GVizRhizosphere extends Visualization<Options> {
    * <p>
    * The purpose of this panel is to expose hooks of the GWT widget lifecycle
    * so that Rhizosphere renderings (which are widgets half managed by GWT and
-   * half managed by Rhizosphere jsni code) do not leak memory because of
+   * half managed by Rhizosphere JSNI code) do not leak memory because of
    * missed attach/detach widget cleanups.
    */
   private static class HostingPanel extends SimplePanel {
@@ -256,7 +258,7 @@ public class GVizRhizosphere extends Visualization<Options> {
      * from one container panel to another.
      */
     public void doDetachChildren() {
-      for (HostingPanel p: widgets) {
+      for (HostingPanel p : widgets) {
         p.explicitDetach();
       }
     }
@@ -274,7 +276,7 @@ public class GVizRhizosphere extends Visualization<Options> {
   }
 
   /**
-   * Converts the JavaScriptObject that native Rhizosphere javascript code
+   * Converts the JavaScriptObject that native Rhizosphere Javascript code
    * uses to represent visualization models into an equivalent instance of
    * {@link DataTableModel} describing the same model.
    */
@@ -373,7 +375,7 @@ public class GVizRhizosphere extends Visualization<Options> {
    * Rhizosphere internal elements rely on absolute positioning).
    */
   @Override
-  protected native final JavaScriptObject createJso(Element div) /*-{
+  protected final native JavaScriptObject createJso(Element div) /*-{
     var gwtviz = this; 
     return (function() {
       var relDiv = $doc.createElement('div');
