@@ -66,14 +66,14 @@ rhizo.layout.firstMetamodelKey = function(project, opt_matcher) {
 };
 
 /**
- * A function that matches metamodel keys that identify parent-child
- * relationships between models (specifically, a key whose value points to
- * parent model of a given one).
+ * A function that matches metamodel keys that establish links to other models,
+ * for example to define parent-child relationships by having a key whose value
+ * points to the parent model of a given one).
  * @param {string} key The key to check.
  * @param {*} meta The metamodel entry associated to this key.
  */
-rhizo.layout.parentMatcher = function(key, meta) {
-  return !!meta.isParent;
+rhizo.layout.linkMatcher = function(key, meta) {
+  return !!meta.isLink;
 };
 
 /**

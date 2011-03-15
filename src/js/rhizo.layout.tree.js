@@ -82,7 +82,7 @@ rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
     this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
         this.project_,
         'rhizo-treelayout-parentKey',
-        rhizo.layout.parentMatcher);
+        rhizo.layout.linkMatcher);
     this.metaModelKeySelector_.change(jQuery.proxy(this.updateState_, this));
     details.append(" by ").append(this.metaModelKeySelector_);
   } else if (parentKeys.length == 1) {
@@ -101,7 +101,7 @@ rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
 rhizo.layout.TreeLayoutUI.prototype.getParentKeys_ = function() {
   var parentKeys = [];
   for (var key in this.project_.metaModel()) {
-    if (rhizo.layout.parentMatcher(key, this.project_.metaModel()[key])) {
+    if (rhizo.layout.linkMatcher(key, this.project_.metaModel()[key])) {
       parentKeys.push(key);
     }
   }
@@ -160,7 +160,7 @@ rhizo.inherits(rhizo.layout.TreeLayout, rhizo.layout.GUILayout);
  */
 rhizo.layout.TreeLayout.prototype.verifyMetaModel = function(meta) {
   for (var key in meta) {
-    if (rhizo.layout.parentMatcher(key, meta[key])) {
+    if (rhizo.layout.linkMatcher(key, meta[key])) {
       return true;
     }
   }
@@ -174,7 +174,7 @@ rhizo.layout.TreeLayout.prototype.defaultState_ = function() {
   return {
     direction: 'ver',
     parentKey : rhizo.layout.firstMetamodelKey(
-        this.project_, rhizo.layout.parentMatcher)
+        this.project_, rhizo.layout.linkMatcher)
   };
 };
 
@@ -189,7 +189,7 @@ rhizo.layout.TreeLayout.prototype.defaultState_ = function() {
 rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
   return this.validateStateAttributePresence_(otherState, 'parentKey') &&
          this.validateMetamodelPresence_(
-             otherState.parentKey, rhizo.layout.parentMatcher);
+             otherState.parentKey, rhizo.layout.linkMatcher);
 };
 
 /**

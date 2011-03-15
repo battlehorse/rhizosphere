@@ -144,7 +144,7 @@ var metamodel = {
              categories: [ 'fishing', 'soccer', 'computer games' , 'cycling'],
              multiple: true},
   salary: {kind: rhizo.meta.Kind.RANGE, label: "Salary", min:100, max: 300},
-  parentId: { kind: rhizo.meta.Kind.STRING, label: "Parent", isParent: true}
+  parentId: { kind: rhizo.meta.Kind.STRING, label: "Parent", isLink: true}
 };
 </pre>
 <p>
@@ -160,9 +160,9 @@ var metamodel = {
     <code>categories</code> the user will be able to choose from.
   </li>
   <li>
-    Any kind may be assigned the <code>isParent</code> tag to declare that
-    the value of the associated model attributes will map to other model ids,
-    in order to define parent-child relationships.
+    Any kind may be assigned the <code>isLink</code> tag to declare that
+    the value of the associated model attribute maps to other model ids,
+    for example to define parent-child relationships.
   </li>
 </ul>
 
