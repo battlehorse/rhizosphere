@@ -28,9 +28,9 @@ import com.google.gwt.core.client.JavaScriptObject;
  * <p>
  * For example, associating a {@code RANGE} kind to a model attribute declares
  * that the attribute is numeric and that the preferred user representation is
- * in the form of a range of values (so, for example, filter controls might
- * be rendered as range sliders and layout operations can use clustering
- * logic to visualize groups of models).
+ * in the form of a range of values. Therefore filter controls might be rendered
+ * as range sliders and layout operations can use clustering logic to visualize
+ * groups of models.
  *
  * @see <a target="_blank" href="http://www.rhizospherejs.com/doc/contrib_tables.html">
  *     Rhizosphere reference tables</a>
@@ -39,60 +39,70 @@ import com.google.gwt.core.client.JavaScriptObject;
 public enum RhizosphereKind {
 
   BOOLEAN {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.BOOLEAN;
     }-*/;
   },
   STRING {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.STRING;
     }-*/;
   },
   NUMBER {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.NUMBER;
     }-*/;
   },
   DATE {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.DATE;
     }-*/;
   },
   RANGE {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.RANGE;
     }-*/;
   },
   CATEGORY {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.CATEGORY;
     }-*/;
   },
   DECIMAL {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.DECIMAL;
     }-*/;
   },
   DECIMALRANGE {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.DECIMALRANGE;
     }-*/;
   },
   LOGARITHMRANGE {
+
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.LOGARITHMRANGE;
     }-*/;
   },
   STRINGARRAY {  // experimental.
+ 
     @Override
     public native JavaScriptObject getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.STRINGARRAY;

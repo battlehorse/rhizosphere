@@ -19,8 +19,8 @@ package com.rhizospherejs.gwt.client.meta;
 import com.rhizospherejs.gwt.client.RhizosphereKind;
 
 /**
- * Assigned to an {@link AttributeDescriptor} to specify the Rhizosphere data
- * type (kind) of the matching
+ * Interface assigned to an {@link AttributeDescriptor} to specify the
+ * Rhizosphere data type (kind) of the matching
  * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}.
  *
  * @author battlehorse@google.com (Riccardo Govoni)

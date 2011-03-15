@@ -51,7 +51,8 @@ public interface HasLegend {
       return nativeJavaScriptObject(label, min, max);
     }
 
-    private native JavaScriptObject nativeJavaScriptObject(String label, double min, double max) /*-{
+    private native JavaScriptObject nativeJavaScriptObject(
+        String label, double min, double max) /*-{
       return {
         min: min,
         max: max,

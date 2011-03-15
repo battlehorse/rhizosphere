@@ -20,7 +20,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 
-import com.rhizospherejs.gwt.client.Rhizosphere;
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
 import com.rhizospherejs.gwt.client.handlers.HasReadyHandlers;
@@ -33,7 +32,7 @@ import java.util.Collection;
  * visualization. It wraps the native {@code rhizo.bootstrap.Bootstrap}
  * javascript object.
  * <p>
- * Initialization of a Rhizosphere visualization is divided in 2 steps: during
+ * Initialization of a Rhizosphere visualization is divided in two steps: during
  * the <strong>prepare</strong> phase the visualization chrome and all the
  * other static elements are set up and rendered. During the
  * <strong>deploy</strong> phase the actual contents (the visualization models)
@@ -41,8 +40,8 @@ import java.util.Collection;
  * initialized.
  * <p>
  * This class is for internal use. External users of the Rhizosphere
- * visualization should rely on {@link Rhizosphere} which hides all these
- * details.
+ * visualization should rely on {@link com.rhizospherejs.gwt.client.Rhizosphere}
+ * which hides all these details.
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */

@@ -17,9 +17,9 @@
 package com.rhizospherejs.gwt.client.meta;
 
 /**
- * Assigned to an {@link AttributeDescriptor} to declare that its matching
- * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute} define
- * a parent-child relationship between Rhizosphere models.
+ * Interface assigned to an {@link AttributeDescriptor} to declare that its
+ * matching {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute}
+ * define a parent-child relationship between Rhizosphere models.
  * <p>
  * See {@link com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute#setParent(boolean)}.
  *

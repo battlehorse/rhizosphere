@@ -27,14 +27,14 @@ import com.google.gwt.core.ext.typeinfo.NotFoundException;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 
 import com.rhizospherejs.gwt.client.CustomRhizosphereModel;
-import com.rhizospherejs.gwt.client.RhizosphereModel;
 import com.rhizospherejs.gwt.client.RhizosphereModelAttribute;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Analyzes a POJO class implementing {@link RhizosphereModel} and identifies
+ * Analyzes a POJO class implementing
+ * {@link com.rhizospherejs.gwt.client.RhizosphereModel} and identifies
  * all the attributes that must be ported and exposed into a Rhizosphere
  * visualization built from it.
  *
@@ -55,7 +55,8 @@ public class ModelInspector {
   public static final String CUSTOM_ATTRIBUTES_INTERFACE = CustomRhizosphereModel.class.getName();
 
   /**
-   * Class type of the POJO tagged with {@link RhizosphereModel} interface.
+   * Class type of the POJO tagged with
+   * {@link com.rhizospherejs.gwt.client.RhizosphereModel} interface.
    */
   private JClassType modelType;
 
@@ -81,8 +82,8 @@ public class ModelInspector {
 
   /**
    * Accessor method that extracts an attribute from a POJO implementing
-   * {@link RhizosphereModel} and that needs to be ported to the
-   * Rhizosphere model.
+   * {@link com.rhizospherejs.gwt.client.RhizosphereModel}
+   * and that needs to be ported to the Rhizosphere model.
    */
   public static class MappableMethod {
 
@@ -111,7 +112,8 @@ public class ModelInspector {
 
     /**
      * Creates a new mappable method.
-     * @param method A method of the POJO implementing {@link RhizosphereModel}.
+     * @param method A method of the POJO implementing
+     *     {@link com.rhizospherejs.gwt.client.RhizosphereModel}.
      */
     public MappableMethod(JMethod method) {
       this.method = method;
@@ -205,8 +207,8 @@ public class ModelInspector {
   }
 
   ModelInspector(TreeLogger logger,
-                 TypeOracle oracle, 
-                 JClassType modelType, 
+                 TypeOracle oracle,
+                 JClassType modelType,
                  BridgeCapabilities bridgeCapabilities) throws UnableToCompleteException {
     this.logger = logger;
     this.bridgeCapabilities = bridgeCapabilities;
@@ -222,7 +224,8 @@ public class ModelInspector {
   }
 
   /**
-   * Analyzes a POJO implementing {@link RhizosphereModel} and identifies all
+   * Analyzes a POJO implementing
+   * {@link com.rhizospherejs.gwt.client.RhizosphereModel} and identifies all
    * the attributes that need to be exposed in Rhizosphere, along with their
    * associated metadata.
    *
@@ -231,9 +234,9 @@ public class ModelInspector {
    */
   public ModelInspector configure() throws UnableToCompleteException {
     logger.log(TreeLogger.TRACE,
-        "Parsing model class " +
-        modelType.getQualifiedSourceName() +
-        " to identify exportable attributes.");
+        "Parsing model class "
+        + modelType.getQualifiedSourceName()
+        + " to identify exportable attributes.");
 
     JMethod[] methods = modelType.getInheritableMethods();
     for (JMethod method : methods) {
@@ -248,9 +251,10 @@ public class ModelInspector {
     useCustomAttributes = modelType.isAssignableTo(customAttributesInterfaceType);
 
     if (modelMethods.isEmpty() && !useCustomAttributes) {
-      logger.log(TreeLogger.ERROR, 
-          "Cannot extract a Rhizosphere model from " + modelType.getQualifiedSourceName() +
-          ". No suitable annotated methods found, and model is not using explicit mapping.");
+      logger.log(TreeLogger.ERROR,
+          "Cannot extract a Rhizosphere model from "
+          + modelType.getQualifiedSourceName()
+          + ". No suitable annotated methods found, and model is not using explicit mapping.");
       throw new UnableToCompleteException();
     }
     return this;
@@ -298,8 +302,8 @@ public class ModelInspector {
       throws UnableToCompleteException {
     if (!bridgeCapabilities.getMappablePrimitiveTypes().contains(type)) {
       logger.log(TreeLogger.ERROR,
-          "Method " + modelType.getQualifiedSourceName() + "::" + method.getName() +
-          " returns an usupported primitive: " + type.getQualifiedSourceName());
+          "Method " + modelType.getQualifiedSourceName() + "::" + method.getName()
+          + " returns an usupported primitive: " + type.getQualifiedSourceName());
       throw new UnableToCompleteException();
     }
   }
@@ -325,7 +329,7 @@ public class ModelInspector {
    * model ids, if any, or returns {@code null} otherwise.
    */
   public MappableMethod getModelIdGeneratorMethod() {
-    for (MappableMethod method: modelMethods) {
+    for (MappableMethod method : modelMethods) {
       if (method.isModelIdGenerator()) {
         return method;
       }

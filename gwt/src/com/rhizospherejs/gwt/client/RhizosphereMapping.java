@@ -22,8 +22,8 @@ import com.rhizospherejs.gwt.client.meta.AttributeBuilder;
 import com.rhizospherejs.gwt.client.meta.MetaModelFactory;
 
 /**
- * Provides mapping functionalities between externally defined POJOs and the
- * object model Rhizosphere requires to operate.
+ * Maps functionalities between externally defined POJOs and the object model
+ * Rhizosphere requires to operate.
  * 
  * Exposes factory method to create both model and metamodel builders. Model
  * builders convert between {@link RhizosphereModel} instances and suitably

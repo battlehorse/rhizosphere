@@ -34,8 +34,8 @@ public interface HasChangeStyle<T> {
 
   /**
    * Changes the style of a rendering previously emitted by the
-   * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} this interface
-   * is attached to.
+   * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} tagged with
+   * this interface.
    *
    * @param model The Rhizosphere model the rendering represents.
    * @param w The widget that was emitted by the renderer for this rendering.

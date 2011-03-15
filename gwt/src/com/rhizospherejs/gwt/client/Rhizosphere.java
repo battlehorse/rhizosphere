@@ -53,8 +53,8 @@ import java.util.Iterator;
  * <p>
  * Before attaching the visualization to the DOM, ensure that:
  * <ul>
- * <li>The javascript libraries Rhizosphere depends upon have already been
- * injected in the DOM (see {@link RhizosphereLoader}).</li>
+ * <li>The Rhizosphere javascript libraries have already been injected in the
+ *   DOM (see {@link RhizosphereLoader}).</li>
  * <li>The visualization has been properly configured by defining the models,
  *   metamodel and renderer the visualization will use. (see
  *   {@link Rhizosphere#addModel(Object)},
@@ -88,7 +88,7 @@ import java.util.Iterator;
  * natural way is to supply each datapoint (a <em>model</em> in Rhizosphere
  * terminology) as a POJO. To do so, make sure your POJO implements the
  * {@link RhizosphereModel} interface and ensure Rhizosphere is prepared to
- * receive your pojos via {@link Rhizosphere#prepareFor(RhizosphereMapping)}
+ * receive your POJOs via {@link Rhizosphere#prepareFor(RhizosphereMapping)}
  * (this is needed because Rhizosphere uses GWT code generation to prepare the
  * necessary translation layers between your POJOs and Rhizosphere internal
  * datamodel):
@@ -143,6 +143,12 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   private static class RhizoPanel extends Panel implements WidgetBridge {
 
     /**
+     * The list of renderings, one for each datapoint of the dataset visualized
+     * by Rhizosphere.
+     */
+    private WidgetCollection widgets;
+
+    /**
      * Creates a new instance.
      */
     public RhizoPanel() {
@@ -156,12 +162,6 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
 
       widgets = new WidgetCollection(this);
     }
-
-    /**
-     * The list of renderings, one for each datapoint of the dataset visualized
-     * by Rhizosphere.
-     */
-    private WidgetCollection widgets;
 
     @Override
     public void add(final Widget child) {
@@ -208,7 +208,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   private Collection<JavaScriptObject> models;
 
   /**
-   * The bridge to convert models from the format externally provided (pojos,
+   * The bridge to convert models from the format externally provided (POJOs,
    * JavaScriptObject, JSONObject or String) to the format internally required
    * by Rhizosphere (custom tailored JavaScriptObjects).
    */
@@ -280,7 +280,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    *
    * @param mapping A class capable of converting custom POJOs to objects that
    *     Rhizosphere knows how to manage. You can create mapping instances by
-   *     passing the POJO class to {@code GWT.create} (e.g.:
+   *     passing the POJO class to {@code GWT.create}, e.g.:
    *     <code>rhizo.prepareFor(GWT.create(yourPOJO.class));</code>).
    */
   public void prepareFor(final RhizosphereMapping<T> mapping) {
@@ -293,7 +293,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    *
    * @param mapping A class capable of converting custom POJOs to objects that
    *     Rhizosphere knows how to manage. You can create mapping instances by
-   *     passing the POJO class to {@code GWT.create} (e.g.:
+   *     passing the POJO class to {@code GWT.create}, e.g.:
    *     <code>rhizo.prepareFor(GWT.create(yourPOJO.class));</code>).
    * @param jsoBuilder A custom {@link JsoBuilder} to convert between POJOs and
    *     JavaScriptObjects. If {@code null}, a default one will be used.
@@ -309,7 +309,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    *
    * @param mapping A class capable of converting custom POJOs to objects that
    *     Rhizosphere knows how to manage. You can create mapping instances by
-   *     passing the POJO class to {@code GWT.create} (e.g.:
+   *     passing the POJO class to {@code GWT.create}, e.g.:
    *     <code>rhizo.prepareFor(GWT.create(yourPOJO.class));</code>).
    * @param jsoBuilder A custom {@link JsoBuilder} to convert between POJOs and
    *     JavaScriptObjects. If {@code null}, a default one will be used.
@@ -326,7 +326,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
 
   /**
    * Alternative for {@link Rhizosphere#prepareFor(RhizosphereMapping)} to save
-   * the caller from having to cast the output of GWT.create.
+   * the caller from having to cast the output of {@code GWT.create}.
    * @param mapping
    */
   @SuppressWarnings("unchecked")
@@ -336,7 +336,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
 
   /**
    * Alternative for {@link #prepareFor(RhizosphereMapping, JsoBuilder)} to save
-   * the caller from having to cast the output of GWT.create.
+   * the caller from having to cast the output of {@code GWT.create}.
    * @param mapping
    * @param jsoBuilder
    */
@@ -348,7 +348,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   /**
    * Alternative for
    * {@link #prepareFor(RhizosphereMapping, JsoBuilder, AttributeBuilder)} to
-   * save the caller from having to cast the output of GWT.create.
+   * save the caller from having to cast the output of {@code GWT.create}.
    * @param mapping
    * @param jsoBuilder
    * @param attributeBuilder
@@ -361,16 +361,16 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   }
 
   /**
-   * Adds a model to the visualization.
-   * 
+   * Adds the specified model to the visualization.
+   *
    * Models can be defined as JavaScriptObject, JSONObject, String (assumed to
    * represent a JSON-encoded object) or custom POJOs.
    *
    * If custom POJOs are used, Rhizosphere must first be prepared to handle
    * them via {@link #prepareFor(RhizosphereMapping)}.
    *
-   * @param model The model (i.e., a datapoint of the dataset you want to
-   *     visualize) to add.
+   * @param model The model, i.e. a datapoint of the dataset you want to
+   *     visualize, to add.
    * @throws com.google.gwt.json.client.JSONException If the model type is a
    *     String and it cannot be successfully converted into a JSON object.
    * @throws RhizosphereException If {@code prepareFor} was not called with the
@@ -379,7 +379,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   public void addModel(final T model) {
     ModelBridge<T> factory = getModelBridge(model);
     assert factory != null;
-    if (model instanceof CustomRhizosphereMetaModel && !configuredCustomMetaModel) {
+    if ((model instanceof CustomRhizosphereMetaModel) && !configuredCustomMetaModel) {
       assert metaModel != null;
       ((CustomRhizosphereMetaModel) model).setCustomRhizosphereMetaModelAttributes(metaModel);
       configuredCustomMetaModel = true;
@@ -396,8 +396,8 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
     if (modelBridge == null) {
       modelBridge = tryBuildDefaultModelBridges(model);
       if (modelBridge == null) {
-        throw new RhizosphereException("No Rhizosphere mapping registered for " + 
-            model.getClass());
+        throw new RhizosphereException("No Rhizosphere mapping registered for "
+            + model.getClass());
       }
     }
     return modelBridge;
@@ -410,9 +410,11 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   private ModelBridge<T> tryBuildDefaultModelBridges(final T model) {
     if (model instanceof String) {
       return new JSONStringModelBridge().cast();
-    } else if (model instanceof JSONObject) {
+    }
+    if (model instanceof JSONObject) {
       return new JSONObjectModelBridge().cast();
-    } else if (model instanceof JavaScriptObject) {
+    }
+    if (model instanceof JavaScriptObject) {
       return new JavaScriptObjectModelBridge().cast();
     }
     return null;
@@ -425,7 +427,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    * therefore not necessary to define an explicit metamodel.
    *
    * If opaque model types are used (JavaScriptObject, JSONObject, JSON string),
-   * a metamodel must be mandatorily defined.
+   * defining a metamodel is mandatory.
    *
    * @param meta The visualization metamodel.
    */
@@ -469,17 +471,14 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
 
   @Override
   protected void onLoad() {
-    if (!bootstrap.isDeployed()) {
-      if (!models.isEmpty()) {
-        NativeRenderer<T> nativeRenderer = createNativeRenderer();
-        bootstrap.deployExplicit(models, metaModel, nativeRenderer);
-      }
-    } else {
-      // Explicit positioning may get lost on reparenting (e.g. if the
-      // widget was located inside an AbsolutePanel)
+    if (bootstrap.isDeployed()) {
+      // Explicit positioning may get lost on reparenting, e.g. if the
+      // widget was located inside an AbsolutePanel.
       getElement().getStyle().setPosition(Position.RELATIVE);
+    } else if (!models.isEmpty()) {
+      NativeRenderer<T> nativeRenderer = createNativeRenderer();
+      bootstrap.deployExplicit(models, metaModel, nativeRenderer);      
     }
-
     super.onLoad();
   }
 
@@ -494,18 +493,17 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    *     configuration options.
    */
   private NativeRenderer<T> createNativeRenderer() {
-    NativeRenderer<T> nativeRenderer = null;
     if (renderer != null) {
-      nativeRenderer = new NativeRenderer<T>(renderer, widgetBridge, modelBridge);
-    } else {
-      nativeRenderer = options.getNativeRenderer();
-      if (nativeRenderer == null) {
-        throw new RhizosphereException(
-            "You must define a renderer for your Rhizosphere visualization.");
-      }
-      nativeRenderer.setModelExtractor(modelBridge);
-      nativeRenderer.setWidgetBridge(widgetBridge);
+      return new NativeRenderer<T>(renderer, widgetBridge, modelBridge);
     }
+
+    NativeRenderer<T>  nativeRenderer = options.getNativeRenderer();
+    if (nativeRenderer == null) {
+      throw new RhizosphereException(
+          "You must define a renderer for your Rhizosphere visualization.");
+    }
+    nativeRenderer.setModelExtractor(modelBridge);
+    nativeRenderer.setWidgetBridge(widgetBridge);
     return nativeRenderer;
   }
 

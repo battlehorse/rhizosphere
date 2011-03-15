@@ -31,9 +31,9 @@ import java.util.Set;
 
 /**
  * Bridge renderer that translates rendering instructions from
- * {@link RhizosphereRenderer} instances into a native jsni renderer that the
+ * {@link RhizosphereRenderer} instances into a native JSNI renderer that the
  * Rhizosphere javascript library can understand. Also translates events and
- * method calls arising from jsni into GWT land.
+ * method calls arising from JSNI into GWT land.
  * <p>
  * {@link RhizosphereRenderer} instances are free to use GWT widgets in the
  * output they produce. To ensure that these widgets are properly managed
@@ -58,13 +58,13 @@ import java.util.Set;
 public class NativeRenderer<T> {
 
   /**
-   * The renderer to expose via jsni to the underlying Rhizosphere javascript
+   * The renderer to expose via JSNI to the underlying Rhizosphere Javascript
    * library.
    */
   private RhizosphereRenderer<T> gwtRenderer;
 
   /**
-   * Mapping between javascript equivalents of Rhizosphere models (as resulting
+   * Mapping between Javascript equivalents of Rhizosphere models (as resulting
    * from {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object)} and
    * their renderings (as GWT widgets).
    */
@@ -72,13 +72,13 @@ public class NativeRenderer<T> {
 
   /**
    * Bridge to ensure correct management of GWT widgets that are produced by
-   * {@link #gwtRenderer} and shared between jsni and GWT code.
+   * {@link #gwtRenderer} and shared between JSNI and GWT code.
    */
   private WidgetBridge widgetBridge;
 
   /**
    * Extractor to retrieve original visualization models from the
-   * JavaScriptObject wrappers used by the underlying javascript Rhizosphere
+   * JavaScriptObject wrappers used by the underlying Javascript Rhizosphere
    * library.
    */
   private ModelExtractor<T> modelExtractor;
@@ -87,9 +87,9 @@ public class NativeRenderer<T> {
    * Creates a new renderer.
    *
    * @param gwtRenderer The GWT-land renderer to bridge and expose to the
-   *     underlying javascript Rhizosphere library.
+   *     underlying Javascript Rhizosphere library.
    * @param widgetBridge A widget bridge to ensure correct handling of GWT
-   *     widgets shared between GWT and jsni code. Can be {@code null} and
+   *     widgets shared between GWT and JSNI code. Can be {@code null} and
    *     lazily defined at a later state.
    * @param extractor A model extractor to recover Rhizosphere models from their
    *     JavaScriptObject wrappers. Can be {@code null} and lazily defined at a
@@ -116,10 +116,10 @@ public class NativeRenderer<T> {
   public void setWidgetBridge(WidgetBridge bridge) {
     if (widgetBridge != null && widgetBridge != bridge) {
       throw new RhizosphereException(
-          "This renderer is already associated to a widget bridge." +
-          "It cannot be changed once set. " +
-          "This error may occur if you reuse the same set of configuration options " +
-          "for multiple Rhizosphere instances.");
+          "This renderer is already associated to a widget bridge."
+          + "It cannot be changed once set. "
+          + "This error may occur if you reuse the same set of configuration options "
+          + "for multiple Rhizosphere instances.");
     }
     widgetBridge = bridge;
   }
@@ -135,21 +135,21 @@ public class NativeRenderer<T> {
   public void setModelExtractor(ModelExtractor<T> extractor) {
     if (modelExtractor != null && modelExtractor != extractor) {
       throw new RhizosphereException(
-          "This renderer is already associated to a model extractor." +
-          "It cannot be changed once set. " +
-          "This error may occur if you reuse the same set of configuration options " +
-          "for multiple Rhizosphere instances.");
+          "This renderer is already associated to a model extractor."
+          + "It cannot be changed once set. "
+          + "This error may occur if you reuse the same set of configuration options "
+          + "for multiple Rhizosphere instances.");
     }
     modelExtractor = extractor;
   }
 
   /**
-   * Converts the renderer this class was instantiated with into a jsni
+   * Converts the renderer this class was instantiated with into a JSNI
    * equivalent renderer that translates rendering instructions bidirectionally
-   * between GWT rendering code and the underlying Rhizosphere javascript
+   * between GWT rendering code and the underlying Rhizosphere Javascript
    * rendering infrastructure.
    *
-   * @return A native javascript renderer.
+   * @return A native Javascript renderer.
    */
   @SuppressWarnings("deprecation")
   public JavaScriptObject toJavaScriptObject() {
@@ -196,7 +196,7 @@ public class NativeRenderer<T> {
       renderer['dragHandle'] = '.rhizo-drag-handle';
     }
     if (hasCacheDimensions) {
-      renderer['cacheDimensions'] = nr.@com.rhizospherejs.gwt.client.renderer.NativeRenderer::delegateCacheDimensions()(); 
+      renderer['cacheDimensions'] = nr.@com.rhizospherejs.gwt.client.renderer.NativeRenderer::delegateCacheDimensions()();
     }
     if (hasRescalable) {
       renderer['canRescaleTo'] = function(nakedModel, nakedNode, width, height) {
@@ -228,8 +228,8 @@ public class NativeRenderer<T> {
   private T extractModel(JavaScriptObject jso) {
     if (modelExtractor == null) {
       throw new RhizosphereException(
-          "Rhizosphere renderer must be bound to a Model extractor " +
-          "to be able to convert between jsni and gwt model representations.");
+          "Rhizosphere renderer must be bound to a Model extractor "
+          + "to be able to convert between JSNI and gwt model representations.");
     }
     T model = modelExtractor.extractModel(jso);
     assert model != null;
@@ -238,7 +238,7 @@ public class NativeRenderer<T> {
 
   /**
    * Delegates a rendering request originated from the underlying Rhizosphere
-   * javascript library to the GWT renderer managed by this class.
+   * Javascript library to the GWT renderer managed by this class.
    *
    * @param jso A JavaScriptObject wrapping the Rhizosphere model affected by
    *     the rendering request.
@@ -255,8 +255,8 @@ public class NativeRenderer<T> {
     assert model != null;
     if (widgetBridge == null) {
       throw new RhizosphereException(
-          "Rhizosphere renderer must be bound to a WidgetBridge," +
-          "to avoid memory leaks when attaching/detaching widget renderings.");
+          "Rhizosphere renderer must be bound to a WidgetBridge,"
+          + "to avoid memory leaks when attaching/detaching widget renderings.");
     }
     RenderingOutputImpl output = new RenderingOutputImpl(
         RenderingHints.create(jsoRenderingHints), widgetBridge);
@@ -281,8 +281,8 @@ public class NativeRenderer<T> {
   public void delegateAttach(JavaScriptObject jso, boolean attached) {
     if (widgetBridge == null) {
       throw new RhizosphereException(
-          "Rhizosphere renderer must be bound to a WidgetBridge," +
-          "to avoid memory leaks when attaching/detaching widget renderings.");
+          "Rhizosphere renderer must be bound to a WidgetBridge,"
+          + "to avoid memory leaks when attaching/detaching widget renderings.");
     }
     if (attached) {
       widgetBridge.add(modelWidgetMap.get(jso));
@@ -380,7 +380,7 @@ public class NativeRenderer<T> {
   public void delegateChangeStyle(JavaScriptObject jso, JavaScriptObject props, boolean revert) {
     T model = extractModel(jso);
     assert model != null;
-    // NOTE: relies on the style being received from jsni to match the
+    // NOTE: relies on the style being received from JSNI to match the
     // expectations of the Style class.
     Style style = props.cast();
     Set<String> keys = new JSONObject(props).keySet();
@@ -391,7 +391,7 @@ public class NativeRenderer<T> {
   /**
    * Asks the GWT renderer managed by this class to return a size range for
    * legend purposes.
-   * 
+   *
    * @return the size range.
    */
   @SuppressWarnings("deprecation")
@@ -411,5 +411,4 @@ public class NativeRenderer<T> {
     HasLegend.Range r = ((HasLegend) gwtRenderer).getColorRange();
     return r == null ? null : r.toJavaScriptObject();
   }
-
 }

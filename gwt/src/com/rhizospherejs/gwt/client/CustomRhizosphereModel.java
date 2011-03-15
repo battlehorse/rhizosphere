@@ -28,7 +28,7 @@ import com.rhizospherejs.gwt.client.bridge.JsoBuilder;
  * visualization in 2 ways. Either automatically by annotating relevant fields
  * with the {@link RhizosphereModelAttribute} annotation, or manually via this
  * interface.
- * <p> 
+ * <p>
  * POJOs marked with this interface will pass the additional attributes defined
  * in {@link #setCustomRhizosphereAttributes(JsoBuilder)} to the generated
  * JavaScriptObject model.
@@ -39,26 +39,26 @@ import com.rhizospherejs.gwt.client.bridge.JsoBuilder;
  * For example, the following class:
  * <pre><code>
  * public class Person implements CustomRhizosphereModel {
- * 
+ *
  *   private String name;
  *   private String[] colorPreference;  // e.g. ["red", "pink", "green"]
- *   
+ *
  *   public Person(String name, String[] colorPreference) {
  *     this.name = name;
  *     assert colorPreference.length == 3;
  *     this.colorPreference = colorPreference;
  *   }
- *   
+ *
  *   &#064;RhizosphereModelAttribute
  *   public String getName() {
  *     return name;
  *   }
- *   
+ *
  *   &#064;Override
  *   public void setCustomRhizosphereAttributes(JsoBuilder builder) {
  *     builder.setString("bestColor", colorPreference[0];
  *     builder.setString("alternateColor", colorPreference[1]);
- *     builder.setString("worstColor", colorPreference[2]); 
+ *     builder.setString("worstColor", colorPreference[2]);
  *   }
  * }
  * </code></pre>
@@ -80,5 +80,4 @@ public interface CustomRhizosphereModel extends RhizosphereModel {
    *     model extracted from the POJO.
    */
   void setCustomRhizosphereAttributes(JsoBuilder builder);
-
 }

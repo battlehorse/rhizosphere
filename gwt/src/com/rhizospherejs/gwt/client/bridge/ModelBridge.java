@@ -21,9 +21,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 /**
  * A ModelBridge is responsible for converting a Java object representing a
  * Rhizosphere model into a JavaScriptObject that the Rhizosphere javascript
- * library can use. Since ModelBridge also implements {@link ModelExtractor},
- * it is also capable of the reverse process of extracting the original Java
- * instance from a generated JavaScriptObject.
+ * library can use. ModelBridge also implements {@link ModelExtractor}.
+ * It is therefore also capable of the reverse process of extracting the
+ * original Java instance from a generated JavaScriptObject.
  * <p>
  * Apart from a few stock model bridges for generic cases (see
  * {@link JavaScriptObjectModelBridge}), all model bridges will be
@@ -69,7 +69,7 @@ public abstract class ModelBridge<T> implements ModelExtractor<T> {
   }
 
   /**
-   * Subclasses to implement to define their custom conversion logic.
+   * Subclasses to implement their custom conversion logic.
    *
    * @param model The model object to convert to JavaScriptObject.
    * @param builder A JavaScriptObject builder that subclasses can use to
@@ -84,7 +84,7 @@ public abstract class ModelBridge<T> implements ModelExtractor<T> {
   }
 
   /**
-   * Ensures that the generated JavaScriptObject has an assigned id (mandatory
+   * Ensures that the generated JavaScriptObject has an assigned ID (mandatory
    * for any Rhizosphere model object).
    */
   private final native void ensureModelId(JavaScriptObject model) /*-{

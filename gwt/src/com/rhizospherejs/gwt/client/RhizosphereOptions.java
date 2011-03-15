@@ -27,7 +27,7 @@ import com.rhizospherejs.gwt.client.renderer.NativeRenderer;
  * option, including defaults.
  * <p>
  * Instances of this class cannot be reused across multiple visualizations. Each
- * visualization must be assigned its dedicated {@code RhizosphereOptions}
+ * visualization must be given its dedicated {@code RhizosphereOptions}
  * instance.
  *
  * @param <T> The models' type of the Rhizosphere visualization these options
@@ -41,7 +41,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
    * A map of constraints for the area that Rhizosphere will use to lay out
    * models' renderings.
    */
-  public final static class LayoutConstraints extends JavaScriptObject {
+  public static final class LayoutConstraints extends JavaScriptObject {
     protected LayoutConstraints() {}
 
     public LayoutConstraints bottom(double bottom) {
@@ -98,7 +98,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
   }-*/;
 
   /**
-   * Whether Rhizosphere should use animations to smooth transitions such as
+   * Whether Rhizosphere should use animation to smooth transitions such as
    * layouts and dynamic filtering. 
    */
   public final native void setEnableAnims(boolean enableAnims) /*-{
@@ -158,8 +158,8 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
 
   /**
    * Sets the visualization metamodel. Metamodels set via options take
-   * precedence over other ones (both automatically inferred and explicitly
-   * provided to {@link Rhizosphere} instances.
+   * precedence over the other ones (both automatically inferred and explicitly
+   * provided to {@link Rhizosphere} instances).
    */
   public final native void setMetaModel(RhizosphereMetaModel metamodel) /*-{
     this['metamodel'] = metamodel;
@@ -181,7 +181,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
 
   /**
    * Sets the visualization renderer. Renderer set via options take
-   * precedence over other ones.
+   * precedence over the other ones.
    * @param renderer
    */
   public final void setRenderer(RhizosphereRenderer<T> renderer) {

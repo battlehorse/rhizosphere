@@ -27,8 +27,8 @@ public interface HasCacheDimensions {
 
   /**
    * Defines whether the renderings emitted by the
-   * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} this interface
-   * is attached to can have their dimensions cached or not. Caching
+   * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} tagged with
+   * this interface can have their dimensions cached or not. Caching
    * renderings'  dimensions greatly improves Rhizosphere layout performance,
    * but may result in layout bugs if the renderings change their dimensions
    * arbitrarily after being emitted.

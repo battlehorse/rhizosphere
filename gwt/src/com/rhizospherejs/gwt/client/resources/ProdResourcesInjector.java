@@ -16,7 +16,6 @@
 
 package com.rhizospherejs.gwt.client.resources;
 
-
 /**
  * Resource injector used when Rhizosphere is deployed in production mode.
  * All libraries are served compiled and packed into as few files as possible.

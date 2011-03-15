@@ -20,6 +20,9 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.TextResource;
 
 /**
+ * Resource enumeration for all the resources that are inlined in a GWT host
+ * page containing a Rhizosphere visualization, when operating in debug mode.
+ *
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public interface DebugResources extends ClientBundle {

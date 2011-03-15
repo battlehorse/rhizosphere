@@ -17,7 +17,7 @@
 package com.rhizospherejs.gwt.client.resources;
 
 /**
- * DOM injector for Rhizosphere resources (javascript and styles).
+ * DOM injector for Rhizosphere resources (Javascript and styles).
  *
  * Resource injection might be tricky
  *
@@ -49,7 +49,7 @@ public interface ResourcesInjector {
   void injectDependenciesJavascript(Runnable callback, boolean useGoogleCDN);
 
   /**
-   * Inject the Rhizosphere javascript libraries into the GWT host page.
+   * Inject the Rhizosphere Javascript libraries into the GWT host page.
    *
    * @param callback A callback invoked after all the libraries have been
    *     successfully injected and parsed by the browser.

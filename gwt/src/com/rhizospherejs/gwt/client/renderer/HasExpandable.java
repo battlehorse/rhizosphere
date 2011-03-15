@@ -27,8 +27,8 @@ public interface HasExpandable {
 
   /**
    * Defines whether the renderings emitted by the
-   * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} this interface
-   * is attached to can be rendered in expanded (maximized) status or not.
+   * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} tagged with
+   * this interface can be rendered in expanded (maximized) status or not.
    *
    * @param hints Rendering hints about the current visualization environment.
    * @return Whether the renderings can be expanded (maximized) or not.

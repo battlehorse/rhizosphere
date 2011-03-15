@@ -19,7 +19,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
 /**
- * Interface to track listeners to visualization {@link ReadyEvent} events.
+ * Interface to track listeners on visualization {@link ReadyEvent} events.
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */

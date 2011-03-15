@@ -18,9 +18,8 @@ package com.rhizospherejs.gwt.client.renderer;
 
 import com.google.gwt.user.client.ui.Widget;
 
-
 /**
- * Propagates events that originate in jsni code and affect a Widget lifecycle
+ * Propagates events that originate in JSNI code and affect a Widget lifecycle
  * back into GWT space, to avoid memory leaks.
  * <p>
  * {@link com.rhizospherejs.gwt.client.RhizosphereRenderer} lets the developer
@@ -33,11 +32,11 @@ import com.google.gwt.user.client.ui.Widget;
  * <li>they process attach and detach notifications (including the ones
  *   cascading from the attachment/detachment of the container visualization)
  *   in GWT land, but</li>
- * <li>they are physically attached and removed from the DOM in jsni code.</li>
+ * <li>they are physically attached and removed from the DOM in JSNI code.</li>
  * </ul>
  * <p>
  * As a consequence this interface propagates notifications of physical DOM
- * attach and detach from jsni to GWT land, so that GWT implementors can
+ * attach and detach from JSNI to GWT land, so that GWT implementors can
  * complete the process by issuing the calls for logical attach/detach.
  * <p>
  * This class is for internal use and it's probably useless to everybody else

@@ -16,7 +16,6 @@
 
 package com.rhizospherejs.gwt.client;
 
-
 /**
  * Marker interface that identifies POJOs to use as Rhizopshere visualization
  * models.

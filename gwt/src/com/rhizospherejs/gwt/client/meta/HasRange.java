@@ -17,8 +17,8 @@
 package com.rhizospherejs.gwt.client.meta;
 
 /**
- * Assigned to an {@link AttributeDescriptor} to define that its matching
- * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute} only
+ * Interface assigned to an {@link AttributeDescriptor} to define that its
+ * matching {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute} only
  * accepts values within a defined numerical range.
  * <p>
  * Relevant only if the attribute kind is

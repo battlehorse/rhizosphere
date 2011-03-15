@@ -18,7 +18,6 @@ package com.rhizospherejs.gwt.client.resources;
 
 import com.google.gwt.core.client.GWT;
 
-
 /**
  * Resource injector used when Rhizosphere is deployed in development mode.
  * All libraries are served uncompiled and unbundled. Styles are computed on
