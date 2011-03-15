@@ -31,7 +31,7 @@
 
 
   var models = [
-    new Person("1", "john", 30, true, ['fishing', 'soccer'], 100),
+    new Person("1", "john", 30, true, ['fishing', 'soccer'], 100, ''),
     new Person("2", "mark", 20, true, ['fishing', 'soccer'], 200, "1"),
     new Person("3", "battlehorse", 20, true,
                ['computer games', 'soccer'], 300, "1"),
@@ -52,7 +52,7 @@
                categories: [ 'fishing', 'soccer', 'computer games' , 'cycling'],
                multiple: true},
     salary: {kind: rhizo.meta.Kind.RANGE, label: "Salary", min:100, max: 300},
-    parentId: { kind: rhizo.meta.Kind.STRING, label: "Parent", isParent: true}
+    parentId: { kind: rhizo.meta.Kind.STRING, label: "Parent", isLink: true}
   };
 
   var renderer = {

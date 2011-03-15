@@ -425,7 +425,7 @@ rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
   }
   if (otherState.parentKey &&
       !(this.validateMetamodelPresence_(otherState.parentKey,
-                                        rhizo.layout.parentMatcher))) {
+                                        rhizo.layout.linkMatcher))) {
     return false;
   }
   return true;
@@ -889,7 +889,7 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
     this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
         this.project_,
         'rhizo-treemaplayout-parentKey',
-        rhizo.layout.parentMatcher).
+        rhizo.layout.linkMatcher).
       append("<option value=''>-</option>").
       change(jQuery.proxy(this.updateState_, this));
     details.append(this.renderSelector_('Parent: ', this.parentKeySelector_));
@@ -919,7 +919,7 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderSelector_ = function(
  */
 rhizo.layout.TreeMapLayoutUI.prototype.checkParentKeys_ = function() {
   for (var key in this.project_.metaModel()) {
-    if (rhizo.layout.parentMatcher(key, this.project_.metaModel()[key])) {
+    if (rhizo.layout.linkMatcher(key, this.project_.metaModel()[key])) {
       return true;
     }
   }
