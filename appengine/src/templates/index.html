@@ -96,7 +96,7 @@
             '&exp=' +
             (document.getElementById(experimental_id).checked ? '1' : '0') +
             forceParams +
-            '&source=' + sample.uri;
+            '&source=' + encodeURIComponent(sample.uri);
         var windowName = 'rhizosphere';
         var windowFeatures = 'status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,';
         windowFeatures += (simulate == 'small' ? "height=300,width=350" : "height=700, width=1000");
