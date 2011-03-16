@@ -195,7 +195,8 @@ rhizo.layout.LayoutBox.prototype.computeLayoutBox_ = function(
  *     be in the [0, maxValue] range.
  * @private
  */
-rhizo.layout.LayoutBox.prototype.getAbsoluteDimension_ = function(value, maxValue) {
+rhizo.layout.LayoutBox.prototype.getAbsoluteDimension_ = function(
+    value, maxValue) {
   value = value || 0;
   var multiplier = value < 1.0 ? maxValue : 1;
   return this.clamp_(Math.round(value * multiplier), 0, maxValue);
