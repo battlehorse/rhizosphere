@@ -159,7 +159,7 @@ rhizo.ui.RenderingPipeline = function(project, container) {
    * @private
    */
   this.artifactLayer_ = $('<div />').
-      css('visibility', 'hidden').
+      css({'visibility': 'hidden', 'opacity': 0.0}).
       appendTo(this.container_);
 
   this.backupEnabled_ = true;
@@ -170,9 +170,9 @@ rhizo.ui.RenderingPipeline = function(project, container) {
  * Clears the pipeline.
  */
 rhizo.ui.RenderingPipeline.prototype.cleanup = function() {
-  this.artifactLayer_.remove();
+  this.artifactLayer_.fadeOut(function() { $(this).remove(); });
   this.artifactLayer_ = $('<div />').
-      css('visibility', 'hidden').
+      css({'visibility': 'hidden', 'opacity': 0.0}).
       appendTo(this.container_);
 
   this.artifacts_ = [];
@@ -361,7 +361,7 @@ rhizo.ui.RenderingPipeline.prototype.apply = function() {
     this.updateBoundingRectangleCorner_(rendering, boundingRect);
   }
   this.computeBoundingRectangleArea_(boundingRect);
-  this.artifactLayer_.css('visibility', 'visible');
+  this.artifactLayer_.fadeIn();
   return boundingRect;
 };
 
