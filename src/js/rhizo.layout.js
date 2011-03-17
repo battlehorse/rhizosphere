@@ -612,28 +612,20 @@ rhizo.layout.BucketLayout.prototype.layout = function(pipeline,
  */
 rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
     function(pipeline, header, supermodels, firstBucket) {
+  var modelIds = new Array(supermodels.length);
+  for (var i = supermodels.length - 1; i >= 0; i--) {
+    modelIds[i] =supermodels[i].id;
+  }
   var bucketHeader = $('<div />', {
       'class': firstBucket ? 'rhizo-bucket-header rhizo-bucket-first' :
                              'rhizo-bucket-header'});
+ 
   bucketHeader.text(header).
                css('position', 'absolute').
                css('left', 5).
                css('top', this.internalFlowLayout_.top).
                click(jQuery.proxy(function() {
-                 var allSelected = true;
-                 for (var i = supermodels.length - 1; i >= 0; i--) {
-                   if (!this.project_.isSelected(supermodels[i].id)) {
-                    allSelected = false;
-                    break;
-                   }
-                 }
-                 for (var i = supermodels.length - 1; i >= 0; i--) {
-                   if (allSelected) {
-                     this.project_.unselect(supermodels[i].id);
-                   } else {
-                     this.project_.select(supermodels[i].id);
-                   }
-                 }    
+                 this.project_.toggleSelect(modelIds);
                }, this));
   pipeline.artifact(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;

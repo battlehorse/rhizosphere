@@ -52,13 +52,16 @@ rhizo.layout.treemap.TreeMapDirection = {
  * @param {rhizo.ui.RenderingPipeline} pipeline The pipeline that
  *     accumulates all the layout operations to perform as part of this layout
  *     request.
+ * @param {rhizo.Project} project
  * @param {number} areaRatio The squared-pixel to area ratio, to map between
  *     area values as extracted from models and associated pixel dimensions in
  *     the layout representation.
  */
-rhizo.layout.treemap.TreeMapNode = function(treenode, pipeline, areaRatio) {
+rhizo.layout.treemap.TreeMapNode = function(
+    treenode, pipeline, project, areaRatio) {
   this.id = treenode.id;
   this.pipeline_ = pipeline;
+  this.project_ = project;
   this.area_ = treenode.area * areaRatio;
   if (isNaN(this.area_) || this.area_ < 0) {
     this.area_ = 0.0;
@@ -89,6 +92,17 @@ rhizo.layout.treemap.TreeMapNode.prototype.buildSyntheticRendering_ = function(
     treenode) {
   var raw_node = $('<div />', {'class': 'rhizo-treemap-syntheticnode'}).
       text(treenode.payload() || 'Everything Else');
+  raw_node.click(jQuery.proxy(function() {
+    var childNodes = [];
+    var modelIds = [];
+    treenode.deepChildsAsArray(childNodes);
+    for (var i = childNodes.length-1; i >= 0; i--) {
+      if (!childNodes[i].synthetic()) {
+        modelIds.push(childNodes[i].id);
+      }
+    }
+    this.project_.toggleSelect(modelIds);
+  }, this));
 
   // node must be attached to the DOM when creating a SyntheticRendering, hence
   // we push it on the pipeline first.
@@ -737,6 +751,7 @@ rhizo.layout.TreeMapLayout.prototype.layoutFlatMap_ = function(pipeline,
   treenodes.sort(this.sortByAreaDesc_);
   var node = new rhizo.layout.treemap.TreeMapNode(treenodes[modelsCount++],
                                                   pipeline,
+                                                  this.project_,
                                                   areaRatio);
   if (node.area() <= 0.0) {
     node.hide();
@@ -746,6 +761,7 @@ rhizo.layout.TreeMapLayout.prototype.layoutFlatMap_ = function(pipeline,
   while (modelsCount < treenodes.length) {
     node = new rhizo.layout.treemap.TreeMapNode(treenodes[modelsCount++],
                                                 pipeline,
+                                                this.project_,
                                                 areaRatio);
     if (node.area() <= 0.0) {
       node.hide();

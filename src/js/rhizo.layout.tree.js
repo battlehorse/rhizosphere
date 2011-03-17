@@ -239,7 +239,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
 
   // detect rendering direction
   var vertical = this.getState().direction == 'ver';
-  this.treePainter_ = new rhizo.layout.TreePainter(vertical);
+  this.treePainter_ = new rhizo.layout.TreePainter(this.project_, vertical);
 
   try {
     // builds the tree model and also checks for validity
@@ -336,9 +336,13 @@ rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
   This is called the 'even' layout.
 */
 /**
+ * @param {rhizo.Project} project
+ * @param {boolean} vertical Whether to render the tree vertically or
+ *     horizontally.
  * @constructor
  */
-rhizo.layout.TreePainter = function(vertical) {
+rhizo.layout.TreePainter = function(project, vertical) {
+  this.project_ = project;
   this.vertical_ = vertical;
 
   // translate coordinate names and distances into gd-od names
@@ -446,6 +450,17 @@ rhizo.layout.TreePainter.prototype.fillSyntheticRenderings_ = function(
   if (treenode.synthetic() && !treenode.syntheticRendering()) {
     var raw_node = $('<div />', {'class': 'rhizo-tree-syntheticnode'}).
       text(treenode.payload() || 'Everything Else');
+    raw_node.click(jQuery.proxy(function() {
+      var childNodes = [];
+      var modelIds = [];
+      treenode.deepChildsAsArray(childNodes);
+      for (var i = childNodes.length-1; i >= 0; i--) {
+        if (!childNodes[i].synthetic()) {
+          modelIds.push(childNodes[i].id);
+        }
+      }
+      this.project_.toggleSelect(modelIds);
+    }, this));
 
     // node must be attached to the DOM when creating a SyntheticRendering,
     // hence we push it on the pipeline first.
