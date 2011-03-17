@@ -15,7 +15,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.layout
+// RHIZODEP=rhizo.layout,rhizo.ui
 
 namespace("rhizo.layout");
 namespace("rhizo.layout.treemap");
@@ -26,9 +26,6 @@ namespace("rhizo.layout.treemap");
 //
 // TODO(battlehorse): When expanding and unexpanding a model in this layout, the
 // model is re-rendered with its original size, not the one the treemap expects.
-//
-// TODO(battlehorse): Should offer the possibility to color items via a
-// logarithmic scale.
 
 /**
  * Enumarates the growing direction of treemap slices (which accumulate treemap
@@ -62,7 +59,6 @@ rhizo.layout.treemap.TreeMapDirection = {
 rhizo.layout.treemap.TreeMapNode = function(treenode, pipeline, areaRatio) {
   this.id = treenode.id;
   this.pipeline_ = pipeline;
-  this.model_ = treenode.superModel;
   this.area_ = treenode.area * areaRatio;
   if (isNaN(this.area_) || this.area_ < 0) {
     this.area_ = 0.0;
@@ -71,14 +67,35 @@ rhizo.layout.treemap.TreeMapNode = function(treenode, pipeline, areaRatio) {
   this.left_ = 0;
   this.width_ = 0;
   this.height_ = 0;
+
+  this.synthetic_ = treenode.synthetic();
+  if (this.synthetic_) {
+    this.buildSyntheticRendering_(treenode);
+    this.hidden_ = false;
+  } else {
+    this.model_ = treenode.payload();
+  }
+};
+
+/**
+ * Builds a synthetic rendering for the tree node. When a tree node is not
+ * backed by any visualization model, e.g. it represents a model categorization
+ * but not a full fledged model, a rhizo.ui.SyntheticRendering is created and
+ * used in place of the model rendering.
+ * @param {rhizo.layout.SyntheticTreeNode} treenode The node to render.
+ * @private
+ */
+rhizo.layout.treemap.TreeMapNode.prototype.buildSyntheticRendering_ = function(
+    treenode) {
+  var raw_node = $('<div />', {'class': 'rhizo-treemap-syntheticnode'}).
+      text(treenode.payload() || 'Everything Else');
+  this.pipeline_.artifact(raw_node);
+  this.syntheticRendering_  = new rhizo.ui.SyntheticRendering(raw_node);
+  treenode.setSyntheticRendering(this.syntheticRendering_);
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.area = function() {
   return this.area_;
-};
-
-rhizo.layout.treemap.TreeMapNode.prototype.rendering = function() {
-  return this.model_.rendering();
 };
 
 /**
@@ -87,57 +104,14 @@ rhizo.layout.treemap.TreeMapNode.prototype.rendering = function() {
  * of such kind to prevent this node from showing (e.g.: too small area).
  */
 rhizo.layout.treemap.TreeMapNode.prototype.isHidden = function() {
-  return this.model_.isFiltered('__treemap__');
+  return this.synthetic_ ? this.hidden_ : this.model_.isFiltered('__treemap__');
 };
 
 rhizo.layout.treemap.TreeMapNode.prototype.hide = function() {
-  this.model_.filter('__treemap__');
-};
-
-/**
- * Moves this node model rendering to the given {top, left} coordinates, with
- * respect to the overall container that contains the whole treemap layout.
- *
- * Also alters the rendering z-index for treemap nesting.
- */
-rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) {
-  this.top_ = Math.round(top);
-  this.left_ = Math.round(left);
-  this.pipeline_.move(this.id, this.top_, this.left_, '__treemap__', deepness);
-};
-
-/**
- * Resizes this node model rendering to the desired width and height.
- * @return {boolean} whether the resizing was successful.
- */
-rhizo.layout.treemap.TreeMapNode.prototype.resize = function(width, height) {
-  if (this.model_.rendering().canRescaleTo(width, height)) {
-    this.pipeline_.resize(this.id, width, height);
-    this.width_ = width;
-    this.height_ = height;
-    return true;
-  }
-  return false;
-};
-
-rhizo.layout.treemap.TreeMapNode.prototype.colorWeighted = function(colorRange) {
-  var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
-  if (!isNaN(colorVal)) {
-    this.pipeline_.style(
-        this.id,
-        {backgroundColor: this.getBackgroundColor_(colorVal, colorRange)});
-  }
-};
-
-rhizo.layout.treemap.TreeMapNode.prototype.color = function(color) {
-  this.pipeline_.style(this.id, {backgroundColor: color});
-};
-
-rhizo.layout.treemap.TreeMapNode.prototype.updateColorRange = function(colorRange) {
-  var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
-  if (!isNaN(colorVal)) {
-    colorRange.min = Math.min(colorRange.min, colorVal);
-    colorRange.max = Math.max(colorRange.max, colorVal);
+  if (this.synthetic_) {
+    this.hidden_ = true;
+  } else {
+    this.model_.filter('__treemap__');
   }
 };
 
@@ -156,8 +130,8 @@ rhizo.layout.treemap.TreeMapNode.prototype.nestedBoundingRect = function() {
   //       rendering nested contents.
 
   if (this.isHidden() || this.width_ < 24 || this.height_ < 39) {
-    // Setting boundingRect dimensions to 0 will nullify areaRatio, which in turn
-    // zeroes nodes' area, causing them to be hidden.
+    // Setting boundingRect dimensions to 0 will nullify areaRatio, which in
+    // turn zeroes nodes' area, causing them to be hidden.
     return {width: 0, height: 0};
   } else {
     return {
@@ -180,13 +154,78 @@ rhizo.layout.treemap.TreeMapNode.prototype.nestedAnchor = function() {
 };
 
 /**
+ * Moves this node model rendering to the given {top, left} coordinates, with
+ * respect to the overall container that contains the whole treemap layout.
+ *
+ * Also alters the rendering z-index for treemap nesting.
+ */
+rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) {
+  this.top_ = Math.round(top);
+  this.left_ = Math.round(left);
+  if (this.synthetic_) {
+    this.syntheticRendering_.move(this.top_, this.left_, /* instant */ true);
+    this.syntheticRendering_.pushElevation('__treemap__', deepness);
+  } else {
+    this.pipeline_.move(this.id, this.top_, this.left_, '__treemap__', deepness);
+  }
+};
+
+/**
+ * Resizes this node model rendering to the desired width and height.
+ * @return {boolean} whether the resizing was successful.
+ */
+rhizo.layout.treemap.TreeMapNode.prototype.resize = function(width, height) {
+  if (this.synthetic_) {
+    this.width_ = width;
+    this.height_ = height;
+    return this.syntheticRendering_.rescaleRendering(width, height);
+  } else if (this.model_.rendering().canRescaleTo(width, height)) {
+    this.pipeline_.resize(this.id, width, height);
+    this.width_ = width;
+    this.height_ = height;
+    return true;
+  }
+  return false;
+};
+
+rhizo.layout.treemap.TreeMapNode.prototype.colorWeighted = function(colorRange) {
+  if (this.synthetic_) {
+    return;
+  }
+  var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
+  if (!isNaN(colorVal)) {
+    this.pipeline_.style(
+        this.id,
+        {backgroundColor: this.toColorScale_(colorVal, colorRange)});
+  }
+};
+
+rhizo.layout.treemap.TreeMapNode.prototype.color = function(color) {
+  if (this.synthetic_) {
+    return;
+  }
+  this.pipeline_.style(this.id, {backgroundColor: color});
+};
+
+rhizo.layout.treemap.TreeMapNode.prototype.updateColorRange = function(colorRange) {
+  if (this.synthetic_) {
+    return;
+  }
+  var colorVal = parseFloat(this.model_.unwrap()[colorRange.meta]);
+  if (!isNaN(colorVal)) {
+    colorRange.min = Math.min(colorRange.min, colorVal);
+    colorRange.max = Math.max(colorRange.max, colorVal);
+  }
+};
+
+/**
  * Returns the color to assign to this node in a scale ranging from
  * colorRange.colorMin to colorRange.colorMax, given the respective positioning
  * of this model color attribute within the {colorRange.min, colorRange.max)
  * scale.
  * @private
  */
-rhizo.layout.treemap.TreeMapNode.prototype.getBackgroundColor_ = function(
+rhizo.layout.treemap.TreeMapNode.prototype.toColorScale_ = function(
     colorVal, colorRange) {
   var rescaler = colorRange.kind.toFilterScale ?
       jQuery.proxy(colorRange.kind.toFilterScale, colorRange.kind) :
@@ -361,6 +400,15 @@ rhizo.layout.TreeMapLayout = function(project) {
   // their area would be too small for display.
   this.numHiddenModels_ = 0;
 
+  /**
+   * The matcher to identify all model attributes where tree structures can be
+   * built from.
+   * @type {function(string, Object):boolean}
+   * @private
+   */
+  this.parentMatcher_ = rhizo.layout.orMatcher(
+      rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
+
   rhizo.layout.GUILayout.call(this, project,
                               new rhizo.layout.TreeMapLayoutUI(this, project));
 };
@@ -425,7 +473,7 @@ rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
   }
   if (otherState.parentKey &&
       !(this.validateMetamodelPresence_(otherState.parentKey,
-                                        rhizo.layout.linkMatcher))) {
+                                        this.parentMatcher_))) {
     return false;
   }
   return true;
@@ -474,8 +522,8 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
   this.globalNodesMap_ = {};
   if (parentKey) {
     try {
-      treeRoot = new rhizo.layout.Treeifier(
-          parentKey, meta[parentKey]['linkKey']).buildTree(
+      treeRoot = new rhizo.layout.newTreeifier(
+          parentKey, meta[parentKey]).buildTree(
               supermodels, allmodels, this.globalNodesMap_);
     } catch(e) {
       if (e.name == "TreeCycleException") {
@@ -490,7 +538,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
     // this with the same code that handles the tree case.
     treeRoot = new rhizo.layout.TreeNode();
     for (var i = 0; i < supermodels.length; i++) {
-      treeRoot.addChild(new rhizo.layout.TreeNode(supermodels[i]));
+      treeRoot.addChild(new rhizo.layout.ModelTreeNode(supermodels[i]));
     }
   }
 
@@ -754,8 +802,9 @@ rhizo.layout.TreeMapLayout.prototype.getRemainderBoundingRect_ = function(
  */
 rhizo.layout.TreeMapLayout.prototype.computeNestedAreas_ = function(treeNode,
                                                                     areaMeta) {
-  if (treeNode.numChilds == 0) {  // leaf node
-    treeNode.area = parseFloat(treeNode.superModel.unwrap()[areaMeta]);
+  if (treeNode.numChilds == 0) {
+    // leaf node. Payload is guaranteed to be a SuperModel.
+    treeNode.area = parseFloat(treeNode.payload().unwrap()[areaMeta]);
     if (isNaN(treeNode.area) || treeNode.area < 0) {
       // isNaN() occurs when areaMeta is not a numeric property and/or extracted
       // values cannot be converted into a number.
@@ -866,6 +915,15 @@ rhizo.layout.TreeMapLayoutUI = function(layout, project) {
   this.areaSelector_ = null;
   this.colorSelector_ = null;
   this.parentKeySelector_ = null;
+
+  /**
+   * The matcher to identify all model attributes where tree structures can be
+   * built from.
+   * @type {function(string, Object):boolean}
+   * @private
+   */
+  this.parentMatcher_ = rhizo.layout.orMatcher(
+      rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
 };
 
 rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
@@ -890,7 +948,7 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
     this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
         this.project_,
         'rhizo-treemaplayout-parentKey',
-        rhizo.layout.linkMatcher).
+        this.parentMatcher_).
       append("<option value=''>-</option>").
       change(jQuery.proxy(this.updateState_, this));
     details.append(this.renderSelector_('Parent: ', this.parentKeySelector_));
@@ -920,7 +978,7 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderSelector_ = function(
  */
 rhizo.layout.TreeMapLayoutUI.prototype.checkParentKeys_ = function() {
   for (var key in this.project_.metaModel()) {
-    if (rhizo.layout.linkMatcher(key, this.project_.metaModel()[key])) {
+    if (this.parentMatcher_(key, this.project_.metaModel()[key])) {
       return true;
     }
   }

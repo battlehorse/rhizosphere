@@ -289,6 +289,21 @@
   background-color: @primary-chrome;
 }
 
+.rhizo-tree-syntheticnode,
+.rhizo-treemap-syntheticnode {
+  border: 1px solid @border-color;
+  background-color: @model-background;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  .shadow(1px, 1px, 2px, @dark-secondary-background);
+  z-index: 10;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
 /******************
   Progress bar
  *****************/

@@ -65,22 +65,63 @@ rhizo.layout.firstMetamodelKey = function(project, opt_matcher) {
   return null;
 };
 
+
+/**
+ * A function that composes together multiple other matchers OR-wise. Matches
+ * metamodel keys that satisfy any of the matchers passed as arguments.
+ *
+ * @param {...function(string, *):boolean} var_args two or more matchers to
+ *     assemble together into a single one.
+ * @return {function(string, *):boolean} The composed matcher.
+ */
+rhizo.layout.orMatcher = function(var_args) {
+  var matchers = Array.prototype.slice.call(arguments);
+  return function(key, meta) {
+    for (var i = 0; i < matchers.length; i++) {
+      if (matchers[i](key, meta)) {
+        return true;
+      }
+    }
+    return false;
+  };
+};
+
+
 /**
  * A function that matches metamodel keys that establish links to other models,
  * for example to define parent-child relationships by having a key whose value
  * points to the parent model of a given one).
  * @param {string} key The key to check.
  * @param {*} meta The metamodel entry associated to this key.
+ * @return {boolean} Whether the given metamodel key establish links to other
+ *     models.
  */
 rhizo.layout.linkMatcher = function(key, meta) {
   return !!meta.isLink;
 };
+
+
+/**
+ * A function that matches metamodel keys that identify hierarchical
+ * categorizations.
+ *
+ * @param {string} key The key to check.
+ * @param {*} meta The metamodel entry associated to this key.
+ * @return {boolean} Whether the given metamodel key identifies a hierarchical
+ *     categorization.
+ */
+rhizo.layout.hierarchyMatcher = function(key, meta) {
+  return meta.kind instanceof rhizo.meta.CategoryKind && !!meta.isHierarchy;
+};
+
 
 /**
  * A function that matches metamodel keys that identify numeric model
  * attributes.
  * @param {string} key The key to check.
  * @param {*} meta The metamodel entry associated to this key.
+ * @return {boolean} Whether the given metamodel key identifies numeric model
+ *     attributes.
  */
 rhizo.layout.numericMatcher = function(key, meta) {
   return meta.kind.isNumeric();
@@ -215,6 +256,91 @@ rhizo.layout.LayoutBox.prototype.clamp_ = function(val, min, max) {
 
 
 /**
+ * Factory function to generate Treeifiers. A Treeifier converts an
+ * unorganized set of rhizo.model.SuperModel instances into a tree, according to
+ * relationships defined by a chosen model attribute.
+ *
+ * We currently support two treeifiers: one based an models that have
+ * hierarchical categorizations (CategoryTreeifier) and another based on models
+ * that links between themselves in parent-child chains (LinkTreeifier).
+ *
+ * @param {string} key The name of the model attribute where parent-child
+ *     relationships are stored and will guide tree construction.
+ * @param {*} meta The metamodel entry associated to this key.
+ * @return {?Object} A suitable treeifier for the given key, or null if no
+ *     suitable treeifier exists.
+ */
+rhizo.layout.newTreeifier = function(key, meta) {
+  if (rhizo.layout.linkMatcher(key, meta)) {
+    return new rhizo.layout.LinkTreeifier(key, meta['linkKey'])
+  } else if (rhizo.layout.hierarchyMatcher(key, meta)) {
+    return new rhizo.layout.CategoryTreeifier(key);
+  } else {
+    return null;
+  }
+};
+
+
+/**
+ * Converter that turns an unorganized set of rhizo.model.SuperModel instances
+ * into a tree, according to a model attribute (categoryKey) that defines a
+ * hierarchical categorization of the model itself.
+ *
+ * @param {string} categoryKey The name of the model attribute whose value
+ *     contains a hierarchical categorization of the model.
+ * @constructor
+ */
+rhizo.layout.CategoryTreeifier = function(categoryKey) {
+  this.categoryKey_ = categoryKey;
+};
+
+/**
+ * Builds a hierarchical structure of TreeNodes. The tree is built out of all
+ * the hierarchical categorizations found on all models. Therefore, every
+ * non-leaf node (minus the root) is a SyntheticTreeNode representing a single
+ * category one or more models belong to, and every leaf node is a ModelTreeNode
+ * for a model that belongs to all the categories standing above him.
+ *
+ * @param {Array.<rhizo.model.SuperModel>} supermodels A list of all supermodels
+ *     to treeify.
+ * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
+ *     model ids to SuperModel instances, for all models currently known to the
+ *     project.
+ * @param {Object.<string, rhizo.layout.TreeNode>=} opt_globalNodesMap an
+ *     optional map that will accumulate all TreeNodes, keyed by model id.
+ * @return {rhizo.layout.TreeNode} the root TreeNode (that has no model
+ *     attached) that contains the models treeification.
+ */
+rhizo.layout.CategoryTreeifier.prototype.buildTree = function(
+    supermodels, allmodels, opt_globalNodesMap) {
+  var root = new rhizo.layout.TreeNode();
+  for (var i = 0, l = supermodels.length; i < l; i++) {
+    var categories = supermodels[i].unwrap()[this.categoryKey_];
+    if (!$.isArray(categories)) {
+      categories = [categories];
+    }
+    var node = root;
+    for (var j = 0; j < categories.length; j++) {
+      var category = categories[j] ? categories[j] : '__undefined__';
+      var categoryNodeId = '__syntethic_id_' + categories[j];
+      var childNode = node.childs[categoryNodeId];
+      if (!childNode) {
+        childNode = new rhizo.layout.SyntheticTreeNode(
+            categoryNodeId, categories[j]);
+        node.addChild(childNode);
+      }
+      node = childNode;
+    }
+    var modelNode = new rhizo.layout.ModelTreeNode(supermodels[i]);
+    node.addChild(modelNode);
+    if (opt_globalNodesMap) {
+      opt_globalNodesMap[supermodels[i].id] = modelNode;
+    }
+  }
+  return root;
+};
+
+/**
  * Converter that turns an unorganized set of rhizo.model.SuperModel instances
  * into a tree, according to a model attribute (linkStartKey) that points to
  * other models, defining child-to-parent relationships.
@@ -228,30 +354,34 @@ rhizo.layout.LayoutBox.prototype.clamp_ = function(val, min, max) {
  *     If specified, the model values identified by opt_linkEndKey must be
  *     unique (otherwise it would be possible for a child to link to multiple
  *     parents).
+ * @constructor
  */
-rhizo.layout.Treeifier = function(linkStartKey, opt_linkEndKey) {
+rhizo.layout.LinkTreeifier = function(linkStartKey, opt_linkEndKey) {
   this.linkStartKey_ = linkStartKey;
   this.linkEndKey_ = opt_linkEndKey || 'id';
 };
 
 /**
- * Builds a hierarchical structure of TreeNodes. Raises exceptions
- * if cycles are found within the tree or if childs are found to link to
- * multiple parents. Deals automatically with "unavailable" parts of the tree.
+ * Builds a hierarchical structure of TreeNodes. Since this treeifier relies on
+ * model-to-model links, the entire tree (minus the root) is composed of
+ * ModelTreeNode instances, each one holding a reference to a model.
+ *
+ * Raises exceptions if cycles are found within the tree or if childs are found
+ * to link to multiple parents. Deals automatically with "unavailable" parts of
+ * the tree.
  * 
  * @param {Array.<rhizo.model.SuperModel>} supermodels A list of all supermodels
  *     to treeify.
  * @param {Object.<string, rhizo.model.SuperModel>} allmodels a map associating
  *     model ids to SuperModel instances, for all models currently known to the
  *     project.
- * @param {Object.<string, rhizo.layout.TreeNode>?} opt_globalNodesMap an
+ * @param {Object.<string, rhizo.layout.TreeNode>=} opt_globalNodesMap an
  *     optional map that will accumulate all TreeNodes, keyed by model id.
  * @return {rhizo.layout.TreeNode} the root TreeNode (that has no model
  *     attached) that contains the models treeification.
  */
-rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
-                                                      allmodels,
-                                                      opt_globalNodesMap) {
+rhizo.layout.LinkTreeifier.prototype.buildTree = function(
+    supermodels, allmodels, opt_globalNodesMap) {
   var linkMap = allmodels;
   if (this.linkEndKey_ != 'id') {
     // A key other than the model id is used to resolve child-parent
@@ -263,7 +393,7 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
   var globalNodesMap = opt_globalNodesMap || {};
   for (var i = 0, l = supermodels.length; i < l; i++) {
     globalNodesMap[supermodels[i].id] =
-        new rhizo.layout.TreeNode(supermodels[i]);
+        new rhizo.layout.ModelTreeNode(supermodels[i]);
   }
 
   var root = new rhizo.layout.TreeNode();
@@ -316,10 +446,11 @@ rhizo.layout.Treeifier.prototype.buildTree = function(supermodels,
  *     model unique identifiers (either the model id itself, or another unique
  *     attribute identified by 'linkEndKey') to SuperModel instances, for all
  *     models currently known to the project.
- * @param {rhizo.model.SuperModel} superParent the model to start the search from.
+ * @param {rhizo.model.SuperModel} superParent the model to start the search
+ *     from.
  * @private
  */
-rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
+rhizo.layout.LinkTreeifier.prototype.findFirstAvailableParent_ = function(
     linkMap, superParent) {
   if (!superParent) {
     return null;
@@ -359,7 +490,7 @@ rhizo.layout.Treeifier.prototype.findFirstAvailableParent_ = function(
  *     for all models currently known to the project.
  * @private
  */
-rhizo.layout.Treeifier.prototype.buildLinkMap_ = function(allmodels) {
+rhizo.layout.LinkTreeifier.prototype.buildLinkMap_ = function(allmodels) {
   var linkMap = {};
   for (var modelId in allmodels) {
     var model = allmodels[modelId].unwrap();
@@ -380,25 +511,49 @@ rhizo.layout.Treeifier.prototype.buildLinkMap_ = function(allmodels) {
 
 
 /**
- * A class that represents a node in the tree and wraps the superModel
- * it contains.
- * @param {rhizo.model.SuperModel} opt_superModel The model this tree node
- *     wraps. If unspecified, this node is assumed to be the root of the tree.
- *     
+ * A generic tree node.
+ * @param {*?} opt_id The unique node id. If null, the node is assumed to a tree
+ *     root.
+ * @param {*=} opt_payload An optional payload associated to the node.
  * @constructor
  */
-rhizo.layout.TreeNode = function(opt_superModel) {
-  this.superModel = opt_superModel;
-  this.id = null;
-  if (opt_superModel) {
-    this.id = opt_superModel.id;    
-  }
+rhizo.layout.TreeNode = function(opt_id, opt_payload) {
+  this.id = opt_id;
   this.childs = {};
   this.traversed_ = false;
   this.numChilds = 0;
   this.is_root = this.id == null;
+  this.synthetic_ = false;
+  this.payload_ = opt_payload;
 };
 
+/**
+ * Defines whether the node is synthetic or not, i.e. whether it is backed by
+ * one of the visualization models or not.
+ * @param {boolean} synthetic Whether the node is synthetic or not.
+ */
+rhizo.layout.TreeNode.prototype.setSynthetic = function(synthetic) {
+  this.synthetic_ = synthetic;
+};
+
+/**
+ * @return {boolean} Whether the node is synthetic.
+ */
+rhizo.layout.TreeNode.prototype.synthetic = function() {
+  return this.synthetic_;
+};
+
+/**
+ * @return {*?} The node payload.
+ */
+rhizo.layout.TreeNode.prototype.payload = function() {
+  return this.payload_;
+};
+
+/**
+ * Adds another node as child of the this node.
+ * @param {rhizo.layout.TreeNode} treenode The child to add.
+ */
 rhizo.layout.TreeNode.prototype.addChild = function(treenode) {
   if (!this.childs[treenode.id]) {
     this.childs[treenode.id] = treenode;
@@ -410,11 +565,11 @@ rhizo.layout.TreeNode.prototype.addChild = function(treenode) {
  * @returns {Array.<rhizo.layout.TreeNode>} The immediate childs of this node.
  */
 rhizo.layout.TreeNode.prototype.childsAsArray = function() {
-  var models = [];
-  for (var modelId in this.childs) {
-    models.push(this.childs[modelId]);
+  var nodes = [];
+  for (var nodeId in this.childs) {
+    nodes .push(this.childs[nodeId]);
   }
-  return models;
+  return nodes ;
 };
 
 /**
@@ -423,19 +578,89 @@ rhizo.layout.TreeNode.prototype.childsAsArray = function() {
  *     this node children.
  */
 rhizo.layout.TreeNode.prototype.deepChildsAsArray = function(childs) {
-  for (var modelId in this.childs) {
-    childs.push(this.childs[modelId]);
-    this.childs[modelId].deepChildsAsArray(childs);
+  for (var nodeId in this.childs) {
+    childs.push(this.childs[nodeId]);
+    this.childs[nodeId].deepChildsAsArray(childs);
   }
 };
+
+/**
+ * The space this node will occupy (in width, height terms) in the visualization
+ * viewport once positioned by layout operations.
+ * @return {Object.<string, number>} The node rendering dimensions.
+ */
+rhizo.layout.TreeNode.prototype.renderingDimensions = function() {
+  return {width: 0, height: 0};
+};
+
+
+/**
+ * A tree node backed by a visualization rhizo.model.SuperModel.
+ *
+ * @param {rhizo.model.SuperModel} opt_superModel The model this tree node
+ *     wraps. If unspecified, this node is assumed to be the root of the tree.
+ * @constructor
+ * @extends rhizo.layout.TreeNode
+ */
+rhizo.layout.ModelTreeNode = function(opt_superModel) {
+  rhizo.layout.TreeNode.call(
+      this, opt_superModel ? opt_superModel.id : null, opt_superModel);
+};
+rhizo.inherits(rhizo.layout.ModelTreeNode, rhizo.layout.TreeNode);
 
 /**
  * @return {Object.<string, number>} The dimensions of the rendering bound to
  *     this node.
  */
-rhizo.layout.TreeNode.prototype.renderingDimensions = function() {
-  return this.superModel.rendering().getDimensions();
+rhizo.layout.ModelTreeNode.prototype.renderingDimensions = function() {
+  return this.payload().rendering().getDimensions();
 };
+
+
+/**
+ * A synthetic tree node, not backed by a visualization model, but instead
+ * representing a visualization artifact.
+ *
+ * @param {*?} opt_id The unique node id. If null, the node is assumed to a tree
+ *     root.
+ * @param {*=} opt_payload An optional payload associated to the node.d
+ * @constructor
+ * @extends rhizo.layout.TreeNode
+ */
+rhizo.layout.SyntheticTreeNode = function(opt_id, opt_payload) {
+  rhizo.layout.TreeNode.call(this, opt_id, opt_payload);
+  this.setSynthetic(true);
+  this.syntheticRendering_ = null;
+};
+rhizo.inherits(rhizo.layout.SyntheticTreeNode, rhizo.layout.TreeNode);
+
+rhizo.layout.SyntheticTreeNode.prototype.renderingDimensions = function() {
+  // TODO(battlehorse): This is completely arbitrary based on the fact that
+  // synthetic nodes are currently only used to represent categories
+  // (aka short strings) in tree and treemap layouts. Should be replaced by
+  // a proper measure of the area covered by the associated synthetic rendering.
+  return {width: 100, height: 20};
+};
+
+/**
+ * Sets the node synthetic rendering. Since the node is not backed by a
+ * visualization model, it doesn't have an associated rendering, which is
+ * therefore provided in the form of a synthetic one.
+ *
+ * @param {rhizo.ui.SyntheticRendering} syntheticRendering
+ */
+rhizo.layout.SyntheticTreeNode.prototype.setSyntheticRendering = function(
+    syntheticRendering) {
+  this.syntheticRendering_ = syntheticRendering;
+};
+
+/**
+ * @return {rhizo.ui.SyntheticRendering} The node synthetic rendering, if any.
+ */
+rhizo.layout.SyntheticTreeNode.prototype.syntheticRendering = function() {
+  return this.syntheticRendering_;
+};
+
 
 /**
  * An exception raised when cycles are encountered when treeifing a list of
