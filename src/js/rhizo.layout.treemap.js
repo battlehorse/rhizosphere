@@ -179,6 +179,9 @@ rhizo.layout.treemap.TreeMapNode.prototype.move = function(top, left, deepness) 
  */
 rhizo.layout.treemap.TreeMapNode.prototype.resize = function(width, height) {
   if (this.synthetic_) {
+    if (!this.syntheticRendering_.canRescaleTo(width, height)) {
+      return false;
+    }
     this.width_ = width;
     this.height_ = height;
     return this.syntheticRendering_.rescaleRendering(width, height);
