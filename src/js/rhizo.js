@@ -152,3 +152,18 @@ rhizo.util.buildUrl = function(opt_url, opt_extra_params) {
   }
   return newUrl.join('');
 };
+
+/**
+ * Ensures that a given token is a valid jQuery selector, by escaping all the
+ * problematic characters, as defined in
+ * http://api.jquery.com/category/selectors/
+ *
+ * @param {string} token The jQuery selector (or part of it) to escape.
+ * @return {string} The escaped selector.
+ */
+rhizo.util.escapeSelectorToken = function(token) {
+  return token.replace(rhizo.util.escapeSelectorToken.regexp_, '\\$1');
+};
+
+// Regexp to match all the characters to escape: !"#$%&'()*+,./:;<=>?@[\]^`{|}~
+rhizo.util.escapeSelectorToken.regexp_ = new RegExp('([!"#\\$%&\'\\(\\)\\*\\+,\\.\\/:;<=>?@\\[\\\\\\]\\^\\{\\|\\}\\~])', 'g');

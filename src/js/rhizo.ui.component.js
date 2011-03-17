@@ -1445,13 +1445,13 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ =
 
     // re-enable the filter among the selectable ones.
     this.filterSelector_.
-        find('option[value=' + key + ']').
+        find('option[value=' + rhizo.util.escapeSelectorToken(key) + ']').
         removeAttr('disabled');
   }, this));
 
   filter.appendTo(this.filterPanel_);
   this.filterSelector_.
-      find('option[value=' + key + ']').
+      find('option[value=' + rhizo.util.escapeSelectorToken(key) + ']').
       attr('disabled', 'disabled');
 };
 
