@@ -635,11 +635,7 @@ rhizo.layout.SyntheticTreeNode = function(opt_id, opt_payload) {
 rhizo.inherits(rhizo.layout.SyntheticTreeNode, rhizo.layout.TreeNode);
 
 rhizo.layout.SyntheticTreeNode.prototype.renderingDimensions = function() {
-  // TODO(battlehorse): This is completely arbitrary based on the fact that
-  // synthetic nodes are currently only used to represent categories
-  // (aka short strings) in tree and treemap layouts. Should be replaced by
-  // a proper measure of the area covered by the associated synthetic rendering.
-  return {width: 100, height: 20};
+  return this.syntheticRendering_.getDimensions();
 };
 
 /**

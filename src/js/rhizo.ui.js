@@ -1281,7 +1281,9 @@ rhizo.ui.Rendering.prototype.isMode = function(mode) {
  * manipulation of synthetic renderings.
  *
  * @param {*} raw_node The jQuery object that wraps the 'raw' HTML elements that
- *     form the synthetic rendering contents.
+ *     form the synthetic rendering contents. The raw HTML elements must
+ *     already be attached to the DOM, otherwise dimension calculations for
+ *     the rendering will fail.
  * @constructor
  */
 rhizo.ui.SyntheticRendering = function(raw_node) {

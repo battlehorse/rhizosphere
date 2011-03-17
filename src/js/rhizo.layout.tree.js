@@ -253,6 +253,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
     var maxHeight = 0;
     for (var id in roots) { // for each root found
 
+      this.treePainter_.fillSyntheticRenderings_(roots[id], pipeline);
+
       // calculate the bounding rectangle for the whole tree,
       // in gd-od coordinates
       var unrotatedBoundingRect =
@@ -429,6 +431,34 @@ rhizo.layout.TreePainter.prototype.evenCenter_ = function(offset,
 
 
 /**
+ * Recursively analyzes a tree node and all its child, creating synthetic
+ * renderings for all nodes that are missing one. When a tree node is not backed
+ * by any visualization model, e.g. it represents a model categorization but
+ * not a full fledged model, a rhizo.ui.SyntheticRendering is created and used
+ * in place of the model rendering.
+ * @param {rhizo.layout.SyntheticTreeNode} treenode The tree node to inspect.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The rendering pipeline that
+ *     stores all drawing operations.
+ * @private
+ */
+rhizo.layout.TreePainter.prototype.fillSyntheticRenderings_ = function(
+    treenode, pipeline) {
+  if (treenode.synthetic() && !treenode.syntheticRendering()) {
+    var raw_node = $('<div />', {'class': 'rhizo-tree-syntheticnode'}).
+      text(treenode.payload() || 'Everything Else');
+
+    // node must be attached to the DOM when creating a SyntheticRendering,
+    // hence we push it on the pipeline first.
+    pipeline.artifact(raw_node);
+    treenode.setSyntheticRendering(new rhizo.ui.SyntheticRendering(raw_node));
+  }
+
+  for (var childId in treenode.childs) {
+    this.fillSyntheticRenderings_(treenode.childs[childId], pipeline);
+  }
+};
+
+/**
  * For every node, recursively calculate its bounding rectangle,
  * in gd-od coordinates.
  *
@@ -467,13 +497,15 @@ rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
                                                     offset,
                                                     parentOffset,
                                                     parentNode) {
+
   var dims = treenode.renderingDimensions();
 
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
   if (this.vertical_) {
     if (treenode.synthetic()) {
-      this.drawSyntheticNode_(pipeline, treenode, offset.gd + 5, offset.od);
+      treenode.syntheticRendering().move(
+          offset.gd + 5, offset.od, /* instant */ true);
     } else {
       pipeline.move(treenode.payload().id, offset.gd + 5, offset.od);
     }
@@ -487,11 +519,10 @@ rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
     }
   } else {
     if (treenode.synthetic()) {
-      this.drawSyntheticNode_(
-          pipeline,
-          treenode,
+      treenode.syntheticRendering().move(
           offset.od + 5,
-          offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
+          offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2,
+          /* instant */ true);
     } else {
       pipeline.move(
           treenode.payload().id,
@@ -521,36 +552,6 @@ rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
     this.draw_(pipeline, childNode, childOffset, offset, treenode);
     progressiveGd += childNode.boundingRect.gd + 5;
   }
-};
-
-/**
- * Renders a synthetic tree node. When a tree node is not backed by any
- * visualization model, e.g. it represents a model categorization but not a
- * full fledged model, a rhizo.ui.SyntheticRendering is created and used in
- * place of the model rendering.
- * @param {rhizo.ui.RenderingPipeline} pipeline The rendering pipeline that
- *     stores all drawing operations.
- * @param {rhizo.layout.SyntheticTreeNode} treenode The tree node to render.
- * @param {number} top The top coordinate where the top-left corner of the
- *     rendering should be positioned (with respect to the visualization
- *     universe top-left corner position).
- * @param {number} left The left coordinate where the top-left corner of the
- *     rendering should be positioned (with respect to the visualization
- *     universe top-left corner position).
- * @private
- */
-rhizo.layout.TreePainter.prototype.drawSyntheticNode_ = function(
-    pipeline, treenode, top, left) {
-  var raw_node = $('<div />', {'class': 'rhizo-tree-syntheticnode'}).
-      text(treenode.payload() || 'Everything Else');
-  var rendering = new rhizo.ui.SyntheticRendering(raw_node);
-  rendering.move(top, left, /* instant */ true);
-  rendering.rescaleRendering(
-      treenode.renderingDimensions().width,
-      treenode.renderingDimensions().height);
-
-  treenode.setSyntheticRendering(rendering);
-  pipeline.artifact(raw_node);
 };
 
 /**

@@ -89,6 +89,9 @@ rhizo.layout.treemap.TreeMapNode.prototype.buildSyntheticRendering_ = function(
     treenode) {
   var raw_node = $('<div />', {'class': 'rhizo-treemap-syntheticnode'}).
       text(treenode.payload() || 'Everything Else');
+
+  // node must be attached to the DOM when creating a SyntheticRendering, hence
+  // we push it on the pipeline first.
   this.pipeline_.artifact(raw_node);
   this.syntheticRendering_  = new rhizo.ui.SyntheticRendering(raw_node);
   treenode.setSyntheticRendering(this.syntheticRendering_);
