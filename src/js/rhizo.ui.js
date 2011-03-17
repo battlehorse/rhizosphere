@@ -592,21 +592,23 @@ rhizo.ui.RenderingBackup.prototype.restore = function(
  *
  * Base elevation is 0, and any elevation request below or equal to that
  * threshold will be ignored.
+ * @param {number=} opt_offset An optional offset to apply to all elevations
+ *     managed by the class.
  * @constructor
  */
-rhizo.ui.Elevation = function() {
+rhizo.ui.Elevation = function(opt_offset) {
   this.elevations_ = {};
   this.elevation_top_ = 0;
 
   // An offset that will always be added to the returned elevation values.
-  // Should match the base z-index used by Rhizosphere models.
-  this.elevation_offset_ = 50;
+  this.elevation_offset_ = opt_offset || 0;
 };
 
 rhizo.ui.Elevation.prototype.clone = function() {
   var el = new rhizo.ui.Elevation();
   el.elevations_ = $.extend({}, this.elevations_);
   el.elevation_top_ = this.elevation_top_;
+  el.elevation_offset_ = this.elevation_offset_;
   return el;
 };
 
@@ -707,7 +709,20 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
 
   this.renderer_ = renderer;
   this.renderingHints_ = renderingHints;
+
+  /**
+   * Function to decide whether the rendering can be rescaled to the desired
+   * width and height.
+   * @type {function(Object, Element, number, number):boolean}
+   * @private
+   */
   this.rendererSizeChecker_ = null;
+
+  /**
+   * Function to rescale the rendering to the desired width and height.
+   * @type {function(Object, Element, number, number):boolean}
+   * @private
+   */
   this.rendererRescaler_ = null;
   this.rendererStyleChanger_ = null;
   this.rendererAttachListener_ = null;
@@ -716,12 +731,27 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   this.expandable_ = false;  // Whether the rendering supports expansion or not.
   this.expanded_ = false;  // whether the rendering is expanded or not
 
-  // Whether the rendering should cache its dimensions.
-  this.cacheDimensions_ = false;
-  this.cachedDimensions_ = {};
-
-  // The rendering position, at the time of the last move() call.
+  /**
+   * The rendering position, at the time of the last move() call.
+   * @type {Object.<string, number>}
+   * @private
+   */
   this.position_ = {};
+
+  /**
+   * Whether the rendering should cache its dimensions.
+   * @type {boolean}
+   * @private
+   */
+  this.cacheDimensions_ = false;
+
+  /**
+   * Holds a cached copy of the rendering dimensions, to avoid costly lookups
+   * on the DOM nodes themselves.
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.cachedDimensions_ = {};
 
   // A position mark, that can be used to remember a previous position occupied
   // by the rendering.
@@ -731,8 +761,13 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   // as defined in the rhizo.ui.Visibility enum.
   this.visibility = rhizo.ui.Visibility.HIDDEN;
 
-  // Keeps track of all z-indexes changes.
-  this.elevation_ = new rhizo.ui.Elevation();
+  /**
+   * Keeps track of all z-indexes changes.
+   * The offset value should match the base z-index used by Rhizosphere models.
+   * @type {rhizo.ui.Elevation}
+   * @private
+   */
+  this.elevation_ = new rhizo.ui.Elevation(50);
 
   /**
    * The set of rendering modes.
@@ -1233,6 +1268,96 @@ rhizo.ui.Rendering.prototype.removeMode = function(mode) {
 rhizo.ui.Rendering.prototype.isMode = function(mode) {
   return !!this.modes_[mode];
 };
+
+
+/**
+ * A synthetic rendering is a rendering that is not backed by a visualization
+ * model but is created programmatically by the visualization framework. It is
+ * used, for example, to create visualization artifacts used by specific layouts
+ * like trees and treemaps.
+ *
+ * SyntheticRendering instances expose a subset of the same functionalities
+ * exposed by rhizo.ui.Rendering, allowing for basic movement, resizing and
+ * manipulation of synthetic renderings.
+ *
+ * @param {*} raw_node The jQuery object that wraps the 'raw' HTML elements that
+ *     form the synthetic rendering contents.
+ * @constructor
+ */
+rhizo.ui.SyntheticRendering = function(raw_node) {
+  /**
+   * @private
+   * @type {*}
+   */
+  this.raw_node_ = raw_node;
+  this.raw_node_.css('position', 'absolute');
+
+  /**
+   * The rendering position, at the time of the last move() call.
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.position_ = {};
+
+  /**
+   * Whether the rendering should cache its dimensions.
+   * @type {boolean}
+   * @private
+   */
+  this.cacheDimensions_ = true;
+
+  /**
+   * Holds a cached copy of the rendering dimensions, to avoid costly lookups
+   * on the DOM nodes themselves.
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.cachedDimensions_ = {
+    width: this.raw_node_.get(0).offsetWidth,
+    height: this.raw_node_.get(0).offsetHeight
+  };
+
+  /**
+   * Keeps track of all z-indexes changes.
+   * Use the raw node current z-index as base offset.
+   * @type {rhizo.ui.Elevation}
+   * @private
+   */
+  this.elevation_ = new rhizo.ui.Elevation(
+      parseInt(this.raw_node_.css('z-index'), 10));
+
+  /**
+   * Function to decide whether the rendering can be rescaled to the desired
+   * width and height.
+   * @type {function(Object, Element, number, number):boolean}
+   * @private
+   */
+  this.rendererSizeChecker_ = null;
+
+  /**
+   * Function to rescale the rendering to the desired width and height.
+   * @type {function(Object, Element, number, number):boolean}
+   * @private
+   */
+  this.rendererRescaler_ = null;
+};
+
+rhizo.ui.SyntheticRendering.prototype.move = rhizo.ui.Rendering.prototype.move;
+
+rhizo.ui.SyntheticRendering.prototype.pushElevation =
+    rhizo.ui.Rendering.prototype.pushElevation;
+
+rhizo.ui.SyntheticRendering.prototype.popElevation =
+    rhizo.ui.Rendering.prototype.popElevation;
+
+rhizo.ui.SyntheticRendering.prototype.canRescaleTo =
+    rhizo.ui.Rendering.prototype.canRescaleTo;
+
+rhizo.ui.SyntheticRendering.prototype.rescaleRendering =
+    rhizo.ui.Rendering.prototype.rescaleRendering;
+
+rhizo.ui.SyntheticRendering.prototype.getDimensions =
+    rhizo.ui.Rendering.prototype.getDimensions;
 
 
 /**

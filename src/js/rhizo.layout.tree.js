@@ -47,7 +47,7 @@
     'abstract' coordinate set.
 */
 
-// RHIZODEP=rhizo.layout
+// RHIZODEP=rhizo.layout,rhizo.ui
 
 /**
  * Helper class that handles TreeLayout ui controls.
@@ -60,6 +60,15 @@ rhizo.layout.TreeLayoutUI = function(layout, project) {
 
   this.directionSelector_ = null;
   this.metaModelKeySelector_ = null;
+
+  /**
+   * The matcher to identify all model attributes where tree structures can be
+   * built from.
+   * @type {function(string, Object):boolean}
+   * @private
+   */
+  this.matcher_ = rhizo.layout.orMatcher(
+      rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
 };
 
 rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
@@ -67,7 +76,7 @@ rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
   var details = $("<div />");
   if (parentKeys.length == 0) {
     // should never happen because of verifyMetaModel
-    details.append("No parent-child relationships exist");
+    details.append("No hierarchical relationships exist");
     return details;
   }
 
@@ -82,7 +91,7 @@ rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
     this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
         this.project_,
         'rhizo-treelayout-parentKey',
-        rhizo.layout.linkMatcher);
+        this.matcher_);
     this.metaModelKeySelector_.change(jQuery.proxy(this.updateState_, this));
     details.append(" by ").append(this.metaModelKeySelector_);
   } else if (parentKeys.length == 1) {
@@ -94,14 +103,15 @@ rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
 
 /**
  * @return {Array.<string>} The list of all metamodel keys which can be used
- *     to arrange models in a tree structure (i.e., the point to parent-child
- *     relationships).
+ *     to arrange models in a tree structure, i.e. they either identify
+ *     parent-child relationships (see rhizo.layout.linkMatcher) or place
+ *     a model in a hierarchical path (see rhizo.layout.hierarchyMatcher).
  * @private
  */
 rhizo.layout.TreeLayoutUI.prototype.getParentKeys_ = function() {
   var parentKeys = [];
   for (var key in this.project_.metaModel()) {
-    if (rhizo.layout.linkMatcher(key, this.project_.metaModel()[key])) {
+    if (this.matcher_(key, this.project_.metaModel()[key])) {
       parentKeys.push(key);
     }
   }
@@ -140,6 +150,15 @@ rhizo.layout.TreeLayout = function(project) {
   this.project_ = project;
 
   /**
+   * The matcher to identify all model attributes where tree structures can be
+   * built from.
+   * @type {function(string, Object):boolean}
+   * @private
+   */
+  this.matcher_ = rhizo.layout.orMatcher(
+      rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
+
+  /**
    * Map that accumulates all the nodes matching the models being laid out.
    * @type {Object.<string, rhizo.layout.TreeNode>}
    * @private
@@ -160,7 +179,7 @@ rhizo.inherits(rhizo.layout.TreeLayout, rhizo.layout.GUILayout);
  */
 rhizo.layout.TreeLayout.prototype.verifyMetaModel = function(meta) {
   for (var key in meta) {
-    if (rhizo.layout.linkMatcher(key, meta[key])) {
+    if (this.matcher_(key, meta[key])) {
       return true;
     }
   }
@@ -174,7 +193,7 @@ rhizo.layout.TreeLayout.prototype.defaultState_ = function() {
   return {
     direction: 'ver',
     parentKey : rhizo.layout.firstMetamodelKey(
-        this.project_, rhizo.layout.linkMatcher)
+        this.project_, this.matcher_)
   };
 };
 
@@ -189,7 +208,7 @@ rhizo.layout.TreeLayout.prototype.defaultState_ = function() {
 rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
   return this.validateStateAttributePresence_(otherState, 'parentKey') &&
          this.validateMetamodelPresence_(
-             otherState.parentKey, rhizo.layout.linkMatcher);
+             otherState.parentKey, this.matcher_);
 };
 
 /**
@@ -225,8 +244,8 @@ rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
   try {
     // builds the tree model and also checks for validity
     this.globalNodesMap_ = {};
-    var roots = new rhizo.layout.Treeifier(
-        parentKey, meta[parentKey]['linkKey']).buildTree(
+    var roots = new rhizo.layout.newTreeifier(
+        parentKey, meta[parentKey]).buildTree(
             supermodels, allmodels, this.globalNodesMap_).childs;
 
     var drawingOffset = { left: 0, top: 0 };
@@ -453,7 +472,11 @@ rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
   // vertical layout stacks items from the top, while the horizontal layout
   // keeps the tree center aligned.
   if (this.vertical_) {
-    pipeline.move(treenode.superModel.id, offset.gd + 5, offset.od);
+    if (treenode.synthetic()) {
+      this.drawSyntheticNode_(pipeline, treenode, offset.gd + 5, offset.od);
+    } else {
+      pipeline.move(treenode.payload().id, offset.gd + 5, offset.od);
+    }
 
     // draw connector if needed
     if (parentOffset != null) {
@@ -463,10 +486,18 @@ rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
                            parentNode.renderingDimensions()));
     }
   } else {
-    pipeline.move(
-        treenode.superModel.id,
-        offset.od + 5,
-        offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
+    if (treenode.synthetic()) {
+      this.drawSyntheticNode_(
+          pipeline,
+          treenode,
+          offset.od + 5,
+          offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
+    } else {
+      pipeline.move(
+          treenode.payload().id,
+          offset.od + 5,
+          offset.gd + (treenode.boundingRect.gd - this.gd_(dims))/2);
+    }
 
     // draw connector if needed
     if (parentOffset != null) {
@@ -492,6 +523,35 @@ rhizo.layout.TreePainter.prototype.draw_ = function(pipeline,
   }
 };
 
+/**
+ * Renders a synthetic tree node. When a tree node is not backed by any
+ * visualization model, e.g. it represents a model categorization but not a
+ * full fledged model, a rhizo.ui.SyntheticRendering is created and used in
+ * place of the model rendering.
+ * @param {rhizo.ui.RenderingPipeline} pipeline The rendering pipeline that
+ *     stores all drawing operations.
+ * @param {rhizo.layout.SyntheticTreeNode} treenode The tree node to render.
+ * @param {number} top The top coordinate where the top-left corner of the
+ *     rendering should be positioned (with respect to the visualization
+ *     universe top-left corner position).
+ * @param {number} left The left coordinate where the top-left corner of the
+ *     rendering should be positioned (with respect to the visualization
+ *     universe top-left corner position).
+ * @private
+ */
+rhizo.layout.TreePainter.prototype.drawSyntheticNode_ = function(
+    pipeline, treenode, top, left) {
+  var raw_node = $('<div />', {'class': 'rhizo-tree-syntheticnode'}).
+      text(treenode.payload() || 'Everything Else');
+  var rendering = new rhizo.ui.SyntheticRendering(raw_node);
+  rendering.move(top, left, /* instant */ true);
+  rendering.rescaleRendering(
+      treenode.renderingDimensions().width,
+      treenode.renderingDimensions().height);
+
+  treenode.setSyntheticRendering(rendering);
+  pipeline.artifact(raw_node);
+};
 
 /**
  * Draws a connector between a node and its parent. A connector is always
