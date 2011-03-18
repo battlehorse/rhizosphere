@@ -136,11 +136,11 @@ rhizo.model.loader.GViz.prototype.handleQueryResponse_ =
   }
   var initializer = new rhizo.gviz.Initializer(response.getDataTable(),
                                                logger, options);
-
-
-  callback(initializer.models,
-           initializer.metamodel,
-           initializer.renderer);
+  if (initializer.parse()) {
+    callback(initializer.models,
+             initializer.metamodel,
+             initializer.renderer);
+  }
 };
 
 // Google Spreadsheets loader (which follows the GViz spec).
@@ -151,7 +151,7 @@ rhizo.inherits(rhizo.model.loader.GoogleSpreadsheets, rhizo.model.loader.GViz);
 rhizo.model.loader.loaders.push(rhizo.model.loader.GoogleSpreadsheets);
 
 rhizo.model.loader.GoogleSpreadsheets.prototype.match = function() {
-  return /spreadsheets\.google\.com/.test(this.resource_);
+  return /spreadsheets\d?\.google\.com/.test(this.resource_);
 };
 
 // Google Gadgets loader (which follows the GViz spec)
