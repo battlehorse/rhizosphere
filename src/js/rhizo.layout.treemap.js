@@ -973,7 +973,7 @@ rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
         this.parentMatcher_).
       append("<option value=''>-</option>").
       change(jQuery.proxy(this.updateState_, this));
-    details.append(this.renderSelector_('Parent: ', this.parentKeySelector_));
+    details.append(this.renderSelector_('Group by: ', this.parentKeySelector_));
   }
   return details;
 };
