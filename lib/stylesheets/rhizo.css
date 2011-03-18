@@ -20,6 +20,8 @@
 .rhizo-universe{position:absolute;top:0;left:0;right:0;bottom:0;}
 .rhizo-bucket-header{font-size:1.3em;font-weight:bold;border-bottom:1px solid #426dc9;width:200px;margin-bottom:5px;color:#6391de;cursor:pointer;}
 .rhizo-tree-connector{background-color:#6391de;}
+.rhizo-tree-syntheticnode{height:20px;max-width:200px;min-width:100px;}
+.rhizo-tree-syntheticnode,.rhizo-treemap-syntheticnode{border:1px solid #6391de;background-color:#ffffff;-webkit-box-shadow:1px 1px 2px #dadee8;-moz-box-shadow:1px 1px 2px #dadee8;box-shadow:1px 1px 2px #dadee8;z-index:10;margin:0;padding:0;overflow:hidden;text-align:center;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;}
 .rhizo-progressbar-panel{position:absolute;z-index:5000;-webkit-box-shadow:5px 5px 5px #dadee8;-moz-box-shadow:5px 5px 5px #dadee8;box-shadow:5px 5px 5px #dadee8;width:300px;height:100px;border:1px solid #6391de;background-color:#fff;}
 .rhizo-progressbar{margin:5px 10px;}
 .rhizo-progressbar-text{text-align:center;color:#222222;margin-bottom:5px;}
