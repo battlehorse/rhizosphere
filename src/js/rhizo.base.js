@@ -273,7 +273,7 @@ rhizo.Project.prototype.unselect = function(id) {
  * are passed and they are in a mixed selection status, calling this function
  * will first select them.
  *
- * @param {(Object|Array.<Object>} ids Either a single model id or an array of
+ * @param {(Object|Array.<Object>)} ids Either a single model id or an array of
  *     model ids.
  */
 rhizo.Project.prototype.toggleSelect = function(ids) {
