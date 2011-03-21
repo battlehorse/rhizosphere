@@ -135,10 +135,9 @@ rhizo.gviz.Rhizosphere.prototype.ready_= function(unused_project) {
  * Categories:
  * - The presence of a 'CAT' token in column labels, or the presence of a custom
  *   'rhizosphereCategory' column property (with any value) is an hint that the
- *   values in the column belong to a finite set of categories, for which
- *   Rhizosphere will use dedicated logic to represent  them. A single cell can
- *   use comma separated values to assign multiple categories to the datapoint
- *   it belongs to.
+ *   values in the column belong to a finite set of categories, that Rhizosphere
+ *   will represent using dedicated logic. A single cell can use comma separated
+ *   values to assign multiple categories to the datapoint it belongs to.
  *
  * - If an additional 'MUL' token is present on the label of a category column
  *   (as defined above), or a 'rhizosphereCategory' custom column property
