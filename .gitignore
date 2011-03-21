@@ -9,6 +9,7 @@ gwt/bin
 gwt/lib/*.jar
 gwt/.classpath
 gwt/.project
+gwt/.externalToolBuilders
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/lib
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/shared
 gwt/src/com/rhizospherejs/gwt/jsni/rhizosphere/src
