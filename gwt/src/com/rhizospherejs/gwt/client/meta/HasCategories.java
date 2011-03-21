@@ -34,4 +34,11 @@ public interface HasCategories {
    * Whether the attribute can have multiple values at the same time or not.
    */
   public boolean multiple();
+  
+  /**
+   * Whether the returned categories represent a branch of a hierarchical
+   * structure and are ordered accordingly, for example
+   * {@code ["World", "Europe", "UK"]}.
+   */
+  public boolean hierarchy();
 }

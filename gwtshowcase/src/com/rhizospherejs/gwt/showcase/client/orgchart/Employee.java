@@ -29,7 +29,7 @@ import com.rhizospherejs.gwt.client.meta.AttributeDescriptor;
 import com.rhizospherejs.gwt.client.meta.HasCategories;
 import com.rhizospherejs.gwt.client.meta.HasKind;
 import com.rhizospherejs.gwt.client.meta.HasKindFactory;
-import com.rhizospherejs.gwt.client.meta.HasParent;
+import com.rhizospherejs.gwt.client.meta.HasLink;
 import com.rhizospherejs.gwt.client.meta.HasRange;
 
 import java.util.HashSet;
@@ -103,9 +103,10 @@ public class Employee implements
   }
 
   // This descriptor specifies that the 'parentEmployeeId' attribute should be
-  // used to extract parent-child relationships between employees.
-  static class ParentEmployeeDescriptor implements AttributeDescriptor, HasParent {
-    @Override public boolean isParent() { return true; }
+  // used to extract child-to-parent relationships between employees.
+  static class ParentEmployeeDescriptor implements AttributeDescriptor, HasLink {
+    @Override public boolean isLink() { return true; }
+    @Override public String linkKey() { return null; }
   }
 
   // The employee name. Since no parameters are passed to the
@@ -146,6 +147,7 @@ public class Employee implements
     @Override public RhizosphereKind kind() { return RhizosphereKind.CATEGORY; }
     @Override public String[] categories() { return getAllHobbies(); }
     @Override public boolean multiple() { return true; }
+    @Override public boolean hierarchy() { return false; }
   }
 
   @RhizosphereModelAttribute(descriptor=SalaryDescriptor.class)

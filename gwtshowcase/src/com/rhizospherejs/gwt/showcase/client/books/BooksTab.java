@@ -293,7 +293,7 @@ public class BooksTab extends Composite {
         meta.newAttribute("query").
           setKind(RhizosphereKind.CATEGORY).
           setLabel("Search query").
-          setCategories(queries.toArray(new String[queries.size()]), false);
+          setCategories(queries.toArray(new String[queries.size()]), false, true);
 
         // Registers the metamodel and renderer.
         rhizo.setMetaModel(meta);
