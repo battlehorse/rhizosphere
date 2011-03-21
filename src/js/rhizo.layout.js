@@ -619,7 +619,7 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
   var bucketHeader = $('<div />', {
       'class': firstBucket ? 'rhizo-bucket-header rhizo-bucket-first' :
                              'rhizo-bucket-header'});
- 
+
   bucketHeader.text(header).
                css('position', 'absolute').
                css('left', 5).
