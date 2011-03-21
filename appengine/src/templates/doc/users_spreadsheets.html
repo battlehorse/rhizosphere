@@ -8,6 +8,16 @@
   <a href="http://docs.google.com">Google Spreadsheet</a>.
 </p>
 
+<h2>Contents</h2>
+<ul class="page_toc">
+  <li><a href="#basic">Basic Usage</a></li>
+  <li><a href="#fullscreen">Fullscreen mode</a></li>
+  <li><a href="#advanced">Advanced Gadget Options</a></li>
+  <li><a href="#categories">Handling categories</a></li>
+  <li><a href="#hierarchical">Handling hierarchical data</a></li>
+</ul>
+
+<a name="basic"><h2>Basic Usage</h2></a>
 <p>
   First, login to <a href="http://docs.google.com">docs.google.com</a> and
   create a new spreadsheet. Start entering some data or import them from an
@@ -61,7 +71,7 @@
   if you feel confused.
 </p>
 
-<h2>Fullscreen mode</h2>
+<a name="fullscreen"><h2>Fullscreen mode</h2></a>
 <p>
   Rhizosphere can operate in different modes depending on how much space it has
   to render its contents. So far Rhizosphere has been constrained to a
@@ -74,7 +84,7 @@
   already seen in the <a href="/doc/users_overview.html">Using Rhizosphere</a> section.
 </p>
 
-<h2>Advanced Gadget options</h2>
+<a name="advanced"><h2>Advanced Gadget options</h2></a>
 <p>
   When Rhizosphere is embedded inside a spreadsheet as a gadget, you have
   access to a set of advanced options.
@@ -116,14 +126,14 @@
     Advanced, as Label use
   </dt>
   <dd>
-    Explicitly specify the column ( either by typing its name or its
+    Explicitly specify the column ( either by typing its label or its
     identifying letter ) that Rhizosphere will use as label for each item.
   </dd>
   <dt>
     Advanced, as Size use
   </dt>
   <dd>
-    Explicitly specify the column ( either by typing its name or its
+    Explicitly specify the column ( either by typing its label or its
     identifying letter ) that Rhizosphere will use as the Size for each item.
     The column should contain a numeric value. Bigger numbers will result in
     bigger sizes.
@@ -132,7 +142,7 @@
     Advanced, as Color use
   </dt>
   <dd>
-    Explicitly specify the column ( either by typing its name or its
+    Explicitly specify the column ( either by typing its label or its
     identifying letter ) that Rhizosphere will use as the Color for each item.
     The column should contain a numeric value. Rhizosphere will use a color
     palette where bigger numbers will result in darker shades of the palette
@@ -140,17 +150,102 @@
   </dd>
 </dl>
 
-<h3>Other tips and tricks</h3>
+<a name="categories"><h2>Handling categories</h2></a>
 <p>
-  Normally filters over text columns are represented as input fields where you
-  can type in strings that will be matched against the column values.
-  You can transform them into dropdown selection boxes by adding the word
-  <code>CAT</code> (uppercase) to the column header.
+  Google Spreadsheets do not have an explicit way to declare that the values in
+  a given text column belong to a finite set of categories rather than being
+  free text. Without additional configuration, Rhizosphere will configure
+  filters over text columns as simple input fields where you can type in strings
+  that will be matched against the column values.
 </p>
-<img src="/static/doc/img/gadgetcat.png"
-  class="screenshot" style="border: 1px solid #bbb">
+<p>
+  You can instruct Rhizosphere to use dropdown selection boxes by adding the
+  tag word <code>CAT</code> (uppercase) to the column header.
+</p>
 <p>
   Do you want a selection box that allow multiple choices? Use the word
   <code>CATMUL</code> instead.
 </p>
+<img src="/static/doc/img/gadgetcat.png"
+  class="screenshot" style="border: 1px solid #bbb">
+
+<a name="hierarchical"><h2>Handling hierarchical data</h2></a>
+<p>
+  Google Spreadsheets lets you organize data in tabular fashion, but does not
+  have an explicit way to describe hierarchical data. Hierarchical relationships
+  appear naturally in several domains, such as when trying to visualize
+  organizational charts, or grouping geographic data at different depths
+  (country, region, city and such).
+</p>
+<p>
+  Rhizosphere contains several features that leverage hierarchical relationships
+  found in your data, such as tree and
+  <a href="http://en.wikipedia.org/wiki/Treemapping">treemap</a> layouts.
+</p>
+<p>
+  If you want Rhizosphere to infer a hierarchical structure from your Google
+  Spreadsheet data, use any of the following conventions.
+</p>
+<h4>Describe parent-child relationships</h4>
+<p>
+  Define two adjacent columns, the first containing an identifier of the
+  datapoint the row represents (such as the name of the employee, in the
+  organizational chart scenario), the second containing an identifier of the
+  parent datapoint (such as the employee manager). If a record has no parent,
+  leave the value of the second column empty.
+</p>
+<p>
+  Make sure the label of the column containing the parent data follows this
+  naming rule: <strong><code>Parent</code> + label of the preceding
+  column</strong>. For example, in the organizational chart case, the first
+  column might have the "Employee" label, and the second column will have the
+  "ParentEmployee" label.
+</p>
+<p>
+  Rhizosphere will automatically pick up the relationship between the two
+  columns and will let you display the data using either trees or treemaps.
+</p>
+<img src="/static/doc/img/hierarchical_1.png" class="screenshot">
+
+<h4>Describe tree branches using multiple columns</h4>
+<p>
+  Alternatively, you can define hierarchical data by fully describing the branch
+  of the tree each spreadsheet row belongs to. Define as many adjacent
+  columns as the depth of the tree you want to represent. Make sure all the
+  colums <strong>have the same label</strong>. Then, for every row, fill
+  the columns with node values running from the tree root down to the
+  element the row itself represents (or belongs to).
+</p>
+<p>
+  Again, Rhizosphere will automatically rebuild the tree structure for you.
+</p>
+<img src="/static/doc/img/hierarchical_2.png" class="screenshot">
+
+<h4>Describe tree branches using a single comma-separated column</h4>
+<p>
+  Finally, you can also put all your hierarchical information in a single
+  column. Fill the columns with node values running from the tree root down
+  to the element the row itself represents (or belongs to), separating them
+  with commas. If you do so, <strong>add the <code>CATHIE</code> word tag to the
+  column label</strong>. Rhizosphere will notice the column label and try to
+  rebuild the tree from the column values.
+</p>
+<img src="/static/doc/img/hierarchical_3.png" class="screenshot">
+
+<h4>Multiple hierarchies</h4>
+<p>
+  You are not limited to having a single hierarchy in your data. Rhizosphere can
+  handle as many as you want. Here you can find a slightly more complex example
+  that list employees of a fictional store arranging them both according to
+  their organizational chart and according to the department they work in.
+</p>
+<p>
+  The two included Rhizosphere visualizations display the organizational chart
+  and a treemap of sales data arranged by department. You can find the
+  original spreadsheet
+  <a href="https://spreadsheets.google.com/ccc?hl=en_GB&key=tjCJjlcgOV8jMGnptI2OeNQ&hl=en_GB#gid=0">
+    here</a>.
+</p>
+<img src="/static/doc/img/hierarchical_4.png" class="screenshot">
+
 {% endblock %}

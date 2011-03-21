@@ -283,6 +283,75 @@ var renderer = {
   }
 </pre>
 
+<h3>Handling categories and hierarchical data</h3>
+<p>As described in the <a href="/doc/users_spreadsheets.html">
+  Use with Google Spreadsheets</a> section, you can adopt several conventions
+  in column labeling and ordering to pass additional information to Rhizosphere
+  about the presence of categories and hierarchical structures in your data.
+  See the dedicated sections on how to handle
+  <a href="/doc/users_spreadsheets.html#hierarchical">hierarchical data</a> and
+  <a href="/doc/users_spreadsheets.html#categories">categories</a> via
+  column label conventions.
+</p>
+<p>
+  In addition to the above, you can alternatively pass the same information by
+  defining custom column properties, via
+  <a href="http://code.google.com/apis/visualization/documentation/reference.html#DataTable_setColumnProperty">
+    <code>DataTable.setCustomProperty()</code></a>.
+</p>
+<p>
+  Define a <code>rhizosphereCategory</code> custom column property (with any
+  associated value) to specify that the values in the column belong to a finite
+  set of categories. Rhizosphere will represent them using dedicated logic.
+  A single cell can use comma separated values to assign multiple categories
+  to the datapoint it belongs to.
+</p>
+<pre class="prettyprint lang-javascript">
+  data.addColumn('string', 'Name', 'name');
+  data.addColumn('string', 'Hobbies', 'hobbies');
+  // Rhizosphere will use dropdown selectors to let users choose hobbies,
+  // instead of a plain text input field.
+  data.setColumnProperty(1, 'rhizosphereCategory', true);
+  data.addRows([
+    ['Bob', 'Surf,Soccer'],
+    ['Alice', 'Soccer,Cooking'],
+  ]);
+</pre>
+<p>
+  Use a Javascript object with a <code>multiple</code> attribute as the value
+  for the <code>rhizosphereCategory</code> custom property to instruct
+  Rhizosphere to use comboboxes that allow multiple selection.
+</p>
+<pre class="prettyprint lang-javascript">
+  data.setColumnProperty(1, 'rhizosphereCategory', {multiple: true});
+</pre>
+<p>
+  Use a Javascript object with a <code>hierarchy</code> attribute as the value
+  for the <code>rhizosphereCategory</code> custom property to instruct
+  Rhizosphere that the specified set of categories should be handled in
+  hierarchical fashion.
+</p>
+<pre class="prettyprint lang-javascript">
+  data.setColumnProperty(1, 'rhizosphereCategory', {hierarchy: true});
+  data.addRows([
+   ['John', 'Sports,Soccer'],
+   ['George', 'Sports,Baseball']
+   ['Mary', 'Leisure,Cinema'],
+   ['Anne', 'Leisure,Cinema,Sci-Fi movies']
+  ]);
+
+/* The hobbies tree will result as follows:
+ *   Root
+ *   |____ Sports
+ *   |     |______ Soccer
+ *   |     |______ Baseball
+ *   |
+ *   |____ Leisure
+ *         |______ Cinema
+ *                 |______ Sci-Fi movies
+ */
+</pre>
+
 <h3>Everything put together</h3>
 <p>
   This <a href="/static/doc/txt/rhizosphere_gviz.html.txt">HTML page code</a>
