@@ -220,43 +220,72 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
      * @param categories The set of categories the attribute values can have.
      * @param multiple Whether the attribute can have multiple categories or
      *     just one.
+     * @param hierarchy Whether the categories represent a branch of a
+     *     hierarchical structure and are ordered accordingly, for example
+     *     {@code ["World", "Europe", "UK"]}.
      * @return the Attribute itself, for chaining.
      */
-    public Attribute setCategories(final String[] categories, final boolean multiple) {
+    public Attribute setCategories(
+        final String[] categories, final boolean multiple, final boolean hierarchy) {
       JsArrayString jsArray = JavaScriptObject.createArray().cast();
       for (String category : categories) {
         jsArray.push(category);
       }
-      nativeSetCategories(jsArray, multiple);
+      nativeSetCategories(jsArray, multiple, hierarchy);
       return this;
     }
 
-    private native void nativeSetCategories(JsArrayString categories, boolean multiple) /*-{
+    private native void nativeSetCategories(
+        JsArrayString categories, boolean multiple, boolean hierarchy) /*-{
       this['categories'] = categories;
       this['multiple'] = multiple;
+      this['isHierarchy'] = hierarchy;
     }-*/;
 
     /**
-     * Marks this attribute as establishing a parent-child relationship between
-     * visualization models. If set, the values Rhizosphere models will have for
-     * this attribute must point to the unique ID of the parent model (see
-     * {@link RhizosphereModelAttribute#modelId()}).
+     * Marks this attribute as establishing a link between visualization models.
+     * If set, the value this attribute will have must be the unique ID of the
+     * linked model (see {@link RhizosphereModelAttribute#modelId()}).
      * <p>
-     * When parent-child relationships exist within visualization models,
-     * Rhizosphere can offer advanced layout operations (such as hierarchical
-     * treemaps) that leverage this information.
+     * This option is useful to establish child-to-parent relationships between
+     * visualization models. When child-to-parent relationships exist between
+     * visualization models, Rhizosphere can offer advanced layout operations
+     * (such as hierarchical treemaps) that leverage this information.
      *
-     * @param isParent Whether this attribute establishes a parent-child
-     *     relationship.
+     * @param isLink Whether this attribute establishes a link to other
+     *     visualization models.
      * @return the Attribute itself, for chaining.
      */
-    public Attribute setParent(final boolean isParent) {
-      nativeSetParent(isParent);
+    public Attribute setLink(final boolean isLink) {
+      nativeSetLink(isLink, null);
       return this;
     }
 
-    private native void nativeSetParent(boolean isParent) /*-{
-      this['isParent'] = isParent;
+    /**
+     * Marks this attribute as establishing a link between visualization models,
+     * pointing to a custom model attribute other than the model unique id to
+     * resolve the links.
+     * 
+     * @param isLink Whether this attribute establishes a link to other
+     *     visualization models.
+     * @param linkKey the name of the target model attribute whose value 
+     *     resolves the links established by this attribute. If {@code null}, 
+     *     it is assumed that the values of this model attribute will contain
+     *     the unique ids of their linked models. If specified, the values of
+     *     the target model attribute must be unique across all visualization
+     *     models.
+     * @return the Attribute itself, for chaining.
+     */
+    public Attribute setLink(final boolean isLink, String linkKey) {
+      nativeSetLink(isLink, linkKey);
+      return this;
+    }
+
+    private native void nativeSetLink(boolean isLink, String linkKey) /*-{
+      this['isLink'] = isLink;
+      if (isLink && linkKey) {
+        this['linkKey'] = linkKey;
+      }
     }-*/;
 
     /**

@@ -91,11 +91,13 @@ public class AttributeBuilder {
     if (descriptor instanceof HasCategories) {
       target.setCategories(
           ((HasCategories) descriptor).categories(),
-          ((HasCategories) descriptor).multiple());
+          ((HasCategories) descriptor).multiple(),
+          ((HasCategories) descriptor).hierarchy());
     }
 
-    if (descriptor instanceof HasParent) {
-      target.setParent(((HasParent) descriptor).isParent());
+    if (descriptor instanceof HasLink) {
+      target.setLink(((HasLink) descriptor).isLink(),
+                     ((HasLink) descriptor).linkKey());
     }
 
     if (descriptor instanceof HasRange) {
