@@ -1738,13 +1738,33 @@ rhizo.ui.component.Actions.prototype.ready = function() {
 
 /* ==== Templates ==== */
 
+
+/**
+ * Barebone template that only contains Rhizosphere viewport, used when all
+ * interactive controls are defined externally and all Rhizosphere interactions
+ * occur via programmatic API calls.
+ *
+ * @param {rhizo.Project} project The project this template belongs to.
+ * @param {*} options Project-wide configuration options.
+ * @param {?string} template_key A unique key that identifies the template.
+ *     Generates a CSS class name that can be used for template-specific UI
+ *     skinning.
+ * @constructor
+ */
+rhizo.ui.component.BareTemplate = function(project, options, template_key) {
+  rhizo.ui.component.Template.call(this, project, options, template_key);
+
+};
+rhizo.inherits(rhizo.ui.component.BareTemplate, rhizo.ui.component.Template);
+
+
 /**
  * Template used when Rhizosphere is accessed via a mobile device, or when
  * the available screen estate is reduced (such as in gadgets). Collects all
  * the visualization controls in a links bar at the bottom of the screen.
  * 
  * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {*} options Project-wide configuration options.
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
@@ -1932,6 +1952,10 @@ rhizo.ui.component.StandardTemplate.prototype.addToRightBar = function(
  * @enum {string} Enumeration of available template factories.
  */
 rhizo.ui.component.templates = {
+  'bare': function(project, options) {
+    return new rhizo.ui.component.BareTemplate(
+        project, options, 'bare');
+  },
   'bottom': function(project, options) {
     return new rhizo.ui.component.BottomTemplate(
         project, options, 'bottom');
