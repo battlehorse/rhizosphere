@@ -16,8 +16,9 @@
 */
 
 // Global project namespace
-// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.state
+// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.state
 namespace("rhizo");
+
 
 /**
  * Projects are the central entities that manage an entire Rhizosphere
@@ -48,6 +49,15 @@ rhizo.Project = function(gui, opt_options) {
    * @private
    */
   this.state_ = null;
+
+  /**
+   * The publish/subscribe message dispatcher used by visualization elements
+   * and components to communicate across the project.
+   *
+   * @type {!rhizo.eventbus.EventBus}
+   * @private
+   */
+  this.eventBus_ = new rhizo.eventbus.EventBus();
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -62,25 +72,9 @@ rhizo.Project.prototype.metaReady = function() {
   if (!this.checkMetaModel_()) {
     return false;
   }
-  this.initializeLayoutEngines_();
+  this.layoutManager_ = new rhizo.layout.LayoutManager(this, this.options_);
+  this.layoutManager_.initEngines(rhizo.layout.layouts);
   return true;
-};
-
-rhizo.Project.prototype.initializeLayoutEngines_ = function() {
-  this.curLayoutName_ = 'flow'; // default layout engine
-  this.layoutEngines_ = {};
-  this.renderingPipeline_ = new rhizo.ui.RenderingPipeline(
-      this, this.gui_.universe);
-  for (var layoutName in rhizo.layout.layouts) {
-    var engine = new rhizo.layout.layouts[layoutName](this);
-    var enableEngine = true;
-    if (engine.verifyMetaModel && !engine.verifyMetaModel(this.metaModel_)) {
-      enableEngine = false;
-    }
-    if (enableEngine) {
-      this.layoutEngines_[layoutName] = engine;
-    }
-  }
 };
 
 rhizo.Project.prototype.deploy = function(opt_models) {
@@ -125,14 +119,8 @@ rhizo.Project.prototype.finalizeUI_ = function() {
   if (this.options_.enableHTML5History) {
     bindings.push(rhizo.state.Bindings.HISTORY);
   }
-  var initialStateRebuilt = rhizo.state.getMasterOverlord().attachProject(
-      this, bindings);
+  rhizo.state.getMasterOverlord().attachProject(this, bindings);
   this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
-  if (!initialStateRebuilt) {
-    // The state overlord is not aware of any initial state, so we initialize
-    // the visualization using defaults. No state is pushed.
-    this.layoutInternal_(this.curLayoutName_, {forcealign: true});
-  }
   // re-aligning animation settings
   this.alignFx();
 };
@@ -167,6 +155,16 @@ rhizo.Project.prototype.uuid = function() {
 
 rhizo.Project.prototype.model = function(id) {
   return this.modelsMap_[id];
+};
+
+/**
+ * Returns the set of models that are part of this project, keyed by their
+ * unique id.
+ * @return {!Object.<string, rhizo.model.SuperModel>} The set of models that
+ *     are part of this project.
+ */
+rhizo.Project.prototype.modelsMap = function() {
+  return this.modelsMap_;
 };
 
 rhizo.Project.prototype.metaModel = function() {
@@ -213,12 +211,24 @@ rhizo.Project.prototype.logger = function() {
   return this.logger_;
 };
 
-rhizo.Project.prototype.layoutEngines = function() {
-  return this.layoutEngines_;
+/**
+ * Returns the project event bus, that can be used to publish/subscribe to
+ * project-wide messages and notifications.
+ *
+ * @return {!rhizo.eventbus.EventBus} The project event bus.
+ */
+rhizo.Project.prototype.eventBus = function() {
+  return this.eventBus_;
 };
 
-rhizo.Project.prototype.currentLayoutEngineName = function() {
-  return this.curLayoutName_;
+
+/**
+ * Returns the project layout manager.
+ *
+ * @return {!rhizo.layout.LayoutManager} The project layout manager.
+ */
+rhizo.Project.prototype.layoutManager = function() {
+  return this.layoutManager_;
 };
 
 /**
@@ -253,7 +263,7 @@ rhizo.Project.prototype.isFilterAutocommit = function() {
 };
 
 rhizo.Project.prototype.select = function(id) {
-  var ids = this.extendSelection_(id);
+  var ids = this.layoutManager_.extendSelection(id);
   for (var i = ids.length-1; i >=0; i--) {
     var supermodel = this.model(ids[i]);
     this.selectionMap_[ids[i]] = supermodel;
@@ -262,7 +272,7 @@ rhizo.Project.prototype.select = function(id) {
 };
 
 rhizo.Project.prototype.unselect = function(id) {
-  var ids = this.extendSelection_(id);
+  var ids = this.layoutManager_.extendSelection(id);
   for (var i = ids.length-1; i >=0; i--) {
     this.unselectInternal_(ids[i]);
   }
@@ -350,8 +360,7 @@ rhizo.Project.prototype.filterUnselected = function() {
 
   this.state_.pushFilterSelectionChange(modelsToFilter);
   this.updateSelectionFilter_(modelsToFilter);
-  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
-
+  this.layoutManager_.forceLayout({filter: true});
   return modelsToFilter.length;
 };
 
@@ -370,7 +379,7 @@ rhizo.Project.prototype.resetUnselected = function() {
   }
   this.state_.pushFilterSelectionChange(null);
   this.updateSelectionFilter_(null);
-  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
+  this.layoutManager_.forceLayout({filter: true});
 };
 
 /**
@@ -406,26 +415,6 @@ rhizo.Project.prototype.updateSelectionFilter_ = function(modelsToFilter) {
   }
   // after changing the filter status of some elements, recompute fx settings.
   this.alignFx();
-};
-
-/**
- * If the current layout supports it, ask it to extend a model selection.
- * The layout may be aware of relationships between models (such as hierarchies)
- * so that selecting a model should trigger the selection of dependent ones.
- *
- * @param {string} id The id of the model whose selection state changed.
- * @return {Array.<string>} An array of model ids (including the input one) that
- *     are dependent on the input one.
- * @private
- */
-rhizo.Project.prototype.extendSelection_ = function(id) {
-  var layoutEngine = this.layoutEngines_[this.curLayoutName_];
-  if (layoutEngine.dependentModels) {
-    var idsToSelect = layoutEngine.dependentModels(id);
-    idsToSelect.push(id);
-    return idsToSelect;
-  }
-  return [id];
 };
 
 /**
@@ -507,36 +496,16 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
  *     describing the full visualization state.
  */
 rhizo.Project.prototype.setState = function(state) {
-  var layoutName = this.curLayoutName_;
-  var filter = false;
-  var customModelPositions = null;
-
-  // When restoring a full state, all facets should be reverted to their default
-  // value. Here we set correct defaults for any facet which might be missing
-  // from the full state specification.
-  if (!(rhizo.state.Facets.SELECTION_FILTER in state)) {
-    state[rhizo.state.Facets.SELECTION_FILTER] = [];
-  }
-  for (var key in this.metaModel_) {
-    var facet = rhizo.state.Facets.FILTER_PREFIX + key;
-    if (!(facet in state)) {
-      state[facet] = null;
-    }
-  }
-
   for (var facet in state) {
     if (facet == rhizo.state.Facets.SELECTION_FILTER) {
-      filter = true;
       var filteredModels = state[facet] || [];
       this.updateSelectionFilter_(filteredModels);
       this.alignSelectionUI_(filteredModels.length);
     } else if (facet == rhizo.state.Facets.LAYOUT) {
-      var layoutState = state[facet];
-      layoutName = layoutState ? layoutState.layoutName : 'flow';
-      this.alignLayout_(layoutName, layoutState);
-      customModelPositions = layoutState.positions;
+      // TODO(battlehorse): remove once legacy setState() state management
+      // is completely replaced by eventbus.
+      this.logger_.warn("Ignoring LAYOUT facet when restoring full state.");
     } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
-      filter = true;
       var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
       var value = state[facet];
       this.alignFilterUI_(key, value);
@@ -545,12 +514,6 @@ rhizo.Project.prototype.setState = function(state) {
       // layout will happen anyway. This will also purge any greyed-out models.
       this.filterInternal_(key, value);
     }
-  }
-  this.layoutInternal_(layoutName, {filter: filter, forcealign: true});
-  // If the state contained custom model positions, restore them _after_
-  // having performed layout.
-  if (customModelPositions) {
-    this.moveModels_(customModelPositions);
   }
 };
 
@@ -567,15 +530,11 @@ rhizo.Project.prototype.stateChanged = function(facet, facetState) {
     var filteredModels = facetState || [];
     this.updateSelectionFilter_(filteredModels);
     this.alignSelectionUI_(filteredModels.length);
-    this.layoutInternal_(this.curLayoutName_,
-                         {filter: true, forcealign: true});
+    this.layoutManager_.forceLayout({filter: true});
   } else if (facet == rhizo.state.Facets.LAYOUT) {
-    var layoutName = facetState ? facetState.layoutName : 'flow';
-    this.alignLayout_(layoutName, facetState);
-    this.layoutInternal_(layoutName);
-    if (facetState && facetState.positions) {
-      this.moveModels_(facetState.positions);
-    }
+    // TODO(battlehorse): remove once legacy setState() state management
+    // is completely replaced by eventbus.
+    throw("Should never receive a LAYOUT facet.");
   } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
     var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
     this.alignFilterUI_ (key, facetState);
@@ -586,150 +545,9 @@ rhizo.Project.prototype.stateChanged = function(facet, facetState) {
       if (this.mustLayoutAfterFilter_()) {
         this.commitFilter();
       } else {
-        this.alignVisibility_(rhizo.ui.Visibility.GREY);
+        this.alignVisibility(rhizo.ui.Visibility.GREY);
       }
     }
-  }
-};
-
-/**
- * Notifies the project that a set of models has been explicitly moved by the
- * user to a different position.
- *
- * @param {Array.<*>} positions An array of all model positions that changed.
- *     Each entry is a key-value map with the following properties: 'id', the
- *     id of the model that moved, 'top': the ending top coordinate of the
- *     top-left model corner with respect to the visualization universe,
- *     'left', the ending left coordinate of the top-left model corner with
- *     respect to the visualization universe.
- */
-rhizo.Project.prototype.modelsMoved = function(positions) {
-  var layoutState = null;
-  if (this.layoutEngines_[this.curLayoutName_].getState) {
-    layoutState = this.layoutEngines_[this.curLayoutName_].getState();
-  }
-  this.state_.pushLayoutChange(this.curLayoutName_, layoutState, positions);
-};
-
-/**
- * Moves a set of models to the requested positions.
- *
- * @param {Array.<*>} positions An array of all model positions that changed.
- *     See modelsMoved() for the expected format of the array entries.
- * @private
- */
-rhizo.Project.prototype.moveModels_ = function(positions) {
-  for (var i = positions.length-1; i >= 0; i--) {
-    if (positions[i].id in this.modelsMap_) {
-      this.modelsMap_[positions[i].id].rendering().move(
-          positions[i].top, positions[i].left);
-    }
-  }
-};
-
-/**
- * Re-arranges the disposition of the project models according to the
- * requested layout algorithm.
- *
- * @param {?string} opt_layoutEngineName The name of the layout engine to use.
- *     If undefined, the last known engine will be used.
- * @param {*} opt_state The state the layout should be set to. The layout state
- *     describes the set of layout-specific parameters. If undefined, the
- *     current (possibly default) state the layout has will be used.
- * @param {*} opt_options An optional key-value map of layout directives.
- *    Currently supported ones include:
- *    - 'filter' (boolean): Whether this layout operation is invoked as a result
- *      of a filter being applied.
- *    - 'forcealign' (boolean): Whether models' visibility should be synced at
- *      the end of the layout operation.
- * @return {boolean} Whether the layout operation completed successfully.
- */
-rhizo.Project.prototype.layout = function(opt_layoutEngineName,
-                                          opt_state,
-                                          opt_options) {
-  if (opt_layoutEngineName) {
-    if (!(opt_layoutEngineName in this.layoutEngines_)) {
-      this.logger_.error("Invalid layout engine:" + opt_layoutEngineName);
-      return false;
-    }
-  }
-
-  var layoutName = opt_layoutEngineName || this.curLayoutName_;
-  var layoutEngine = this.layoutEngines_[layoutName];
-
-  var layoutState = null;
-  if (opt_state) {
-    if (!this.alignLayout_(layoutName, opt_state)) {
-      this.logger_.error('Received invalid layout state');
-      return false;
-    }
-    layoutState = opt_state;
-  } else if (layoutEngine.getState) {
-    layoutState = layoutEngine.getState();
-  }
-  this.state_.pushLayoutChange(layoutName, layoutState);
-  this.layoutInternal_(opt_layoutEngineName || this.curLayoutName_,
-                       opt_options);
-  return true;
-};
-
-/**
- * Internal version of layout that doesn't deal with state management.
- * @param {string} layoutEngineName The name of the layout engine to use.
- * @param {*} opt_options An optional Key-value map of layout directives. See
- *    the documentation for layout().
- * @private
- */
-rhizo.Project.prototype.layoutInternal_ = function(layoutEngineName,
-                                                   opt_options) {
-  var lastLayoutEngine = this.layoutEngines_[this.curLayoutName_];
-  var options = $.extend({}, opt_options, this.options_);
-
-  // Update the name of the current engine.
-  this.curLayoutName_ = layoutEngineName;
-  var layoutEngine = this.layoutEngines_[this.curLayoutName_];
-
-  var dirty = false;
-  if (lastLayoutEngine && lastLayoutEngine.cleanup) {
-    // cleanup previous layout engine.
-    dirty = lastLayoutEngine.cleanup(
-        lastLayoutEngine == layoutEngine, options) || dirty;
-  }
-
-  this.renderingPipeline_.cleanup();
-  if (lastLayoutEngine != layoutEngine) {
-    // Restore all models to their original sizes and styles, if we are moving
-    // to a different layout engine.
-    this.renderingPipeline_.backupManager().restoreAll();
-  }
-
-  this.logger_.info('laying out...');
-
-  // reset panning
-  this.gui_.universe.move(0, 0, {'bottom': 0, 'right': 0});
-
-  // layout only non filtered models
-  var freeModels = jQuery.grep(this.models_, function(model) {
-    return model.isAvailableForLayout();
-  });
-
-  var boundingLayoutBox = new rhizo.layout.LayoutBox(
-      this.gui_.viewport, this.options_.layoutConstraints);
-  dirty = layoutEngine.layout(this.renderingPipeline_,
-                              boundingLayoutBox,
-                              freeModels,
-                              this.modelsMap_,
-                              this.metaModel_,
-                              options) || dirty;
-  var resultLayoutBox = this.renderingPipeline_.apply();
-  this.gui_.universe.css({
-      'width': Math.max(resultLayoutBox.width + resultLayoutBox.left,
-                        this.gui_.viewport.width()),
-      'height': Math.max(resultLayoutBox.height + resultLayoutBox.top,
-                         this.gui_.viewport.height())}).
-      move(0, 0);
-  if (dirty || options.forcealign) {
-    this.alignVisibility_();
   }
 };
 
@@ -752,7 +570,7 @@ rhizo.Project.prototype.filter = function(key, value) {
     if (this.mustLayoutAfterFilter_()) {
       this.commitFilter();
     } else {
-      this.alignVisibility_(rhizo.ui.Visibility.GREY);
+      this.alignVisibility(rhizo.ui.Visibility.GREY);
     }
   }
 };
@@ -823,35 +641,7 @@ rhizo.Project.prototype.mustLayoutAfterFilter_ = function() {
 };
 
 rhizo.Project.prototype.commitFilter = function() {
-  this.layoutInternal_(this.curLayoutName_, {filter: true, forcealign: true});
-};
-
-/**
- * Updates the UI and state of the layout engine to match the requested one.
- *
- * The layout selector component, if available, is updated to match the
- * currently selected layout engine. The layout engine itself receives the
- * updated state (which in turn triggers the update of layout UI controls).
- *
- * @param {string} layoutName The currently selected layout engine.
- * @param {*} layoutState The layout state, as returned from its getState()
- *     method.
- * @return {boolean} Whether the operation was successful or errors occurred
- *     because of a malformed input layoutState.
- * @private
- */
-rhizo.Project.prototype.alignLayout_ = function(layoutName, layoutState) {
-  var success = true;
-  if (this.layoutEngines_[layoutName].setState) {
-    success = this.layoutEngines_[layoutName].setState(layoutState);
-  }
-  if (success) {
-    var ui = this.gui_.getComponent('rhizo.ui.component.Layout');
-    if (ui) {
-      ui.setEngine(layoutName);
-    }
-  }
-  return success;
+  this.layoutManager_.forceLayout({filter: true});
 };
 
 /**
@@ -880,7 +670,11 @@ rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
   // Verify whether the filter key (which may come from an historical state)
   // still exists in the metaModel.
   if (key in this.metaModel_) {
-    var filterUiExists = true;
+    // TODO(battlehorse): temporary check for presence of filter containers.
+    // Remove once filter-related messages are propagated via eventbus.
+    var filterUiExists =
+        !!this.gui_.getComponent('rhizo.ui.component.FilterStackContainer') ||
+        !!this.gui_.getComponent('rhizo.ui.component.FilterBookContainer');
 
     // Rebuild and show the affected filter, if needed.
     var ui = this.gui_.getComponent('rhizo.ui.component.FilterStackContainer');
@@ -908,7 +702,7 @@ rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
  * (move, hide, show, rescale ...). This includes:
  * - models that are currently visible,
  * - 'unfiltered' models (i.e. number of models that will be visible once
- *   alignVisibility_() is invoked).
+ *   alignVisibility() is invoked).
  *
  * If either number is too high, animations are disabled.
  */
@@ -929,12 +723,13 @@ rhizo.Project.prototype.alignFx = function() {
 };
 
 /**
+ * Refreshes models' visibility based on their filtering status.
+ *
  * @param {rhizo.ui.Visibility?} opt_filtered_visibility An optional visibility
  *     level that filtered items should have. The default is
  *     rhizo.ui.Visibility.HIDDEN.
- * @private
  */
-rhizo.Project.prototype.alignVisibility_ = function(opt_filtered_visibility) {
+rhizo.Project.prototype.alignVisibility = function(opt_filtered_visibility) {
   var vis = rhizo.ui.Visibility;
   var filtered_visibility = opt_filtered_visibility || vis.HIDDEN;
 

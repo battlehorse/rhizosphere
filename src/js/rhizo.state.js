@@ -184,6 +184,9 @@ rhizo.state.MasterOverlord.prototype.attachProject = function(project,
     projectOverlord.broadcast(this.initialStateOwner_, null);
     return true;
   }
+  // Otherwise, notify solely the project binder for the project to initialize
+  // in a default state.
+  this.projectBinder(project).onTransition(null, this.state_);
   return false;
 };
 
@@ -529,6 +532,10 @@ rhizo.state.StateBinder.prototype.onRemove = function() {};
 /**
  * Binds the visualization state to the rhizo.Project that manages the
  * visualization itself.
+ *
+ * TODO(battlehorse): This class is transitioning from legacy project state
+ * management (setState/stateChanged) to eventbus-based notifications. As such
+ * it'll contain a mixture of the two until the transition completes.
  * @param {rhizo.state.StateOverlord} overlord
  * @param {rhizo.Project} project
  * @constructor
@@ -537,10 +544,12 @@ rhizo.state.ProjectStateBinder = function(overlord, project) {
   rhizo.state.StateBinder.call(this, overlord, rhizo.state.Bindings.PROJECT);
   this.project_ = project;
   this.removed_ = false;
+  this.project_.eventBus().subscribe('layout', this.onLayout_, this);
 };
 rhizo.inherits(rhizo.state.ProjectStateBinder, rhizo.state.StateBinder);
 
 rhizo.state.ProjectStateBinder.prototype.onRemove = function() {
+  this.project_.eventBus().unsubscribe('layout', this);
   this.removed_ = true;
 };
 
@@ -553,38 +562,76 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
   if (opt_delta) {
     // If we know exactly what changed to get to the target state, then
     // just apply the delta.
-    this.project_.stateChanged(opt_delta.facet, opt_delta.facetState);
+    if (opt_delta.facet == rhizo.state.Facets.LAYOUT) {
+      this.project_.eventBus().publish('layout', {
+        // Setting engine and state explicitly to null (when facetState is
+        // missing) equates to restoring the default engine and/or state (which
+        // is the right thing to do when a null, aka initial, state is restored
+        // from html5 history and other binders).
+        engine: opt_delta.facetState ? opt_delta.facetState.engine: null,
+        state: opt_delta.facetState ? opt_delta.facetState.state : null,
+        positions: opt_delta.facetState ? opt_delta.facetState.positions : null
+      }, /* callback */ null, this);
+    } else {
+      // Legacy state propagation.
+      this.project_.stateChanged(opt_delta.facet, opt_delta.facetState);
+    }
   } else {
     // Otherwise rebuild the full state.
-    this.project_.setState(state.uuids[this.overlord_.uuid()]);
+    var projectState = state.uuids[this.overlord_.uuid()] || {};
+
+    // When restoring a full state, all facets should be reverted to their
+    // default value. Here we set correct defaults for any facet which might be
+    // missing from the full state specification.
+    if (!(rhizo.state.Facets.SELECTION_FILTER in projectState)) {
+      projectState[rhizo.state.Facets.SELECTION_FILTER] = [];
+    }
+    for (var key in this.project_.metaModel()) {
+      var facet = rhizo.state.Facets.FILTER_PREFIX + key;
+      if (!(facet in projectState)) {
+        projectState[facet] = null;
+      }
+    }
+
+    // Legacy state propagation
+    this.project_.setState(projectState);
+
+    var layoutFacet = projectState[rhizo.state.Facets.LAYOUT];
+    this.project_.eventBus().publish('layout', {
+      engine: layoutFacet ? layoutFacet.engine : null,
+      state: layoutFacet ? layoutFacet.state : null,
+      positions: layoutFacet ? layoutFacet.positions : null,
+
+      // forcealign required to align model visibility since we are rebuilding
+      // a full state (it may even be the initial one, when all models are still
+      // hidden).
+      options: {forcealign: true}
+    }, /* callback */ null, this);
   }
 };
 
 /**
- * Utility method to change the visualization state because of a change in
- * the visualization layout algorithm.
+ * Callback invoked whenever a layout related change occurred elsewhere on the
+ * project. Updates the visualization state to match the layout change.
  *
- * @param {string} layoutName The name of the layout engine that was applied.
- * @param {*} layoutState Layout engine state (see getState() in the layout
- *     documentation.
- * @param {Array.<*>} opt_positions An optional array of all model that have
- *     a custom position, other than the one the layout mandates.
- *     Each entry is a key-value map with the following properties: 'id', the
- *     id of the model that moved, 'top': the ending top coordinate of the
- *     top-left model corner with respect to the visualization universe,
- *     'left', the ending left coordinate of the top-left model corner with
- *     respect to the visualization universe.
+ * @param {Object} message An eventbus message describing the layout change
+ *     that occurred. See rhizo.layout.LayoutManager for the expected message
+ *     structure.
+ * @private
  */
-rhizo.state.ProjectStateBinder.prototype.pushLayoutChange = function(
-    layoutName, layoutState, opt_positions) {
+rhizo.state.ProjectStateBinder.prototype.onLayout_ = function(message) {
   if (this.removed_) {
     throw("ProjectStateBinder cannot issue transitions after removal from " +
           "overlord");
   }
-  var facetState = jQuery.extend({layoutName: layoutName}, layoutState);
-  var replace = !!opt_positions && this.curLayoutHasPositions_();
-  if (opt_positions) {
-    facetState.positions = this.mergePositions_(opt_positions);
+
+  var facetState = {
+    engine: message['engine'],
+    state: message['state']
+  };
+  var replace = !!message['positions'] && this.curLayoutHasPositions_();
+  if (message['positions']) {
+    facetState.positions = this.mergePositions_(message['positions']);
   }
   var delta = this.makeDelta(rhizo.state.Facets.LAYOUT, facetState);
   this.overlord_.transition(this.key(), delta, null, replace);

@@ -1733,8 +1733,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
           all_selected[id].rendering().unmarkPosition();
         }
       }
-
-      this.project_.modelsMoved(modelPositions);
+      this.project_.layoutManager().modelsMoved(modelPositions);
     }, this),
     refreshPositions: false
   });
