@@ -22,8 +22,6 @@
     left to right, top to bottom, hence this class uses the 'traditional' set of
     positioning coordinates (top, left, width, height).
 
-  - TreeLayoutUI: Helper class to manage layout UI controls.
-
   - TreeNode: a simple datastructure representing a node in the tree. It is used
     also to store some rendering information about the node, such as the
     bounding rectangle which can contain the rendering of the node itself and
@@ -48,96 +46,7 @@
 */
 
 // RHIZODEP=rhizo.layout,rhizo.ui
-
-/**
- * Helper class that handles TreeLayout ui controls.
- * @param {rhizo.layout.TReeLayout} layout
- * @param {rhizo.Project} project
- */
-rhizo.layout.TreeLayoutUI = function(layout, project) {
-  this.layout_ = layout;
-  this.project_ = project;
-
-  this.directionSelector_ = null;
-  this.metaModelKeySelector_ = null;
-
-  /**
-   * The matcher to identify all model attributes where tree structures can be
-   * built from.
-   * @type {function(string, Object):boolean}
-   * @private
-   */
-  this.matcher_ = rhizo.layout.orMatcher(
-      rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
-};
-
-rhizo.layout.TreeLayoutUI.prototype.renderControls = function() {
-  var parentKeys = this.getParentKeys_();
-  var details = $("<div />");
-  if (parentKeys.length == 0) {
-    // should never happen because of verifyMetaModel
-    details.append("No hierarchical relationships exist");
-    return details;
-  }
-
-  details.append(" arrange ");
-  this.directionSelector_ = $("<select class='rhizo-treelayout-direction' />");
-  this.directionSelector_.append("<option value='hor'>Horizontally</option>");
-  this.directionSelector_.append("<option value='ver'>Vertically</option>");
-  this.directionSelector_.change(jQuery.proxy(this.updateState_, this));
-  details.append(this.directionSelector_);
-
-  if (parentKeys.length > 1) {
-    this.metaModelKeySelector_ = rhizo.layout.metaModelKeySelector(
-        this.project_,
-        'rhizo-treelayout-parentKey',
-        this.matcher_);
-    this.metaModelKeySelector_.change(jQuery.proxy(this.updateState_, this));
-    details.append(" by ").append(this.metaModelKeySelector_);
-  } else if (parentKeys.length == 1) {
-    this.metaModelKeySelector_ =
-        $("<input type='hidden' />").val(parentKeys[0]);
-  }
-  return details;
-};
-
-/**
- * @return {Array.<string>} The list of all metamodel keys which can be used
- *     to arrange models in a tree structure, i.e. they either identify
- *     parent-child relationships (see rhizo.layout.linkMatcher) or place
- *     a model in a hierarchical path (see rhizo.layout.hierarchyMatcher).
- * @private
- */
-rhizo.layout.TreeLayoutUI.prototype.getParentKeys_ = function() {
-  var parentKeys = [];
-  for (var key in this.project_.metaModel()) {
-    if (this.matcher_(key, this.project_.metaModel()[key])) {
-      parentKeys.push(key);
-    }
-  }
-  return parentKeys;
-};
-
-rhizo.layout.TreeLayoutUI.prototype.setState = function(state) {
-  this.directionSelector_.val(state.direction);
-  if (this.metaModelKeySelector_) {
-    this.metaModelKeySelector_.val(state.parentKey);
-  }
-};
-
-/**
- * Updates the layout state whenever the user modifies the controls.
- * @private
- */
-rhizo.layout.TreeLayoutUI.prototype.updateState_ = function() {
-  var state = {
-    direction: this.directionSelector_.val()
-  };
-  if (this.metaModelKeySelector_) {
-    state.parentKey = this.metaModelKeySelector_.val();
-  }
-  this.layout_.setStateFromUI(state);
-};
+namespace('rhizo.layout');
 
 
 /**
@@ -164,10 +73,9 @@ rhizo.layout.TreeLayout = function(project) {
    * @private
    */
   this.globalNodesMap_ = null;
-  rhizo.layout.GUILayout.call(this, project,
-                              new rhizo.layout.TreeLayoutUI(this, project));
+  rhizo.layout.StatefulLayout.call(this, project);
 };
-rhizo.inherits(rhizo.layout.TreeLayout, rhizo.layout.GUILayout);
+rhizo.inherits(rhizo.layout.TreeLayout, rhizo.layout.StatefulLayout);
 
 
 /**
@@ -291,7 +199,7 @@ rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
 };
 
 rhizo.layout.TreeLayout.prototype.toString = function() {
-  return "Tree";
+  return "TreeLayout";
 };
 
 rhizo.layout.TreeLayout.prototype.dependentModels = function(modelId) {
@@ -607,4 +515,4 @@ rhizo.layout.TreePainter.prototype.drawConnector_ = function(pipeline,
 
 
 // register the treelayout in the global layouts list
-rhizo.layout.layouts.tree = rhizo.layout.TreeLayout;
+rhizo.layout.layouts.tree = {'name': 'Tree', 'engine': rhizo.layout.TreeLayout};

@@ -55,7 +55,7 @@
  * rhizo.ui.component.templates enumeration.
  */
 
-// RHIZODEP=rhizo.ui,rhizo.layout
+// RHIZODEP=rhizo.ui,rhizo.ui.layout
 // Components Namespace
 namespace("rhizo.ui.component");
 
@@ -989,6 +989,7 @@ rhizo.ui.component.Console.prototype.getHeader = function() {
 rhizo.ui.component.Layout = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
                                     'rhizo.ui.component.Layout');
+  project.eventBus().subscribe('layout', this.onLayout_, this);
 };
 rhizo.inherits(rhizo.ui.component.Layout, rhizo.ui.component.Component);
 
@@ -1004,8 +1005,7 @@ rhizo.ui.component.Layout.prototype.render = function() {
   this.layoutSelector_ = $("<select />", {disabled: 'disabled'});
   this.layoutSelector_.append($("<option value=''>No layout engines</option>"));
 
-  this.submit_ = $('<button />', {disabled: 'disabled'}).text('Update');
-  this.layoutPanel_.prepend(this.submit_).
+  this.layoutPanel_.
       prepend(this.layoutSelector_).
       prepend("Keep items ordered by: ");
 
@@ -1014,52 +1014,68 @@ rhizo.ui.component.Layout.prototype.render = function() {
 
 rhizo.ui.component.Layout.prototype.metaReady = function() {
   this.layoutSelector_.children().remove();
-  var layoutControlsMap = {};
-  var layoutEngines = this.project_.layoutEngines();
-  for (var layoutEngineName in layoutEngines) {
-    var layoutEngine = layoutEngines[layoutEngineName];
+  this.layoutControlsMap_ = {};
+  var engineNames = this.project_.layoutManager().getEngineNames();
+  for (var i = 0; i < engineNames.length; i++) {
+    var engineName = engineNames[i];
+    var isCurrent =
+        engineName == this.project_.layoutManager().getCurrentEngineName();
     this.layoutSelector_.append(
-      $("<option value='" + layoutEngineName + "' " +
-        (this.project_.currentLayoutEngineName() == layoutEngineName ?
-             "selected" : "") +
-        ">" + layoutEngine  + "</option>"));
-    if (layoutEngine.layoutUIControls) {
-      var layoutControls = layoutEngine.layoutUIControls();
-      layoutControlsMap[layoutEngineName] = $(layoutControls);
-      if (this.project_.currentLayoutEngineName() != layoutEngineName) {
+      $("<option value='" + engineName + "' " +
+        (isCurrent ? "selected" : "") +
+        ">" + rhizo.layout.layouts[engineName]['name']  + "</option>"));
+
+    var layoutEngineUi = rhizo.layout.layouts[engineName]['ui'];
+    if (layoutEngineUi) {
+      var layoutControls =
+          new layoutEngineUi(this.project_, engineName).layoutUIControls();
+      this.layoutControlsMap_[engineName] = $(layoutControls);
+      if (!isCurrent) {
         layoutControls.css("display","none");
       }
       this.layoutOptions_.append(layoutControls);
     }
   }
 
-  this.layoutSelector_.removeAttr('disabled').change(function(ev) {
-    for (var layout in layoutControlsMap) {
-      if (layout == $(this).val()) {
-        layoutControlsMap[layout].show("fast");
-      } else {
-        layoutControlsMap[layout].hide("fast");
-      }
-    }
-  });
+  this.layoutSelector_.removeAttr('disabled').change(
+      jQuery.proxy(this.updateVisibleEngineControls_, this));
 };
 
 rhizo.ui.component.Layout.prototype.ready = function() {
-  this.submit_.removeAttr('disabled').click(jQuery.proxy(function() {
+  this.layoutSelector_.change(jQuery.proxy(function() {
     // TODO(battlehorse): forcealign should be true only if there are
     // uncommitted filters (i.e. GREY models).
-    this.project_.layout(this.layoutSelector_.val(), null, {forcealign:true});
+    this.project_.eventBus().publish('layout', {
+      engine: this.layoutSelector_.val(),
+      options: {forcealign: true}
+    }, /* callback */ null, this);
   }, this));
 };
 
 /**
- * Selects the given layout engine.
- * @param {string} layoutEngineName The name of the layout engine to select.
+ * Callback invoked whenever a layout related change occurs in the project.
+ * Ensure that the layout component UI reflects the currently chosen engine.
+ *
+ * @param {Object} message The eventbus message describing the layout change.
  */
-rhizo.ui.component.Layout.prototype.setEngine = function(layoutEngineName) {
-  this.layoutSelector_.val(layoutEngineName).change();
+rhizo.ui.component.Layout.prototype.onLayout_ = function(message) {
+  this.layoutSelector_.val(message['engine']);
+  this.updateVisibleEngineControls_();
 };
 
+/**
+ * Ensures that the correct UI matching the selected layout engine is visible.
+ * @private
+ */
+rhizo.ui.component.Layout.prototype.updateVisibleEngineControls_ = function() {
+  for (var layout in this.layoutControlsMap_) {
+    if (layout == $(this.layoutSelector_).val()) {
+      this.layoutControlsMap_[layout].show("fast");
+    } else {
+      this.layoutControlsMap_[layout].hide("fast");
+    }
+  }
+};
 
 /**
  * Handles selections and selection-based filtering.
