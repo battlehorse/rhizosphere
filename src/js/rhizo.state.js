@@ -544,7 +544,8 @@ rhizo.state.ProjectStateBinder = function(overlord, project) {
   rhizo.state.StateBinder.call(this, overlord, rhizo.state.Bindings.PROJECT);
   this.project_ = project;
   this.removed_ = false;
-  this.project_.eventBus().subscribe('layout', this.onLayout_, this);
+  this.project_.eventBus().subscribe(
+      'layout', this.onLayout_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.state.ProjectStateBinder, rhizo.state.StateBinder);
 
