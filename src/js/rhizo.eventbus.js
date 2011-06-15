@@ -76,10 +76,17 @@ rhizo.eventbus.EventBus.prototype.destroy = function() {
  * @param {!Object} subscriber The subscriber object, typically the object that
  *     owns the subscriberCallback. The callback will be invoked with
  *     'subscriber' as the this scope.
+ * @param {boolean=} opt_committed Whether the subscriber should receive
+ *     message notifications while they are 'in flight' or 'committed'. Channel
+ *     messages may command mutations on Rhizosphere entities that subscribers
+ *     might want to query. Requesting notification on commit guarantees the
+ *     subscriber to be notified after mutations have been applied. Defaults to
+ *     'in flight'.
  */
 rhizo.eventbus.EventBus.prototype.subscribe = function(
-    channel, subscriberCallback, subscriber) {
-  this.getChannel_(channel).addSubscriber(subscriberCallback, subscriber);
+    channel, subscriberCallback, subscriber, opt_committed) {
+  this.getChannel_(channel).addSubscriber(
+      subscriberCallback, subscriber, opt_committed);
 };
 
 /**
@@ -152,6 +159,7 @@ rhizo.eventbus.EventBus.prototype.publish = function(
     channel, message, opt_callback, opt_sender) {
   if (!(channel in this.channels_)) {
     opt_callback && opt_callback.call(opt_sender, true);
+    return;
   }
   this.channels_[channel].publish(message, opt_callback, opt_sender);
 };
@@ -193,11 +201,22 @@ rhizo.eventbus.Channel_ = function(name) {
   this.preprocessorsOrder_ = [];
 
   /**
-   * The channel subscribers, keyed by their unique identifier on the eventbus.
+   * The channel subscribers, keyed by their unique identifier on the eventbus,
+   * that will be notified as soon as messages are published ('in flight'
+   * notification phase).
    * @type {!Object.<number, function>}
    * @private
    */
   this.subscribers_ = {};
+
+  /**
+   * The channel subscribers, keyed by their unique identifier on the eventbus,
+   * that will be notified after the mutations driven by published messages
+   * have been committed ('committed' notification phase).
+   * @type {!Object.<number, function>}
+   * @private
+   */
+  this.commitSubscribers_ = {};
 };
 
 /**
@@ -208,11 +227,14 @@ rhizo.eventbus.Channel_ = function(name) {
  * @param {!Object} subscriber The subscriber object, typically the object that
  *     owns the subscriberCallback. The callback will be invoked with
  *     'subscriber' as the this scope.
- * @param subscriber
+ * @param {boolean=} opt_committed Whether the subscriber should receive
+ *     message notifications while they are 'in flight' or 'committed'.
  */
 rhizo.eventbus.Channel_.prototype.addSubscriber = function(
-    subscriberCallback, subscriber) {
-  this.add_(this.subscribers_, subscriberCallback, subscriber);
+    subscriberCallback, subscriber, opt_committed) {
+  this.add_(
+      !!opt_committed ? this.commitSubscribers_ : this.subscribers_,
+      subscriberCallback, subscriber);
 };
 
 /**
@@ -246,6 +268,7 @@ rhizo.eventbus.Channel_.prototype.addPreprocessor = function(
  */
 rhizo.eventbus.Channel_.prototype.removeSubscriber = function(subscriber) {
   this.remove_(this.subscribers_, subscriber);
+  this.remove_(this.commitSubscribers_, subscriber);
 };
 
 /**
@@ -331,13 +354,26 @@ rhizo.eventbus.Channel_.prototype.preprocess_ = function(
  */
 rhizo.eventbus.Channel_.prototype.send_ = function(
     message, opt_callback, opt_sender) {
-  for (var subscriberId in this.subscribers_) {
+  this.sendToSubscriberPool_(message, this.subscribers_, opt_sender);
+  this.sendToSubscriberPool_(message, this.commitSubscribers_, opt_sender);
+  opt_callback && opt_callback.call(opt_sender, true);
+};
+
+/**
+ * Sends  a message to a given pool of subscribers, excluding the sender if
+ * part of the pool.
+ * @param {!Object} message The message to send.
+ * @param {!Object.<number, function>} pool The pool of subscribers to target.
+ * @param {Object=} opt_sender The message sender, if any.
+ */
+rhizo.eventbus.Channel_.prototype.sendToSubscriberPool_ = function(
+    message, pool, opt_sender) {
+  for (var subscriberId in pool) {
     if (opt_sender && subscriberId == opt_sender[rhizo.eventbus.uuidKey_]) {
       continue;
     }
-    this.subscribers_[subscriberId](message);
+    pool[subscriberId](message);
   }
-  opt_callback && opt_callback.call(opt_sender, true);
 };
 
 /**
