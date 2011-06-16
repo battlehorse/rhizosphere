@@ -1741,7 +1741,7 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
               top: all_selected[id].rendering().position().top,
               left: all_selected[id].rendering().position().left
           });
-          all_selected[id].rendering().unmarkPosition();
+          all_selected[id].rendering().unmarkPosition().refreshPosition();
         }
       }
       this.project_.layoutManager().modelsMoved(modelPositions);
