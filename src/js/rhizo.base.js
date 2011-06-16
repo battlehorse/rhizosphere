@@ -16,7 +16,7 @@
 */
 
 // Global project namespace
-// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.state
+// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.selection,rhizo.state
 namespace("rhizo");
 
 
@@ -32,7 +32,6 @@ namespace("rhizo");
 rhizo.Project = function(gui, opt_options) {
   this.models_ = [];
   this.modelsMap_ = {};
-  this.selectionMap_ = {};
   this.options_ = opt_options || {};
   this.gui_ = gui;
   this.filterAutocommit_ = true;
@@ -58,6 +57,13 @@ rhizo.Project = function(gui, opt_options) {
    * @private
    */
   this.eventBus_ = new rhizo.eventbus.EventBus();
+
+  /**
+   * @type {!rhizo.selection.SelectionManager}
+   * @private
+   */
+  this.selectionManager_ = new rhizo.selection.SelectionManager(
+      this, this.options_);
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -221,7 +227,6 @@ rhizo.Project.prototype.eventBus = function() {
   return this.eventBus_;
 };
 
-
 /**
  * Returns the project layout manager.
  *
@@ -229,6 +234,15 @@ rhizo.Project.prototype.eventBus = function() {
  */
 rhizo.Project.prototype.layoutManager = function() {
   return this.layoutManager_;
+};
+
+/**
+ * Returns the project selection manager.
+ *
+ * @return {!rhizo.selection.SelectionManager} The project selection manager.
+ */
+rhizo.Project.prototype.selectionManager = function() {
+  return this.selectionManager_;
 };
 
 /**
@@ -260,161 +274,6 @@ rhizo.Project.prototype.enableFilterAutocommit = function(enable) {
 
 rhizo.Project.prototype.isFilterAutocommit = function() {
   return this.filterAutocommit_;
-};
-
-rhizo.Project.prototype.select = function(id) {
-  var ids = this.layoutManager_.extendSelection(id);
-  for (var i = ids.length-1; i >=0; i--) {
-    var supermodel = this.model(ids[i]);
-    this.selectionMap_[ids[i]] = supermodel;
-    supermodel.setSelected(true);
-  }
-};
-
-rhizo.Project.prototype.unselect = function(id) {
-  var ids = this.layoutManager_.extendSelection(id);
-  for (var i = ids.length-1; i >=0; i--) {
-    this.unselectInternal_(ids[i]);
-  }
-};
-
-/**
- * Toggles the selection status of one or more models. If multiple models
- * are passed and they are in a mixed selection status, calling this function
- * will first select them.
- *
- * @param {(Object|Array.<Object>)} ids Either a single model id or an array of
- *     model ids.
- */
-rhizo.Project.prototype.toggleSelect = function(ids) {
-  if (!$.isArray(ids)) {
-    ids = [ids];
-  }
-  var allSelected = true;
-  for (var i = ids.length - 1; i >= 0; i--) {
-    if (!this.isSelected(ids[i])) {
-      allSelected = false;
-      break;
-    }
-  }
-  for (i = ids.length - 1; i >= 0; i--) {
-    if (allSelected) {
-      this.unselect(ids[i]);
-    } else {
-      this.select(ids[i]);
-    }
-  }
-};
-
-rhizo.Project.prototype.unselectAll = function() {
-  // We don't have to care about selection extension when unselecting
-  // everything.
-  for (var id in this.selectionMap_) {
-    this.unselectInternal_(id);
-  }
-};
-
-/**
- * @private
- */
-rhizo.Project.prototype.unselectInternal_ = function(id) {
-  var supermodel = this.model(id);
-  this.selectionMap_[id] = null;
-  delete this.selectionMap_[id];
-  supermodel.setSelected(false);
-};
-
-rhizo.Project.prototype.isSelected = function(id) {
-  return this.selectionMap_[id];
-};
-
-rhizo.Project.prototype.allSelected = function() {
-  return this.selectionMap_;
-};
-
-rhizo.Project.prototype.allUnselected = function() {
-  var selectionMap = this.selectionMap_;
-  return $.grep(this.models_, function(superModel) {
-    return !selectionMap[superModel.id];
-  });
-};
-
-/**
- * Removes all the unselected models from user view, filtering them out.
- * @return {number} The number of models that have been hidden from view.
- */
-rhizo.Project.prototype.filterUnselected = function() {
-  var countSelected = 0;
-  for (var id in this.selectionMap_) { countSelected++; }
-  if (countSelected == 0) {
-    this.logger_.error("No items selected");
-    return 0;
-  }
-
-  var modelsToFilter = [];
-  for (var id in this.modelsMap_) {
-    if (!(id in this.selectionMap_)) {
-      modelsToFilter.push(id);
-    }
-  }
-
-  this.state_.pushFilterSelectionChange(modelsToFilter);
-  this.updateSelectionFilter_(modelsToFilter);
-  this.layoutManager_.forceLayout({filter: true});
-  return modelsToFilter.length;
-};
-
-/**
- * Restores any models that were filtered out via selection.
- */
-rhizo.Project.prototype.resetUnselected = function() {
-  var countFiltered = 0;
-  for (var i = this.models_.length - 1; i >= 0; i--) {
-    if (this.models_[i].isFiltered('__selection__')) {
-      countFiltered++;
-    }
-  }
-  if (countFiltered == 0) {
-    return;  // Nothing is filtered out because of previous selections.
-  }
-  this.state_.pushFilterSelectionChange(null);
-  this.updateSelectionFilter_(null);
-  this.layoutManager_.forceLayout({filter: true});
-};
-
-/**
- * Assigns or removes the selection filter from a set of models.
- *
- * Note that the modelsToFilter set may come from historical visualization
- * state, so it may contain references to model ids that are no longer part of
- * the current visualization.
- *
- * @param {Array.<*>} modelsToFilter Array of ids for all the models that should
- *     be filtered out. If null, no model should be filtered out.
- * @private
- */
-rhizo.Project.prototype.updateSelectionFilter_ = function(modelsToFilter) {
-  modelsToFilter = modelsToFilter || [];
-  if (modelsToFilter.length > 0) {
-    var modelsToFilterMap = {}; 
-    for (var i = modelsToFilter.length-1; i >= 0; i--) {
-      modelsToFilterMap[modelsToFilter[i]] = true;
-    }
-
-    // Transfer selection status to a filter.
-    for (var i = this.models_.length-1; i >= 0; i--) {
-     if (this.models_[i].id in modelsToFilterMap) {
-      this.models_[i].filter('__selection__');  // hard-coded filter key.
-     } else {
-       this.models_[i].resetFilter('__selection__');
-     }
-    }
-    this.unselectAll();
-  } else {
-    this.resetAllFilter('__selection__');
-  }
-  // after changing the filter status of some elements, recompute fx settings.
-  this.alignFx();
 };
 
 /**
@@ -497,14 +356,12 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
  */
 rhizo.Project.prototype.setState = function(state) {
   for (var facet in state) {
-    if (facet == rhizo.state.Facets.SELECTION_FILTER) {
-      var filteredModels = state[facet] || [];
-      this.updateSelectionFilter_(filteredModels);
-      this.alignSelectionUI_(filteredModels.length);
-    } else if (facet == rhizo.state.Facets.LAYOUT) {
+    if (facet == rhizo.state.Facets.SELECTION_FILTER ||
+        facet == rhizo.state.Facets.LAYOUT) {
       // TODO(battlehorse): remove once legacy setState() state management
       // is completely replaced by eventbus.
-      this.logger_.warn("Ignoring LAYOUT facet when restoring full state.");
+      this.logger_.warn(
+          "Ignoring " + facet + " facet when restoring full state.");
     } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
       var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
       var value = state[facet];
@@ -526,15 +383,11 @@ rhizo.Project.prototype.setState = function(state) {
  * @param {*} The facet-specific state to transition to.
  */
 rhizo.Project.prototype.stateChanged = function(facet, facetState) {
-  if (facet == rhizo.state.Facets.SELECTION_FILTER) {
-    var filteredModels = facetState || [];
-    this.updateSelectionFilter_(filteredModels);
-    this.alignSelectionUI_(filteredModels.length);
-    this.layoutManager_.forceLayout({filter: true});
-  } else if (facet == rhizo.state.Facets.LAYOUT) {
+  if (facet == rhizo.state.Facets.SELECTION_FILTER ||
+      facet == rhizo.state.Facets.LAYOUT) {
     // TODO(battlehorse): remove once legacy setState() state management
     // is completely replaced by eventbus.
-    throw("Should never receive a LAYOUT facet.");
+    throw("Should never receive a " + facet + " facet.");
   } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
     var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
     this.alignFilterUI_ (key, facetState);
@@ -642,19 +495,6 @@ rhizo.Project.prototype.mustLayoutAfterFilter_ = function() {
 
 rhizo.Project.prototype.commitFilter = function() {
   this.layoutManager_.forceLayout({filter: true});
-};
-
-/**
- * Updates the visualization UI to match the current selection status.
- * @param {number} numFilteredModels The number of models that have been
- *     filtered out as a result of selection operations.
- * @private
- */
-rhizo.Project.prototype.alignSelectionUI_ = function(numFilteredModels) {
-  var ui = this.gui_.getComponent('rhizo.ui.component.SelectionManager');
-  if (ui) {
-    ui.setNumFilteredModels(numFilteredModels);
-  }
 };
 
 /**

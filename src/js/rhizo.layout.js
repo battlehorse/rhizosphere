@@ -510,7 +510,8 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
                css('left', 5).
                css('top', this.internalFlowLayout_.top).
                click(jQuery.proxy(function() {
-                 this.project_.toggleSelect(modelIds);
+                 this.project_.eventBus().publish(
+                     'selection', {'action': 'toggle', 'models': modelIds});
                }, this));
   pipeline.artifact(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;

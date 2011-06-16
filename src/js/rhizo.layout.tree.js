@@ -367,7 +367,8 @@ rhizo.layout.TreePainter.prototype.fillSyntheticRenderings_ = function(
           modelIds.push(childNodes[i].id);
         }
       }
-      this.project_.toggleSelect(modelIds);
+      this.project_.eventBus().publish(
+          'selection', {'action': 'toggle', 'models': modelIds});
     }, this));
 
     // node must be attached to the DOM when creating a SyntheticRendering,

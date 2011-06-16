@@ -546,14 +546,18 @@ rhizo.state.ProjectStateBinder = function(overlord, project) {
   this.removed_ = false;
   this.project_.eventBus().subscribe(
       'layout', this.onLayout_, this, /* committed */ true);
+  this.project_.eventBus().subscribe(
+      'selection', this.onSelection_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.state.ProjectStateBinder, rhizo.state.StateBinder);
 
 rhizo.state.ProjectStateBinder.prototype.onRemove = function() {
   this.project_.eventBus().unsubscribe('layout', this);
+  this.project_.eventBus().unsubscribe('selection', this);
   this.removed_ = true;
 };
 
+/** @inheritDoc */
 rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
                                                                  state) {
   if (this.removed_) {
@@ -573,6 +577,20 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
         state: opt_delta.facetState ? opt_delta.facetState.state : null,
         positions: opt_delta.facetState ? opt_delta.facetState.positions : null
       }, /* callback */ null, this);
+    } else if (opt_delta.facet == rhizo.state.Facets.SELECTION_FILTER) {
+      var hiddenModelIds = opt_delta.facetState || [];
+      if (hiddenModelIds.length == 0) {
+        this.project_.eventBus().publish(
+            'selection', {action: 'resetFocus'}, /* callback */ null, this);
+      } else {
+        this.project_.eventBus().publish(
+            'selection', {
+              action: 'hide',
+              models: hiddenModelIds,
+              incremental: false
+            },
+            /* callback */ null, this);
+      }
     } else {
       // Legacy state propagation.
       this.project_.stateChanged(opt_delta.facet, opt_delta.facetState);
@@ -584,9 +602,6 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
     // When restoring a full state, all facets should be reverted to their
     // default value. Here we set correct defaults for any facet which might be
     // missing from the full state specification.
-    if (!(rhizo.state.Facets.SELECTION_FILTER in projectState)) {
-      projectState[rhizo.state.Facets.SELECTION_FILTER] = [];
-    }
     for (var key in this.project_.metaModel()) {
       var facet = rhizo.state.Facets.FILTER_PREFIX + key;
       if (!(facet in projectState)) {
@@ -596,6 +611,21 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
 
     // Legacy state propagation
     this.project_.setState(projectState);
+
+    var hiddenModelIds =
+        projectState[rhizo.state.Facets.SELECTION_FILTER] || [];
+    if (hiddenModelIds.length == 0) {
+      this.project_.eventBus().publish(
+          'selection', {action: 'resetFocus'}, /* callback */ null, this);
+    } else {
+      this.project_.eventBus().publish(
+          'selection', {
+            action: 'hide',
+            models: hiddenModelIds,
+            incremental: false
+          },
+          /* callback */ null, this);
+    }
 
     var layoutFacet = projectState[rhizo.state.Facets.LAYOUT];
     this.project_.eventBus().publish('layout', {
@@ -612,7 +642,7 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
 };
 
 /**
- * Callback invoked whenever a layout related change occurred elsewhere on the
+ * Callback invoked whenever a layout related change occurs elsewhere on the
  * project. Updates the visualization state to match the layout change.
  *
  * @param {Object} message An eventbus message describing the layout change
@@ -681,19 +711,30 @@ rhizo.state.ProjectStateBinder.prototype.mergePositions_ = function(positions) {
 };
 
 /**
- * Utility method to change the visualization state because of a change in
- * the set of filtered models via selection.
- * @param {Array.<*>} filteredModels Array of model ids, for all the models
- *     that should be filtered out. null if no model should be filtered out.
+ * Callback invoked whenever a selection related change occurs elsewhere on the
+ * project. Updates the visualization state to match the selection change.
+ *
+ * @param {Object} message An eventbus message describing the selection change
+ *     that occurred. See rhizo.selection.SelectionManager for the expected
+ *     message structure.
+ * @private
  */
-rhizo.state.ProjectStateBinder.prototype.pushFilterSelectionChange = function(
-    filteredModels) {
+rhizo.state.ProjectStateBinder.prototype.onSelection_ = function(message) {
   if (this.removed_) {
     throw("ProjectStateBinder cannot issue transitions after removal from " +
           "overlord");
   }
+  if (message['action'] != 'focus' &&
+      message['action'] != 'resetFocus' &&
+      message['action'] != 'hide') {
+    return;
+  }
+  var hiddenModelIds = [];
+  for (var modelId in this.project_.selectionManager().allHidden()) {
+    hiddenModelIds.push(modelId);
+  }
   var delta = this.makeDelta(rhizo.state.Facets.SELECTION_FILTER,
-                             filteredModels);
+                             hiddenModelIds);
   this.overlord_.transition(this.key(), delta);
 };
 
