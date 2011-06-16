@@ -873,6 +873,10 @@ rhizo.ui.Rendering.prototype.beforeDestroy = function() {
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
 rhizo.ui.Rendering.prototype.move = function(top, left, opt_instant) {
+  if (this.position_.top == top && this.position_.left == left) {
+    // Bypass any DOM manipulation if we are already in the target position.
+    return this;
+  }
   if (!!opt_instant) {
     this.raw_node_.css({top: top, left: left});
   } else {
@@ -1186,6 +1190,13 @@ rhizo.ui.Rendering.prototype.canRescaleTo = function(width,
  */
 rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
                                                          height) {
+  if (this.cacheDimensions_ &&
+      this.cachedDimensions_.width == width &&
+      this.cachedDimensions_.height == height) {
+    // No-op, the rendering already has the required dimensions. Skip any
+    // DOM manipulation.
+    return this;
+  }
   this.cachedDimensions_ = {width: width, height: height};
   this.raw_node_.width(width - 2).height(height - 2);
   if (this.rendererRescaler_) {
