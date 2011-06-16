@@ -2,7 +2,7 @@
 <Module>
   <ModulePrefs title="Rhizosphere"
                title_url="https://sites.google.com/site/rhizosphereui/"
-               description="A visual data browser to navigate trough your informations and filter them easily"
+               description="A visual data browser to navigate trough your data and filter them easily"
                author="Riccardo Govoni"
                author_email="battlehorse+rhizosphere@google.com"
                screenshot="{{ hostname }}/static/shared/img/rhizosphere_screenshot.png"
