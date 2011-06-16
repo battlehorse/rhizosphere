@@ -1086,6 +1086,8 @@ rhizo.ui.component.Layout.prototype.updateVisibleEngineControls_ = function() {
 rhizo.ui.component.SelectionManager = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
                                     'rhizo.ui.component.SelectionManager');
+  project.eventBus().subscribe(
+      'selection', this.onSelectionChanged_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.ui.component.SelectionManager,
                rhizo.ui.component.Component);
@@ -1128,16 +1130,33 @@ rhizo.ui.component.SelectionManager.prototype.ready = function() {
  */
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function() {
   this.selectButton_.removeAttr('disabled').click(jQuery.proxy(function() {
-    var countFiltered =  this.project_.filterUnselected();
-    this.setNumFilteredModels(countFiltered);
+    // Don't specify the sender, so to receive callbacks even for events that
+    // this same class triggers.
+    this.project_.eventBus().publish('selection', {'action': 'focus'});
   }, this));
 
 
   // Reset button remains disabled until the first selection is performed.
   this.resetButton_.click(jQuery.proxy(function() {
-    this.project_.resetUnselected();
-    this.setNumFilteredModels(0);
+    // Don't specify the sender, so to receive callbacks even for events that
+    // this same class triggers.
+    this.project_.eventBus().publish('selection', {'action': 'resetFocus'});
   }, this));
+};
+
+/**
+ * Updates the number of currently hidden models because of selection.
+ *
+ * @param {Object} message The eventbus message describing the selection change.
+ * @private
+ */
+rhizo.ui.component.SelectionManager.prototype.onSelectionChanged_ = function(
+    message) {
+  if (message['action'] == 'focus' ||
+      message['action'] == 'resetFocus' ||
+      message['action'] == 'hide') {
+    this.setNumFilteredModels(this.project_.selectionManager().getNumHidden());
+  }
 };
 
 /**
@@ -1172,13 +1191,15 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     selected: function(ev, ui) {
       var selected_id = $(ui.selected).data("id");
       if (selected_id) {
-        project.select(selected_id);
+        project.eventBus().publish(
+            'selection', {'action': 'select', 'models': selected_id});
       }
     },
     unselected: function(ev, ui) {
-      var unselected_id = $(ui.unselected).data("id");
-      if (unselected_id) {
-        project.unselect(unselected_id);
+      var deselected_id = $(ui.unselected).data("id");
+      if (deselected_id) {
+        project.eventBus().publish(
+            'selection', {'action': 'deselect', 'models': deselected_id});
       }
     },
     // TODO: disabled until incremental refresh() is implemented
@@ -1190,7 +1211,7 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
 
   this.gui_.viewport.click(jQuery.proxy(function(ev, ui) {
     if (this.isOnEmptySpace_(ev)) {
-      project.unselectAll();
+      project.eventBus().publish('selection', {'action': 'deselectAll'});
     }
   }, this));
 };
@@ -1726,7 +1747,7 @@ rhizo.ui.component.Actions.prototype.ready = function() {
           accept: '.rhizo-model',
           drop: function(ev, ui) {
             var id = ui.draggable.data("id");
-            if (!project.isSelected(id)) {
+            if (!project.selectionManager().isSelected(id)) {
               alert("Action applied on " + project.model(id));
               project.model(id).rendering().
                   refreshPosition().
@@ -1734,7 +1755,7 @@ rhizo.ui.component.Actions.prototype.ready = function() {
                   unmarkPosition();
             } else {
               var countSelected = 0;
-              var all_selected = project.allSelected();
+              var all_selected = project.selectionManager().allSelected();
               for (var id in all_selected) { countSelected++;}
               alert("Action applied on " + countSelected + " elements");
 
@@ -1744,7 +1765,8 @@ rhizo.ui.component.Actions.prototype.ready = function() {
                     moveToMark().
                     unmarkPosition();
               }
-              project.unselectAll();
+              project.eventBus().publish(
+                  'selection', {'action': 'deselectAll'});
             }
           }
         });

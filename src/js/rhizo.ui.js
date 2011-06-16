@@ -1675,7 +1675,8 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
       return false;
     }
     
-    this.project_.toggleSelect(model.id);
+    this.project_.eventBus().publish(
+        'selection', {'action': 'toggle', 'models': model.id});
     return false;
   }, this));
 };
@@ -1700,8 +1701,8 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
 
       // figure out all the initial positions for the selected elements
       // and store them.
-      if (this.project_.isSelected(model.id)) {
-        var all_selected = this.project_.allSelected();
+      if (this.project_.selectionManager().isSelected(model.id)) {
+        var all_selected = this.project_.selectionManager().allSelected();
         for (var id in all_selected) {
           this.project_.model(id).rendering().markPosition();
         }
@@ -1709,10 +1710,10 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
     }, this),
     drag: jQuery.proxy(function(ev, ui) {
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
-      if (this.project_.isSelected(model.id)) {
+      if (this.project_.selectionManager().isSelected(model.id)) {
         var delta = model.rendering().distanceFromMark(ui.position.top,
                                                       ui.position.left);
-        var all_selected = this.project_.allSelected();
+        var all_selected = this.project_.selectionManager().allSelected();
         for (var id in all_selected) {
           if (id != model.id) {
             all_selected[id].rendering().moveFromMark(
@@ -1733,8 +1734,8 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
                            top: model.rendering().position().top,
                            left: model.rendering().position().left});
 
-      if (this.project_.isSelected(model.id)) {
-        var all_selected = this.project_.allSelected();
+      if (this.project_.selectionManager().isSelected(model.id)) {
+        var all_selected = this.project_.selectionManager().allSelected();
         for (var id in all_selected) {
           modelPositions.push({
               id: id,
