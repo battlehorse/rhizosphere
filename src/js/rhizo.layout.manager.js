@@ -350,7 +350,7 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   // If the layout altered visibility of some models, or we are forced to do so,
   // realign models' visibility.
   if (dirty || options['forcealign']) {
-    this.project_.alignVisibility();
+    this.project_.filterManager().alignVisibility();
   }
 
   // If we received some manual positioning requests, apply them.

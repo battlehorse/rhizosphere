@@ -95,7 +95,9 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
     }
 
     // size Field is the first numeric field
-    var kind = rhizo.meta.objectify(this.metamodel_[key].kind);
+    var kind = this.metamodel_[key].kind;
+    kind = typeof(kind) == 'string' ?
+        rhizo.meta.defaultRegistry.createNewKind(kind) : kind;
     if (!this.sizeField_ && kind.isNumeric()) {
       this.sizeField_ = key;
       continue;
@@ -112,7 +114,9 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
 };
 
 rhizo.autorender.AR.prototype.locateMinMax_ = function(models, key) {
-  var kind = rhizo.meta.objectify(this.metamodel_[key].kind);
+    var kind = this.metamodel_[key].kind;
+    kind = typeof(kind) == 'string' ?
+        rhizo.meta.defaultRegistry.createNewKind(kind) : kind;
   if (kind.isNumeric() &&
       typeof(this.metamodel_[key].min) != 'undefined' &&
       typeof(this.metamodel_[key].max) != 'undefined') {

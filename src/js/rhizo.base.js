@@ -16,7 +16,7 @@
 */
 
 // Global project namespace
-// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.selection,rhizo.state
+// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.selection,rhizo.meta.manager,rhizo.state
 namespace("rhizo");
 
 
@@ -30,11 +30,11 @@ namespace("rhizo");
  * @constructor
  */
 rhizo.Project = function(gui, opt_options) {
+  this.metaModelRegistry_ = rhizo.meta.defaultRegistry;
   this.models_ = [];
   this.modelsMap_ = {};
   this.options_ = opt_options || {};
   this.gui_ = gui;
-  this.filterAutocommit_ = true;
 
   if (rhizo.nativeConsoleExists()) {
     this.logger_ = new rhizo.NativeLogger();
@@ -64,6 +64,12 @@ rhizo.Project = function(gui, opt_options) {
    */
   this.selectionManager_ = new rhizo.selection.SelectionManager(
       this, this.options_);
+
+  /**
+   * @type {!rhizo.meta.FilterManager}
+   * @private
+   */
+  this.filterManager_ = new rhizo.meta.FilterManager(this);
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -192,12 +198,22 @@ rhizo.Project.prototype.setMetaModel = function(metaModel) {
     }
   }
 
-  // Convert all 'kind' specifications that are specified as factories into
-  // single instances.
-  for (var key in this.metaModel_) {
-    var obj_kind = rhizo.meta.objectify(this.metaModel_[key].kind);
-    this.metaModel_[key].kind = obj_kind;
+  // Resolves all 'kind' specifications into metamodel Kind instances.
+  // Uses the default kind registry to resolve against.
+  for (key in this.metaModel_) {
+    if (typeof(this.metaModel_[key].kind) == 'string') {
+      this.metaModel_[key].kind = this.metaModelRegistry_.createNewKind(
+          this.metaModel_[key].kind);
+    }
   }
+};
+
+/**
+ * Returns the metamodel registry this project uses.
+ * @return {!rhizo.meta.KindRegistry} the metamodel registry this project uses.
+ */
+rhizo.Project.prototype.metaModelRegistry = function() {
+  return this.metaModelRegistry_;
 };
 
 rhizo.Project.prototype.renderer = function() {
@@ -246,34 +262,12 @@ rhizo.Project.prototype.selectionManager = function() {
 };
 
 /**
- * Removes the given filter from all models.
- * @param {string} key The key of the filter to remove.
- * @return {boolean} Whether the filter existed on at least one of the models.
+ * Returns the project filter manager.
+ *
+ * @return {!rhizo.meta.FilterManager} The project filter manager.
  */
-rhizo.Project.prototype.resetAllFilter = function(key) {
-  var modelsAffected = false;
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    modelsAffected = this.models_[i].resetFilter(key) || modelsAffected;
-  }
-  return modelsAffected;
-};
-
-rhizo.Project.prototype.enableFilterAutocommit = function(enable) {
-  this.filterAutocommit_ = enable;
-  if (this.filterAutocommit_) {
-    // If there are any greyed models when auto-filtering is re-enabled, we
-    // commit the filter.
-    for (var i = this.models_.length-1; i >= 0; i--) {
-      if (this.models_[i].rendering().visibility == rhizo.ui.Visibility.GREY) {
-        this.commitFilter();
-        break;
-      }
-    }
-  }
-};
-
-rhizo.Project.prototype.isFilterAutocommit = function() {
-  return this.filterAutocommit_;
+rhizo.Project.prototype.filterManager = function() {
+  return this.filterManager_;
 };
 
 /**
@@ -327,7 +321,7 @@ rhizo.Project.prototype.checkMetaModel_ = function() {
     allKinds.push(this.metaModel_[key].kind);
   }
 
-  // Ensure that there are no share meta instances in the metaModel.
+  // Ensure that there are no shared meta instances in the metaModel.
   for (var i = 0; i < allKinds.length; i++) {
     for (var j = i+1; j < allKinds.length; j++) {
       if (allKinds[i] === allKinds[j]) {
@@ -348,201 +342,13 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 };
 
 /**
- * Listener method invoked whenever the visualization needs to be fully restored
- * to a given state.
- *
- * @param {Object.<rhizo.state.Facets, *>} state A facet-facetState map
- *     describing the full visualization state.
- */
-rhizo.Project.prototype.setState = function(state) {
-  for (var facet in state) {
-    if (facet == rhizo.state.Facets.SELECTION_FILTER ||
-        facet == rhizo.state.Facets.LAYOUT) {
-      // TODO(battlehorse): remove once legacy setState() state management
-      // is completely replaced by eventbus.
-      this.logger_.warn(
-          "Ignoring " + facet + " facet when restoring full state.");
-    } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
-      var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
-      var value = state[facet];
-      this.alignFilterUI_(key, value);
-
-      // We do not care whether the filter requires a re-layout or not, since
-      // layout will happen anyway. This will also purge any greyed-out models.
-      this.filterInternal_(key, value);
-    }
-  }
-};
-
-/**
- * Listener method invoked whenever a facet of the visualization state changed
- * because of events that are not under the direct control of this project
- * instance (for example, history and navigation events).
- *
- * @param {rhizo.state.Facets} facet The facet that changed.
- * @param {*} The facet-specific state to transition to.
- */
-rhizo.Project.prototype.stateChanged = function(facet, facetState) {
-  if (facet == rhizo.state.Facets.SELECTION_FILTER ||
-      facet == rhizo.state.Facets.LAYOUT) {
-    // TODO(battlehorse): remove once legacy setState() state management
-    // is completely replaced by eventbus.
-    throw("Should never receive a " + facet + " facet.");
-  } else if (facet.indexOf(rhizo.state.Facets.FILTER_PREFIX) == 0) {
-    var key = facet.substring(rhizo.state.Facets.FILTER_PREFIX.length);
-    this.alignFilterUI_ (key, facetState);
-    if (this.filterInternal_(key, facetState)) {
-      // The filtering status of some models was affected by the filter.
-      // Decide whether we need to reposition all models, or we can just grey
-      // out the affected ones, without affecting layout.
-      if (this.mustLayoutAfterFilter_()) {
-        this.commitFilter();
-      } else {
-        this.alignVisibility(rhizo.ui.Visibility.GREY);
-      }
-    }
-  }
-};
-
-/**
- * Applies or removes a filter to the visualization, removing from view (or
- * restoring) all the models that do not survive the filter.
- *
- * @param {string} key The metamodel key for the model attribute that is to
- *     filter.
- * @param {*} value The value that each model must have on the attribute
- *     specified by 'key' in order not to be removed. To remove a previously
- *     set filter, set value to null or undefined.
- */
-rhizo.Project.prototype.filter = function(key, value) {
-  if (this.filterInternal_(key, value)) {
-    this.state_.pushFilterChange(key, value);
-    // The filtering status of some models was affected by the filter.
-    // Decide whether we need to reposition all models, or we can just grey
-    // out the affected ones, without affecting layout.
-    if (this.mustLayoutAfterFilter_()) {
-      this.commitFilter();
-    } else {
-      this.alignVisibility(rhizo.ui.Visibility.GREY);
-    }
-  }
-};
-
-/**
- * Changes the filtering status of models because of a change in a filter
- * value.
- * @param {string} key The metamodel key for the model attribute that was
- *     filtered.
- * @param {*} value The filter value. Should be null or undefined when the
- *     filter is to be removed.
- * @return {boolean} Whether the filter status of some models was affected by
- *     this new filter value.
- * @private
- */
-rhizo.Project.prototype.filterInternal_ = function(key, value) {
-  if (!(key in this.metaModel_)) {
-    // This may occur whenever we are applying a filter loaded from an
-    // historical state, but which no longer exists in the current
-    // visualization.
-    return false;
-  }
-  if (value) {
-    for (var i = this.models_.length-1; i >= 0; i--) {
-      var model = this.models_[i];
-      if (this.metaModel_[key].kind.survivesFilter(value, model.unwrap()[key])) {
-        // matches filter. Doesn't have to be hidden
-        model.resetFilter(key);
-      } else {
-        // do not matches filter. Must be hidden
-        model.filter(key);
-      }
-    }
-  } else {
-    // reset filter
-    if (!this.resetAllFilter(key)) {
-      return false;  // no models had the filter, nothing to re-align, return early.
-    }
-  }
-  this.alignFx();
-  return true;
-};
-
-/**
- * Decides whether models should be repositioned after a filter was applied.
- * This may be necessary either because the filters are in autocommit mode, or
- * because the filter change caused some models that were completely hidden
- * to become visible (hence all the models must be repositioned to accomodate
- * these ones).
- *
- * @return {boolean} Whether models should be repositioned after a filter was
- *     applied, or it's enough to align their visibility.
- * @private
- */
-rhizo.Project.prototype.mustLayoutAfterFilter_ = function() {
-  if (this.filterAutocommit_) {
-    return true;
-  } else {
-    for (var i = this.models_.length-1; i >=0; i--) {
-      if (!this.models_[i].isFiltered() &&
-          this.models_[i].rendering().visibility ==
-              rhizo.ui.Visibility.HIDDEN) {
-        return true;
-      }
-    }
-    return false;
-  }
-};
-
-rhizo.Project.prototype.commitFilter = function() {
-  this.layoutManager_.forceLayout({filter: true});
-};
-
-/**
- * Updates the visualization UI to match the a given filter status.
- * @param {string} key The metamodel key whose associated filter is to restore
- *     to a given value.
- * @param {*} value The value the filter should be set to. The actual value type
- *     matches what the filter itself initially provided to the Project when
- *     project.filter() was called.
- * @private
- */
-rhizo.Project.prototype.alignFilterUI_ = function(key, value) {
-  // Verify whether the filter key (which may come from an historical state)
-  // still exists in the metaModel.
-  if (key in this.metaModel_) {
-    // TODO(battlehorse): temporary check for presence of filter containers.
-    // Remove once filter-related messages are propagated via eventbus.
-    var filterUiExists =
-        !!this.gui_.getComponent('rhizo.ui.component.FilterStackContainer') ||
-        !!this.gui_.getComponent('rhizo.ui.component.FilterBookContainer');
-
-    // Rebuild and show the affected filter, if needed.
-    var ui = this.gui_.getComponent('rhizo.ui.component.FilterStackContainer');
-    if (ui) {
-      // A filter is explicitly made visible only if it's not in its default
-      // non-filtering state (i.e., it has a non-null value).
-      if (value) {
-        ui.showFilter(key);
-      }
-      filterUiExists = ui.isFilterActive(key);
-    }
-
-    // Restore the filter value, if the filter currently has an UI
-    // representation.
-    if (filterUiExists) {
-      this.metaModel_[key].kind.setFilterValue(value);
-    }
-  }
-};
-
-/**
  * Enables or disables project-wide animations.
  *
  * The decision is based on the number of models the browser has to manipulate
  * (move, hide, show, rescale ...). This includes:
  * - models that are currently visible,
  * - 'unfiltered' models (i.e. number of models that will be visible once
- *   alignVisibility() is invoked).
+ *   this.filterManager_.alignVisibility() is invoked).
  *
  * If either number is too high, animations are disabled.
  */
@@ -560,38 +366,4 @@ rhizo.Project.prototype.alignFx = function() {
   this.gui_.disableFx(!this.options_.enableAnims ||
                       numUnfilteredModels > 200 ||
                       numVisibleModels > 200);
-};
-
-/**
- * Refreshes models' visibility based on their filtering status.
- *
- * @param {rhizo.ui.Visibility?} opt_filtered_visibility An optional visibility
- *     level that filtered items should have. The default is
- *     rhizo.ui.Visibility.HIDDEN.
- */
-rhizo.Project.prototype.alignVisibility = function(opt_filtered_visibility) {
-  var vis = rhizo.ui.Visibility;
-  var filtered_visibility = opt_filtered_visibility || vis.HIDDEN;
-
-  var forceLayout = false;
-  var modelsToFadeOut = [];
-  var modelsToFadeIn = [];
-  for (var i = this.models_.length-1; i >=0; i--) {
-    var model = this.models_[i];
-    var rendering = model.rendering();
-    if (model.isFiltered()) {
-      if (rendering.visibility > filtered_visibility) {
-        modelsToFadeOut.push(model);
-        rendering.visibility = filtered_visibility;
-      }
-    } else if (rendering.visibility < vis.VISIBLE) {
-      // Items that were completely hidden must be repositioned.
-      forceLayout = forceLayout || rendering.visibility == vis.HIDDEN;
-      modelsToFadeIn.push(model);
-      rendering.visibility = vis.VISIBLE;
-    }
-  }
-  rhizo.ui.fadeAllRenderingsTo(modelsToFadeOut, filtered_visibility);
-  rhizo.ui.fadeAllRenderingsTo(modelsToFadeIn, vis.VISIBLE);
-  return forceLayout;
 };

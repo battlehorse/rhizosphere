@@ -475,7 +475,7 @@ rhizo.selection.SelectionManager.prototype.focus_ = function(
 rhizo.selection.SelectionManager.prototype.hide_ = function(
     modelIds, incremental) {
   if (!incremental) {
-    this.project_.resetAllFilter('__selection__');
+    this.project_.filterManager().removeFilterFromModels('__selection__');
   }
   for (var i = modelIds.length-1; i >= 0; i--) {
     this.project_.model(modelIds[i]).filter('__selection__');
@@ -492,7 +492,7 @@ rhizo.selection.SelectionManager.prototype.hide_ = function(
  * @private
  */
 rhizo.selection.SelectionManager.prototype.resetFocus_ = function() {
-  if (this.project_.resetAllFilter('__selection__')) {
+  if (this.project_.filterManager().removeFilterFromModels('__selection__')) {
     // If one or more models changed their filtering status, recompute fx
     // and layout.
     this.project_.alignFx();
