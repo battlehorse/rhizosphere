@@ -567,75 +567,60 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
   if (opt_delta) {
     // If we know exactly what changed to get to the target state, then
     // just apply the delta.
-    if (opt_delta.facet == rhizo.state.Facets.LAYOUT) {
-      this.project_.eventBus().publish('layout', {
-        // Setting engine and state explicitly to null (when facetState is
-        // missing) equates to restoring the default engine and/or state (which
-        // is the right thing to do when a null, aka initial, state is restored
-        // from html5 history and other binders).
-        engine: opt_delta.facetState ? opt_delta.facetState.engine: null,
-        state: opt_delta.facetState ? opt_delta.facetState.state : null,
-        positions: opt_delta.facetState ? opt_delta.facetState.positions : null
-      }, /* callback */ null, this);
-    } else if (opt_delta.facet == rhizo.state.Facets.SELECTION_FILTER) {
-      var hiddenModelIds = opt_delta.facetState || [];
-      if (hiddenModelIds.length == 0) {
-        this.project_.eventBus().publish(
-            'selection', {action: 'resetFocus'}, /* callback */ null, this);
-      } else {
-        this.project_.eventBus().publish(
-            'selection', {
-              action: 'hide',
-              models: hiddenModelIds,
-              incremental: false
-            },
-            /* callback */ null, this);
-      }
-    } else if (opt_delta.facet == rhizo.state.Facets.FILTER) {
-      this.project_.eventBus().publish(
-          'filter',
-          this.project_.filterManager().filterDiff(opt_delta.facetState || {}),
-          /* callback */ null,
-          this);
+    var facet = opt_delta.facet;
+    var facetState = opt_delta.facetState;
+    if (facet == rhizo.state.Facets.LAYOUT) {
+      this.pushLayoutChange_(facetState);
+    } else if (facet == rhizo.state.Facets.SELECTION_FILTER) {
+      this.pushSelectionChange_(facetState);
+    } else if (facet == rhizo.state.Facets.FILTER) {
+      this.pushFilterChange_(facetState);
     } else {
-      throw("Invalid facet: " + opt_delta.facet);
+      throw("Invalid facet: " + facet);
     }
   } else {
     // Otherwise rebuild the full state.
     var projectState = state.uuids[this.overlord_.uuid()] || {};
-    this.project_.eventBus().publish(
-        'filter',
-        this.project_.filterManager().filterDiff(
-            projectState[rhizo.state.Facets.FILTER] || {}),
-        /* callback */ null, this);
+    this.pushFilterChange_(projectState[rhizo.state.Facets.FILTER]);
+    this.pushSelectionChange_(
+        projectState[rhizo.state.Facets.SELECTION_FILTER]);
 
-    var hiddenModelIds =
-        projectState[rhizo.state.Facets.SELECTION_FILTER] || [];
-    if (hiddenModelIds.length == 0) {
-      this.project_.eventBus().publish(
-          'selection', {action: 'resetFocus'}, /* callback */ null, this);
-    } else {
-      this.project_.eventBus().publish(
-          'selection', {
-            action: 'hide',
-            models: hiddenModelIds,
-            incremental: false
-          },
-          /* callback */ null, this);
-    }
-
-    var layoutFacet = projectState[rhizo.state.Facets.LAYOUT];
-    this.project_.eventBus().publish('layout', {
-      engine: layoutFacet ? layoutFacet.engine : null,
-      state: layoutFacet ? layoutFacet.state : null,
-      positions: layoutFacet ? layoutFacet.positions : null,
-
-      // forcealign required to align model visibility since we are rebuilding
-      // a full state (it may even be the initial one, when all models are still
-      // hidden).
-      options: {forcealign: true}
-    }, /* callback */ null, this);
+    // forcealign required to align model visibility since we are rebuilding
+    // a full state (it may even be the initial one, when all models are still
+    // hidden).
+    this.pushLayoutChange_(
+        projectState[rhizo.state.Facets.LAYOUT], /* forcealign */ true);
   }
+};
+
+/**
+ * Publishes a 'layout' message on the project eventbus to update all
+ * subscribers about the current layout engine and configuration.
+ *
+ * @param {Object} facetState An object describing the current layout
+ *     configuration, as defined by rhizo.layout.LayoutManager, containing
+ *     'engine', 'state' and optional 'positions' settings. Or null if the
+ *     layout should be reverted to the visualization default state.
+ * @param {boolean=} opt_forcealign Whether a visibility alignment should be
+ *     enforced as part of the layout operation. Defaults to false.
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.pushLayoutChange_ = function(
+    facetState, opt_forcealign) {
+  var message = {
+    // Setting engine and state explicitly to null (when facetState is
+    // missing) equates to restoring the default engine and/or state (which
+    // is the right thing to do when a null, aka initial, state is restored
+    // from html5 history and other binders).
+    engine: facetState ? facetState.engine: null,
+    state: facetState ? facetState.state : null,
+    positions: facetState ? facetState.positions : null
+  };
+  if (!!opt_forcealign) {
+    message['options'] = {forcealign: true};
+  }
+  this.project_.eventBus().publish(
+      'layout', message, /* callback */ null, this);
 };
 
 /**
@@ -708,6 +693,31 @@ rhizo.state.ProjectStateBinder.prototype.mergePositions_ = function(positions) {
 };
 
 /**
+ * Publishes a 'selection' message on the project eventbus to update all
+ * subscribers about the current selection status.
+ *
+ * @param {Array} facetState The array of all model ids that should be hidden
+ *     from the visualization, or null if all models should be visible.
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.pushSelectionChange_ = function(
+    facetState) {
+  var hiddenModelIds = facetState || [];
+  if (hiddenModelIds.length == 0) {
+    this.project_.eventBus().publish(
+        'selection', {action: 'resetFocus'}, /* callback */ null, this);
+  } else {
+    this.project_.eventBus().publish(
+        'selection', {
+          action: 'hide',
+          models: hiddenModelIds,
+          incremental: false
+        },
+        /* callback */ null, this);
+  }
+};
+
+/**
  * Callback invoked whenever a selection related change occurs elsewhere on the
  * project. Updates the visualization state to match the selection change.
  *
@@ -733,6 +743,23 @@ rhizo.state.ProjectStateBinder.prototype.onSelection_ = function(message) {
   var delta = this.makeDelta(rhizo.state.Facets.SELECTION_FILTER,
                              hiddenModelIds);
   this.overlord_.transition(this.key(), delta);
+};
+
+/**
+ * Publishes a 'filter' message on the project eventbus to update all
+ * subscribers about the current filter status.
+ *
+ * @param {Object.<string, *>} facetState The set of filters to transition the
+ *     project to, or null if all existing filters are to be removed.
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.pushFilterChange_ = function(
+    facetState) {
+  this.project_.eventBus().publish(
+      'filter',
+      this.project_.filterManager().filterDiff(facetState || {}),
+      /* callback */ null,
+      this);
 };
 
 /**
