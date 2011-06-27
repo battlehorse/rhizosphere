@@ -248,8 +248,8 @@ rhizo.layout.treemap.TreeMapNode.prototype.updateColorRange = function(colorRang
  */
 rhizo.layout.treemap.TreeMapNode.prototype.toColorScale_ = function(
     colorVal, colorRange) {
-  var rescaler = colorRange.kind.toFilterScale ?
-      jQuery.proxy(colorRange.kind.toFilterScale, colorRange.kind) :
+  var rescaler = colorRange.kind.toUserScale ?
+      jQuery.proxy(colorRange.kind.toUserScale, colorRange.kind) :
       function(val) { return val; };
   var channels = ['r', 'g', 'b'];
   var outputColor = {};
@@ -601,7 +601,7 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
   if (this.numHiddenModels_ > 0) {
     // There were hidden models, reset their filter and mark visibility as
     // dirty to force visibility alignment.
-    this.project_.resetAllFilter('__treemap__');
+    this.project_.filterManager().removeFilterFromModels('__treemap__');
     this.numHiddenModels_ = 0;
     return true;
   }

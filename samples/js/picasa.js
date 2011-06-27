@@ -106,15 +106,25 @@
       });
 
       // Build the metamodel
-      var decimalKind = new rhizo.meta.DecimalRangeKind(2);
-      decimalKind.toHumanLabel_ = rhizo.ui.toHumanLabel;
+      var myDecimalKind = new rhizo.meta.DecimalRangeKind(2);
+      rhizo.meta.defaultRegistry.registerKindUiFactory(myDecimalKind,
+          function(project, metaModelKey) {
+            var ui = new rhizo.ui.meta.RangeKindUi(project, metaModelKey);
+            ui.toHumanLabel = rhizo.ui.toHumanLabel;
+            return ui;
+          }
+      );
+
+      var myDateKind = new rhizo.meta.DateKind('y');
+      rhizo.meta.defaultRegistry.registerKindUi(
+          myDateKind, rhizo.ui.meta.DateKindUi);
 
       var metamodel = {
         author: { kind: rhizo.meta.Kind.STRING, label: "Name" },
         title: { kind: rhizo.meta.Kind.STRING, label: "Title" },
-        resolution: { kind: decimalKind, label: "Resolution",
+        resolution: { kind: myDecimalKind, label: "Resolution",
                       min: minResolution, max: maxResolution },
-        published: { kind: new rhizo.meta.DateKind('y'), label: "Published",
+        published: { kind: myDateKind, label: "Published",
                      minYear: minYear, maxYear: maxYear }
       };
 

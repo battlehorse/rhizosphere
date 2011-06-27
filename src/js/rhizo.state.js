@@ -101,7 +101,7 @@ rhizo.state.TYPE = '__rhizo_state__';
 rhizo.state.Facets = {
   LAYOUT: 'layout',
   SELECTION_FILTER: 'selection',
-  FILTER_PREFIX: 'filter_'
+  FILTER: 'filter'
 };
 
 
@@ -533,9 +533,6 @@ rhizo.state.StateBinder.prototype.onRemove = function() {};
  * Binds the visualization state to the rhizo.Project that manages the
  * visualization itself.
  *
- * TODO(battlehorse): This class is transitioning from legacy project state
- * management (setState/stateChanged) to eventbus-based notifications. As such
- * it'll contain a mixture of the two until the transition completes.
  * @param {rhizo.state.StateOverlord} overlord
  * @param {rhizo.Project} project
  * @constructor
@@ -548,12 +545,15 @@ rhizo.state.ProjectStateBinder = function(overlord, project) {
       'layout', this.onLayout_, this, /* committed */ true);
   this.project_.eventBus().subscribe(
       'selection', this.onSelection_, this, /* committed */ true);
+  this.project_.eventBus().subscribe(
+      'filter', this.onFilter_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.state.ProjectStateBinder, rhizo.state.StateBinder);
 
 rhizo.state.ProjectStateBinder.prototype.onRemove = function() {
   this.project_.eventBus().unsubscribe('layout', this);
   this.project_.eventBus().unsubscribe('selection', this);
+  this.project_.eventBus().unsubscribe('filter', this);
   this.removed_ = true;
 };
 
@@ -591,26 +591,23 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
             },
             /* callback */ null, this);
       }
+    } else if (opt_delta.facet == rhizo.state.Facets.FILTER) {
+      this.project_.eventBus().publish(
+          'filter',
+          this.project_.filterManager().filterDiff(opt_delta.facetState || {}),
+          /* callback */ null,
+          this);
     } else {
-      // Legacy state propagation.
-      this.project_.stateChanged(opt_delta.facet, opt_delta.facetState);
+      throw("Invalid facet: " + opt_delta.facet);
     }
   } else {
     // Otherwise rebuild the full state.
     var projectState = state.uuids[this.overlord_.uuid()] || {};
-
-    // When restoring a full state, all facets should be reverted to their
-    // default value. Here we set correct defaults for any facet which might be
-    // missing from the full state specification.
-    for (var key in this.project_.metaModel()) {
-      var facet = rhizo.state.Facets.FILTER_PREFIX + key;
-      if (!(facet in projectState)) {
-        projectState[facet] = null;
-      }
-    }
-
-    // Legacy state propagation
-    this.project_.setState(projectState);
+    this.project_.eventBus().publish(
+        'filter',
+        this.project_.filterManager().filterDiff(
+            projectState[rhizo.state.Facets.FILTER] || {}),
+        /* callback */ null, this);
 
     var hiddenModelIds =
         projectState[rhizo.state.Facets.SELECTION_FILTER] || [];
@@ -739,19 +736,22 @@ rhizo.state.ProjectStateBinder.prototype.onSelection_ = function(message) {
 };
 
 /**
- * Utility method to change the visualization state because of a change in the
- * set of metamodel filters.
- * @param {string} key The key of the metamodel filter that changed.
- * @param {*} value The target value of the metamodel filter.
+ * Callback invoked whenever one or more filters are applied (or removed)
+ * elsewhere on the project. Updates the visualization state to match the
+ * filter change.
+ *
+ * @param {Object} message An eventbus message describing the filter change
+ *     that occurred. See rhizo.meta.FilterManager for the expected
+ *     message structure.
+ * @private
  */
-rhizo.state.ProjectStateBinder.prototype.pushFilterChange = function(key,
-                                                                     value) {
+rhizo.state.ProjectStateBinder.prototype.onFilter_ = function(message) {
   if (this.removed_) {
     throw("ProjectStateBinder cannot issue transitions after removal from " +
           "overlord");
   }
-  var delta = this.makeDelta(rhizo.state.Facets.FILTER_PREFIX + key,
-                             value);
+  var delta = this.makeDelta(
+      rhizo.state.Facets.FILTER, this.project_.filterManager().getFilters());
   this.overlord_.transition(this.key(), delta);
 };
 
