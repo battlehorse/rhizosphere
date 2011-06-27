@@ -267,7 +267,7 @@ rhizo.selection.SelectionManager.prototype.onBeforeSelection_ = function(
       // applied to the current selection.
       if (!message['models'] || message['models'].length == 0) {
         message['models'] = this.getAllModelIds_(this.selectionMap_);
-      } else {
+      } else if (this.isIncremental_(message)) {
         message['models'] = this.extendSelection_(message['models']);
       }
       break;
