@@ -23,6 +23,10 @@
     </div>
 
     <script type="text/javascript" charset="utf-8">
+      // Expose the visualization user-agent as a global variable, to let the
+      // user programmatically drive the visualization via the browser
+      // javascript console.
+      var ua;
       $(document).ready(function() {
         {% if use_channels %}
           // TODO(battlehorse): Broadcasting should rely on capabilities to
@@ -63,7 +67,7 @@
         };
         var bootstrapper = new rhizo.bootstrap.Bootstrap(
             $('#rhizo-pangea'), options);
-        bootstrapper.prepareAndDeploy();
+        ua = bootstrapper.prepareAndDeploy();
       });
     </script>
   </body>

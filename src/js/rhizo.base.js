@@ -23,7 +23,7 @@ namespace("rhizo");
 /**
  * Projects are the central entities that manage an entire Rhizosphere
  * visualization.
- * 
+ *
  * @param {rhizo.ui.gui.GUI} gui The GUI associated to this visualization.
  * @param {*} opt_options A key-value map of project-wide customization
  *     options.
@@ -70,6 +70,12 @@ rhizo.Project = function(gui, opt_options) {
    * @private
    */
   this.filterManager_ = new rhizo.meta.FilterManager(this);
+
+  /**
+   * @type {!rhizo.UserAgent}
+   * @private
+   */
+  this.userAgent_ = new rhizo.UserAgent(this);
 };
 
 rhizo.Project.prototype.chromeReady = function() {
@@ -187,7 +193,7 @@ rhizo.Project.prototype.setMetaModel = function(metaModel) {
   //TODO(battlehorse): raise error if the metamodel is not valid or null.
   // Clone the metamodel so we can manipulate it.
   this.metaModel_ = $.extend({}, metaModel);
-  
+
   // Delete all spurious metamodel keys that have no attached kind.
   // This includes, for instance, GWT-generated keys like __gwt_ObjectId.
   // (this implies the cloned metamodel object cannot be passed back to GWT
@@ -268,6 +274,16 @@ rhizo.Project.prototype.selectionManager = function() {
  */
 rhizo.Project.prototype.filterManager = function() {
   return this.filterManager_;
+};
+
+/**
+ * Returns a UserAgent bound to this project, to programmatically drive the
+ * visualization.
+ * @return {!rhizo.UserAgent} a UserAgent bound to this project, to
+ *     programmatically drive the visualization.
+ */
+rhizo.Project.prototype.userAgent = function() {
+  return this.userAgent_;
 };
 
 /**
@@ -367,3 +383,310 @@ rhizo.Project.prototype.alignFx = function() {
                       numUnfilteredModels > 200 ||
                       numVisibleModels > 200);
 };
+
+
+/**
+ * The UserAgent is an high-level interface to programmatically drive a
+ * Rhizosphere visualization like a user would do. This allows Rhizosphere
+ * visualizations to communicate bidirectionally with any other interacting
+ * third party existing in the same webpage.
+ *
+ * @param {!rhizo.Project} project The project this user agent is bound to.
+ * @constructor
+ */
+rhizo.UserAgent = function(project) {
+  /**
+   * @type {!rhizo.Project}
+   * @private
+   */
+  this.project_ = project;
+
+  /**
+   * Lists of listener/callback pairs to invoke whenver a selection, filter or
+   * layout messages are published on the project eventbus channel.
+   * @type {!Array.<string, !Array.<!Object> >}
+   * @private
+   */
+  this.listeners_ = {
+    'selection': [],
+    'filter': [],
+    'layout': []
+  };
+};
+
+/**
+ * Returns the managed project, to let external third-parties have access to
+ * the low-level visualization functionalities which are not yet exposed through
+ * the UserAgent interface.
+ *
+ * If possible, refrain from programmatically manage a Rhizosphere visualization
+ * by directly accessing its internal project, unless you know what you're
+ * doing. Be aware that the underlying Project may change its exposed API
+ * without notice: all programmatic interactions needs should be addressed at
+ * the UserAgent level.
+ *
+ * @return {!rhizo.Project} The managed project.
+ */
+rhizo.UserAgent.prototype.getProject = function() {
+  return this.project_;
+};
+
+/**
+ * Adds a listener that will be notified whenever a selection event occurs on
+ * the visualization.
+ *
+ * @param {!function(Object)} listenerCallback The callback to invoke when a
+ *     selection event occurs on the visualization. The callback is passed a
+ *     'message' describing the event, in the format outlined by
+ *     rhizo.selection.SelectionManager.
+ * @param {!Object} listener The object in whose scope ('this') the callback
+ *     will be invoked.
+ */
+rhizo.UserAgent.prototype.addSelectionListener = function(
+    listenerCallback, listener) {
+  this.subscribe_('selection', listenerCallback, listener);
+};
+
+/**
+ * Removes one or more listeners registered for selection events.
+ * If both parameters are specified, only the specific callback is removed. If
+ * only opt_listener is specified, all the callbacks associated to that listener
+ * are removed. If neither parameter is specified, all the callbacks associated
+ * to selection events are removed.
+ *
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.removeSelectionListener = function(
+    opt_listener, opt_listenerCallback) {
+  this.unsubscribe_('selection', opt_listener, opt_listenerCallback);
+};
+
+/**
+ * Adds a listener that will be notified whenever a filter event occurs on
+ * the visualization.
+ *
+ * @param {!function(Object)} listenerCallback The callback to invoke when a
+ *     filter event occurs on the visualization. The callback is passed a
+ *     'message' describing the event, in the format outlined by
+ *     rhizo.meta.FilterManager.
+ * @param {!Object} listener The object in whose scope ('this') the callback
+ *     will be invoked.
+ */
+rhizo.UserAgent.prototype.addFilterListener = function(
+    listenerCallback, listener) {
+  this.subscribe_('filter', listenerCallback, listener);
+};
+
+/**
+ * Removes one or more listeners registered for filter events.
+ * If both parameters are specified, only the specific callback is removed. If
+ * only opt_listener is specified, all the callbacks associated to that listener
+ * are removed. If neither parameter is specified, all the callbacks associated
+ * to filter events are removed.
+ *
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.removeFilterListener = function(
+    opt_listener, opt_listenerCallback) {
+  this.unsubscribe_('filter', opt_listener, opt_listenerCallback);
+};
+
+/**
+ * Adds a listener that will be notified whenever a layout event occurs on
+ * the visualization.
+ *
+ * @param {!function(Object)} listenerCallback The callback to invoke when a
+ *     layout occurs on the visualization. The callback is passed a
+ *     'message' describing the event, in the format outlined by
+ *     rhizo.layout.LayoutManager.
+ * @param {!Object} listener The object in whose scope ('this') the callback
+ *     will be invoked.
+ */
+rhizo.UserAgent.prototype.addLayoutListener = function(
+    listenerCallback, listener) {
+  this.subscribe_('layout', listenerCallback, listener);
+};
+
+/**
+ * Removes one or more listeners registered for layout events.
+ * If both parameters are specified, only the specific callback is removed. If
+ * only opt_listener is specified, all the callbacks associated to that listener
+ * are removed. If neither parameter is specified, all the callbacks associated
+ * to layout events are removed.
+ *
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.removeLayoutListener = function(
+    opt_listener, opt_listenerCallback) {
+  this.unsubscribe_('layout', opt_listener, opt_listenerCallback);
+};
+
+/**
+ * Adds a callback/listener pair to the notification list for events published
+ * on the given eventbus channel.
+ * @param {string} channel The channel to subscribe to.
+ * @param {!function(Object)} listenerCallback listener callback.
+ * @param {!Object} listener listener scope ('this').
+ * @private
+ */
+rhizo.UserAgent.prototype.subscribe_ = function(
+    channel, listenerCallback, listener) {
+  var firstSubscription = this.listeners_[channel].length == 0;
+  this.listeners_[channel].push(
+      {listener: listener, listenerCallback: listenerCallback});
+  if (firstSubscription) {
+    this.project_.eventBus().subscribe(channel, function(message) {
+      for (var i = 0; i < this.listeners_[channel].length; i++) {
+        var l = this.listeners_[channel][i];
+        l['listenerCallback'].call(l['listener'], message);
+      }
+    }, this, /* committed */ true);
+  }
+};
+
+/**
+ * Removes one or more callback/listener pairs from the notification list for
+ * events published on the given eventbus channel.
+ * If no more listeners exists after the removal, unsubscribes from the eventbus
+ * channel altogether.
+ *
+ * @param {string} channel The channel to unsubscribe from.
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.unsubscribe_ = function(
+    channel, opt_listener, opt_listenerCallback) {
+  var newListeners = [];
+  if (opt_listener) {
+    for (var i = 0; i < this.listeners_[channel].length; i++) {
+      var listener = this.listeners_[channel][i];
+      if (listener['listener'] == opt_listener &&
+          (!opt_listenerCallback ||
+           opt_listenerCallback == listener['listenerCallback'])) {
+        continue;
+      }
+      newListeners.push(listener);
+    }
+  }
+  this.listeners_[channel] = newListeners;
+  if (newListeners.length == 0) {
+    this.project_.eventBus().unsubscribe(channel, this);
+  }
+};
+
+/**
+ * Instructs the visualization to perform a selection operation.
+ *
+ * @param {string} action The operation to perform. See
+ *     rhizo.selection.SelectionManager for the list of supported actions.
+ * @param {Array.<*>=} opt_models An optional list of model ids the action
+ *     should apply to. Not all actions support the parameter. Some actions,
+ *     like 'hide' and 'focus' may infer the parameter if unspecified.
+ * @param {boolean=} opt_incremental Whether the action should be incremental or
+ *     not. Defaults to true if unspecified. Only 'hide' and 'focus' actions
+ *     support the options.
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the selection operation has been dispatched. Receives two
+ *     parameters: a boolean describing whether the operation was rejected and
+ *     an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.doSelection = function(
+    action, opt_models, opt_incremental, opt_callback) {
+  var message = {action: action};
+  if (opt_models) {
+    message['models'] = opt_models;
+  }
+  if (opt_incremental !== null && opt_incremental != undefined) {
+    message['incremental'] = opt_incremental;
+  }
+  this.project_.eventBus().publish('selection', message, opt_callback, this);
+};
+
+/**
+ * Instructs the visualization to perform a filter operation. The operation can
+ * apply (or remove) multiple filters at the same time.
+ *
+ * @param {(string|Object.<string, *>)} arg_1 Either a string defining the
+ *     single metamodel key the filter should be applied upon (or removed
+ *     from), or an Object containing a collection of such keys (and the
+ *     associated filter values).
+ * @param {(*|function(boolean, string=)=} opt_arg2 If arg_1 is a string, this
+ *     should be the value of the filter value to apply. If null is provided,
+ *     the filter is instead removed (the same logic applies when multiple
+ *     filters are given as an Object in arg_1). If arg_1 is an object, then
+ *     this is expected to be the optional callback to invoke after the filter
+ *     operation.
+ * @param {function(boolean, string=)=} opt_arg3 An optional callback
+ *     invoked after the filter operation has been dispatched, if arg_1 is a
+ *     string. Receives two parameters: a boolean describing whether the
+ *     operation was rejected and an optional string containing the rejection
+ *     details, if any.
+ */
+rhizo.UserAgent.prototype.doFilter = function(arg_1, opt_arg_2, opt_arg_3) {
+  if (typeof(arg_1) == 'string') {
+    var message = {};
+    message[arg_1] = opt_arg_2 || null;
+    this.project_.eventBus().publish(
+        'filter', message, opt_arg_3 || null, this);
+  } else {
+    this.project_.eventBus().publish('filter', arg_1, opt_arg_2 || null, this);
+  }
+};
+
+/**
+ * Instructs the visualization to remove all existing filters.
+ *
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the filter operation has been dispatched. Receives two
+ *     parameters: a boolean describing whether the operation was rejected and
+ *     an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.doResetFilters = function(opt_callback) {
+  this.project_.eventBus().publish(
+      'filter',
+      this.project_.filterManager().filterDiff({}),
+      opt_callback,
+      this);
+};
+
+/**
+ * Instructs the visualization to perform a layout operation.
+ *
+ * @param {string=} opt_engine The layout engine to use. Leave null or
+ *     unspecified to re-use the current layout engine. Valid values for this
+ *     parameter are all the keys in the rhizo.layout.layouts registry.
+ * @param {Object=} opt_state The layout state to use. Each layout engine define
+ *     its supported state variables and format. See rhizo.layout.js for each
+ *     specific case. Leave null or unspecified to re-use the current layout
+ *     state.
+ * @param {Array=} opt_positions An array of custom position overrides for
+ *     specific model renderings. See rhizo.layout.LayoutManager for the
+ *     expected structure of each array entry. Leave unspecified if position
+ *     overrides are not needed.
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the layout operation has been dispatched. Receives two
+ *     parameters: a boolean describing whether the operation was rejected and
+ *     an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.doLayout = function(
+    opt_engine, opt_state, opt_positions, opt_callback) {
+  var message = {};
+  if (opt_engine) {
+    message['engine'] = opt_engine;
+  }
+  if (opt_state) {
+    message['state'] = opt_state;
+  }
+  if (opt_positions) {
+    message['positions'] = opt_positions;
+  }
+  this.project_.eventBus().publish('layout', message, opt_callback, this);
+};
+
