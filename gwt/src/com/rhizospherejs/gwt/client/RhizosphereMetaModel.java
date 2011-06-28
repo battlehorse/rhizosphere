@@ -210,7 +210,6 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
         $wnd.rhizo.meta.defaultRegistry.registerKindUiFactory(kindUuid, uiFactory);
       }
       this['kind'] = kindUuid;
-      debugger;
     }-*/;
 
     /**

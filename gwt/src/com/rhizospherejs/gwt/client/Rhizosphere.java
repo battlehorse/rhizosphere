@@ -21,6 +21,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Panel;
@@ -33,8 +34,14 @@ import com.rhizospherejs.gwt.client.bridge.JSONStringModelBridge;
 import com.rhizospherejs.gwt.client.bridge.JavaScriptObjectModelBridge;
 import com.rhizospherejs.gwt.client.bridge.JsoBuilder;
 import com.rhizospherejs.gwt.client.bridge.ModelBridge;
+import com.rhizospherejs.gwt.client.handlers.FilterEvent;
+import com.rhizospherejs.gwt.client.handlers.HasFilterHandlers;
+import com.rhizospherejs.gwt.client.handlers.HasLayoutHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasReadyHandlers;
+import com.rhizospherejs.gwt.client.handlers.HasSelectionHandlers;
+import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
+import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
 import com.rhizospherejs.gwt.client.meta.AttributeBuilder;
 import com.rhizospherejs.gwt.client.renderer.NativeRenderer;
 import com.rhizospherejs.gwt.client.renderer.WidgetBridge;
@@ -42,6 +49,8 @@ import com.rhizospherejs.gwt.client.renderer.WidgetBridge;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Widget wrapping a Rhizosphere visualization. This is the main entry point
@@ -129,7 +138,8 @@ import java.util.Iterator;
  * @author battlehorse@google.com (Riccardo Govoni)
  * @author dinoderek@google.com (Dino Derek Hughes)
  */
-public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
+public class Rhizosphere<T> extends Composite
+    implements HasReadyHandlers, HasFilterHandlers, HasLayoutHandlers, HasSelectionHandlers {
 
   /**
    * Manages the lifecycle of Rhizosphere renderings. Each datapoint of the
@@ -240,6 +250,11 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    * The visualization bootstrapper.
    */
   private Bootstrap bootstrap;
+  
+  /**
+   * The visualization user agent.
+   */
+  private RhizosphereUserAgent<T> userAgent;
 
   /**
    * Creates a new instance of the visualization, with default options.
@@ -263,7 +278,8 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
     widgetBridge = p;
 
     bootstrap = Bootstrap.create(getElement(), this.options, this);
-    bootstrap.prepare();
+    userAgent = bootstrap.prepare();
+    userAgent.bindTo(this);
   }
 
   /**
@@ -371,12 +387,14 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    *
    * @param model The model, i.e. a datapoint of the dataset you want to
    *     visualize, to add.
+   * @return An opaque reference to the model just added, that can be later
+   *     used for programmatic actions that address specific models.
    * @throws com.google.gwt.json.client.JSONException If the model type is a
    *     String and it cannot be successfully converted into a JSON object.
    * @throws RhizosphereException If {@code prepareFor} was not called with the
    *     correct class before passing a custom POJO to this method.
    */
-  public void addModel(final T model) {
+  public RhizosphereModelRef addModel(final T model) {
     ModelBridge<T> factory = getModelBridge(model);
     assert factory != null;
     if ((model instanceof CustomRhizosphereMetaModel) && !configuredCustomMetaModel) {
@@ -385,7 +403,9 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
       configuredCustomMetaModel = true;
     }
 
-    models.add(factory.bridge(model));
+    JavaScriptObject jso = factory.bridge(model);
+    models.add(jso);
+    return RhizosphereModelRef.asModelRef(jso);
   }
 
   /**
@@ -468,6 +488,244 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
+  }
+
+  /**
+   * Register a handler to be notified whenever the visualization filtering
+   * criteria change.
+   * @param handler The handler to notify.
+   */
+  @Override
+  public HandlerRegistration addFilterHandler(FilterEvent.Handler handler) {
+    return addHandler(handler, FilterEvent.getType());
+  }
+
+  /**
+   * Register a handler to be notified whenever the visualization layout
+   * algorithm changes.
+   * @param handler The handler to notify.
+   */
+  @Override
+  public HandlerRegistration addLayoutHandler(LayoutEvent.Handler handler) {
+    return addHandler(handler, LayoutEvent.getType());
+  }
+
+  /**
+   * Register a handler to be notified whenever the selection status of one or
+   * more visualization elements changes.
+   * @param handler The handler to notify.
+   */
+  @Override
+  public HandlerRegistration addSelectionHandler(SelectionEvent.Handler handler) {
+    return addHandler(handler, SelectionEvent.getType());
+  }
+
+  /**
+   * Programmatically applies a faceted filter on visualization models on the
+   * given model attribute.
+   * @param name The name of the Rhizosphere model attribute, as defined by
+   *     {@link RhizosphereModelAttribute#name()}, the filter applies to.
+   * @param value The filtering criteria. The specific format of the filtering
+   *     criteria depends on the attribute kind. For example, attributes with
+   *     the RANGE kind expect the criteria to be a JSONObject with two numeric
+   *     {@code min} and {@code max} entries. Use a {@code null} to remove any
+   *     pre-existing filter on the attribute.
+   * @param cb An optional callback invoked with the outcome of the filter
+   *     operation.
+   */
+  public void doFilter(String name, JSONValue value, RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.doFilter(name, value, cb);
+  }
+
+  /**
+   * Programmatically applies one or more faceted filters on visualization
+   * models.
+   *
+   * @param filters The set of filters to apply. Each key should be a valid
+   *     Rhizosphere model attribute name, as defined by
+   *     {@link RhizosphereModelAttribute#name()}, for a filter to apply to.
+   *     Each value should represent the filtering criteria. The specific
+   *     format of the filtering criteria depends on the attribute kind.
+   *     For example, attributes with the RANGE kind expect the criteria to be
+   *     a JSONObject with two numeric {@code min} and {@code max} entries.
+   *     Use a {@code null} to remove any pre-existing filter on the attribute.
+   * @param cb An optional callback invoked with the outcome of the filter
+   *     operation.
+   */
+  public void doFilter(Map<String, JSONValue> filters, RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.doFilter(filters, cb);
+  }
+
+  /**
+   * As {@link #doFilter(Map, RhizosphereCallback)}, with the filters defined
+   * as a JSONObject instead of a Map.
+   * @param filterObj The set of filters to apply.
+   * @param cb An optional callback invoked with the outcome of the filter
+   *     operation.
+   */
+  public void doFilter(JSONObject filterObj, RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.doFilter(filterObj, cb);
+  }
+
+  /**
+   * Programmatically resets all the filters currently applied to visualization
+   * models.
+   * @param cb An optional callback invoked with the outcome of the filter
+   *     operation.
+   */
+  public void doResetFilters(RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.doResetFilters(cb);
+  }
+
+  /**
+   * Programmatically performs a selection operation on the visualization
+   * models. Different types of operations can be performed. See
+   * <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.selection.js">
+   * rhizo.seletion.js</a> for the list of supported operations.
+   *
+   * @param action The type of operation to perform.
+   * @param models The collection of visualization models the operation applies
+   *     to. Not all operations use this parameter and it can be optionally
+   *     omitted at times. Refer to the documentation above for details.
+   *     Use {@code null} when unneeded.
+   * @param cb An optional callback invoked with the outcome of the selection
+   *     operation.
+   */
+  public void doSelection(String action,
+                          Collection<RhizosphereModelRef> models,
+                          RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.doSelection(action, models, cb);
+  }
+
+  /**
+   * Programmatically performs a selection operation on the visualization
+   * models. Different types of operations can be performed. See
+   * <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.selection.js">
+   * rhizo.seletion.js</a> for the list of supported operations.
+   *
+   * @param action The type of operation to perform.
+   * @param models The collection of visualization models the operation applies
+   *     to. Not all operations use this parameter and it can be optionally
+   *     omitted at times. Refer to the documentation above for details.
+   *     Use {@code null} when unneeded.
+   * @param incremental Whether the operation should be incremental or not.
+   *     Relevant only for 'hide' and 'focus' operations.
+   * @param cb An optional callback invoked with the outcome of the selection
+   *     operation.
+   */
+  public void doSelection(String action,
+                          Collection<RhizosphereModelRef> models,
+                          boolean incremental,
+                          RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.doSelection(action, models, incremental, cb);
+  }
+
+  /**
+   * Programmatically changes the layout algorithm to visually arrange
+   * visualization models.
+   *
+   * @param engine The layout engine to use. Must be one the valid engine
+   *     names as defined in <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.layout.js">
+   *     rhizo.layout.js</a> in the {@code rhizo.layout.layouts} structure.
+   *     Use {@code null} to re-use the current layout engine.
+   * @param state The layout state to use. The state is the set of
+   *     configuration options that each layout engine accepts to customize its
+   *     behavior. The state definition is layout-specific. Use {@code null}
+   *     to let the layout use its last (or default) state.
+   * @param positions An optional collection of explicit positioning
+   *     information for visualization models, that will override any position
+   *     the layout engine would otherwise define. Leave {@code null} if
+   *     unneeded.
+   * @param cb An optional callback invoked with the outcome of the layout
+   *     operation.
+   */
+  // TODO(battlehorse): Change the 'engine' string to enum.
+  public void doLayout(String engine,
+                       JSONObject state,
+                       Collection<RhizosphereModelPosition> positions,
+                       RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }    
+    userAgent.doLayout(engine, state, positions, cb);
+  }
+
+  /**
+   * Resolves a collection of opaque model references into model instances.
+   * @param modelRefs The references to resolve.
+   * @return The model instances the references resolves to.
+   */
+  public Collection<T> resolveModelRefs(Collection<RhizosphereModelRef> modelRefs) {
+    if (modelRefs == null) {
+      return null;
+    }
+    if (modelBridge == null) {
+      throw new RhizosphereException(
+          "You must call addModel() at least once before resolving model ids.");
+    }
+    List<T> resolvedModels = new ArrayList<T>(modelRefs.size());
+    for (RhizosphereModelRef modelRef : modelRefs) {
+      T model = modelBridge.extractModel(modelRef);
+      if (model != null) {
+        resolvedModels.add(model);
+      }
+    }
+    return resolvedModels;
+  }
+
+  /**
+   * Resolves an opaque model reference into the model instance it points to.
+   * @param modelRef The reference to resolve.
+   * @return The model instance the reference points to.
+   */
+  public T resolveModelRef(RhizosphereModelRef modelRef) {
+    if (modelRef == null) {
+      return null;
+    }
+    if (modelBridge == null) {
+      throw new RhizosphereException(
+        "You must call addModel() at least once before resolving model ids.");
+    }
+    return modelBridge.extractModel(modelRef);
   }
 
   @Override
