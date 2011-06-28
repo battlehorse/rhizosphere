@@ -55,7 +55,7 @@
  * rhizo.ui.component.templates enumeration.
  */
 
-// RHIZODEP=rhizo.ui,rhizo.layout
+// RHIZODEP=rhizo.ui,rhizo.ui.layout
 // Components Namespace
 namespace("rhizo.ui.component");
 
@@ -989,6 +989,7 @@ rhizo.ui.component.Console.prototype.getHeader = function() {
 rhizo.ui.component.Layout = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
                                     'rhizo.ui.component.Layout');
+  project.eventBus().subscribe('layout', this.onLayout_, this);
 };
 rhizo.inherits(rhizo.ui.component.Layout, rhizo.ui.component.Component);
 
@@ -1004,8 +1005,7 @@ rhizo.ui.component.Layout.prototype.render = function() {
   this.layoutSelector_ = $("<select />", {disabled: 'disabled'});
   this.layoutSelector_.append($("<option value=''>No layout engines</option>"));
 
-  this.submit_ = $('<button />', {disabled: 'disabled'}).text('Update');
-  this.layoutPanel_.prepend(this.submit_).
+  this.layoutPanel_.
       prepend(this.layoutSelector_).
       prepend("Keep items ordered by: ");
 
@@ -1014,52 +1014,68 @@ rhizo.ui.component.Layout.prototype.render = function() {
 
 rhizo.ui.component.Layout.prototype.metaReady = function() {
   this.layoutSelector_.children().remove();
-  var layoutControlsMap = {};
-  var layoutEngines = this.project_.layoutEngines();
-  for (var layoutEngineName in layoutEngines) {
-    var layoutEngine = layoutEngines[layoutEngineName];
+  this.layoutControlsMap_ = {};
+  var engineNames = this.project_.layoutManager().getEngineNames();
+  for (var i = 0; i < engineNames.length; i++) {
+    var engineName = engineNames[i];
+    var isCurrent =
+        engineName == this.project_.layoutManager().getCurrentEngineName();
     this.layoutSelector_.append(
-      $("<option value='" + layoutEngineName + "' " +
-        (this.project_.currentLayoutEngineName() == layoutEngineName ?
-             "selected" : "") +
-        ">" + layoutEngine  + "</option>"));
-    if (layoutEngine.layoutUIControls) {
-      var layoutControls = layoutEngine.layoutUIControls();
-      layoutControlsMap[layoutEngineName] = $(layoutControls);
-      if (this.project_.currentLayoutEngineName() != layoutEngineName) {
+      $("<option value='" + engineName + "' " +
+        (isCurrent ? "selected" : "") +
+        ">" + rhizo.layout.layouts[engineName]['name']  + "</option>"));
+
+    var layoutEngineUi = rhizo.layout.layouts[engineName]['ui'];
+    if (layoutEngineUi) {
+      var layoutControls =
+          new layoutEngineUi(this.project_, engineName).layoutUIControls();
+      this.layoutControlsMap_[engineName] = $(layoutControls);
+      if (!isCurrent) {
         layoutControls.css("display","none");
       }
       this.layoutOptions_.append(layoutControls);
     }
   }
 
-  this.layoutSelector_.removeAttr('disabled').change(function(ev) {
-    for (var layout in layoutControlsMap) {
-      if (layout == $(this).val()) {
-        layoutControlsMap[layout].show("fast");
-      } else {
-        layoutControlsMap[layout].hide("fast");
-      }
-    }
-  });
+  this.layoutSelector_.removeAttr('disabled').change(
+      jQuery.proxy(this.updateVisibleEngineControls_, this));
 };
 
 rhizo.ui.component.Layout.prototype.ready = function() {
-  this.submit_.removeAttr('disabled').click(jQuery.proxy(function() {
+  this.layoutSelector_.change(jQuery.proxy(function() {
     // TODO(battlehorse): forcealign should be true only if there are
     // uncommitted filters (i.e. GREY models).
-    this.project_.layout(this.layoutSelector_.val(), null, {forcealign:true});
+    this.project_.eventBus().publish('layout', {
+      engine: this.layoutSelector_.val(),
+      options: {forcealign: true}
+    }, /* callback */ null, this);
   }, this));
 };
 
 /**
- * Selects the given layout engine.
- * @param {string} layoutEngineName The name of the layout engine to select.
+ * Callback invoked whenever a layout related change occurs in the project.
+ * Ensure that the layout component UI reflects the currently chosen engine.
+ *
+ * @param {Object} message The eventbus message describing the layout change.
  */
-rhizo.ui.component.Layout.prototype.setEngine = function(layoutEngineName) {
-  this.layoutSelector_.val(layoutEngineName).change();
+rhizo.ui.component.Layout.prototype.onLayout_ = function(message) {
+  this.layoutSelector_.val(message['engine']);
+  this.updateVisibleEngineControls_();
 };
 
+/**
+ * Ensures that the correct UI matching the selected layout engine is visible.
+ * @private
+ */
+rhizo.ui.component.Layout.prototype.updateVisibleEngineControls_ = function() {
+  for (var layout in this.layoutControlsMap_) {
+    if (layout == $(this.layoutSelector_).val()) {
+      this.layoutControlsMap_[layout].show("fast");
+    } else {
+      this.layoutControlsMap_[layout].hide("fast");
+    }
+  }
+};
 
 /**
  * Handles selections and selection-based filtering.
@@ -1070,6 +1086,8 @@ rhizo.ui.component.Layout.prototype.setEngine = function(layoutEngineName) {
 rhizo.ui.component.SelectionManager = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
                                     'rhizo.ui.component.SelectionManager');
+  project.eventBus().subscribe(
+      'selection', this.onSelectionChanged_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.ui.component.SelectionManager,
                rhizo.ui.component.Component);
@@ -1112,16 +1130,33 @@ rhizo.ui.component.SelectionManager.prototype.ready = function() {
  */
 rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function() {
   this.selectButton_.removeAttr('disabled').click(jQuery.proxy(function() {
-    var countFiltered =  this.project_.filterUnselected();
-    this.setNumFilteredModels(countFiltered);
+    // Don't specify the sender, so to receive callbacks even for events that
+    // this same class triggers.
+    this.project_.eventBus().publish('selection', {'action': 'focus'});
   }, this));
 
 
   // Reset button remains disabled until the first selection is performed.
   this.resetButton_.click(jQuery.proxy(function() {
-    this.project_.resetUnselected();
-    this.setNumFilteredModels(0);
+    // Don't specify the sender, so to receive callbacks even for events that
+    // this same class triggers.
+    this.project_.eventBus().publish('selection', {'action': 'resetFocus'});
   }, this));
+};
+
+/**
+ * Updates the number of currently hidden models because of selection.
+ *
+ * @param {Object} message The eventbus message describing the selection change.
+ * @private
+ */
+rhizo.ui.component.SelectionManager.prototype.onSelectionChanged_ = function(
+    message) {
+  if (message['action'] == 'focus' ||
+      message['action'] == 'resetFocus' ||
+      message['action'] == 'hide') {
+    this.setNumFilteredModels(this.project_.selectionManager().getNumHidden());
+  }
 };
 
 /**
@@ -1156,13 +1191,15 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     selected: function(ev, ui) {
       var selected_id = $(ui.selected).data("id");
       if (selected_id) {
-        project.select(selected_id);
+        project.eventBus().publish(
+            'selection', {'action': 'select', 'models': selected_id});
       }
     },
     unselected: function(ev, ui) {
-      var unselected_id = $(ui.unselected).data("id");
-      if (unselected_id) {
-        project.unselect(unselected_id);
+      var deselected_id = $(ui.unselected).data("id");
+      if (deselected_id) {
+        project.eventBus().publish(
+            'selection', {'action': 'deselect', 'models': deselected_id});
       }
     },
     // TODO: disabled until incremental refresh() is implemented
@@ -1174,7 +1211,7 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
 
   this.gui_.viewport.click(jQuery.proxy(function(ev, ui) {
     if (this.isOnEmptySpace_(ev)) {
-      project.unselectAll();
+      project.eventBus().publish('selection', {'action': 'deselectAll'});
     }
   }, this));
 };
@@ -1239,9 +1276,10 @@ rhizo.ui.component.AutocommitPanel.prototype.render = function() {
   var autocommitPanel =
       $('<div />', {'class': 'rhizo-filter rhizo-autocommit-panel'});
   this.autocommit_ =
-      $('<input />', {type: 'checkbox',
-                      checked: this.project_.isFilterAutocommit(),
-                      disabled: 'disabled'}).
+      $('<input />', {
+        type: 'checkbox',
+        checked: this.project_.filterManager().isFilterAutocommit(),
+        disabled: 'disabled'}).
       appendTo(autocommitPanel);
   this.autocommitLabel_ =
       $('<span>Autocommit</span>').appendTo(autocommitPanel);
@@ -1270,9 +1308,9 @@ rhizo.ui.component.AutocommitPanel.prototype.ready = function() {
   }, this));
 
   this.hideButton_.
-      attr('disabled', this.project_.isFilterAutocommit()).
+      attr('disabled', this.project_.filterManager().isFilterAutocommit()).
       click(jQuery.proxy(function() {
-        this.project_.commitFilter();
+        this.project_.filterManager().commitFilter();
   }, this));
 };
 
@@ -1291,7 +1329,7 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
   if (this.callback_) {
     this.callback_(autocommit);
   }
-  this.project_.enableFilterAutocommit(autocommit);
+  this.project_.filterManager().enableFilterAutocommit(autocommit);
 };
 
 
@@ -1319,10 +1357,22 @@ rhizo.ui.component.FilterStackContainer = function(project, options) {
   /**
    * Defines which filters are currently visible. This set is only meaningful
    * when filter selection is active, otherwise all filters are always visible.
+   * Maps metamodel keys to visibility status.
    * @type {Object.<string, boolean>}
    * @private
    */
   this.activeFilters_ = {};
+
+  /**
+   * Maps metamodel keys to the DOM nodes (or jQuery objects) for the associated
+   * filter user interfaces (only for metamodels that have an associated ui).
+   * @type {Object.<string, *>}
+   * @private
+   */
+  this.filterUis_ = {};
+
+  project.eventBus().subscribe(
+      'filter', this.onFilterChanged_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.ui.component.FilterStackContainer,
                rhizo.ui.component.Component);
@@ -1342,7 +1392,7 @@ rhizo.ui.component.FilterStackContainer.prototype.render = function() {
 };
 
 rhizo.ui.component.FilterStackContainer.prototype.metaReady = function() {
-  var metaModel = this.project_.metaModel();
+  var metaModel = this.metaModelWithUi_();
   var filtersNum = 0;
   for (var key in metaModel) {
     filtersNum++;
@@ -1352,26 +1402,33 @@ rhizo.ui.component.FilterStackContainer.prototype.metaReady = function() {
     this.noFilterNotice_.remove();
   }
 
-  if (filtersNum <= this.filterSelectorThreshold_) {
-    for (key in metaModel) {
-      var filter = metaModel[key].kind.renderFilter(this.project_,
-                                                    metaModel[key],
-                                                    key);
-      this.filterPanel_.append(filter);
+  var dismissableFilters = filtersNum > this.filterSelectorThreshold_;
+  for (key in metaModel) {
+    var ui = this.project_.metaModelRegistry().createUiForKind(
+        metaModel[key].kind, this.project_, key).filterUIControls();
+    
+    if (dismissableFilters) {
+      $(ui).css('display', 'none');
+      $('<div />', {'class': 'rhizo-icon rhizo-close-icon'}).
+          text('x').
+          prependTo(ui).data('rhizo-metamodel-key', key);
     }
-  } else {
+    this.filterPanel_.append(ui);
+    this.filterUis_[key] = ui;
+  }
+  if (dismissableFilters) {
     this.renderFilterSelector_();
   }
 };
 
 /**
- * Renders the filter selector, and an initial selection of filters up to
- * the selector threshold.
+ * Renders the filter selector to let the user choose which filters to apply
+ * when many filters (over filterSelectorThreshold_) exist.
  * @private
  */
 rhizo.ui.component.FilterStackContainer.prototype.renderFilterSelector_ =
     function() {
-  var metaModel = this.project_.metaModel();
+  var metaModel = this.metaModelWithUi_();
   this.filterSelector_ = $('<select />',
                            {'class': 'rhizo-filter-selector',
                             disabled: 'disabled'});
@@ -1382,13 +1439,6 @@ rhizo.ui.component.FilterStackContainer.prototype.renderFilterSelector_ =
     this.filterSelector_.append(option);
   }
   this.filterPanel_.append(this.filterSelector_);
-  var visibleFilterCount = 0;
-  for (key in metaModel) {
-    this.activateFilter_(key);
-    if (++visibleFilterCount == this.filterSelectorThreshold_) {
-      break;
-    }
-  }
 };
 
 rhizo.ui.component.FilterStackContainer.prototype.ready = function() {
@@ -1399,21 +1449,27 @@ rhizo.ui.component.FilterStackContainer.prototype.ready = function() {
   // disabled/enabled when needed.
   this.autocommitPanel_.ready();
   if (this.filterSelector_) {
-    this.activateFilterSelector_();
+    // Enable the filter selector dropdown
+    this.enableFilterSelector_();
+
+    // Enable filter dismissal.
+    this.enableFilterDismissal_();
   }
 };
 
 /**
+ * Enables the filter selector. Now the user can start choosing which filters
+ * to apply.
  * @private
  */
-rhizo.ui.component.FilterStackContainer.prototype.activateFilterSelector_ =
+rhizo.ui.component.FilterStackContainer.prototype.enableFilterSelector_ =
     function() {
   this.filterSelector_.removeAttr('disabled').change(jQuery.proxy(function() {
     var key = this.filterSelector_.val();
     if (!(key in this.project_.metaModel())) {
       return;
     }
-    this.activateFilter_(key, this.project_);
+    this.showFilter_(key);
 
     // re-select the first (default) option.
     this.filterSelector_.find('option').eq(0).attr('selected', 'selected');
@@ -1421,67 +1477,92 @@ rhizo.ui.component.FilterStackContainer.prototype.activateFilterSelector_ =
 };
 
 /**
- * @param {string} key
+ * Enables filter dismissal. Now the user can dismiss filters by clicking their
+ * 'close' icon.
  * @private
  */
-rhizo.ui.component.FilterStackContainer.prototype.activateFilter_ =
+rhizo.ui.component.FilterStackContainer.prototype.enableFilterDismissal_ =
+    function() {
+  var that = this;
+  this.filterPanel_.find('.rhizo-close-icon').click(function() {
+      var key = $(this).data('rhizo-metamodel-key');
+      // remove the filter
+      $(that.filterUis_[key]).slideUp('fast');
+      delete that.activeFilters_[key];
+
+      // re-align the visualization.
+      var message = {};
+      message[key] = null;
+      that.project_.eventBus().publish(
+          'filter', message, /* callback */ null, that);
+
+      // re-enable the filter among the selectable ones.
+      that.filterSelector_.
+          find('option[value=' + rhizo.util.escapeSelectorToken(key) + ']').
+          removeAttr('disabled');
+    });
+};
+
+/**
+ * Makes the filter associated to a given metamodel key visible.
+ *
+ * @param {string} key The metamodel key for the filter to show.
+ * @private
+ */
+rhizo.ui.component.FilterStackContainer.prototype.showFilter_ =
     function(key) {
-  var metaModel = this.project_.metaModel();
-  var filter = metaModel[key].kind.renderFilter(this.project_, 
-                                                metaModel[key],
-                                                key);
+  var filterUi = this.filterUis_[key];
+  $(filterUi).slideDown('fast');
+
   this.activeFilters_[key] = true;
-  var filterCloseIcon =
-      $('<div />', {'class': 'rhizo-icon rhizo-close-icon'}).
-          text('x').
-          prependTo(filter);
-  filterCloseIcon.click(jQuery.proxy(function() {
-    // remove the filter
-    filter.remove();
-    delete this.activeFilters_[key];
 
-    // re-align the visualization.
-    this.project_.filter(key, null);
-
-    // re-enable the filter among the selectable ones.
-    this.filterSelector_.
-        find('option[value=' + rhizo.util.escapeSelectorToken(key) + ']').
-        removeAttr('disabled');
-  }, this));
-
-  filter.appendTo(this.filterPanel_);
   this.filterSelector_.
       find('option[value=' + rhizo.util.escapeSelectorToken(key) + ']').
       attr('disabled', 'disabled');
 };
 
 /**
- * Checks whether the given filter is active (i.e., its UI is showing).
- * @param {string} key The metamodel key of the filter to inspect.
- * @return {boolean} Whether the filter is active (its UI is showing) or not.
+ * Returns a metaModel copy filtered to include only those metaModel keys whose
+ * kind has an associated user interface.
+ * @return {!Object.<string, *>} A filtered metaModel copy to include only keys
+ *     whose kind has an associated user interface.
+ * @private
  */
-rhizo.ui.component.FilterStackContainer.prototype.isFilterActive =
-    function(key) {
-  if (!this.filterSelector_) {
-    return true;
+rhizo.ui.component.FilterStackContainer.prototype.metaModelWithUi_ =
+    function() {
+  var metaModelWithUi = {};
+  var metaModel = this.project_.metaModel();
+  for (var key in metaModel) {
+    if (this.project_.metaModelRegistry().uiExistsForKind(
+        metaModel[key].kind)) {
+      metaModelWithUi[key] = metaModel[key];
+    }
   }
-  return key in this.activeFilters_;
+  return metaModelWithUi;
 };
 
 /**
- * Ensures that the UI for the given filter key is visible to the user. This is
- * only relevant when filter selection is active, otherwise all filters are
- * always visible.
- * @param {string} key The metamodel key of the filter to show.
+ * Callback invoked whenever one or more filters are applied (or removed)
+ * elsewhere on the project. Ensures that the UI for the given filter key is
+ * visible to the user. This is only relevant when filter selection is active,
+ * otherwise all filters are always visible.
+ *
+ * @param {Object} message An eventbus message describing the filter change that
+ *     occurred. See rhizo.meta.FilterManager for the expected message
+ *     structure.
+ * @private
  */
-rhizo.ui.component.FilterStackContainer.prototype.showFilter = function(key) {
+rhizo.ui.component.FilterStackContainer.prototype.onFilterChanged_ = function(
+    message) {
   if (!this.filterSelector_) {
     // The filter selector is not in use. This means that all filters are
     // always visible.
     return;
   }
-  if (!(key in this.activeFilters_)) {
-    this.activateFilter_(key);
+  for (var key in message) {
+    if (!(key in this.activeFilters_)) {
+      this.showFilter_(key);
+    }
   }
 };
 
@@ -1528,27 +1609,26 @@ rhizo.ui.component.FilterBookContainer.prototype.render = function() {
 };
 
 rhizo.ui.component.FilterBookContainer.prototype.metaReady = function() {
-  if (this.project_.isFilterAutocommit()) {
+  if (this.project_.filterManager().isFilterAutocommit()) {
     this.commitFilterLink_.css('display', 'none');
   }
   this.autocommitPanel_.registerCallback(jQuery.proxy(function(isAutocommit) {
     this.commitFilterLink_.css('display', isAutocommit ? 'none' : '');
   }, this));
 
-  var metaModel = this.project_.metaModel();
+  var metaModel = this.metaModelWithUi_();
   for (var key in metaModel) {
-    var filter = metaModel[key].kind.renderFilter(this.project_,
-                                                  metaModel[key],
-                                                  key);
-    filter.css('display', 'none');
-    this.filterPanel_.append(filter);
+    var filterUi = this.project_.metaModelRegistry().createUiForKind(
+      metaModel[key].kind, this.project_, key).filterUIControls();
+    filterUi.css('display', 'none');
+    this.filterPanel_.append(filterUi);
   }
 };
 
 rhizo.ui.component.FilterBookContainer.prototype.ready = function() {
   this.autocommitPanel_.ready();
   this.commitFilterLink_.click(jQuery.proxy(function() {
-    this.project_.commitFilter();
+    this.project_.filterManager().commitFilter();
   }, this));
 
   // Every single filter implementation auto-activates itself when created.
@@ -1573,6 +1653,25 @@ rhizo.ui.component.FilterBookContainer.prototype.ready = function() {
       prev.css('display', '');
     }
   });
+};
+
+/**
+ * Returns a metaModel copy filtered to include only those metaModel keys whose
+ * kind has an associated user interface.
+ * @return {!Object.<string, *>} A filtered metaModel copy to include only keys
+ *     whose kind has an associated user interface.
+ * @private
+ */
+rhizo.ui.component.FilterBookContainer.prototype.metaModelWithUi_ = function() {
+  var metaModelWithUi = {};
+  var metaModel = this.project_.metaModel();
+  for (var key in metaModel) {
+    if (this.project_.metaModelRegistry().uiExistsForKind(
+        metaModel[key].kind)) {
+      metaModelWithUi[key] = metaModel[key];
+    }
+  }
+  return metaModelWithUi;
 };
 
 
@@ -1710,19 +1809,26 @@ rhizo.ui.component.Actions.prototype.ready = function() {
           accept: '.rhizo-model',
           drop: function(ev, ui) {
             var id = ui.draggable.data("id");
-            if (!project.isSelected(id)) {
+            if (!project.selectionManager().isSelected(id)) {
               alert("Action applied on " + project.model(id));
-              project.model(id).rendering().moveToMark().unmarkPosition();
+              project.model(id).rendering().
+                  refreshPosition().
+                  moveToMark().
+                  unmarkPosition();
             } else {
               var countSelected = 0;
-              var all_selected = project.allSelected();
+              var all_selected = project.selectionManager().allSelected();
               for (var id in all_selected) { countSelected++;}
               alert("Action applied on " + countSelected + " elements");
 
               for (var id in all_selected) {
-                all_selected[id].rendering().moveToMark().unmarkPosition();
+                all_selected[id].rendering().
+                    refreshPosition().
+                    moveToMark().
+                    unmarkPosition();
               }
-              project.unselectAll();
+              project.eventBus().publish(
+                  'selection', {'action': 'deselectAll'});
             }
           }
         });

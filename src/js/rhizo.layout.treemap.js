@@ -101,7 +101,8 @@ rhizo.layout.treemap.TreeMapNode.prototype.buildSyntheticRendering_ = function(
         modelIds.push(childNodes[i].id);
       }
     }
-    this.project_.toggleSelect(modelIds);
+    this.project_.eventBus().publish(
+        'selection', {'action': 'toggle', 'models': modelIds});
   }, this));
 
   // node must be attached to the DOM when creating a SyntheticRendering, hence
@@ -247,8 +248,8 @@ rhizo.layout.treemap.TreeMapNode.prototype.updateColorRange = function(colorRang
  */
 rhizo.layout.treemap.TreeMapNode.prototype.toColorScale_ = function(
     colorVal, colorRange) {
-  var rescaler = colorRange.kind.toFilterScale ?
-      jQuery.proxy(colorRange.kind.toFilterScale, colorRange.kind) :
+  var rescaler = colorRange.kind.toUserScale ?
+      jQuery.proxy(colorRange.kind.toUserScale, colorRange.kind) :
       function(val) { return val; };
   var channels = ['r', 'g', 'b'];
   var outputColor = {};
@@ -429,10 +430,9 @@ rhizo.layout.TreeMapLayout = function(project) {
   this.parentMatcher_ = rhizo.layout.orMatcher(
       rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
 
-  rhizo.layout.GUILayout.call(this, project,
-                              new rhizo.layout.TreeMapLayoutUI(this, project));
+  rhizo.layout.StatefulLayout.call(this, project);
 };
-rhizo.inherits(rhizo.layout.TreeMapLayout, rhizo.layout.GUILayout);
+rhizo.inherits(rhizo.layout.TreeMapLayout, rhizo.layout.StatefulLayout);
 
 /**
  * Verifies whether this layout can be used, given the project metamodel.
@@ -601,7 +601,7 @@ rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
   if (this.numHiddenModels_ > 0) {
     // There were hidden models, reset their filter and mark visibility as
     // dirty to force visibility alignment.
-    this.project_.resetAllFilter('__treemap__');
+    this.project_.filterManager().removeFilterFromModels('__treemap__');
     this.numHiddenModels_ = 0;
     return true;
   }
@@ -621,7 +621,7 @@ rhizo.layout.TreeMapLayout.prototype.dependentModels = function(modelId) {
 };
 
 rhizo.layout.TreeMapLayout.prototype.toString = function() {
-  return "TreeMap";
+  return "TreeMapLayout";
 };
 
 /**
@@ -924,112 +924,6 @@ rhizo.layout.TreeMapLayout.prototype.revertExpandedModels_ = function(
 };
 
 
-/**
- * Helper class that handles TreeMapLayout ui controls.
- * @param {rhizo.layout.TreeMapLayout} layout
- * @param {rhizo.Project} project
- * @constructor
- */
-rhizo.layout.TreeMapLayoutUI = function(layout, project) {
-  this.layout_ = layout;
-  this.project_ = project;
-
-  this.areaSelector_ = null;
-  this.colorSelector_ = null;
-  this.parentKeySelector_ = null;
-
-  /**
-   * The matcher to identify all model attributes where tree structures can be
-   * built from.
-   * @type {function(string, Object):boolean}
-   * @private
-   */
-  this.parentMatcher_ = rhizo.layout.orMatcher(
-      rhizo.layout.linkMatcher, rhizo.layout.hierarchyMatcher);
-};
-
-rhizo.layout.TreeMapLayoutUI.prototype.renderControls = function() {
-  var hasParentKeys = this.checkParentKeys_();
-  var details = $('<div />');
-
-  this.areaSelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_,
-      'rhizo-treemaplayout-area',
-      rhizo.layout.numericMatcher).
-    change(jQuery.proxy(this.updateState_, this));
-  this.colorSelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_,
-      'rhizo-treemaplayout-color',
-      rhizo.layout.numericMatcher).
-    append("<option value=''>-</option>").
-    change(jQuery.proxy(this.updateState_, this));
-  details.
-      append(this.renderSelector_('Area: ', this.areaSelector_)).
-      append(this.renderSelector_('Color: ', this.colorSelector_));
-  if (hasParentKeys) {
-    this.parentKeySelector_ = rhizo.layout.metaModelKeySelector(
-        this.project_,
-        'rhizo-treemaplayout-parentKey',
-        this.parentMatcher_).
-      append("<option value=''>-</option>").
-      change(jQuery.proxy(this.updateState_, this));
-    details.append(this.renderSelector_('Group by: ', this.parentKeySelector_));
-  }
-  return details;
-};
-
-/**
- * Renders an option selector, by grouping together a label and a combobox in
- * a single element.
- * @param {string} label Text label to associate to the SELECT element.
- * @param {*} selector jQuery object pointing to a SELECT element.
- * @return {*} JQuery object pointing to the grouped control.
- * @private
- */
-rhizo.layout.TreeMapLayoutUI.prototype.renderSelector_ = function(
-    label, selector) {
-  return $('<div />', {'class': 'rhizo-layout-control'}).
-      append($('<label />').text(label)).append(selector);
-};
-
-/**
- * Checks whether the project metamodel contains keys that define parent-child
- * relationships between models, so that hierarchical treemaps can be built.
- * @return {boolean} Whether the project allows hierarchical treemaps or not.
- * @private
- */
-rhizo.layout.TreeMapLayoutUI.prototype.checkParentKeys_ = function() {
-  for (var key in this.project_.metaModel()) {
-    if (this.parentMatcher_(key, this.project_.metaModel()[key])) {
-      return true;
-    }
-  }
-  return false;
-};
-
-rhizo.layout.TreeMapLayoutUI.prototype.setState = function(state) {
-  this.areaSelector_.val(state.area);
-  this.colorSelector_.val(state.color || '');  // color is optional
-  if (this.parentKeySelector_) {
-    this.parentKeySelector_.val(state.parentKey || '');  // parent is optional.
-  }
-};
-
-/**
- * Updates the layout state whenever the user modifies the controls.
- * @private
- */
-rhizo.layout.TreeMapLayoutUI.prototype.updateState_ = function() {
-  var state = {
-    area: this.areaSelector_.val(),
-    color: this.colorSelector_.val()
-  };
-  if (this.parentKeySelector_) {
-    state.parentKey = this.parentKeySelector_.val();
-  }
-  this.layout_.setStateFromUI(state);
-};
-
-
 // register the treemaplayout in global layout list
-rhizo.layout.layouts.treemap = rhizo.layout.TreeMapLayout;
+rhizo.layout.layouts.treemap =
+    {'name': 'Treemap', 'engine': rhizo.layout.TreeMapLayout};

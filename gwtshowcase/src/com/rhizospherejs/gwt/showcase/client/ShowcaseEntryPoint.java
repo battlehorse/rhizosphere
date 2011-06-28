@@ -59,6 +59,7 @@ public class ShowcaseEntryPoint implements EntryPoint {
 
     // History management.
     tabs.addSelectionHandler(new SelectionHandler<Integer>(){
+      @Override
       public void onSelection(SelectionEvent<Integer> event) {
         String tabid = "";
         switch (event.getSelectedItem()) {
@@ -82,6 +83,7 @@ public class ShowcaseEntryPoint implements EntryPoint {
       }});
 
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
       public void onValueChange(ValueChangeEvent<String> event) {
         String historyToken = event.getValue();
         tabs.selectTab(tabNumberFromToken(historyToken));

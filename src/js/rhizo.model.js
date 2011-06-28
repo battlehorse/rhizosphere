@@ -99,24 +99,46 @@ rhizo.model.SuperModel.prototype.toString = function() {
   return this.model.toString();
 };
 
+/**
+ * Checks whether this model is filtered out from the visualization.
+ *
+ * @param {string=} opt_key An optional filtering key. If present, the method
+ *     will check only whether the model is filtered on the given key. If
+ *     missing, the method will check if the model is filtered according to
+ *     any key.
+ * @return {boolean} Whether this model is filtered out from the visualization
+ *     or not.
+ */
 rhizo.model.SuperModel.prototype.isFiltered = function(opt_key) {
   if (opt_key) {
     return this.filters_[opt_key] || false;
   } else {
-    var countFilters = 0;
-    for (var key in this.filters_) { countFilters++;}
-    return countFilters != 0;
+    for (var key in this.filters_) {
+      return true;
+    }
+    return false;
   }
 };
 
+/**
+ * Applies the given filter to this model.
+ * @param {string} key The key of the filter to add.
+ * @return {boolean} Whether the filter did not exist on this model (and was
+ *     therefore added) or was already there (no-op).
+ */
 rhizo.model.SuperModel.prototype.filter = function(key) {
-  this.filters_[key] = true;
+  if (key in this.filters_) {
+    return false;
+  } else {
+    this.filters_[key] = true;
+    return true;
+  }
 };
 
 /**
  * Removes the given filter from this model.
  * @param {string} key The key of the filter to remove.
- * @return {boolean} Whether the filter existed on tihs model (and was
+ * @return {boolean} Whether the filter existed on this model (and was
  *     therefore removed) or not.
  */
 rhizo.model.SuperModel.prototype.resetFilter = function(key) {

@@ -15,64 +15,60 @@
   limitations under the License.
 */
 
-/*
-To define a new layout:
-
-- create the object
-
-- implement the layout() function
-  This is responsible for the actual layouting
-
-- implement the toString() function
-  This returns the layout name for display purposes
-
-- implement the verifyMetaModel() function (optional)
-  This verifies the current project metaModel and decides whether it
-  contains the right kinds for this layout to work. If not implemented, it is
-  assumed the layout can work with the current metamodel.
-
-- implement the layoutUIControls() function (optional)
-  This renders a piece of UI you can use to collect extra options
-  for your layout.
-
-- implement a getState()/setState() function pair (optional).
-  Handle state management for the layout. The former returns a plain js object
-  with the layout state information, the latter receives back an object in the
-  same format, for the layout to restore itself to a given state.
-
-  The layout can use state information to tweak and let the user customize
-  its behavior.
-
-  It is the layout responsibility to validate any received state. A boolean
-  should be returned from setState() to declare whether the received state
-  is well formed or not.
-
-  The rhizo.layout.StatefulLayout helper class can be used to simplify state
-  management.
-
-  If the layout makes use of UI controls (via layoutUIControls()), it is the
-  layout responsibility to keep its own internal state and the UI controls in
-  sync.
-
-  The rhizo.layout.GUILayout helper class can be used to simplify state
-  management when UI controls are present.
-
-  setState() will receive a null state if the layout should be restored to its
-  'default' (or initial) state.
-
-- implement the cleanup() function (optional)
-  If your layout creates data structures or UI components that
-  have to be cleaned up once the layout is dismissed.
-
-- implement the dependentModels() function (optional)
-  If your layout establish specific relationships between models (this may be
-  the case, for example, of hierarchical layouts that define parent-child
-  relationships between models). Rhizosphere may use the information about
-  dependent models to tweak the way other aspects work, such as selection
-  management.
-
-- register the newly created layout in the rhizo.layout.layouts structure.
-*/
+/**
+ * @fileOverview Support classes for the development of layout engines and
+ * implementations for basic Rhizosphere layout engines.
+ *
+ * To define a new layout:
+ * - define a new Javascript class.
+ *
+ * - implement the layout() function
+ *   This is responsible for the actual layouting
+ *
+ * - implement the toString() function
+ *   This returns the layout name for debug purposes
+ *
+ * - implement the verifyMetaModel() function (optional)
+ *   This verifies the current project metaModel and decides whether it
+ *   contains the right kinds for this layout to work. If not implemented, it is
+ *   assumed the layout can work with the current metamodel.
+ *
+ * - implement a getState()/setState() function pair (optional).
+ *   Handle state management for the layout. The former returns a plain js
+ *   object with the layout state information, the latter receives back an
+ *   object in the ame format, for the layout to restore itself to a given
+ *   state.
+ *
+ *   The layout can use state information to tweak and let the user customize
+ *   its behavior.
+ *
+ *   It is the layout responsibility to validate any received state. A boolean
+ *   should be returned from setState() to declare whether the received state
+ *   is well formed or not.
+ *
+ *   setState() will receive a null state if the layout should be restored to
+ *   its 'default' (or initial) state.
+ *
+ *   The rhizo.layout.StatefulLayout helper class can be used to simplify state
+ *   management.
+ *
+ * - implement the cleanup() function (optional)
+ *   If your layout creates data structures or UI components that
+ *   have to be cleaned up once the layout is dismissed.
+ *
+ * - implement the dependentModels() function (optional)
+ *   If your layout establish specific relationships between models (this may
+ *   be the case, for example, of hierarchical layouts that define parent-child
+ *   relationships between models). Rhizosphere may use the information about
+ *   dependent models to tweak the way other aspects work, such as selection
+ *   management.
+ *
+ * - register the newly created layout in the rhizo.layout.layouts structure.
+ *
+ * A layout may have an associated user interface to let the user customize
+ * its behavior. To provide a user interface for a layout engine, see
+ * rhizo.ui.layout.LayoutUi.
+ */
 
 // RHIZODEP=rhizo.log,rhizo.meta,rhizo.layout.shared
 namespace("rhizo.layout");
@@ -192,66 +188,6 @@ rhizo.layout.StatefulLayout.prototype.cloneState_ = function(otherState) {
 
 
 /**
- * Helper superclass to simplify state management for stateful layouts that have
- * associated UI controls.
- *
- * @param {rhizo.Project} project
- * @param {*} ui An object that abstracts access to the layout UI controls. Must
- *     expose 2 methods: renderControls() which returns the UI controls either
- *     in the form of a jQuery object pointing to them or a plain HTML node, and
- *     setState() which will be invoked when the UI controls must update their
- *     state.
- * @constructor
- */
-rhizo.layout.GUILayout = function(project, ui) {
-  rhizo.layout.StatefulLayout.call(this, project);
-  this.ui_ = ui;
-  this.ui_controls_ = null;
-};
-rhizo.inherits(rhizo.layout.GUILayout, rhizo.layout.StatefulLayout);
-
-/**
- * Returns the UI controls associated to this layout. Controls are rendered
- * only once, so this method can be invoked multiple times with no side
- * effects.
- *
- * @return {*} Either an HTML node or a jQuery object pointing to it,
- *     collecting the UI controls for this layout.
- */
-rhizo.layout.GUILayout.prototype.layoutUIControls = function() {
-  if (!this.ui_controls_) {
-    this.ui_controls_ = this.ui_.renderControls();
-    this.ui_.setState(this.getState());
-  }
-  return this.ui_controls_;
-};
-
-/**
- * Transitions the layout to a new state and updates the layout UI controls.
- * See rhizo.layout.StatefulLayout.prototype.setState for further info.
- * @param {*} state The new layout state.
- */
-rhizo.layout.GUILayout.prototype.setState = function(state) {
-  var success = rhizo.layout.StatefulLayout.prototype.setState.call(this,
-                                                                    state);
-  if (success && this.ui_controls_) {
-    this.ui_.setState(this.getState());
-  }
-  return success;
-};
-
-/**
- * Helper function that layout UI controls should invoke whenever the layout
- * state changes because of user action on the controls.
- *
- * @param {*} state The new layout state.
- */
-rhizo.layout.GUILayout.prototype.setStateFromUI = function(state) {
-  return rhizo.layout.StatefulLayout.prototype.setState.call(this, state);
-};
-
-
-/**
  * A no-op layout.
  * @param {rhizo.Project} unused_project
  * @constructor
@@ -263,7 +199,7 @@ rhizo.layout.NoLayout.prototype.layout = function() {
 };
 
 rhizo.layout.NoLayout.prototype.toString = function() {
-  return "-";
+  return "NoLayout";
 };
 
 
@@ -316,7 +252,7 @@ rhizo.layout.ScrambleLayout.prototype.layout = function(pipeline,
 };
 
 rhizo.layout.ScrambleLayout.prototype.toString = function() {
-  return "Random";
+  return "ScrambleLayout";
 };
 
 
@@ -334,10 +270,9 @@ rhizo.layout.FlowLayout = function(project, opt_top, opt_left) {
   this.project_ = project;
   this.top = opt_top || 5;
   this.left = opt_left || 5;
-  rhizo.layout.GUILayout.call(this, project,
-                              new rhizo.layout.FlowLayoutUI(this, project));
+  rhizo.layout.StatefulLayout.call(this, project);
 };
-rhizo.inherits(rhizo.layout.FlowLayout, rhizo.layout.GUILayout);
+rhizo.inherits(rhizo.layout.FlowLayout, rhizo.layout.StatefulLayout);
 
 /**
  * @private
@@ -419,56 +354,7 @@ rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine, options) {
 };
 
 rhizo.layout.FlowLayout.prototype.toString = function() {
-  return "List";
-};
-
-
-/**
- * Helper class that handles FlowLayout ui controls.
- * @param {rhizo.layout.FlowLayout} layout
- * @param {rhizo.Project} project
- * @constructor
- */
-rhizo.layout.FlowLayoutUI = function(layout, project) {
-  this.layout_ = layout;
-  this.project_ = project;
-  this.orderSelector_ = null;
-  this.reverseCheckbox_ = null;
-};
-
-rhizo.layout.FlowLayoutUI.prototype.renderControls = function() {
-  this.orderSelector_ =  rhizo.layout.metaModelKeySelector(
-    this.project_, 'rhizo-flowlayout-order').
-      change(jQuery.proxy(this.updateState_, this));
-  this.reverseCheckbox_ = $(
-    '<input type="checkbox" class="rhizo-flowlayout-desc" />').
-      click(jQuery.proxy(this.updateState_, this));
-
-  return $("<div />").
-           append("Ordered by: ").
-           append(this.orderSelector_).
-           append(" desc?").
-           append(this.reverseCheckbox_);
-};
-
-rhizo.layout.FlowLayoutUI.prototype.setState = function(state) {
-  this.orderSelector_.val(state.order);
-  if (state.reverse) {
-    this.reverseCheckbox_.attr('checked', 'checked');
-  } else {
-    this.reverseCheckbox_.removeAttr('checked');
-  }
-};
-
-/**
- * Updates the layout state whenever the user modifies the controls.
- * @private
- */
-rhizo.layout.FlowLayoutUI.prototype.updateState_ = function() {
-  this.layout_.setStateFromUI({
-    order: this.orderSelector_.val(),
-    reverse: this.reverseCheckbox_.is(':checked')
-  });
+  return "FlowLayout";
 };
 
 
@@ -480,10 +366,9 @@ rhizo.layout.FlowLayoutUI.prototype.updateState_ = function() {
 rhizo.layout.BucketLayout = function(project) {
   this.project_ = project;
   this.internalFlowLayout_ = new rhizo.layout.FlowLayout(project);
-  rhizo.layout.GUILayout.call(this, project,
-                              new rhizo.layout.BucketLayoutUI(this, project));
+  rhizo.layout.StatefulLayout.call(this, project);
 };
-rhizo.inherits(rhizo.layout.BucketLayout, rhizo.layout.GUILayout);
+rhizo.inherits(rhizo.layout.BucketLayout, rhizo.layout.StatefulLayout);
 
 /**
  * @private
@@ -625,7 +510,8 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
                css('left', 5).
                css('top', this.internalFlowLayout_.top).
                click(jQuery.proxy(function() {
-                 this.project_.toggleSelect(modelIds);
+                 this.project_.eventBus().publish(
+                     'selection', {'action': 'toggle', 'models': modelIds});
                }, this));
   pipeline.artifact(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
@@ -637,54 +523,7 @@ rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, options) {
 };
 
 rhizo.layout.BucketLayout.prototype.toString = function() {
-  return "Buckets";
-};
-
-
-/**
- * Helper class that handles BucketLayout ui controls.
- * @param {rhizo.layout.BucketLayout} layout
- * @param {rhizo.Project} project
- */
-rhizo.layout.BucketLayoutUI = function(layout, project) {
-  this.layout_ = layout;
-  this.project_ = project;
-  this.bucketSelector_ = null;
-  this.reverseCheckbox_ = null;
-};
-
-rhizo.layout.BucketLayoutUI.prototype.renderControls = function() {
-  this.bucketSelector_ = rhizo.layout.metaModelKeySelector(
-      this.project_, 'rhizo-bucketlayout-bucket').
-      change(jQuery.proxy(this.updateState_, this));
-  this.reverseCheckbox_ = $('<input type="checkbox" ' +
-                            'class="rhizo-bucketlayout-desc" />').
-      click(jQuery.proxy(this.updateState_, this));
-  return $("<div />").
-           append("Group by: ").
-           append(this.bucketSelector_).
-           append(" desc?").
-           append(this.reverseCheckbox_);
-};
-
-rhizo.layout.BucketLayoutUI.prototype.setState = function(state) {
-  this.bucketSelector_.val(state.bucketBy);
-  if (state.reverse) {
-    this.reverseCheckbox_.attr('checked', 'checked');
-  } else {
-    this.reverseCheckbox_.removeAttr('checked');
-  }
-};
-
-/**
- * Updates the layout state whenever the user modifies the controls.
- * @private
- */
-rhizo.layout.BucketLayoutUI.prototype.updateState_ = function() {
-  this.layout_.setStateFromUI({
-    bucketBy: this.bucketSelector_.val(),
-    reverse: this.reverseCheckbox_.is(':checked')
-  });
+  return "BucketLayout";
 };
 
 
@@ -693,8 +532,8 @@ rhizo.layout.BucketLayoutUI.prototype.updateState_ = function() {
  * this enum for Rhizosphere to pick them up.
  */
 rhizo.layout.layouts = {
-  no: rhizo.layout.NoLayout,
-  flow: rhizo.layout.FlowLayout,
-  scramble: rhizo.layout.ScrambleLayout,
-  bucket: rhizo.layout.BucketLayout
+  no: {'name': '-', 'engine': rhizo.layout.NoLayout},
+  flow: {'name': 'List', 'engine': rhizo.layout.FlowLayout},
+  scramble: {'name': 'Random', 'engine': rhizo.layout.ScrambleLayout},
+  bucket: {'name': 'Buckets', 'engine': rhizo.layout.BucketLayout}
 };
