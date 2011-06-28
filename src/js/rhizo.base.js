@@ -617,7 +617,7 @@ rhizo.UserAgent.prototype.doSelection = function(
  *     single metamodel key the filter should be applied upon (or removed
  *     from), or an Object containing a collection of such keys (and the
  *     associated filter values).
- * @param {(*|function(boolean, string=)=} opt_arg2 If arg_1 is a string, this
+ * @param {(*|function(boolean, string=))=} opt_arg2 If arg_1 is a string, this
  *     should be the value of the filter value to apply. If null is provided,
  *     the filter is instead removed (the same logic applies when multiple
  *     filters are given as an Object in arg_1). If arg_1 is an object, then

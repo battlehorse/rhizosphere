@@ -47,7 +47,7 @@ namespace("rhizo.ui.layout");
  * Associates a given class as the user interface for a layout engine.
  *
  * @param {string} engineName The layout engine to associate UI to.
- * @param {function} uiCtor The constructor function for the UI class.
+ * @param {function()} uiCtor The constructor function for the UI class.
  */
 rhizo.ui.layout.registerUi = function(engineName, uiCtor) {
   if (engineName in rhizo.layout.layouts) {

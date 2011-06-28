@@ -178,7 +178,7 @@ rhizo.selection.SelectionManager.prototype.getNumHidden = function() {
 
 /**
  * Returns a map of all the focused models.
- * @return {!Object<*, rhizo.model.SuperModel>} All the currently focused
+ * @return {!Object.<*, rhizo.model.SuperModel>} All the currently focused
  *     models, keyed by their id.
  */
 rhizo.selection.SelectionManager.prototype.allFocused = function() {
@@ -194,7 +194,7 @@ rhizo.selection.SelectionManager.prototype.allFocused = function() {
 
 /**
  * Returns a map of all the hidden (unfocused) models.
- * @return {!Object<*, rhizo.model.SuperModel>} All the currently hidden
+ * @return {!Object.<*, rhizo.model.SuperModel>} All the currently hidden
  *     models, keyed by their id.
  */
 rhizo.selection.SelectionManager.prototype.allHidden = function() {
@@ -226,7 +226,7 @@ rhizo.selection.SelectionManager.prototype.allHidden = function() {
  * by the change.
  *
  * @param {!Object} message The published message.
- * @param {!function(boolean, string=} rspCallback Callback to invoke with the
+ * @param {!function(boolean, string=)} rspCallback Callback to invoke with the
  *     preprocessing outcome.
  * @private
  */

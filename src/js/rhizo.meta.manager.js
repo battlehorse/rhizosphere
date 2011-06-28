@@ -231,7 +231,7 @@ rhizo.meta.FilterManager.prototype.alignVisibility = function(
  * 'filter' channel.
  *
  * @param {!Object} message The published message.
- * @param {!function(boolean, string=} rspCallback Callback to invoke with the
+ * @param {!function(boolean, string=)} rspCallback Callback to invoke with the
  *     preprocessing outcome.
  * @private
  */

@@ -230,7 +230,7 @@ rhizo.layout.LayoutManager.prototype.extendSelection = function(modelId) {
  * 'layout' channel.
  *
  * @param {!Object} message The published message.
- * @param {!function(boolean, string=} rspCallback Callback to invoke with the
+ * @param {!function(boolean, string=)} rspCallback Callback to invoke with the
  *     preprocessing outcome.
  * @private
  */
@@ -271,7 +271,7 @@ rhizo.layout.LayoutManager.prototype.onBeforeLayout_ = function(
  *
  * @param {!Object} engine The layout engine to query.
  * @param {!Object} message The published layout message.
- * @param {!function(boolean, string=} rspCallback Callback to invoke with the
+ * @param {!function(boolean, string=)} rspCallback Callback to invoke with the
  *     preprocessing outcome.
  */
 rhizo.layout.LayoutManager.prototype.onBeforeEngineLayout_ = function(
