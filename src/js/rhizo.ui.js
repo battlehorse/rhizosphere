@@ -873,6 +873,10 @@ rhizo.ui.Rendering.prototype.beforeDestroy = function() {
  * @return {rhizo.ui.Rendering} this object, for chaining.
  */
 rhizo.ui.Rendering.prototype.move = function(top, left, opt_instant) {
+  if (this.position_.top == top && this.position_.left == left) {
+    // Bypass any DOM manipulation if we are already in the target position.
+    return this;
+  }
   if (!!opt_instant) {
     this.raw_node_.css({top: top, left: left});
   } else {
@@ -1186,6 +1190,13 @@ rhizo.ui.Rendering.prototype.canRescaleTo = function(width,
  */
 rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
                                                          height) {
+  if (this.cacheDimensions_ &&
+      this.cachedDimensions_.width == width &&
+      this.cachedDimensions_.height == height) {
+    // No-op, the rendering already has the required dimensions. Skip any
+    // DOM manipulation.
+    return this;
+  }
   this.cachedDimensions_ = {width: width, height: height};
   this.raw_node_.width(width - 2).height(height - 2);
   if (this.rendererRescaler_) {
@@ -1664,7 +1675,8 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
       return false;
     }
     
-    this.project_.toggleSelect(model.id);
+    this.project_.eventBus().publish(
+        'selection', {'action': 'toggle', 'models': model.id});
     return false;
   }, this));
 };
@@ -1689,8 +1701,8 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
 
       // figure out all the initial positions for the selected elements
       // and store them.
-      if (this.project_.isSelected(model.id)) {
-        var all_selected = this.project_.allSelected();
+      if (this.project_.selectionManager().isSelected(model.id)) {
+        var all_selected = this.project_.selectionManager().allSelected();
         for (var id in all_selected) {
           this.project_.model(id).rendering().markPosition();
         }
@@ -1698,10 +1710,10 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
     }, this),
     drag: jQuery.proxy(function(ev, ui) {
       var model = rhizo.ui.elementToModel(ui.helper[0], this.project_);
-      if (this.project_.isSelected(model.id)) {
+      if (this.project_.selectionManager().isSelected(model.id)) {
         var delta = model.rendering().distanceFromMark(ui.position.top,
                                                       ui.position.left);
-        var all_selected = this.project_.allSelected();
+        var all_selected = this.project_.selectionManager().allSelected();
         for (var id in all_selected) {
           if (id != model.id) {
             all_selected[id].rendering().moveFromMark(
@@ -1722,19 +1734,18 @@ rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(
                            top: model.rendering().position().top,
                            left: model.rendering().position().left});
 
-      if (this.project_.isSelected(model.id)) {
-        var all_selected = this.project_.allSelected();
+      if (this.project_.selectionManager().isSelected(model.id)) {
+        var all_selected = this.project_.selectionManager().allSelected();
         for (var id in all_selected) {
           modelPositions.push({
               id: id,
               top: all_selected[id].rendering().position().top,
               left: all_selected[id].rendering().position().left
           });
-          all_selected[id].rendering().unmarkPosition();
+          all_selected[id].rendering().unmarkPosition().refreshPosition();
         }
       }
-
-      this.project_.modelsMoved(modelPositions);
+      this.project_.layoutManager().modelsMoved(modelPositions);
     }, this),
     refreshPositions: false
   });

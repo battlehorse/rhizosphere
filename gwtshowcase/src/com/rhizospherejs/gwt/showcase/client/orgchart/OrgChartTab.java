@@ -17,17 +17,37 @@
 package com.rhizospherejs.gwt.showcase.client.orgchart;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LazyPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.rhizospherejs.gwt.client.Rhizosphere;
+import com.rhizospherejs.gwt.client.RhizosphereCallback;
 import com.rhizospherejs.gwt.client.RhizosphereLoader;
+import com.rhizospherejs.gwt.client.RhizosphereModelPosition;
+import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
+import com.rhizospherejs.gwt.client.handlers.FilterEvent;
+import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
+import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
+import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Tab that demonstrates the simplest Rhizosphere integration, visualizing a
@@ -59,11 +79,43 @@ public class OrgChartTab extends Composite {
     return new LazyTab();
   }
 
+  /**
+   * A simple callback thats log in a user visible text area the outcome of
+   * any programmatic action performed on the Rhizosphere visualization.
+   */
+  private class LogCallback implements RhizosphereCallback {
+    @Override
+    public void run(boolean status, String details) {
+      appendLog("Status: " + status + ", details: " + details);
+    }
+  }
+
   @UiField
   SimplePanel rhizosphereContainer;
 
+  /**
+   * User visible text area where all events collected from the visualization
+   * are dumped, to demonstrate how it is possible to collect interaction
+   * events from the Rhizosphere visualization.
+   */
+  @UiField
+  TextArea logArea;
+  
+  @UiField
+  Button resetFilters, salaryFilter, salaryGenderFilter, select, layout, layoutPositions;
+
+  private Rhizosphere<Employee> rhizosphere;
+
+  /**
+   * References to a couple of visualization datapoints to demonstrate direct
+   * referencing of specific visualization objects.
+   */
+  private RhizosphereModelRef sara, jennifer;
+
+  private LogCallback logCallback = new LogCallback();
+
   public OrgChartTab() {
-    initWidget(ui.createAndBindUi(this));    
+    initWidget(ui.createAndBindUi(this));
   }
 
   @Override
@@ -91,7 +143,7 @@ public class OrgChartTab extends Composite {
             options.setEnableHTML5History(false);
 
             // Create a new Rhizosphere visualization suited to display Employee objects.
-            Rhizosphere<Employee> rhizosphere = new Rhizosphere<Employee>(options);
+            rhizosphere = new Rhizosphere<Employee>(options);
 
             // Makes Rhizosphere aware of the objects that we want to visualize.
             // This step is mandatory if you are using your custom POJOs as
@@ -106,10 +158,10 @@ public class OrgChartTab extends Composite {
             rhizosphere.addModel(new Employee(
                 "3", "1", "Battlehorse", 31, true,
                 new String[] {"computer games", "soccer"}, 25000));
-            rhizosphere.addModel(new Employee(
+            sara = rhizosphere.addModel(new Employee(
                 "4", "3", "Sara", 25, false,
                 new String[] {"role playing", "volleyball", "swimming"}, 100000));
-            rhizosphere.addModel(new Employee(
+            jennifer = rhizosphere.addModel(new Employee(
                 "5", "3", "Jennifer", 25, false, new String[] {"fishing", "role playing"}, 50000));
             rhizosphere.addModel(new Employee(
                 "6", "2", "Dave", 48, true,
@@ -130,6 +182,69 @@ public class OrgChartTab extends Composite {
             // container.
             rhizosphere.setWidth("100%");
             rhizosphere.setHeight("100%");
+
+            // Attach event listeners for all supported Rhizosphere events, and
+            // dump event contents in a textarea.
+            // A production application would use the event contents to keep
+            // other parts of the application in sync with actions occurring
+            // within Rhizosphere.
+
+            // React to 'ready' events.
+            rhizosphere.addReadyHandler(new ReadyEvent.Handler() {
+              @Override
+              public void onReady(ReadyEvent event) {
+                enableActionButtons();
+              }
+            });
+
+            // React to filtering of visualization datapoints.
+            rhizosphere.addFilterHandler(new FilterEvent.Handler() {
+              @Override
+              public void onFilter(FilterEvent event) {
+                StringBuilder sb = new StringBuilder("Filter: ");
+                for (String key: event.getNativeMessage().keySet()) {
+                  sb.append(key).
+                    append(':').
+                    append(event.getNativeMessage().get(key).toString()).
+                    append(' ');
+                }
+                appendLog(sb.toString());
+              }
+            });
+
+            // React to selections of datapoints.
+            rhizosphere.addSelectionHandler(new SelectionEvent.Handler() {
+              @Override
+              public void onSelection(SelectionEvent event) {
+                StringBuilder sb = new StringBuilder("Selection: ");
+                sb.append("action=").append(event.getAction());
+                sb.append(",incremental=").append(event.isIncremental());
+                sb.append(",models=");
+                for (Employee e : rhizosphere.resolveModelRefs(event.getModelRefs())) {
+                  sb.append(e.getName()).append(',');
+                }
+                appendLog(sb.toString());
+              }
+            });
+
+            // React to changes in the visualization layout algorithm.
+            rhizosphere.addLayoutHandler(new LayoutEvent.Handler() {
+              @Override
+              public void onLayout(LayoutEvent event) {
+                StringBuilder sb = new StringBuilder("Layout: ");
+                sb.append("engine=").append(event.getEngine());
+                sb.append(",state=").append(event.getState().toString());
+                sb.append(",positions=");
+                for (RhizosphereModelPosition p : event.getPositions()) {
+                  sb.append("(name:").append(
+                      rhizosphere.resolveModelRef(p.getModelRef()).getName());
+                  sb.append(",top:").append(p.getTop());
+                  sb.append(",left:").append(p.getLeft()).append("),");
+                }
+                appendLog(sb.toString());
+              }
+            });
+
             rhizosphereContainer.add(rhizosphere);
           }
         });
@@ -137,5 +252,69 @@ public class OrgChartTab extends Composite {
       }
     }.schedule(1);
   }
-  
+
+  private void appendLog(String log) {
+    logArea.setValue(log + '\n' + logArea.getValue());
+  }
+
+  /**
+   * Enable buttons for programmatic interaction with the visualization only
+   * once the visualization is ready.
+   */
+  private void enableActionButtons() {
+    resetFilters.setEnabled(true);
+    salaryFilter.setEnabled(true);
+    salaryGenderFilter.setEnabled(true);
+    select.setEnabled(true);
+    layout.setEnabled(true);
+    layoutPositions.setEnabled(true);
+  }
+
+  // All the following handlers demonstrate how to issue programmatic commands
+  // to the Rhizosphere visualization for filtering, selection and layout operations.
+  @UiHandler("resetFilters")
+  void resetFilters(ClickEvent event) {
+    rhizosphere.doResetFilters(logCallback);
+  }
+
+  @UiHandler("salaryFilter")
+  void applySalaryFilter(ClickEvent event) {
+    JSONObject salaryRange = new JSONObject();
+    salaryRange.put("min", new JSONNumber(50000));
+    salaryRange.put("max", new JSONNumber(250000));
+    rhizosphere.doFilter("salary", salaryRange, logCallback);
+  }
+
+  @UiHandler("salaryGenderFilter")
+  void applySalaryAgeFilter(ClickEvent event) {
+    Map<String, JSONValue> filters = new HashMap<String, JSONValue>();
+    JSONObject salaryRange = new JSONObject();
+    salaryRange.put("min", new JSONNumber(50000));
+    salaryRange.put("max", new JSONNumber(250000));
+    filters.put("salary", salaryRange);
+
+    JSONBoolean gender = JSONBoolean.getInstance(true);
+    filters.put("male", gender);
+    rhizosphere.doFilter(filters, logCallback);
+  }
+
+  @UiHandler("select")
+  void selectSaraAndJennifer(ClickEvent event) {
+    List<RhizosphereModelRef> selected = new ArrayList<RhizosphereModelRef>();
+    selected.add(sara);
+    selected.add(jennifer);
+    rhizosphere.doSelection("select", selected, logCallback);
+  }
+
+  @UiHandler("layout")
+  void applyRandomLayout(ClickEvent event) {
+    rhizosphere.doLayout("scramble", null, null, logCallback);
+  }
+
+  @UiHandler("layoutPositions")
+  void moveSara(ClickEvent event) {
+    List<RhizosphereModelPosition> positions = new ArrayList<RhizosphereModelPosition>();
+    positions.add(RhizosphereModelPosition.create(sara, 400, 300));
+    rhizosphere.doLayout(null, null, positions, logCallback);
+  }
 }

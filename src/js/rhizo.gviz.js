@@ -80,7 +80,7 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
 
   var logger = rhizo.nativeConsoleExists() ?
       new rhizo.NativeLogger() :  new rhizo.NoOpLogger();
-  this.project_ = bootstrapper.prepare();
+  this.project_ = bootstrapper.prepare().getProject();
 
   var initializer = new rhizo.gviz.Initializer(datatable, logger, opt_options);
   if (!initializer.parse()) {
@@ -97,10 +97,10 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
  * Fires the Google Visualization 'ready' event to notify visualization users
  * that Rhizosphere is ready for interaction.
  *
- * @param {rhizo.Project} unused_project unused.
+ * @param {!rhizo.UserAgent} unused_ua unused.
  * @private
  */
-rhizo.gviz.Rhizosphere.prototype.ready_= function(unused_project) {
+rhizo.gviz.Rhizosphere.prototype.ready_= function(unused_ua) {
   google.visualization.events.trigger(this, 'ready', {});
 };
 

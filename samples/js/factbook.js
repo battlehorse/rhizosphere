@@ -30,23 +30,33 @@
     return this.name + "(" + this.id + ")";
   };
 
-  var logMetaFactory = function() {
-    var logMeta = new rhizo.meta.LogarithmRangeKind(2, true);
-    logMeta.toHumanLabel_ = rhizo.ui.toHumanLabel;
-    return logMeta;
-  };
-   
+  // Use a custom LogarithmRangeKind initialized with custom options and
+  // register it under the 'customLogKind' symbolic name.
+  rhizo.meta.defaultRegistry.registerKindFactory('customLogKind', function() {
+    return new rhizo.meta.LogarithmRangeKind(2, true);
+  });
+
+  // Use a custom ui for the newly registered kind, extending the plain
+  // range slider with a custom label rendering code.
+  rhizo.meta.defaultRegistry.registerKindUiFactory('customLogKind',
+      function(project, metaModelKey) {
+        var ui = new rhizo.ui.meta.RangeKindUi(project, metaModelKey);
+        ui.toHumanLabel = rhizo.ui.toHumanLabel;
+        return ui;
+  });
+
+  // Define the metamodel, using the custom metamodel Kind defined above.
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: 'Name'},
-    internetUsers: { kind: logMetaFactory, label: 'Internet Users',
+    internetUsers: { kind: 'customLogKind', label: 'Internet Users',
                      min: 0, max: 300000000 },
-    population: { kind: logMetaFactory, label: 'Population',
+    population: { kind: 'customLogKind', label: 'Population',
                   min: 0, max: 1400000000},
     birthRate: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Birth Rate',
                  min: 0, max: 55.0},
-    oilConsumption: { kind: logMetaFactory, label: 'Oil Consumption',
+    oilConsumption: { kind: 'customLogKind', label: 'Oil Consumption',
                       min: 0, max: 20000000},
-    gdp: { kind: logMetaFactory, label: 'GDP per capita',
+    gdp: { kind: 'customLogKind', label: 'GDP per capita',
            min: 0, max: 130000}
   };
 

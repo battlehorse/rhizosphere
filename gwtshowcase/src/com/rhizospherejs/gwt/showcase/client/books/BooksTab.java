@@ -109,6 +109,7 @@ public class BooksTab extends Composite {
 
     // Load the Google Book Search APIs.
     AjaxLoader.loadApi("search", "1", new Runnable() {
+      @Override
       public void run() {
         searchApiLoaded = true;
       }

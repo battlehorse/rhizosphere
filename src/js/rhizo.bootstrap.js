@@ -40,9 +40,9 @@ rhizo.bootstrap.uuids_ = 0;
  * @param {*} opt_options Visualization-wide configuration options, as
  *     described at
  *     http://www.rhizospherejs.com/doc/contrib_tables.html#options.
- * @param {?function(rhizo.Project)} opt_callback
+ * @param {?function(rhizo.UserAgent)} opt_callback
  *     Optional callback invoked on the visualization is completely initialized.
- *     Receives the rhizo.Project managing the visualization as a parameter.
+ *     Receives the rhizo.UserAgent managing the visualization as a parameter.
  * @constructor
  */
 rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
@@ -81,13 +81,13 @@ rhizo.bootstrap.Bootstrap.prototype.isDeployed = function() {
  * @param {string} opt_resource The URI of the datasource to load and visualize
  *     with Rhizosphere. If null and the bootstrapper is not allowed to
  *     configure itself from URL parameters, this method behaves like prepare().
- * @return {rhizo.Project} The visualization Project through which you can
- *     have programmatic access to the visualization.
+ * @return {rhizo.UserAgent} A user agent bound to the visualization through
+ *     which you can have programmatic access to the visualization.
  */
 rhizo.bootstrap.Bootstrap.prototype.prepareAndDeploy = function(opt_resource) {
-  var project = this.prepare();
+  var ua = this.prepare();
   this.deploy(opt_resource);
-  return project;
+  return ua;
 };
 
 /**
@@ -97,8 +97,8 @@ rhizo.bootstrap.Bootstrap.prototype.prepareAndDeploy = function(opt_resource) {
  * Use this method in conjunction with deploy() if you want to be in charge
  * of loading the actual models to visualize.
  *
- * @return {rhizo.Project} The visualization Project through which you can
- *     have programmatic access to the visualization.
+ * @return {rhizo.UserAgent} A user agent bound to the visualization through
+ *     which you can have programmatic access to the visualization.
  */
 rhizo.bootstrap.Bootstrap.prototype.prepare = function() {
   // Initialize the GUI, project and template.
@@ -106,7 +106,7 @@ rhizo.bootstrap.Bootstrap.prototype.prepare = function() {
   this.project_ = new rhizo.Project(this.gui_, this.options_);
   this.template_ = this.initTemplate_(this.project_, this.gui_, this.options_);
   this.project_.chromeReady();
-  return this.project_;
+  return this.project_.userAgent();
 };
 
 /**
@@ -180,7 +180,7 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(models,
   }
   this.gui_.done();
   if (this.ready_callback_) {
-    this.ready_callback_(this.project_);
+    this.ready_callback_(this.project_.userAgent());
   }
   this.deployed_ = true;
 };

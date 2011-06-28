@@ -57,7 +57,20 @@ rhizo.inherits(googlecode.meta.NonNumericIdKind, rhizo.meta.NumberKind);
 googlecode.meta.NonNumericIdKind.prototype.isNumeric = function() {
   return false;
 };
+rhizo.meta.defaultRegistry.registerKind(
+    'nonNumericId', googlecode.meta.NonNumericIdKind);
+rhizo.meta.defaultRegistry.registerKindUi(
+    'nonNumericId', rhizo.ui.meta.TextKindUi);
 
+// Register a date kind customized to cluster over months.
+rhizo.meta.defaultRegistry.registerKindFactory('customDate', function() {
+  return new rhizo.meta.DateKind('m');
+});
+rhizo.meta.defaultRegistry.registerKindUiFactory('customDate',
+    function(project, metaModelKey) {
+      return new rhizo.ui.meta.DateKindUi(project, metaModelKey);
+    }
+);
 
 /**
  * Builds the visualization metamodel from the statistics built server-side
@@ -65,7 +78,7 @@ googlecode.meta.NonNumericIdKind.prototype.isNumeric = function() {
  */
 googlecode.buildMetamodel = function(stats) {
   var metamodel = {
-    id: {kind: new googlecode.meta.NonNumericIdKind(), label: 'Id'},
+    id: {kind: 'nonNumericId', label: 'Id'},
     summary: {kind: rhizo.meta.Kind.STRING, label: 'Summary'},
     state: {kind: rhizo.meta.Kind.CATEGORY, label: 'State',
             categories: ['open', 'closed']},
@@ -79,14 +92,14 @@ googlecode.buildMetamodel = function(stats) {
     owner_name: {kind: rhizo.meta.Kind.CATEGORY, label: 'Owner',
                  categories: stats.owners},
 
-    created: {kind: new rhizo.meta.DateKind('m'),
+    created: {kind: 'customDate',
               label: "Created",
               minYear: stats.created.minyear,
               maxYear: stats.created.maxyear },
     created_ago: {kind: rhizo.meta.Kind.RANGE,
                   label: "Created (days ago)",
                   min: 0, max: stats.created.daysago },
-    updated: {kind: new rhizo.meta.DateKind('m'),
+    updated: {kind: 'customDate',
               label: "Updated",
               minYear: stats.updated.minyear,
               maxYear: stats.updated.maxyear },
@@ -96,7 +109,7 @@ googlecode.buildMetamodel = function(stats) {
   };
 
   if (stats.closed_date) {
-    metamodel.closed_date = {kind: new rhizo.meta.DateKind('m'),
+    metamodel.closed_date = {kind: 'customDate',
                              label: "Closed date",
                              minYear: stats.closed_date.minyear,
                              maxYear: stats.closed_date.maxyear };
@@ -104,7 +117,7 @@ googlecode.buildMetamodel = function(stats) {
 
   for (var label_key in stats.composite_labels.names) {
     metamodel[label_key] = {
-        kind: new rhizo.meta.Kind.CATEGORY,
+        kind: rhizo.meta.Kind.CATEGORY,
         label: stats.composite_labels.names[label_key],
         categories: stats.composite_labels.values[label_key]
     };

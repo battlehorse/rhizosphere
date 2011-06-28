@@ -179,24 +179,37 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
       return this;
     }
 
-    private native void nativeSetKind(JavaScriptObject nativeKind) /*-{
+    private native void nativeSetKind(String nativeKind) /*-{
       this['kind'] = nativeKind;
     }-*/;
 
     /**
-     * Sets the {@link RhizosphereKind} of the attribute via a factory method.
+     * Sets the Rhizosphere kind of the attribute via factory methods.
+     * <p>
+     * See {@link com.rhizospherejs.gwt.client.meta.HasKindFactory} about how
+     * each factory is expected to work.
      *
      * @param factory A javascript function that will return a new
-     *     RhizosphereKind when invoked.
+     *     Rhizosphere kind instance when invoked.
+     * @param uiFactory A javascript function that will return a new
+     *     Rhizosphere kind user interface instance when invoked, or null
+     *     if the kind should not have any user interface.
      * @return the Attribute itself, for chaining.
      */
-    public Attribute setKindFromFactory(final JavaScriptObject factory) {
-      nativeSetKindFromFactory(factory);
+    public Attribute setKindFromFactory(final JavaScriptObject factory,
+                                        final JavaScriptObject uiFactory) {
+      nativeSetKindFromFactory(factory, uiFactory);
       return this;
     }
 
-    private native void nativeSetKindFromFactory(JavaScriptObject factory) /*-{
-      this['kind'] = factory();
+    private native void nativeSetKindFromFactory(JavaScriptObject factory,
+                                                 JavaScriptObject uiFactory) /*-{
+      var kindUuid = '__kind_' + String((new Date()).valueOf()) + '_' + String(Math.random());
+      $wnd.rhizo.meta.defaultRegistry.registerKindFactory(kindUuid, factory);
+      if (uiFactory) {
+        $wnd.rhizo.meta.defaultRegistry.registerKindUiFactory(kindUuid, uiFactory);
+      }
+      this['kind'] = kindUuid;
     }-*/;
 
     /**

@@ -15,72 +15,340 @@
   limitations under the License.
 */
 
-/*
-To define a new meta-type:
+/**
+ * @fileOverview Implementation of all basic Rhizosphere metamodel Kinds
+ * (model attribute types in Rhizosphere terminology) and associated behavior.
+ *
+ * Kinds are associated to each Rhizosphere metamodel key to describe the type
+ * of each model attribute. The attribute kind drives the behavior of the
+ * Rhizosphere visualization when filtering, clustering and other operations
+ * are performed on the attribute.
+ *
+ * To define a new meta-type:
+ * - define a new Javascript class.
+ *
+ * - implement the survivesFilter() function.
+ *   The function is invoked when filtering Rhizosphere models on the attribute
+ *   the kind describes. It verifies if a model value matches the filter or not
+ *
+ * - implement the isNumeric() function.
+ *   This tells whether the data the kind describes is of numeric nature or not
+ *   (i.e. can be used in arithmetic computations).
+ *
+ * - implement the cluster() function (optional).
+ *   Describes a grouping behavior for this type. Invoked whenever the
+ *   visualization needs to cluster multiple models in a single group (for
+ *   example, when a bucketing layout is used).
+ *
+ * - implement the compare() function (optional).
+ *   Defines how two values of this kind are compared against each other.
+ *   Returns negative, 0, or positive number if the first element is smaller,
+ *   equal or bigger than the second.
+ *
+ * - implement a toUserScale() / toModelScale() function pair (optional).
+ *   Define how to convert the scale of model values respectively to/from a user
+ *   facing scale. For example, a logarithmic conversion may be applied to
+ *   normalize model values that span a range that would otherwise be too wide.
+ *
+ * - register the newly created kind a rhizo.meta.KindRegistry (either the
+ *   default rhizo.meta.defaultRegistry or a custom one that you must then
+ *   manually provide to a project.
+ *
+ * A metamodel Kind may have an associated user interface to let the user
+ * enter filtering criteria. To provide a user interface for a metamodel Kind,
+ * see rhizo.ui.meta.js.
+ *
+ * NOTE: although all the basic Kind classes defined in this file are stateless,
+ * the registration framework allows for stateful instances to be used if
+ * needed.
+ */
 
-- create the object
-
-- implement the renderFilter() function.
-  This draws the UI for the filter on this type. It is also responsible for
-  hooking up any listeners on created UI controls that will generate calls
-  to rhizo.Project.prototype.filter() to trigger actual filtering.
-
-- implement the survivesFilter() function.
-  This verifies if a model value matches the filter or not
-
-- implement the isNumeric() function.
-  This tells whether the kind of data this filter is applied to are numeric
-  or not (i.e. can be used in arithmetic computations).
-
-- implment the setFilterValue() function.
-  This updates the filter UI as if it was set to the given value.
-  The object received is of the same kind the filter passes to project.filter()
-  calls. setFilterValue() will receive a null value if the filter is to be
-  restored to its initial (default) value.
-
-- implement the cluster() function (optional).
-  Defines how grouping works for this type
-
-- implement the compare() function (optional).
-  Defines how two values of this metatype are compared against each other.
-  Returns negative, 0, or positive number if the first element is smaller,
-  equal or bigger than the second.
-
-- implement a toFilterScale() / toModelScale() function pair (optional).
-  Define how to convert the scale of model values respectively to/from a user
-  facing scale. For example, a logarithmic conversion may be applied to
-  normalize model values that span a range that would otherwise be too wide.
-
-- update the rhizo.meta.Kind structure.
-*/
 
 // RHIZODEP=rhizo
 // Metamodel namespace
 namespace("rhizo.meta");
 
-/* StringKind meta */
-rhizo.meta.StringKind = function() {
-  this.input_ = null;
+
+/**
+ * Returns a comparison function that sorts Rhizosphere models according to one
+ * of their attributes.
+ *
+ * The comparison function delegates to the comparison logic of the metamodel
+ * Kind associated to the attribute, if present, and falls back to native
+ * sorting otherwise.
+ *
+ * @param {string} key The metamodel key that identifies the attribute to
+ *     sort against.
+ * @param {*} kind The Rhizosphere metamodel Kind that describes the attribute.
+ * @param {boolean=} opt_reverse Whether the sorting order should be reversed.
+ * @return {function(rhizo.model.SuperModel, rhizo.model.SuperModel):number}
+ *     The comparison function.
+ */
+rhizo.meta.sortBy = function(key, kind, opt_reverse) {
+  return function(firstSuperModel, secondSuperModel) {
+    var firstModel = firstSuperModel.unwrap();
+    var secondModel = secondSuperModel.unwrap();
+
+    // Sign multiplication to invert sorting order
+    var reverse = opt_reverse ? -1 : 1;
+
+    if (kind.compare) {
+      return kind.compare(firstModel[key], secondModel[key])*reverse;
+    } else {
+      // try native sorting
+      return (firstModel[key] < secondModel[key] ? -1 :
+              firstModel[key] > secondModel[key] ? 1 : 0)*reverse;
+    }
+  };
 };
 
-// metadata is the part of the metamodel that applies to this kind
-rhizo.meta.StringKind.prototype.renderFilter = function(project,
-                                                        metadata,
-                                                        key) {
-  this.input_ = $("<input type='text' />");
-  // keypress handling removed due to browser quirks in key detection
-  $(this.input_).change(function(ev) {
-    project.filter(key, $(this).val().length > 0 ? $(this).val() : null);
-  });
-  return $("<div class='rhizo-filter' />").
-           append(metadata.label + ": ").
-           append($(this.input_));
+
+/**
+ * Returns a comparison function that sorts arbitrary values according to the
+ * comparison logic defined by a given Rhizosphere metamodel Kind, if present,
+ * and falls back to native sorting otherwise.
+ *
+ * @param {*} kind The Rhizosphere metamodel Kind to use for sorting.
+ * @param opt_reverse Whether the sorting order should be reversed.
+ * @return {function(*,*):number} The comparison function.
+ */
+rhizo.meta.sortByKind = function(kind, opt_reverse) {
+  return function(firstValue, secondValue) {
+    // Sign multiplication to invert sorting order
+    var reverse = opt_reverse ? -1 : 1;
+    if (kind.compare) {
+      return kind.compare(firstValue, secondValue)*reverse;
+    } else {
+      return (firstValue < secondValue ? -1 :
+          firstValue > secondValue ? 1 : 0)*reverse;
+    }
+  };
 };
 
-rhizo.meta.StringKind.prototype.setFilterValue = function(value) {
-  this.input_.val(value || '');
+
+/**
+ * Registry to enumerate all the available Rhizosphere metamodel Kinds, their
+ * associated implementation class and, when present, the associated user
+ * interface classes.
+ * @constructor
+ */
+rhizo.meta.KindRegistry = function() {
+  /**
+   * Maps kind symbolic names to constructor or factories for the kind
+   * implementation classes.
+   * Each value in the structure is an object that contains the following
+   * attributes:
+   * - method: defines whether the kind should be instantiated using a
+   *   constructor ('ctor') or factory method ('factory)'.
+   * - ctor: points to the Kind constructor, if method is 'ctor'.
+   * - factory: points to a factory function that returns Kind instances, if
+   *   method is 'factory'.
+   *
+   * @type {!Object.<string, Object>}
+   * @private
+   */
+  this.registry_ = {};
+
+  /**
+   * Maps kind symbolic names to constructor or factories for the kind user
+   * interface implementation classes.
+   * Each value in the structure is an object that contains the following
+   * attributes:
+   * - method: defines whether the kind user interface should be instantiated
+   *   using a constructor ('ctor') or factory method ('factory)'.
+   * - ctor: points to the Kind Ui constructor, if method is 'ctor'.
+   * - factory: points to a factory function that returns Kind Ui instances, if
+   *   method is 'factory'.
+   *
+   * @type {!Object.<string, Object>}
+   * @private
+   */
+  this.uiRegistry_ = {};
 };
 
+/**
+ * Returns a shallow clone of this registry. Useful to apply simple
+ * customizations to the default set of Rhizosphere metamodel Kinds and
+ * associated UIs.
+ *
+ * @return {rhizo.meta.KindRegistry} A shallow clone of this registry.
+ */
+rhizo.meta.KindRegistry.prototype.clone = function() {
+  var clone = new rhizo.meta.KindRegistry();
+  $.extend(clone.registry_, this.registry_);
+  $.extend(clone.uiRegistry_, this.uiRegistry_);
+  return clone;
+};
+
+/**
+ * Registers a new metamodel Kind under the given symbolic name.
+ * @param {string} key A symbolic name identifying the metamodel kind.
+ * @param {function()} ctor A constructor function to create new Kind instances.
+ */
+rhizo.meta.KindRegistry.prototype.registerKind = function(key, ctor) {
+  this.registry_[key] = {method: 'ctor', ctor: ctor};
+};
+
+/**
+ * Registers a new metamodel Kind under the given symbolic name.
+ * @param {string} key A symbolic name identifying the metamodel kind.
+ * @param {function()} factory A factory function that returns new Kind
+ *     instances.
+ */
+rhizo.meta.KindRegistry.prototype.registerKindFactory = function(key, factory) {
+  this.registry_[key] = {method: 'factory', factory: factory};
+};
+
+/**
+ * Registers a new metamodel Kind user interface. The user interface can be
+ * bound either to a kind symbolic name (in which case all metamodel Kind
+ * instances created from the same symbolic name will adopt the specified
+ * user interface) or to a kind instance (in which case only the specific
+ * instance will use the given Ui).
+ *
+ * @param {string|Object} keyOrKind A symbolic name identifying the metamodel
+ *     kind or a metamodel Kind instance.
+ * @param {function()} ctor A constructor function to create new Kind user
+ *     interface instances.
+ */
+rhizo.meta.KindRegistry.prototype.registerKindUi = function(keyOrKind, ctor) {
+  if (typeof(keyOrKind) == 'string') {
+    this.uiRegistry_[keyOrKind] = {method: 'ctor', ctor: ctor};
+  } else {
+    // assumed to be a Kind instance.
+    keyOrKind['__kindRegistry_ui'] = {method: 'ctor', ctor: ctor};
+  }
+};
+
+/**
+ * Registers a new metamodel Kind user interface. The user interface can be
+ * bound either to a kind symbolic name (in which case all metamodel Kind
+ * instances created from the same symbolic name will adopt the specified
+ * user interface) or to a kind instance (in which case only the specific
+ * instance will use the given Ui).
+ *
+ * @param {string|Object} keyOrKind A symbolic name identifying the metamodel
+ *     kind or a metamodel Kind instance.
+ * @param {function()} factory A factory function that returns new Kind user
+ *     interface instances.
+ */
+rhizo.meta.KindRegistry.prototype.registerKindUiFactory = function(
+    keyOrKind, factory) {
+  if (typeof(keyOrKind) == 'string') {
+    this.uiRegistry_[keyOrKind] = {method: 'factory', factory: factory};
+  } else {
+    // assumed to be a Kind instance.
+    keyOrKind['__kindRegistry_ui'] = {method: 'factory', factory: factory};
+  }
+};
+
+/**
+ * Creates a new metamodel Kind implementation class of the requested type.
+ * @param {string} key The key identifying the metamodel Kind to create.
+ * @return {Object} The newly created metamodel Kind implementation class.
+ */
+rhizo.meta.KindRegistry.prototype.createNewKind = function(key) {
+  if (!(key in this.registry_)) {
+    return null;
+  }
+  var kind = null;
+  if (this.registry_[key]['method'] == 'ctor') {
+    kind = new this.registry_[key]['ctor']();
+  } else {
+    kind = this.registry_[key]['factory']();
+  }
+  // Attach a user interface specification to the newly crated Kind instance
+  // using uiRegistry contents.
+  if (key in this.uiRegistry_) {
+    kind['__kindRegistry_ui'] = this.uiRegistry_[key];
+  }
+  return kind;
+};
+
+/**
+ * Creates a new metamodel Kind user interface implementation class of the
+ * requested type.
+ * @param {Object} kindObj The metamodel Kind instance for which a user
+ *     interface is requested.
+ * @param {!rhizo.Project} project The project the user interface will be
+ *     attached to.
+ * @param {string} metaModelKey The name of the model attribute this Kind user
+ *     interface will be attached to.
+ * @return {Object} The newly created metamodel Kind user interface instance.
+ */
+rhizo.meta.KindRegistry.prototype.createUiForKind = function(
+    kindObj, project, metaModelKey) {
+  if (!this.uiExistsForKind(kindObj)) {
+    return null;
+  }
+  var kindUiSpec = kindObj['__kindRegistry_ui'];
+  if (kindUiSpec['method'] == 'ctor') {
+    return new kindUiSpec['ctor'](project, metaModelKey);
+  } else {
+    return kindUiSpec['factory'](project, metaModelKey);
+  }
+};
+
+/**
+ * Returns whether an user interface is register for the given Kind instance.
+ * @param {Object} kindObj The metamodel Kind instance for which a user
+ *     interface is requested.
+ * @return {boolean} Whether an user interface is register for the given
+ *     Kind instance.
+ */
+rhizo.meta.KindRegistry.prototype.uiExistsForKind = function(
+    kindObj) {
+  // A user interface exists under any of the following conditions:
+  // - The kind instance was created via createNewKind() and an UI
+  //   implementation class was registered under the same symbolic name.
+  // - An UI was registered directly for the specific kind instance via
+  //   registerKindUi() or registerKindUiFactory()
+  return !!kindObj['__kindRegistry_ui'];
+};
+
+
+/**
+ * The default metamodel Kind registry Rhizosphere projects will use if not
+ * instructed otherwise.
+ * @type {rhizo.meta.KindRegistry}
+ */
+rhizo.meta.defaultRegistry = new rhizo.meta.KindRegistry();
+
+
+/**
+ * Enumeration of all the basic kinds supported by Rhizosphere out of the box.
+ * Each entry is a valid key to retrieve the associated kind instance from
+ * the default Kind registry (rhizo.meta.defaultRegistry).
+ *
+ * @enum {string}
+ */
+rhizo.meta.Kind = {
+  STRING: 'string',
+  NUMBER: 'number',
+  RANGE: 'range',
+  DATE: 'date',
+  BOOLEAN: 'boolean',
+  CATEGORY: 'category'
+};
+
+
+/**
+ * Describes a basic string type.
+ * @constructor
+ */
+rhizo.meta.StringKind = function() {};
+rhizo.meta.defaultRegistry.registerKind(
+    rhizo.meta.Kind.STRING, rhizo.meta.StringKind);
+
+/**
+ * String filtering based on case-insensistive indexOf.
+ *
+ * @param {string} filterValue The current filter value.
+ * @param {string} modelValue A model value for the attribute this kind
+ *     applies to.
+ * @return {boolean} Whether the model value survives the filter criteria or
+ *     not.
+ */
 rhizo.meta.StringKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
   return filterValue != '' &&
@@ -100,11 +368,14 @@ rhizo.meta.StringKind.prototype.isNumeric = function() {
   return false;
 };
 
-/* NumberKind meta */
-rhizo.meta.NumberKind = function() {
-  rhizo.meta.StringKind.call(this);
-};
-rhizo.inherits(rhizo.meta.NumberKind, rhizo.meta.StringKind);
+
+/**
+ * Describes a basic integer type
+ * @constructor
+ */
+rhizo.meta.NumberKind = function() {};
+rhizo.meta.defaultRegistry.registerKind(
+    rhizo.meta.Kind.NUMBER, rhizo.meta.NumberKind);
 
 rhizo.meta.NumberKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -147,7 +418,37 @@ rhizo.meta.NumberKind.prototype.isNumeric = function() {
 };
 
 
-/* DateKind meta */
+/**
+ * Describes a basic integer range type.
+ * @constructor
+ */
+rhizo.meta.RangeKind = function() {};
+rhizo.meta.defaultRegistry.registerKind(
+    rhizo.meta.Kind.RANGE, rhizo.meta.RangeKind);
+
+rhizo.meta.RangeKind.prototype.survivesFilter = function(filterValue,
+                                                         modelValue) {
+  return modelValue >= filterValue.min && modelValue <= filterValue.max;
+};
+
+rhizo.meta.RangeKind.prototype.compare =
+    rhizo.meta.NumberKind.prototype.compare;
+
+rhizo.meta.RangeKind.prototype.cluster =
+    rhizo.meta.NumberKind.prototype.cluster;
+
+rhizo.meta.RangeKind.prototype.isNumeric =
+    rhizo.meta.NumberKind.prototype.isNumeric;
+
+
+/**
+ * Describes a basic date type with custom clustering criteria.
+ *
+ * @param {string=} opt_clusterby The clustering criteria. 'y' for year-based
+ *     clustering, 'm' for month, 'd' for day. Defaults to year-based
+ *     clustering.
+ * @constructor
+ */
 rhizo.meta.DateKind = function(opt_clusterby) {
   this.monthMap_ = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
@@ -159,62 +460,9 @@ rhizo.meta.DateKind = function(opt_clusterby) {
       this.clusterby_ != 'd') {
     this.clusterby_ = 'y';
   }
-
-  this.year_ = null;
-  this.month_ = null;
-  this.day_ = null;
 };
-
-rhizo.meta.DateKind.prototype.renderFilter = function(project, metadata, key) {
-  this.year_ = $("<select style='vertical-align:top' />");
-  this.year_.append("<option value='yyyy'>yyyy</option>");
-  for (var i = metadata.minYear ; i <= metadata.maxYear; i++) {
-    this.year_.append("<option value='" + i + "'>" + i + "</option>");
-  }
-  this.month_ = $("<select style='vertical-align:top' />");
-  this.month_.append("<option value='mm'>mm</option>");
-  for (var i = 0; i < this.monthMap_.length; i++) {
-    this.month_.append("<option value='" + i + "'>" +
-                       this.monthMap_[i] +
-                       "</option>");
-  }
-
-  this.day_ = $("<select style='vertical-align:top' />");
-  this.day_.append("<option value='dd'>dd</option>");
-  for (var i = 1 ; i <= 31; i++) {
-    this.day_.append("<option value='" + i + "'>" + i + "</option>");
-  }
-  
-  $(this.year_).add($(this.month_)).add($(this.day_)).change(
-      jQuery.proxy(function(ev) {
-        var year = $(this.year_).val();
-        var month = $(this.month_).val();
-        var day = $(this.day_).val();
-        if (year == 'yyyy' && month == 'mm' && day == 'dd') {
-          project.filter(key, null);
-        } else {
-          project.filter(key,
-              [year != 'yyyy' ? year : undefined,
-               month != 'mm' ? month : undefined,
-               day != 'dd' ? day : undefined]);
-        }
-      }, this));
-
-  return $("<div class='rhizo-filter' />").
-           append(metadata.label + ": ").
-           append($(this.year_)).
-           append(' - ').
-           append($(this.month_)).
-           append(' - ').
-           append($(this.day_));
-};
-
-rhizo.meta.DateKind.prototype.setFilterValue = function(value) {
-  value = value || [undefined, undefined, undefined];
-  this.year_.val(value[0] || 'yyyy');
-  this.month_.val(value[1] || 'mm');
-  this.day_.val(value[2] || 'dd');
-};
+rhizo.meta.defaultRegistry.registerKind(
+    rhizo.meta.Kind.DATE, rhizo.meta.DateKind);
 
 rhizo.meta.DateKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -226,10 +474,9 @@ rhizo.meta.DateKind.prototype.survivesFilter =
     return isNaN(year) && isNaN(month) && isNaN(day);
   }
 
-  var survives = ((isNaN(year) || modelValue.getFullYear() == year) &&
+  return ((isNaN(year) || modelValue.getFullYear() == year) &&
           (isNaN(month) || modelValue.getMonth() == month) &&
           (isNaN(day) || modelValue.getDate() == day));
-  return survives;
 };
 
 // We do not implement a compare() function for dates because the native
@@ -274,197 +521,34 @@ rhizo.meta.DateKind.prototype.isNumeric = function() {
   return false;
 };
 
+/**
+ * Converts a number to string ensuring a leading 0 (zero) if the number is
+ * only 1-digit long.
+ *
+ * @param {value} value The number to convert.
+ * @return {string} The converted number into string form.
+ * @private
+ */
 rhizo.meta.DateKind.prototype.addZero_ = function(value) {
-  var result = value.toString();
+  var result = String(value);
   if (result.length == 1) {
     result = '0' + result;
   }
   return result;
 };
 
-/* RangeKind meta */
-rhizo.meta.RangeKind = function() {
-  this.slider_ = null;
-  this.minLabel_ = null;
-  this.maxLabel_ = null;
-
-  this.metadataMin_ = null;
-  this.metadataMax_ = null;
-};
-
-rhizo.meta.RangeKind.prototype.renderFilter = function(project, metadata, key) {
-  this.slider_ = $("<div class='rhizo-slider' />");
-  this.minLabel_ = $('<span />', {'class': 'rhizo-slider-label'}).
-      text(this.toHumanLabel_(metadata.min));
-  this.maxLabel_ = $('<span />', {'class': 'rhizo-slider-label'}).
-      text(this.toHumanLabel_(metadata.max));
-
-  this.metadataMin_ = metadata.min;
-  this.metadataMax_ = metadata.max;
-
-  var minFilterScale = this.toFilterScale(metadata.min);
-  var maxFilterScale = this.toFilterScale(metadata.max);
-  var steppingFilterScale;
-  if (metadata.stepping) {
-    steppingFilterScale = this.toFilterScale(metadata.stepping);
-  }
-
-  // wrap slide handler into a closure to preserve access to the RangeKind
-  // filter.
-  var slideCallback = jQuery.proxy(function(ev, ui) {
-      if (ui.values[0] != minFilterScale) {
-        // min slider has moved
-        this.minLabel_.
-            text(this.toHumanLabel_(this.toModelScale(ui.values[0]))).
-            addClass("rhizo-slider-moving");
-        this.maxLabel_.removeClass("rhizo-slider-moving");
-      }
-      if (ui.values[1] != maxFilterScale) {
-        // max slider has moved
-        this.maxLabel_.
-            text(this.toHumanLabel_(this.toModelScale(ui.values[1]))).
-            addClass("rhizo-slider-moving");
-        this.minLabel_.removeClass("rhizo-slider-moving");
-      }
-  }, this);
-
-  // wrap change handler into a closure to preserve access to the RangeKind
-  // filter.
-  var stopCallback = jQuery.proxy(function(ev, ui) {
-      var minSlide = Math.max(this.toModelScale(ui.values[0]), metadata.min);
-      var maxSlide = Math.min(this.toModelScale(ui.values[1]), metadata.max);
-      this.minLabel_.text(this.toHumanLabel_(minSlide)).removeClass(
-          "rhizo-slider-moving");
-      this.maxLabel_.text(this.toHumanLabel_(maxSlide)).removeClass(
-          "rhizo-slider-moving");
-      if (minSlide != this.metadataMin_ || maxSlide != this.metadataMax_) {
-        project.filter(key, { min: minSlide, max: maxSlide });
-      } else {
-        project.filter(key, null);
-      }
-  }, this);
-
-  $(this.slider_).slider({
-    stepping: steppingFilterScale,
-    steps: metadata.steps,
-    range: true,
-    min: minFilterScale,
-    max: maxFilterScale,
-    slide: slideCallback,
-    stop: stopCallback,
-    orientation: 'horizontal',
-    values: [minFilterScale, maxFilterScale]
-  });
-
-  return $("<div class='rhizo-filter' />").append(metadata.label + ": ")
-                                          .append($(this.minLabel_))
-                                          .append(" to ")
-                                          .append($(this.maxLabel_))
-                                          .append($(this.slider_));
-};
-
-rhizo.meta.RangeKind.prototype.setFilterValue = function(value) {
-  value = {
-    min: value ? this.clamp_(value.min) : this.metadataMin_,
-    max: value ? this.clamp_(value.max) : this.metadataMax_
-  };
-  this.minLabel_.text(this.toHumanLabel_(value.min));
-  this.maxLabel_.text(this.toHumanLabel_(value.max));
-  this.slider_.slider(
-      'values',
-      [this.toFilterScale(value.min), this.toFilterScale(value.max)]);
-};
 
 /**
- * Clamps the given value between the minimum and maximum range limits.
- * @param {number} val
- * @private
+ * Describes a basic boolean type.
+ * @constructor
  */
-rhizo.meta.RangeKind.prototype.clamp_ = function(val) {
-  return Math.min(this.metadataMax_, Math.max(this.metadataMin_, val));
-};
-
-rhizo.meta.RangeKind.prototype.survivesFilter = function(filterValue,
-                                                         modelValue) {
-  return modelValue >= filterValue.min && modelValue <= filterValue.max;
-};
-
-rhizo.meta.RangeKind.prototype.compare =
-    rhizo.meta.NumberKind.prototype.compare;
-
-rhizo.meta.RangeKind.prototype.cluster =
-    rhizo.meta.NumberKind.prototype.cluster;
-
-rhizo.meta.RangeKind.prototype.isNumeric =
-    rhizo.meta.NumberKind.prototype.isNumeric;
-
-/**
- * Converts a value as returned from the slider into a value in the model range.
- * This method, and the subsequent one, are particularly useful when the range
- * of Model values is not suitable for a slider (which accepts only integer
- * ranges). For example, when dealing with small decimal scales.
- *
- * The default implementation of this method is a no-op. Custom filters
- * extending the range slider should customize this method according to their
- * needs.
- * @param {number} filterValue the value received from the filter.
- */
-rhizo.meta.RangeKind.prototype.toModelScale = function(filterValue) {
-  return filterValue;
-};
-
-/**
- * Converts a value as read from the model into a value in the slider scale.
- * This is the inverse method of the previous one.
- * @param {number} modelValue the value received from the model.
- */
-rhizo.meta.RangeKind.prototype.toFilterScale = function(modelValue) {
-  return modelValue;
-};
-
-
-/**
-   Converts a numeric value into a human readable form.
-
-   The default implementation of this method is a no-op. Custom filters
-   extending the range slider should customize this method according to their
-   needs. rhizo.ui.toHumanLabel() is a useful helper in this case.
-
-   @param {number} modelValue the value to be converted
- */
-rhizo.meta.RangeKind.prototype.toHumanLabel_ = function(modelValue) {
-  return modelValue;
-};
-
-/* BooleanKind meta */
-rhizo.meta.BooleanKind = function() {
-  this.check_ = null;
-};
-
-rhizo.meta.BooleanKind.prototype.renderFilter = function(project,
-                                                         metadata,
-                                                         key) {
-  this.check_ = $("<select />");
-  this.check_.append("<option value=''>-</option>");
-  this.check_.append("<option value='true'>Yes</option>");
-  this.check_.append("<option value='false'>No</option>");
-
-  $(this.check_).change(function(ev) {
-    project.filter(key, $(this).val().length > 0 ? $(this).val() : null);
-  });
-  return $("<div class='rhizo-filter' />").
-           append(metadata.label + ": ").
-           append($(this.check_));
-};
-
-rhizo.meta.BooleanKind.prototype.setFilterValue = function(value) {
-  this.check_.val(value || '');
-};
+rhizo.meta.BooleanKind = function() {};
+rhizo.meta.defaultRegistry.registerKind(
+    rhizo.meta.Kind.BOOLEAN, rhizo.meta.BooleanKind);
 
 rhizo.meta.BooleanKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
-  var filterBoolean = filterValue == "true";
-  return filterBoolean == modelValue;
+  return filterValue == modelValue;
 };
 
 rhizo.meta.BooleanKind.prototype.compare = function(firstValue, secondValue) {
@@ -476,49 +560,14 @@ rhizo.meta.BooleanKind.prototype.isNumeric = function() {
   return false;
 };
 
-/* CategoryKind meta */
-rhizo.meta.CategoryKind = function() {
-  this.categories_ = null;
-  this.multiple_ = false;
-};
 
-rhizo.meta.CategoryKind.prototype.renderFilter = function(project,
-                                                          metadata,
-                                                          key) {
-  this.multiple_ = !!metadata.multiple;
-  this.categories_ = $("<select " +
-                       (metadata.multiple ? 'multiple size="4" ' : '') +
-                       " style='vertical-align:top' />");
-  this.categories_.append("<option value=''>-</option>");
-  for (var i = 0; i < metadata.categories.length; i++) {
-    this.categories_.append("<option value='" + metadata.categories[i] + "'>" +
-                            metadata.categories[i] +
-                            "</option>");
-  }
-
-  $(this.categories_).change(function(ev) {
-    var selectedCategories = [];
-    if (metadata.multiple) {
-      selectedCategories = $.grep($(this).val(), function(category) {
-        return category != '';
-      });
-    } else if ($(this).val().length > 0) {
-      selectedCategories = [ $(this).val() ];
-    }
-    if (selectedCategories.length == 0) {
-      selectedCategories = null;
-    }
-    project.filter(key, selectedCategories);
-  });
-  return $("<div class='rhizo-filter' />").
-           append(metadata.label + ": ").
-           append($(this.categories_));
-};
-
-rhizo.meta.CategoryKind.prototype.setFilterValue = function(value) {
-  // val() accepts both a single string and an array.
-  this.categories_.val(value || (this.multiple_ ? [] : ''));
-};
+/**
+ * Describes a basic category type.
+ * @constructor
+ */
+rhizo.meta.CategoryKind = function() {};
+rhizo.meta.defaultRegistry.registerKind(
+    rhizo.meta.Kind.CATEGORY, rhizo.meta.CategoryKind);
 
 rhizo.meta.CategoryKind.prototype.survivesFilter =
     function(filterValue, modelValue) {
@@ -573,60 +622,4 @@ rhizo.meta.CategoryKind.prototype.compare = function(firstValue, secondValue) {
 
 rhizo.meta.CategoryKind.prototype.isNumeric = function() {
   return false;
-};
-
-/* Utility functions */
-
-rhizo.meta.sortBy = function(key, kind, opt_reverse) {
-  return function(firstSuperModel, secondSuperModel) {
-    var firstModel = firstSuperModel.unwrap();
-    var secondModel = secondSuperModel.unwrap();
-
-    // Sign multiplication to invert sorting order
-    var reverse = opt_reverse ? -1 : 1;
-
-    if (kind.compare) {
-      return kind.compare(firstModel[key], secondModel[key])*reverse;
-    } else {
-      // try native sorting
-      return (firstModel[key] < secondModel[key] ? -1 :
-              firstModel[key] > secondModel[key] ? 1 : 0)*reverse;
-    }
-  };
-};
-
-rhizo.meta.sortByKind = function(kind, opt_reverse) {
-  return function(firstValue, secondValue) {
-    // Sign multiplication to invert sorting order
-    var reverse = opt_reverse ? -1 : 1;
-    if (kind.compare) {
-      return kind.compare(firstValue, secondValue)*reverse;
-    } else {
-      return (firstValue < secondValue ? -1 :
-          firstValue > secondValue ? 1 : 0)*reverse;
-    }
-  };
-};
-
-/**
- * returns a rhizo.meta.Kind instance, building it if necessary.
- *
- * @param {function()|*} kind Either a rhizo.meta.Kind instance or a no-arg
- *     function that can instantiate it.
- */
-rhizo.meta.objectify = function(kind) {
-  if (typeof(kind) == 'function') {
-    return kind();
-  } else {  // assume 'object'
-    return kind;
-  }
-};
-
-rhizo.meta.Kind = {
-  STRING: function() { return new rhizo.meta.StringKind(); },
-  NUMBER: function() { return new rhizo.meta.NumberKind(); },
-  DATE: function() { return new rhizo.meta.DateKind(); },
-  RANGE: function() { return new rhizo.meta.RangeKind(); },
-  BOOLEAN: function() { return new rhizo.meta.BooleanKind(); },
-  CATEGORY: function() { return new rhizo.meta.CategoryKind(); }
 };

@@ -34,6 +34,7 @@ import com.rhizospherejs.gwt.client.renderer.RenderingOutput;
  */
 public class EmployeeRenderer implements RhizosphereRenderer<Employee>, HasExpandable {
 
+  @Override
   public void render(Employee model, boolean expanded, RenderingOutput helper) {
     if (expanded) {
       helper.emitHTML("<div class='rhizo-sample-expanded'>" +

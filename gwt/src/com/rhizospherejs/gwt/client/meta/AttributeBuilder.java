@@ -61,7 +61,9 @@ public class AttributeBuilder {
     if (descriptor instanceof HasKind) {
       target.setKind(((HasKind) descriptor).kind());
     } else if (descriptor instanceof HasKindFactory) {
-      target.setKindFromFactory(((HasKindFactory) descriptor).kindFactory());
+      target.setKindFromFactory(
+        ((HasKindFactory) descriptor).kindFactory(),
+        ((HasKindFactory) descriptor).kindUiFactory());
     } else {
       target.setKind(kind);
     }
