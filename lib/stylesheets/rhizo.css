@@ -16,7 +16,7 @@
 .rhizo-right-pop:hover{background-color:#6391de;background-image:-webkit-gradient(linear, 0 0, 100% 0, from(#6391de), to(#426dc9));background-image:-moz-linear-gradient(#6391de, #426dc9);color:#ffffff;}
 .rhizo-bottom-bar{position:absolute;bottom:0;z-index:1300;background-color:#6391de;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#6391de), to(#426dc9));background-image:-moz-linear-gradient(-90deg, #6391de, #426dc9);-webkit-box-shadow:0 -1px 5px #0f3a96;-moz-box-shadow:0 -1px 5px #0f3a96;box-shadow:0 -1px 5px #0f3a96;margin:0;padding:4px 0;height:1.5em;width:100%;}
 .rhizo-floating-panel{position:absolute;border-top:1px solid #6391de;border-bottom:1px solid #6391de;background-color:#ffffff;bottom:2.4em;left:0px;height:6em;width:100%;padding:5px 0;margin:0;font-weight:normal;z-index:1100;}
-.rhizo-viewport{position:absolute;background-color:#ebeff9;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#ebeff9), to(#dadee8));background-image:-moz-linear-gradient(-90deg, #ebeff9, #dadee8);top:0;left:295px;right:5px;bottom:0;overflow:hidden;}
+.rhizo-viewport{position:absolute;background-color:#ebeff9;background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#ebeff9), to(#dadee8));background-image:-moz-linear-gradient(-90deg, #ebeff9, #dadee8);top:0;left:0;right:0;bottom:0;overflow:hidden;}
 .rhizo-universe{position:absolute;top:0;left:0;right:0;bottom:0;}
 .rhizo-bucket-header{font-size:1.3em;font-weight:bold;border-bottom:1px solid #426dc9;width:200px;margin-bottom:5px;color:#6391de;cursor:pointer;}
 .rhizo-tree-connector{background-color:#6391de;}
@@ -120,7 +120,7 @@
 .rhizo-broadcast P{margin-top:0;margin-left:0;margin-right:0;vertical-align:middle;}
 .rhizo-broadcast BUTTON{float:right;}
 .rhizo-broadcast-url{font-size:0.9em;width:19em;display:none;}
-.rhizo-template-bottom .rhizo-viewport{left:0;right:0;}
+.rhizo-template-default .rhizo-viewport{left:295px;right:5px;}
 .rhizo-template-bottom .rhizo-bucket-header{font-size:1.2em;margin-bottom:3px;width:160px;}
 .rhizo-template-bottom .rhizo-selection-trigger{top:0;}
 .rhizo-keyboard{border:solid 2px #bbbbbb;padding:5px;position:absolute;left:100px;top:100px;-moz-border-radius:15px;border-radius:15px;background:#ffffff;opacity:0.8 !important;width:670px;height:250px;display:none;z-index:11000;}
