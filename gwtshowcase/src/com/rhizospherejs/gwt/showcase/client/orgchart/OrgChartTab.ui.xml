@@ -44,6 +44,12 @@
       width: 100%;
       height: 100%;
     }
+    
+    .logArea {
+      height: 6em;
+      width: 100%;
+      margin-top: 0.5em;
+    }
   </ui:style>
   <g:DockLayoutPanel addStyleNames='{res.tabsCss.expandToFill}' unit="EM">
     <g:north size="10">
@@ -73,5 +79,20 @@
           ui:field='rhizosphereContainer'
           addStyleNames='{style.visualization}'></g:SimplePanel>
     </g:center>
+    <g:south size="10">
+      <g:HTMLPanel>
+        <div style="border-top: 1px solid #ccc; padding: 0.5em;">
+          Programmatic actions:
+          <g:Button ui:field='resetFilters' enabled="false">Reset Filters</g:Button>
+          <g:Button ui:field='salaryFilter' enabled="false">Filter salary from 50k to 250k</g:Button>
+          <g:Button ui:field='salaryGenderFilter' enabled="false">Filter salary and gender</g:Button>
+          <g:Button ui:field='select' enabled="false">Select Sara, Jennifer</g:Button>
+          <g:Button ui:field='layout' enabled="false">Apply random layout</g:Button>
+          <g:Button ui:field='layoutPositions' enabled="false">Move Sara</g:Button>
+          <g:TextArea ui:field='logArea' addStyleNames='{style.logArea}'>
+          </g:TextArea>
+        </div>
+      </g:HTMLPanel>
+    </g:south>
   </g:DockLayoutPanel>
 </ui:UiBinder>
