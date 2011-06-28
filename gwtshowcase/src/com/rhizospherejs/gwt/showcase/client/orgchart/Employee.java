@@ -164,9 +164,14 @@ public class Employee implements
     // show up in the UI.
     @Override public final native JavaScriptObject kindFactory() /*-{
       return function() {
-        var logMeta = new $wnd.rhizo.meta.LogarithmRangeKind(2, true);
-        logMeta.toHumanLabel_ = $wnd.rhizo.ui.toHumanLabel;
-        return logMeta;
+        return new $wnd.rhizo.meta.LogarithmRangeKind(2, true);
+      };
+    }-*/;
+    @Override public final native JavaScriptObject kindUiFactory() /*-{
+      return function(project, metaModelKey) {
+        var ui = new $wnd.rhizo.ui.meta.RangeKindUi(project, metaModelKey);
+        ui.toHumanLabel = $wnd.rhizo.ui.toHumanLabel;
+        return ui;
       };
     }-*/;
     @Override public double maxRange() { return 500000; }
