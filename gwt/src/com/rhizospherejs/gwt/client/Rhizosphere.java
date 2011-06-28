@@ -465,6 +465,7 @@ public class Rhizosphere<T> extends Composite implements HasReadyHandlers {
    * user interaction.
    * @param handler The handler to notify.
    */
+  @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }

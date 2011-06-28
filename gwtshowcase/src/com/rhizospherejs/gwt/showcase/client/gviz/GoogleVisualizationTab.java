@@ -126,8 +126,10 @@ public class GoogleVisualizationTab extends Composite implements DataTableChange
     // Ensures that both the Google Visualization APIs and Rhizosphere libraries
     // are loaded.
     VisualizationUtils.loadVisualizationApi(new Runnable() {
+      @Override
       public void run() {
         RhizosphereLoader.getInstance().ensureInjected(new Runnable() { 
+          @Override
           public void run() {
             // Populate the DataTable with some sample data.
             initDataTable();
