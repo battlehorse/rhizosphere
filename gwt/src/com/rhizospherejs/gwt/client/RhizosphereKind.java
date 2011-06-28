@@ -16,7 +16,6 @@
 
 package com.rhizospherejs.gwt.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Enumeration of the datatypes ('kinds' in Rhizosphere terminology) that can
@@ -41,74 +40,74 @@ public enum RhizosphereKind {
   BOOLEAN {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.BOOLEAN;
     }-*/;
   },
   STRING {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.STRING;
     }-*/;
   },
   NUMBER {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.NUMBER;
     }-*/;
   },
   DATE {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.DATE;
     }-*/;
   },
   RANGE {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.RANGE;
     }-*/;
   },
   CATEGORY {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.CATEGORY;
     }-*/;
   },
   DECIMAL {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.DECIMAL;
     }-*/;
   },
   DECIMALRANGE {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.DECIMALRANGE;
     }-*/;
   },
   LOGARITHMRANGE {
 
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.LOGARITHMRANGE;
     }-*/;
   },
   STRINGARRAY {  // experimental.
  
     @Override
-    public native JavaScriptObject getNativeKind() /*-{
+    public native String getNativeKind() /*-{
       return $wnd.rhizo.meta.Kind.STRINGARRAY;
     }-*/;
   };
 
-  public abstract JavaScriptObject getNativeKind();
+  public abstract String getNativeKind();
 
 }

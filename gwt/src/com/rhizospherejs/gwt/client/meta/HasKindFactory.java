@@ -23,19 +23,48 @@ import com.google.gwt.core.client.JavaScriptObject;
  * Rhizosphere data type (kind) of the matching
  * {@link com.rhizospherejs.gwt.client.RhizosphereModelAttribute} via a
  * factory method.
+ * <p>
+ * To use this interface you should be familiar with Rhizosphere Javascript
+ * APIs to be able to write correct factory implementations. Start with
+ * <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.meta.js">
+ * rhizo.meta.js</a> and
+ * <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.ui.meta.js">
+ * rhizo.ui.meta.js</a> for a primer on Rhizosphere kinds system and how to
+ * extend it with custom kinds. 
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public interface HasKindFactory {
 
    /**
-    * Returns a factory of {@link com.rhizospherejs.gwt.client.RhizosphereKind}
-    * instances.
+    * Returns a factory method to generate the Rhizosphere kind (model
+    * attribute type in Rhizosphere terminology) instance for the
+    * {@link com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute} this
+    * interface describes. See
+    * <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.meta.js">
+    * rhizo.meta.js</a> for more info about how to define kind instances.
     *
-    * @return A Javascript function that will return a valid
-    *     {@link com.rhizospherejs.gwt.client.RhizosphereKind}
-    *     ({@code rhizo.meta.kind} instance in Rhizoshere JS code) when invoked
-    *     with no arguments.
+    * @return A Javascript function that will return a valid Rhizosphere kind
+    *     instance when invoked with no arguments.
     */
   JavaScriptObject kindFactory();
+  
+  /**
+   * Returns a factory method to generate the Rhizosphere kind user interface
+   * instance for the
+   * {@link com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute} this
+   * interface describes. See
+   * <a href="http://code.google.com/p/rhizosphere/source/browse/src/js/rhizo.ui.meta.js">
+   * rhizo.ui.meta.js</a> for more info about how to define kind user
+   * interfaces.
+   *
+   * @return A Javascript function that will return a valid Rhizosphere kind
+   *     user interface instance when invoked with 2 arguments: the
+   *     {@code rhizo.Project} instance the user interface will belong to and
+   *     the name of the
+   *     {@link com.rhizospherejs.gwt.client.RhizosphereMetaModel} attribute
+   *     the factory is bound to. Return {@code null} if the generated kind
+   *     should not have a user interface.
+   */
+  JavaScriptObject kindUiFactory();
 }
