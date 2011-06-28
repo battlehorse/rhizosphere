@@ -183,7 +183,7 @@ rhizo.meta.KindRegistry.prototype.clone = function() {
 /**
  * Registers a new metamodel Kind under the given symbolic name.
  * @param {string} key A symbolic name identifying the metamodel kind.
- * @param {function} ctor A constructor function to create new Kind instances.
+ * @param {function()} ctor A constructor function to create new Kind instances.
  */
 rhizo.meta.KindRegistry.prototype.registerKind = function(key, ctor) {
   this.registry_[key] = {method: 'ctor', ctor: ctor};
@@ -192,7 +192,8 @@ rhizo.meta.KindRegistry.prototype.registerKind = function(key, ctor) {
 /**
  * Registers a new metamodel Kind under the given symbolic name.
  * @param {string} key A symbolic name identifying the metamodel kind.
- * @param {function} factory A factory function that returns new Kind instances.
+ * @param {function()} factory A factory function that returns new Kind
+ *     instances.
  */
 rhizo.meta.KindRegistry.prototype.registerKindFactory = function(key, factory) {
   this.registry_[key] = {method: 'factory', factory: factory};
@@ -207,7 +208,7 @@ rhizo.meta.KindRegistry.prototype.registerKindFactory = function(key, factory) {
  *
  * @param {string|Object} keyOrKind A symbolic name identifying the metamodel
  *     kind or a metamodel Kind instance.
- * @param {function} ctor A constructor function to create new Kind user
+ * @param {function()} ctor A constructor function to create new Kind user
  *     interface instances.
  */
 rhizo.meta.KindRegistry.prototype.registerKindUi = function(keyOrKind, ctor) {
@@ -228,7 +229,7 @@ rhizo.meta.KindRegistry.prototype.registerKindUi = function(keyOrKind, ctor) {
  *
  * @param {string|Object} keyOrKind A symbolic name identifying the metamodel
  *     kind or a metamodel Kind instance.
- * @param {function} factory A factory function that returns new Kind user
+ * @param {function()} factory A factory function that returns new Kind user
  *     interface instances.
  */
 rhizo.meta.KindRegistry.prototype.registerKindUiFactory = function(

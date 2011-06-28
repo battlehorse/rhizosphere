@@ -109,7 +109,7 @@ rhizo.eventbus.EventBus.prototype.unsubscribe = function(channel, subscriber) {
  * Preprocessors are executed in strict sequential order.
  *
  * @param {string} channel The channel to add the preprocessor to.
- * @param {!function(Object, function)} preprocessorCallback The callback is
+ * @param {!function(Object, function())} preprocessorCallback The callback is
  *     invoked whenever a new message is published on the channel. It receives
  *     the message as the first parameter and a response function as the
  *     second. The response function accepts 2 parameters: a boolean indicating
@@ -188,14 +188,14 @@ rhizo.eventbus.Channel_ = function(name) {
   /**
    * The channel preprocessors, keyed by their unique identifier on the
    * eventbus.
-   * @type {!Object.<number, function>
+   * @type {!Object.<number, function()>}
    * @private
    */
   this.preprocessors_ = {};
 
   /**
    * The channel preprocessors, in execution order.
-   * @type {!Array.<function>}
+   * @type {!Array.<function()>}
    * @private
    */
   this.preprocessorsOrder_ = [];
@@ -204,7 +204,7 @@ rhizo.eventbus.Channel_ = function(name) {
    * The channel subscribers, keyed by their unique identifier on the eventbus,
    * that will be notified as soon as messages are published ('in flight'
    * notification phase).
-   * @type {!Object.<number, function>}
+   * @type {!Object.<number, function()>}
    * @private
    */
   this.subscribers_ = {};
@@ -213,7 +213,7 @@ rhizo.eventbus.Channel_ = function(name) {
    * The channel subscribers, keyed by their unique identifier on the eventbus,
    * that will be notified after the mutations driven by published messages
    * have been committed ('committed' notification phase).
-   * @type {!Object.<number, function>}
+   * @type {!Object.<number, function()>}
    * @private
    */
   this.commitSubscribers_ = {};
@@ -240,7 +240,7 @@ rhizo.eventbus.Channel_.prototype.addSubscriber = function(
 /**
  * Adds a preprocessor to the requested channel.
  *
- * @param {!function(Object, function)} preprocessorCallback The callback is
+ * @param {!function(Object, function())} preprocessorCallback The callback is
  *     invoked whenever a new message is published on the channel. It receives
  *     the message as the first parameter and a response function as the
  *     second. The response function accepts 2 parameters: a boolean indicating
@@ -320,7 +320,7 @@ rhizo.eventbus.Channel_.prototype.publish = function(
  * the message or the entire queue has been executed.
  *
  * @param {!Object} message The message to preprocess.
- * @param {Array.<!function>} preprocessorsQueue The queue of preprocessors to
+ * @param {Array.<!function()>} preprocessorsQueue The queue of preprocessors to
  *     execute.
  * @param {!function(boolean, string=)} callback The callback invoked either at
  *     the end of the queue or as soon as one preprocessor rejects the message.
@@ -363,7 +363,7 @@ rhizo.eventbus.Channel_.prototype.send_ = function(
  * Sends  a message to a given pool of subscribers, excluding the sender if
  * part of the pool.
  * @param {!Object} message The message to send.
- * @param {!Object.<number, function>} pool The pool of subscribers to target.
+ * @param {!Object.<number, function()>} pool The pool of subscribers to target.
  * @param {Object=} opt_sender The message sender, if any.
  */
 rhizo.eventbus.Channel_.prototype.sendToSubscriberPool_ = function(
@@ -379,9 +379,9 @@ rhizo.eventbus.Channel_.prototype.sendToSubscriberPool_ = function(
 /**
  * Adds one subscriber/preprocessor to the channel.
  * @param {!Object} pool The pool to add the object to.
- * @param {!function} callback The subscriber/preprocessor callback to add.
+ * @param {!function()} callback The subscriber/preprocessor callback to add.
  * @param {!Object} source The callback owner.
- * @return {!function} The applied callback, i.e. the callback already tied to
+ * @return {!function()} The applied callback, i.e. the callback already tied to
  *     its source scope.
  * @private
  */
@@ -399,7 +399,7 @@ rhizo.eventbus.Channel_.prototype.add_ = function(pool, callback, source) {
  * @param {!Object} pool The pool to remove the callback from.
  * @param {Object} source The owner of the subscriber/preprocessor callback to
  *     remove.
- * @return {?function} The removed callback (in applied form), if any.
+ * @return {?function()} The removed callback (in applied form), if any.
  */
 rhizo.eventbus.Channel_.prototype.remove_ = function(pool, source) {
   if (typeof(source[rhizo.eventbus.uuidKey_]) == 'undefined') {
