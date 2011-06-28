@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Element;
 
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
+import com.rhizospherejs.gwt.client.RhizosphereUserAgent;
 import com.rhizospherejs.gwt.client.handlers.HasReadyHandlers;
 import com.rhizospherejs.gwt.client.renderer.NativeRenderer;
 
@@ -75,10 +76,16 @@ public class Bootstrap extends JavaScriptObject {
 
   /**
    * Prepares the visualization container for subsequent deployment.
+   * @return A userAgent that can be subsequently used to programmatically
+   *     drive the visualization.
    */
-  public final native void prepare() /*-{
-    this.prepare();
-  }-*/;  
+  public final <T> RhizosphereUserAgent<T> prepare() {
+    return new RhizosphereUserAgent<T>(this.nativePrepare());
+  }
+
+  private final native JavaScriptObject nativePrepare() /*-{
+    return this.prepare();
+  }-*/;
 
   /**
    * Deploys a Rhizosphere visualization. 
