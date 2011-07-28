@@ -623,3 +623,4 @@ rhizo.meta.CategoryKind.prototype.compare = function(firstValue, secondValue) {
 rhizo.meta.CategoryKind.prototype.isNumeric = function() {
   return false;
 };
+

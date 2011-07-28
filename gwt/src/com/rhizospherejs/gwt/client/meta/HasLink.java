@@ -32,7 +32,7 @@ public interface HasLink {
    * models.
    */
   public boolean isLink();
-  
+
   /**
    * Defines the name of the target model attribute whose value resolves the
    * links established by this attribute. If {@code null}, it is assumed that
@@ -42,7 +42,7 @@ public interface HasLink {
    *
    * @return the name of the target model attribute whose value resolves the
    *     links established by this attribute, or {@code null} if this attribute
-   *     links to other models via their unique ids. 
+   *     links to other models via their unique IDs.
    */
   public String linkKey();
 }

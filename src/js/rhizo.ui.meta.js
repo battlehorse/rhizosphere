@@ -20,6 +20,7 @@
  * filtering criteria from the user. Filtering criteria are then used to
  * filter out Rhizosphere models from the visualization project, allowing the
  * user to perform faceted searches on the visualization contents.
+ * @author Riccardo Govoni (battlehorse@google.com)
  *
  * To define a new metamodel Kind user interface:
  * - define a new Javascript class.

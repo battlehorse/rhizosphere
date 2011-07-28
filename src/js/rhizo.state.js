@@ -490,7 +490,7 @@ rhizo.state.StateBinder.prototype.key = function() {
 
 /**
  * Callback to notify this binder that a state transition occurred elsewhere.
- * @param {*} opt_delta Defines that facet that changed state and its associated
+ * @param {*} opt_delta Defines the facet that changed state and its associated
  *     changes. See the parameter documentation for
  *     rhizo.state.ProjectOverlord.prototype.transition. null if the change
  *     affected multiple facets at the same time.
@@ -564,33 +564,55 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
     throw("ProjectStateBinder received a transition after being removed from " +
           "overlord.");
   }
-  if (opt_delta) {
-    // If we know exactly what changed to get to the target state, then
-    // just apply the delta.
-    var facet = opt_delta.facet;
-    var facetState = opt_delta.facetState;
-    if (facet == rhizo.state.Facets.LAYOUT) {
-      this.pushLayoutChange_(facetState);
-    } else if (facet == rhizo.state.Facets.SELECTION_FILTER) {
-      this.pushSelectionChange_(facetState);
-    } else if (facet == rhizo.state.Facets.FILTER) {
-      this.pushFilterChange_(facetState);
-    } else {
-      throw("Invalid facet: " + facet);
-    }
-  } else {
-    // Otherwise rebuild the full state.
-    var projectState = state.uuids[this.overlord_.uuid()] || {};
-    this.pushFilterChange_(projectState[rhizo.state.Facets.FILTER]);
-    this.pushSelectionChange_(
-        projectState[rhizo.state.Facets.SELECTION_FILTER]);
 
-    // forcealign required to align model visibility since we are rebuilding
-    // a full state (it may even be the initial one, when all models are still
-    // hidden).
-    this.pushLayoutChange_(
-        projectState[rhizo.state.Facets.LAYOUT], /* forcealign */ true);
+  // If we know exactly what changed to get to the target state, then
+  // just apply the delta, otherwise rebuild the full state.
+  if (opt_delta) {
+    this.pushDeltaChange_(opt_delta);
+  } else {
+    this.pushFullState_(state);
   }
+};
+
+/**
+ * Applies a single facet transition to the managed project.
+ *
+ * @param {*} delta Defines the facet that changed state and its associated
+ *     changes. See the parameter documentation for
+ *     rhizo.state.ProjectOverlord.prototype.transition.
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.pushDeltaChange_ = function(delta) {
+  var facet = delta.facet;
+  var facetState = delta.facetState;
+  if (facet == rhizo.state.Facets.LAYOUT) {
+    this.pushLayoutChange_(facetState);
+  } else if (facet == rhizo.state.Facets.SELECTION_FILTER) {
+    this.pushSelectionChange_(facetState);
+  } else if (facet == rhizo.state.Facets.FILTER) {
+    this.pushFilterChange_(facetState);
+  } else {
+    throw("Invalid facet: " + facet);
+  }
+};
+
+/**
+ * Rebuilds the full project state.
+ *
+ * @param {*} state The target state to transition the project to.
+ * @private
+ */
+rhizo.state.ProjectStateBinder.prototype.pushFullState_ = function(state) {
+  var projectState = state.uuids[this.overlord_.uuid()] || {};
+  this.pushFilterChange_(projectState[rhizo.state.Facets.FILTER]);
+  this.pushSelectionChange_(
+      projectState[rhizo.state.Facets.SELECTION_FILTER]);
+
+  // forcealign required to align model visibility since we are rebuilding
+  // a full state (it may even be the initial one, when all models are still
+  // hidden).
+  this.pushLayoutChange_(
+      projectState[rhizo.state.Facets.LAYOUT], /* forcealign */ true);
 };
 
 /**

@@ -74,7 +74,7 @@ rhizo.ui.component.Progress = function() {};
 rhizo.ui.component.Progress.prototype.render = function(container) {
   this.pbarPanel_ = $('<div/>', {'class': 'rhizo-progressbar-panel'}).
       appendTo(container);
-  
+
   // center the progress bar.
   this.pbarPanel_.css({
     'top': Math.round((container.height() - this.pbarPanel_.height()) / 2),
@@ -272,7 +272,7 @@ rhizo.ui.component.Container.prototype.addComponent = function(component,
   if (opt_position) {
     this.components_.splice(opt_position, 0, component);
   } else {
-    this.components_.push(component);    
+    this.components_.push(component);
   }
 
   if (opt_position < 0) {
@@ -344,7 +344,7 @@ rhizo.ui.component.Container.prototype.render = function() {
 /**
  * Adds a single rendering to the list of all renderings that will be returned
  * by render().
- * 
+ *
  * @param {?Array.<HTMLElement>|HTMLElement} rendering
  * @param {Array.<HTMLElement>} all_renderings
  * @private
@@ -597,7 +597,7 @@ rhizo.ui.component.RightBar.prototype.renderSingleComponent = function(
       text(title).
       appendTo(this.rightBar_);
   }
-  this.rightBar_.append(component.render());  
+  this.rightBar_.append(component.render());
   return null;  // rendering has been appended to the rightBar directly.
 };
 
@@ -639,7 +639,7 @@ rhizo.ui.component.RightBar.prototype.isCollapsed = function() {
 /**
  * An horizontal bar that cointains links to activate other components, which
  * will be displayed as floating panels above the links bar.
- * 
+ *
  * @param {rhizo.Project} project The project this box belongs to.
  * @param {*} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
@@ -668,7 +668,7 @@ rhizo.ui.component.HBox.prototype.renderSingleComponent = function(
                                      component.titleClass()),
     renderings: component.render()
   };
-  this.toggles_.push(toggle);  
+  this.toggles_.push(toggle);
   if (opt_position) {
     if (opt_position > 0) {
       toggle.clickable.insertAfter(
@@ -677,7 +677,7 @@ rhizo.ui.component.HBox.prototype.renderSingleComponent = function(
       this.bar_.prepend(toggle.clickable);
     }
   } else {
-    this.bar_.append(toggle.clickable);    
+    this.bar_.append(toggle.clickable);
   }
   $(toggle.renderings).addClass('rhizo-floating-panel').css('display', 'none');
   this.activateToggle_(toggle);
@@ -709,7 +709,7 @@ rhizo.ui.component.HBox.prototype.renderClickable_ = function(title,
  * Enables the toggling of a component. When a component is toggled, by clicking
  * the correspondent link in the links bar, any other open component is closed,
  * so that only one component at a time is always visible.
- * 
+ *
  * @param {*} The object describing the toggle-able component.
  * @private
  */
@@ -735,7 +735,7 @@ rhizo.ui.component.HBox.prototype.activateToggle_ = function(curToggle) {
 
 /**
  * Toggles the visibility of the component identified by the given key.
- * 
+ *
  * @param {string} key The key of the component to toggle.
  * @param {boolean} active Whether the component should be activated (made
  *     visible) or deactivated.
@@ -828,7 +828,7 @@ rhizo.ui.component.Viewport.prototype.ready = function() {
 
 /**
  * Moves the universe relatively to the viewport.
- * 
+ *
  * @param {*} position An object exposing the 'top' and 'left' properties (both
  *     numbers) that define where the universe should be moved to. The
  *     coordinates define the position of the universe top-left corner with
@@ -1219,7 +1219,7 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
 /**
  * Toggles the title of the selection trigger depending on the status of the
  * viewport.
- * 
+ *
  * @param {boolean} selectionModeOn Whether the viewport is currently in
  *     selection mode or not.
  */
@@ -1249,7 +1249,7 @@ rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels =
 
 /**
  * A panel that enables/disables filters autocommit functionality.
- * 
+ *
  * @param {rhizo.Project} project The project this component belongs to.
  * @param {*} options Project-wide configuration options.
  * @constructor
@@ -1406,7 +1406,7 @@ rhizo.ui.component.FilterStackContainer.prototype.metaReady = function() {
   for (key in metaModel) {
     var ui = this.project_.metaModelRegistry().createUiForKind(
         metaModel[key].kind, this.project_, key).filterUIControls();
-    
+
     if (dismissableFilters) {
       $(ui).css('display', 'none');
       $('<div />', {'class': 'rhizo-icon rhizo-close-icon'}).
@@ -1570,7 +1570,7 @@ rhizo.ui.component.FilterStackContainer.prototype.onFilterChanged_ = function(
 /**
  * Renders a series of filters as a 'book', with only filter showing at any
  * time, and additional controls to flip between one filter and the next.
- * 
+ *
  * @param {rhizo.Project} project The project this component belongs to.
  * @param {*} options Project-wide configuration options.
  * @constructor
@@ -1868,7 +1868,7 @@ rhizo.inherits(rhizo.ui.component.BareTemplate, rhizo.ui.component.Template);
  * Template used when Rhizosphere is accessed via a mobile device, or when
  * the available screen estate is reduced (such as in gadgets). Collects all
  * the visualization controls in a links bar at the bottom of the screen.
- * 
+ *
  * @param {rhizo.Project} project The project this template belongs to.
  * @param {*} options Project-wide configuration options.
  * @param {?string} template_key A unique key that identifies the template.
@@ -1898,7 +1898,7 @@ rhizo.ui.component.BottomTemplate.prototype.initComponents_ = function(
 /**
  * Returns the list of default template components. Subclasses can override.
  * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options 
+ * @param {*} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
@@ -1915,7 +1915,7 @@ rhizo.ui.component.BottomTemplate.prototype.defaultComponents = function(
 /**
  * Overrides the default addComponent() implementation to explicitly assign
  * newly added components to the template bottom links bar.
- * 
+ *
  * @param {rhizo.ui.component.Component} component The component to add.
  */
 rhizo.ui.component.BottomTemplate.prototype.addComponent = function(component) {
@@ -1925,7 +1925,7 @@ rhizo.ui.component.BottomTemplate.prototype.addComponent = function(component) {
 
 /**
  * Adds the component to the template's bottom controls bar.
- * 
+ *
  * @param {rhizo.ui.component.Component} component The component to add.
  */
 rhizo.ui.component.BottomTemplate.prototype.addtoBottomBar = function(
@@ -2013,7 +2013,7 @@ rhizo.ui.component.StandardTemplate.prototype.defaultRightComponents =
 /**
  * Overrides the default addComponent() implementation to explicitly assign
  * newly added components to the template left controls bar.
- * 
+ *
  * @param {rhizo.ui.component.Component} component The component to add.
  */
 rhizo.ui.component.StandardTemplate.prototype.addComponent = function(
@@ -2024,7 +2024,7 @@ rhizo.ui.component.StandardTemplate.prototype.addComponent = function(
 
 /**
  * Adds the component to the template's left controls bar.
- * 
+ *
  * @param {rhizo.ui.component.Component} component The component to add.
  */
 rhizo.ui.component.StandardTemplate.prototype.addtoLeftBar = function(
@@ -2037,7 +2037,7 @@ rhizo.ui.component.StandardTemplate.prototype.addtoLeftBar = function(
 
 /**
  * Adds the component to the template's right controls bar.
- * 
+ *
  * @param {rhizo.ui.component.Component} component The component to add.
  */
 rhizo.ui.component.StandardTemplate.prototype.addToRightBar = function(

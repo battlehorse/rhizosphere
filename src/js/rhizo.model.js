@@ -157,3 +157,4 @@ rhizo.model.SuperModel.prototype.resetFilter = function(key) {
 rhizo.model.SuperModel.prototype.modelChanged = function() {
   this.rendering_.modelChanged();
 };
+

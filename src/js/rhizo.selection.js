@@ -18,6 +18,7 @@
 /**
  * @fileOverview Class that oversee Rhizosphere models' selection and focus
  * management.
+ * @author Riccardo Govoni (battlehorse@google.com)
  */
 
 //RHIZODEP=rhizo

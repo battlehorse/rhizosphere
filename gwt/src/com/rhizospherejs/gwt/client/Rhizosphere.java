@@ -474,6 +474,7 @@ public class Rhizosphere<T> extends Composite
   /**
    * Sets the visualization renderer. You can avoid setting the renderer if you
    * already provide one via {@link RhizosphereOptions} options.
+   *
    * @param renderer The visualization renderer.
    */
   public void setRenderer(final RhizosphereRenderer<T> renderer) {
@@ -483,6 +484,7 @@ public class Rhizosphere<T> extends Composite
   /**
    * Register a handler to be notified once the visualization is ready for
    * user interaction.
+   *
    * @param handler The handler to notify.
    */
   @Override
@@ -493,6 +495,7 @@ public class Rhizosphere<T> extends Composite
   /**
    * Register a handler to be notified whenever the visualization filtering
    * criteria change.
+   *
    * @param handler The handler to notify.
    */
   @Override

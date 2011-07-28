@@ -17,6 +17,7 @@
 
 /**
  * @fileOverview Classes that oversee Rhizosphere filter management.
+ * @author Riccardo Govoni (battlehorse@google.com)
  */
 
 //RHIZODEP=rhizo,rhizo.ui
@@ -254,32 +255,18 @@ rhizo.meta.FilterManager.prototype.onBeforeFilter_ = function(
  * @private
  */
 rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
-  var metaModel = this.project_.metaModel();
-  var modelsMap = this.project_.modelsMap();
-
   var modelsChange = false;
   for (var metaModelKey in message) {
     var filterValue = message[metaModelKey];
     if (filterValue !== null && filterValue !== undefined) {
       // valid filter
-      this.filters_[metaModelKey] = filterValue;
-
-
-      for (var modelId in modelsMap) {
-        var model = modelsMap[modelId];
-        if (metaModel[metaModelKey].kind.survivesFilter(
-            filterValue, model.unwrap()[metaModelKey])) {
-          // matches filter. Doesn't have to be hidden
-          modelsChange = model.resetFilter(metaModelKey) || modelsChange;
-        } else {
-          // does not match filter. Must be hidden
-          modelsChange = model.filter(metaModelKey) || modelsChange;
-        }
-      }
+      modelsChange = 
+          this.filterSingleMetaModelKey_(metaModelKey, filterValue) ||
+          modelsChange;
     } else {
       // reset filter
-      delete this.filters_[metaModelKey];
-      modelsChange = this.removeFilterFromModels(metaModelKey) || modelsChange;
+      modelsChange =
+          this.resetFilterForMetaModelKey_(metaModelKey) || modelsChange;
     }
   }
 
@@ -291,6 +278,47 @@ rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
       this.alignVisibility(rhizo.ui.Visibility.GREY);
     }
   }
+};
+
+/**
+ * Filters all models for the specified value on a single metaModel key.
+ * @param {string} metaModelKey The metaModel key to affect.
+ * @param {*} filterValue The value to filter against.
+ * @return {boolean} Whether any model changed its filtered status because of
+ *     the new filter being applied.
+ * @private
+ */
+rhizo.meta.FilterManager.prototype.filterSingleMetaModelKey_ = function(
+    metaModelKey, filterValue) {
+  this.filters_[metaModelKey] = filterValue;
+
+  var modelsMap = this.project_.modelsMap();
+  var metaModel = this.project_.metaModel();
+  var modelsChange = false;
+  for (var modelId in modelsMap) {
+    var model = modelsMap[modelId];
+    if (metaModel[metaModelKey].kind.survivesFilter(
+        filterValue, model.unwrap()[metaModelKey])) {
+      // matches filter. Doesn't have to be hidden
+      modelsChange = model.resetFilter(metaModelKey) || modelsChange;
+    } else {
+      // does not match filter. Must be hidden
+      modelsChange = model.filter(metaModelKey) || modelsChange;
+    }
+  }
+  return modelsChange;
+};
+
+/**
+ * Removes any filtering on the given metaModel key from all models.
+ * @param {string} metaModelKey The metaModel key to affect.
+ * @return {boolean} Whether the filter existed on at least one of the models
+ * @private
+ */
+rhizo.meta.FilterManager.prototype.resetFilterForMetaModelKey_ = function(
+    metaModelKey) {
+  delete this.filters_[metaModelKey];
+  return this.removeFilterFromModels(metaModelKey);
 };
 
 /**
@@ -307,15 +335,14 @@ rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
 rhizo.meta.FilterManager.prototype.mustLayoutAfterFilter_ = function() {
   if (this.filterAutocommit_) {
     return true;
-  } else {
-    var modelsMap = this.project_.modelsMap();
-    for (var modelId in modelsMap) {
-      var model = modelsMap[modelId];
-      if (!model.isFiltered() &&
-          model.rendering().visibility == rhizo.ui.Visibility.HIDDEN) {
-        return true;
-      }
-    }
-    return false;
   }
+  var modelsMap = this.project_.modelsMap();
+  for (var modelId in modelsMap) {
+    var model = modelsMap[modelId];
+    if (!model.isFiltered() &&
+        model.rendering().visibility == rhizo.ui.Visibility.HIDDEN) {
+      return true;
+    }
+  }
+  return false;
 };

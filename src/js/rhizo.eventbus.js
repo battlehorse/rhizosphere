@@ -19,6 +19,7 @@
  * @fileOverview Defines a simple EventBus to support a publish/subscribe
  * message dispatching mechanism within the Rhizosphere framework (and between
  * the Rhizosphere framework and the outside world).
+ * @author Riccardo Govoni (battlehorse@google.com)
  */
 
 // RHIZODEP=rhizo

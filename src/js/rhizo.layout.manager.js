@@ -17,6 +17,7 @@
 
 /**
  * @fileOverview Classes that oversee Rhizosphere layout management.
+ * @author Riccardo Govoni (battlehorse@google.com)
  */
 
 //RHIZODEP=rhizo

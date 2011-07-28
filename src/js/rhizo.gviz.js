@@ -607,15 +607,7 @@ rhizo.gviz.Initializer.prototype.buildMetaModelEntry_ = function(
   } else {
     var type = this.dt_.getColumnType(startColumnNum);
     if (type == 'number') {
-      var min = this.dt_.getColumnRange(startColumnNum).min;
-      var max = this.dt_.getColumnRange(startColumnNum).max;
-      if (min == max) {
-        metamodelEntry['kind'] = rhizo.meta.Kind.NUMBER;
-      } else {
-        metamodelEntry['kind'] = rhizo.meta.Kind.RANGE;
-        metamodelEntry['min'] = min;
-        metamodelEntry['max'] = max;
-      }
+      this.buildMetaModelNumericEntry_(metamodelEntry, startColumnNum);
     } else if (type == 'boolean') {
       metamodelEntry['kind'] = rhizo.meta.Kind.BOOLEAN;
     } else {
@@ -625,14 +617,7 @@ rhizo.gviz.Initializer.prototype.buildMetaModelEntry_ = function(
             "Column " + metamodelEntry['label'] +
             " will be treated as String. Unsupported type: " + type);
       }
-
-      var categoryColumn = this.getCategoryColumnData_(startColumnNum);
-      if (categoryColumn) {
-        this.buildMetaModelCategoryEntry_(
-            metamodelEntry, startColumnNum, null, categoryColumn);
-      } else {
-        metamodelEntry['kind'] = rhizo.meta.Kind.STRING;
-      }
+      this.buildMetaModelStringEntry_(metamodelEntry, startColumnNum);
     }
   }
 
@@ -640,6 +625,46 @@ rhizo.gviz.Initializer.prototype.buildMetaModelEntry_ = function(
   this.buildAutoRenderInfo_(metamodelKey, metamodelEntry);
 
   return metamodelEntry;
+};
+
+/**
+ * Builds a single metamodel entry of rhizo.meta.Kind.STRING kind, unless
+ * specific column marking requires it to be treated as a category set.
+ *
+ * @param {Object.<string, *>} metamodelEntry The metamodel entry to fill.
+ * @param {number} columnNum The column to be converted into a metamodel entry.
+ * @private
+ */
+rhizo.gviz.Initializer.prototype.buildMetaModelStringEntry_ = function(
+    metamodelEntry, columnNum) {
+  var categoryColumn = this.getCategoryColumnData_(columnNum);
+  if (categoryColumn) {
+    this.buildMetaModelCategoryEntry_(
+        metamodelEntry, columnNum, null, categoryColumn);
+  } else {
+    metamodelEntry['kind'] = rhizo.meta.Kind.STRING;
+  }
+};
+
+/**
+ * Builds a single metamodel entry of rhizo.meta.Kind.NUMBER or
+ * rhizo.meta.Kind.RANGE kind.
+ *
+ * @param {Object.<string, *>} metamodelEntry The metamodel entry to fill.
+ * @param {number} columnNum The column to be converted into a metamodel entry.
+ * @private
+ */
+rhizo.gviz.Initializer.prototype.buildMetaModelNumericEntry_ = function(
+    metamodelEntry, columnNum) {
+  var min = this.dt_.getColumnRange(columnNum).min;
+  var max = this.dt_.getColumnRange(columnNum).max;
+  if (min == max) {
+    metamodelEntry['kind'] = rhizo.meta.Kind.NUMBER;
+  } else {
+    metamodelEntry['kind'] = rhizo.meta.Kind.RANGE;
+    metamodelEntry['min'] = min;
+    metamodelEntry['max'] = max;
+  }
 };
 
 /**

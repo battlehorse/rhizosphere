@@ -19,6 +19,7 @@
  * @fileOverview User interfaces for Rhizosphere layout engines and related
  * shared classes. Layout engines' UIs are used to collect user input to
  * configure each layout engine behavior.
+ * @author battlehorse@google.com (Riccardo Govoni)
  *
  * To define a layout engine user interface:
  * - define a new Javascript class.

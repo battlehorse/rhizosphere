@@ -17,7 +17,8 @@
 
 /**
  * @fileOverview User interfaces for Rhizosphere additional metamodel Kinds
- * defined in rhizo.meta.extra.js
+ * defined in rhizo.meta.extra.js.
+ * @author Riccardo Govoni (battlehorse@google.com)
  */
 
 // RHIZODEP=rhizo,rhizo.meta.extra,rhizo.ui.meta
