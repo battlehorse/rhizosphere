@@ -288,9 +288,10 @@ rhizo.layout.LayoutManager.prototype.onBeforeEngineLayout_ = function(
 };
 
 /**
- * Callback invoked when a layout requested is published on the 'layout'
+ * Callback invoked when a layout request is published on the 'layout'
  * channel.
  * @param {!Object} message The published message.
+ * @private
  */
 rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   var lastEngine = this.engines_[this.curEngineName_];

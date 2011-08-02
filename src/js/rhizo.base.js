@@ -31,8 +31,6 @@ namespace("rhizo");
  */
 rhizo.Project = function(gui, opt_options) {
   this.metaModelRegistry_ = rhizo.meta.defaultRegistry;
-  this.models_ = [];
-  this.modelsMap_ = {};
   this.options_ = opt_options || {};
   this.gui_ = gui;
 
@@ -59,11 +57,23 @@ rhizo.Project = function(gui, opt_options) {
   this.eventBus_ = new rhizo.eventbus.EventBus();
 
   /**
+   * @type {rhizo.model.ModelManager}
+   * @private
+   */
+  this.modelManager_ = null;
+
+  /**
    * @type {!rhizo.selection.SelectionManager}
    * @private
    */
   this.selectionManager_ = new rhizo.selection.SelectionManager(
       this, this.options_);
+
+  /**
+   * @type {rhizo.layout.LayoutManager}
+   * @private
+   */
+  this.layoutManager_ = null;
 
   /**
    * @type {!rhizo.meta.FilterManager}
@@ -78,6 +88,10 @@ rhizo.Project = function(gui, opt_options) {
   this.userAgent_ = new rhizo.UserAgent(this);
 };
 
+/**
+ * Triggers phase 1/3 of Rhizosphere initialization sequence, where the
+ * visualization chrome is initially created and set up.
+ */
 rhizo.Project.prototype.chromeReady = function() {
   // All the static UI components are in place. This might include the
   // logging console.
@@ -86,44 +100,84 @@ rhizo.Project.prototype.chromeReady = function() {
   }
 };
 
+/**
+ * Triggers phase 2/3 of Rhizosphere initialization sequence, which updates the
+ * visualization to match the provided metaModel and renderer.
+ */
 rhizo.Project.prototype.metaReady = function() {
   if (!this.checkMetaModel_()) {
     return false;
   }
+
+  // Delay instantiation of those managers that depend on the rendering
+  // infrastructure to be present to work properly.
+  this.modelManager_ = new rhizo.model.ModelManager(this, this.options_);
   this.layoutManager_ = new rhizo.layout.LayoutManager(this, this.options_);
   this.layoutManager_.initEngines(rhizo.layout.layouts);
   return true;
 };
 
-rhizo.Project.prototype.deploy = function(opt_models) {
-  if (opt_models && this.addModels_(opt_models)) {
-    this.finalizeUI_();
-  }
-  this.logger_.info("*** Ready!");
-};
-
-rhizo.Project.prototype.addModels_ = function(models) {
-  // wrap each model into a SuperModel
-  for (var i = 0; i < models.length; i++) {
-    this.models_[i] = new rhizo.model.SuperModel(models[i]);
-  }
-
-  // model sanity checking.
-  if (!this.checkModels_()) {
-    return false;
+/**
+ * Verify the metaModel formal correctness, by checking that every metaModel
+ * entry has a separate kind instance. MetaModels are stateful, so kinds cannot
+ * be shared.
+ * @private
+ */
+rhizo.Project.prototype.checkMetaModel_ = function() {
+  var allKinds = [];
+  for (var key in this.metaModel_) {
+    if (!this.metaModel_[key].kind) {
+      this.logger_.error('Verify your metamodel: missing kind for ' + key);
+      return false;
+    }
+    allKinds.push(this.metaModel_[key].kind);
   }
 
-  this.buildModelsMap_();
+  // Ensure that there are no shared meta instances in the metaModel.
+  for (var i = 0; i < allKinds.length; i++) {
+    for (var j = i+1; j < allKinds.length; j++) {
+      if (allKinds[i] === allKinds[j]) {
+        this.logger_.error('Verify your metaModel: shared kind instances.');
+        return false;
+      }
+    }
+  }
   return true;
 };
 
-rhizo.Project.prototype.finalizeUI_ = function() {
-  var renderingBootstrap = new rhizo.ui.RenderingBootstrap(this.renderer_,
-                                                           this.gui_,
-                                                           this,
-                                                           this.options_);
-  if (!renderingBootstrap.buildRenderings(this.models_)) {
-    // Something went wrong while creating the renderings.
+/**
+ * Triggers phase 3/3 of Rhizosphere visualization initialization sequence,
+ * where the actual visualization models are deployed and made visible.
+ *
+ * @param {Array=} opt_models An optional set of models to visualize at project
+ *     startup. Models can be later added or removed using the dedicated
+ *     methods on rhizo.UserAgent.
+ */
+rhizo.Project.prototype.deploy = function(opt_models) {
+  if (opt_models) {
+    this.eventBus_.publish('model', {
+        'action': 'add',
+        'models': opt_models,
+        'delayLayout': true
+    }, this.modelsDeployed_, this);
+  } else {
+    this.modelsDeployed_(true);
+  }
+};
+
+/**
+ * Callback invoked after the first models deployment during visualization
+ * initialization.
+ *
+ * @param {boolean} success Whether the initial set of models was successfully
+ *     deployed.
+ * @param {string=} opt_details In case of failure, a descriptive message
+ *     detailing the deployment failure.
+ * @private
+ */
+rhizo.Project.prototype.modelsDeployed_ = function(success, opt_details) {
+  if (!success) {
+    this.logger_.error('Deploy failed: ' + opt_details);
     return;
   }
 
@@ -152,8 +206,9 @@ rhizo.Project.prototype.finalizeUI_ = function() {
  */
 rhizo.Project.prototype.destroy = function() {
   rhizo.state.getMasterOverlord().detachProject(this);
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    var rendering = this.models_[i].rendering();
+  var modelsMap = this.modelManager_.modelsMap();
+  for (var modelId in modelsMap) {
+    var rendering = modelsMap[modelId].rendering();
     if (rendering) {
       // Give renderings a chance to cleanup.
       rendering.beforeDestroy();
@@ -171,8 +226,13 @@ rhizo.Project.prototype.uuid = function() {
   return this.gui_.container.attr('id');
 };
 
+/**
+ * Returns the model object matching the given model id.
+ * @param {*} id The unique id of the model to retrieve.
+ * @return {rhizo.model.SuperModel} The matching model object.
+ */
 rhizo.Project.prototype.model = function(id) {
-  return this.modelsMap_[id];
+  return this.modelManager_.modelsMap()[id];
 };
 
 /**
@@ -182,7 +242,7 @@ rhizo.Project.prototype.model = function(id) {
  *     are part of this project.
  */
 rhizo.Project.prototype.modelsMap = function() {
-  return this.modelsMap_;
+  return this.modelManager_.modelsMap();
 };
 
 rhizo.Project.prototype.metaModel = function() {
@@ -250,6 +310,15 @@ rhizo.Project.prototype.eventBus = function() {
 };
 
 /**
+ * Returns the project model manager.
+ *
+ * @return {!rhizo.model.ModelManager} The project model manager.
+ */
+rhizo.Project.prototype.modelManager = function() {
+  return this.modelManager_;
+};
+
+/**
  * Returns the project layout manager.
  *
  * @return {!rhizo.layout.LayoutManager} The project layout manager.
@@ -287,77 +356,6 @@ rhizo.Project.prototype.userAgent = function() {
 };
 
 /**
- * Verify the models formal correctness, by checking that all the models have
- * an assigned id and no duplicate ids exist.
- * @private
- */
-rhizo.Project.prototype.checkModels_ = function() {
-  this.logger_.info("Checking models...");
-  var uniqueIds = {};
-  var missingIds = false;
-  var duplicateIds = [];
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    var id = this.models_[i].id;
-    if (!id) {
-      missingIds = true;
-    } else {
-      if (id in uniqueIds) {
-        duplicateIds.push(id);
-      } else {
-        uniqueIds[id] = true;
-      }
-    }
-  }
-
-  if (missingIds) {
-    this.logger_.error('Verify your models: missing ids.');
-  }
-  if (duplicateIds.length > 0) {
-    this.logger_.error('Verify your models: duplicate ids (' +
-                       duplicateIds.join(',') +
-                       ')');
-  }
-
-  return !missingIds && duplicateIds.length == 0;
-};
-
-/**
- * Verify the metaModel formal correctness, by checking that every metaModel
- * entry has a separate kind instance. MetaModels are stateful, so kinds cannot
- * be shared.
- * @private
- */
-rhizo.Project.prototype.checkMetaModel_ = function() {
-  var allKinds = [];
-  for (var key in this.metaModel_) {
-    if (!this.metaModel_[key].kind) {
-      this.logger_.error('Verify your metamodel: missing kind for ' + key);
-      return false;
-    }
-    allKinds.push(this.metaModel_[key].kind);
-  }
-
-  // Ensure that there are no shared meta instances in the metaModel.
-  for (var i = 0; i < allKinds.length; i++) {
-    for (var j = i+1; j < allKinds.length; j++) {
-      if (allKinds[i] === allKinds[j]) {
-        this.logger_.error('Verify your metaModel: shared kind instances.');
-        return false;
-      }
-    }
-  }
-  return true;
-};
-
-rhizo.Project.prototype.buildModelsMap_ = function() {
-  this.logger_.info("Building models map...");
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    var model = this.models_[i];
-    this.modelsMap_[model.id] = model;
-  }
-};
-
-/**
  * Enables or disables project-wide animations.
  *
  * The decision is based on the number of models the browser has to manipulate
@@ -371,11 +369,13 @@ rhizo.Project.prototype.buildModelsMap_ = function() {
 rhizo.Project.prototype.alignFx = function() {
   var numUnfilteredModels = 0;
   var numVisibleModels = 0;
-  for (var i = this.models_.length-1; i >= 0; i--) {
-    if (!this.models_[i].isFiltered()) {
+  var modelsMap = this.modelManager_.modelsMap();
+  for (var modelId in modelsMap) {
+    var model = modelsMap[modelId];
+    if (!model.isFiltered()) {
       numUnfilteredModels++;
     }
-    if (this.models_[i].rendering().visibility >= rhizo.ui.Visibility.GREY) {
+    if (model.rendering().visibility >= rhizo.ui.Visibility.GREY) {
       numVisibleModels++;
     }
   }
@@ -525,6 +525,38 @@ rhizo.UserAgent.prototype.addLayoutListener = function(
 rhizo.UserAgent.prototype.removeLayoutListener = function(
     opt_listener, opt_listenerCallback) {
   this.unsubscribe_('layout', opt_listener, opt_listenerCallback);
+};
+
+/**
+ * Adds a listener that will be notified whenever a model event occurs on the
+ * visualization.
+ *
+ * @param {!function(Object)} listenerCallback The callback to invoke when
+ *     models are added or removed from the visualization. The callback is
+ *     passed a 'message' describing the event, in the format outlined by
+ *     rhizo.model.ModelManager.
+ * @param {!Object} listener The object in whose scope ('this') the callback
+ *     will be invoked.
+ */
+rhizo.UserAgent.prototype.addModelListener = function(
+    listenerCallback, listener) {
+  this.subscribe_('model', listenerCallback, listener);
+};
+
+/**
+ * Removes one or more listeners registered for model events.
+ * If both parameters are specified, only the specific callback is removed. If
+ * only opt_listener is specified, all the callbacks associated to that listener
+ * are removed. If neither parameter is specified, all the callbacks associated
+ * to model events are removed.
+ *
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.removeModelListener = function(
+    opt_listener, opt_listenerCallback) {
+  this.unsubscribe_('model', opt_listener, opt_listenerCallback);
 };
 
 /**
@@ -688,5 +720,39 @@ rhizo.UserAgent.prototype.doLayout = function(
     message['positions'] = opt_positions;
   }
   this.project_.eventBus().publish('layout', message, opt_callback, this);
+};
+
+/**
+ * Adds one or more models to the visualization.
+ *
+ * @param {Array|Object} models one or more models to add to the visualization.
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the model addition request has been dispatched. Receives
+ *     two parameters: a boolean describing whether the operation was rejected
+ *     and an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.addModels = function(models, opt_callback) {
+  this.project_.eventBus().publish('model', {
+      'action': 'add',
+      'models': models
+  }, opt_callback, this);
+};
+
+/**
+ * Removes one or more models to the visualization.
+ *
+ * @param {Array|Object} models one or more models to remove from the
+ *     visualization. The method accepts a list of model objects or a list of
+ *     model ids.
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the model removal request has been dispatched. Receives
+ *     two parameters: a boolean describing whether the operation was rejected
+ *     and an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.removeModels = function(models, opt_callback) {
+  this.project_.eventBus().publish('model', {
+      'action': 'remove',
+      'models': models
+  }, opt_callback, this);
 };
 

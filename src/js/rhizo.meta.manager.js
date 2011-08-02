@@ -192,6 +192,23 @@ rhizo.meta.FilterManager.prototype.removeFilterFromModels = function(
 };
 
 /**
+ * Updates the set of filters defined on a single model to match all the filters
+ * currently in operation on the visualization.
+ *
+ * @param {!rhizo.model.SuperModel} model The model to update.
+ * @return {boolean} Whether the model filtering status changed because of this
+ *     operation or not.
+ */
+rhizo.meta.FilterManager.prototype.applyAllFiltersToModel = function(model) {
+  var modelChanged = false;
+  for (var metaModelKey in this.filters_) {
+    modelChanged = this.filterModelOnKey_(
+        metaModelKey, this.filters_[metaModelKey], model) || modelChanged;
+  }
+  return modelChanged;
+};
+
+/**
  * Refreshes models' visibility based on their filtering status.
  *
  * @param {rhizo.ui.Visibility?} opt_filtered_visibility An optional visibility
@@ -261,12 +278,12 @@ rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
     if (filterValue !== null && filterValue !== undefined) {
       // valid filter
       modelsChange = 
-          this.filterSingleMetaModelKey_(metaModelKey, filterValue) ||
+          this.filterAllModelsOnKey_(metaModelKey, filterValue) ||
           modelsChange;
     } else {
       // reset filter
       modelsChange =
-          this.resetFilterForMetaModelKey_(metaModelKey) || modelsChange;
+          this.resetAllModelsOnKey_(metaModelKey) || modelsChange;
     }
   }
 
@@ -288,25 +305,39 @@ rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
  *     the new filter being applied.
  * @private
  */
-rhizo.meta.FilterManager.prototype.filterSingleMetaModelKey_ = function(
+rhizo.meta.FilterManager.prototype.filterAllModelsOnKey_ = function(
     metaModelKey, filterValue) {
   this.filters_[metaModelKey] = filterValue;
 
   var modelsMap = this.project_.modelsMap();
-  var metaModel = this.project_.metaModel();
   var modelsChange = false;
   for (var modelId in modelsMap) {
-    var model = modelsMap[modelId];
-    if (metaModel[metaModelKey].kind.survivesFilter(
-        filterValue, model.unwrap()[metaModelKey])) {
-      // matches filter. Doesn't have to be hidden
-      modelsChange = model.resetFilter(metaModelKey) || modelsChange;
-    } else {
-      // does not match filter. Must be hidden
-      modelsChange = model.filter(metaModelKey) || modelsChange;
-    }
+    modelsChange =
+        this.filterModelOnKey_(
+            metaModelKey, filterValue, modelsMap[modelId]) || modelsChange;
   }
   return modelsChange;
+};
+
+/**
+ * Filters a single model for the specified value on a single metaModel key.
+ * @param {string} metaModelKey The metaModel key to affect.
+ * @param {*} filterValue The value to filter against.
+ * @param {!rhizo.model.SuperModel} model The model to filter.
+ * @return {boolean} Whether the model changed its filtered status because of
+ *     the new filter being applied.
+ * @private
+ */
+rhizo.meta.FilterManager.prototype.filterModelOnKey_ = function(
+    metaModelKey, filterValue, model) {
+  if (this.project_.metaModel()[metaModelKey].kind.survivesFilter(
+      filterValue, model.unwrap()[metaModelKey])) {
+    // matches filter. Doesn't have to be hidden
+    return model.resetFilter(metaModelKey);
+  } else {
+    // does not match filter. Must be hidden
+    return model.filter(metaModelKey);
+  }
 };
 
 /**
@@ -315,7 +346,7 @@ rhizo.meta.FilterManager.prototype.filterSingleMetaModelKey_ = function(
  * @return {boolean} Whether the filter existed on at least one of the models
  * @private
  */
-rhizo.meta.FilterManager.prototype.resetFilterForMetaModelKey_ = function(
+rhizo.meta.FilterManager.prototype.resetAllModelsOnKey_ = function(
     metaModelKey) {
   delete this.filters_[metaModelKey];
   return this.removeFilterFromModels(metaModelKey);
@@ -338,9 +369,7 @@ rhizo.meta.FilterManager.prototype.mustLayoutAfterFilter_ = function() {
   }
   var modelsMap = this.project_.modelsMap();
   for (var modelId in modelsMap) {
-    var model = modelsMap[modelId];
-    if (!model.isFiltered() &&
-        model.rendering().visibility == rhizo.ui.Visibility.HIDDEN) {
+    if (modelsMap[modelId].isDirtyVisibility()) {
       return true;
     }
   }

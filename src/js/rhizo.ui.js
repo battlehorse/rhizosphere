@@ -758,7 +758,8 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
   this.mark_ = null;
 
   // whether the rendering is visible or not. Multiple states might exist,
-  // as defined in the rhizo.ui.Visibility enum.
+  // as defined in the rhizo.ui.Visibility enum. Renderings are initially
+  // hidden, as defined in the rhizo.less stylesheet.
   this.visibility = rhizo.ui.Visibility.HIDDEN;
 
   /**
@@ -860,6 +861,15 @@ rhizo.ui.Rendering.prototype.reRender_ = function() {
  */
 rhizo.ui.Rendering.prototype.beforeDestroy = function() {
   this.notifyAttach_(false);
+};
+
+/**
+ * Destroys all the DOM nodes attached to this rendering.
+ */
+rhizo.ui.Rendering.prototype.destroy = function() {
+  this.beforeDestroy();
+  this.raw_node_.remove();
+  this.raw_node_ = null;
 };
 
 /**
@@ -1393,20 +1403,24 @@ rhizo.ui.RenderingBootstrap = function(renderer, gui, project, options) {
   this.project_ = project;
   this.logger_ = project.logger();
   this.options_ = options;
-
-  this.renderings_ = [];
 };
 
 /**
  * Converts a list of models into their HTML rendering counterparts.
  *
- * @param {Array.<rhizo.model.SuperModel>} models
+ * @param {!Array.<!rhizo.model.SuperModel>} models The models to generate
+ *     renderings for. They must not have a rendering already.
  * @return {boolean} Whether the renderings were created successfully or not.
  */
 rhizo.ui.RenderingBootstrap.prototype.buildRenderings = function(models) {
   var rawRenderings = [];
   var hasCustomDragHandle = this.getDragHandleSelector_() != null;
   for (var i = 0;  i < models.length; i++) {
+    if (!!models[i].rendering()) {
+      this.logger_.error("Rendering requested for a model that has already " +
+                         "been rendered. Model id: " + model.id);
+      return false;
+    }
     this.rawrender_(models[i], rawRenderings, hasCustomDragHandle);
   }
   if (rawRenderings.length == 0) {
@@ -1414,40 +1428,48 @@ rhizo.ui.RenderingBootstrap.prototype.buildRenderings = function(models) {
     return false;
   }
 
-  var numModels = models.length;
+  var numRenderedModels = this.numRenderedModels_();
   if (typeof rawRenderings[0] == 'string') {
     // The project renderer returns raw strings.
     //
     // We concatenate everything together and add it to the DOM in a single
     // pass. We then identify back all the single renderings and bind them
     // to the model they belong to.
-    this.buildFromStrings_(models, rawRenderings);
+    this.buildFromStrings_(models, rawRenderings, numRenderedModels);
   } else {
     // The project renderer returns jQuery objects.
     //
     // We append them to the DOM one at a time and assign them to their model.
     this.buildFromShells_(models, rawRenderings);
   }
-  rawRenderings = this.gui_.universe.find('.rhizo-model');
+  rawRenderings = 
+      this.gui_.universe.find('.rhizo-model').slice(numRenderedModels);
 
   // Sanity checks
-  if (!this.sanityCheck_(rawRenderings, models.length)) {
+  if (!this.sanityCheck_(rawRenderings, models)) {
     return false;
   }
 
   // Attach events and additional functionality to each rendering. This may be
   // done on the rawRenderings directly for performance reasons.
-  this.decorateRenderings_(rawRenderings);
+  this.decorateRenderings_(rawRenderings, models);
   return true;
 };
 
 /**
- * @return {Array.<rhizo.ui.Rendering>} The list of renderings managed by the
- *     visualization. They are ordered to match the ordering of the models
- *     the renderings were created from.
+ * Returns the number of models in the current project that already have a
+ * rendering attached.
+ *
+ * @return {number} The number of models that already have a rendering.
+ * @private
  */
-rhizo.ui.RenderingBootstrap.prototype.renderings = function() {
-  return this.renderings_;
+rhizo.ui.RenderingBootstrap.prototype.numRenderedModels_ = function() {
+  var numRenderedModels = 0;
+  for (var modelId in this.project_.modelsMap()) {
+    numRenderedModels += (
+        this.project_.model(modelId).rendering() == null ? 0 : 1);
+  }
+  return numRenderedModels;
 };
 
 /**
@@ -1455,7 +1477,7 @@ rhizo.ui.RenderingBootstrap.prototype.renderings = function() {
  * renderings, either as a serie of HTML strings or as a jQuery object
  * (depending on what the naked renderer provides).
  *
- * @param {rhizo.model.SuperModel} model
+ * @param {!rhizo.model.SuperModel} model
  * @param {Array.<*>} rawRenderings
  * @param {boolean} hasCustomDragHandle Whether the renderings will have
  *     a custom drag handler, or otherwise the entire rendering is draggable.
@@ -1486,31 +1508,38 @@ rhizo.ui.RenderingBootstrap.prototype.rawrender_ = function(
  * Converts HTML strings of raw renderings into rhizo.ui.Rendering objects.
  * Attaches the rendering to the visualization.
  *
- * @param {Array.<rhizo.model.SuperModel>} models
- * @param {Array.<string>} rawRenderings
+ * @param {!Array.<!rhizo.model.SuperModel>} models The models to generate
+ *     renderings for.
+ * @param {!Array.<string>} rawRenderings The generated renderings (as an
+ *     array of raw HTML strings).
+ * @param {number} numRenderedModels The number of models that already have
+ *     a rendering attached.
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.buildFromStrings_ = function(
-    models, rawRenderings) {
+    models, rawRenderings, numRenderedModels) {
   this.gui_.universe.append(rawRenderings.join(''));
-  this.gui_.universe.find('.rhizo-model').each(jQuery.proxy(
-      function(renderingIdx, rawRendering) {
-        var model = models[renderingIdx];
-        var rendering = new rhizo.ui.Rendering(model,
-                                               $(rawRendering),
-                                               this.renderer_,
-                                               this.gui_.allRenderingHints());
-        model.setRendering(rendering);
-        this.renderings_.push(rendering);
-      }, this));
+  this.gui_.universe.
+      find('.rhizo-model').
+      slice(numRenderedModels).
+      each(jQuery.proxy(
+        function(renderingIdx, rawRendering) {
+          var model = models[renderingIdx];
+          var rendering = new rhizo.ui.Rendering(
+              model, $(rawRendering), this.renderer_,
+              this.gui_.allRenderingHints());
+          model.setRendering(rendering);
+        }, this));
 };
 
 /**
  * Converts jQuery objects representing a raw rendering into rhizo.ui.Rendering
  * objects.
  *
- * @param {Array.<rhizo.model.SuperModel>} models
- * @param {Array.<*>} rawRenderings
+ * @param {!Array.<!rhizo.model.SuperModel>} models The models to generate
+ *     renderings for.
+ * @param {!Array.<*>} rawRenderings The generated renderings (as an
+ *     array of jQuery objects).
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.buildFromShells_ = function(
@@ -1522,27 +1551,33 @@ rhizo.ui.RenderingBootstrap.prototype.buildFromShells_ = function(
                                            this.renderer_,
                                            this.gui_.allRenderingHints());
     models[i].setRendering(rendering);
-    this.renderings_.push(rendering);
   }
 };
 
 /**
- * Verifies that the number of models, raw renderings and renderings is the
- * same, to ensure the rendering creation has been successful.
+ * Verifies that the number of models that were passed to the bootstrapper is
+ * the same as the number of renderings that were created (both in term of
+ * rhizo.ui.Rendering objects and raw HTML nodes). This ensures that rendering
+ * creation has been successful.
  *
- * @param {Array.<HTMLElement>} rawRenderings
- * @param {number} numModels
+ * @param {!Array.<!HTMLElement>} rawRenderings
+ * @param {!Array.<!rhizo.model.SuperModel>} models
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.sanityCheck_ = function(rawRenderings,
-                                                              numModels) {
-  if (rawRenderings.length != numModels ||
-      this.renderings_.length != numModels) {
-    this.logger_.error('The number of renderings and models differ: ' +
+                                                              models) {
+  if (rawRenderings.length != models.length) {
+    this.logger_.error('The number of new renderings and models differ: ' +
                        rawRenderings.length + '  (raw), ' +
-                       this.renderings_.length + ' (renderings), ' +
                        numModels + ' (models).');
     return false;
+  }
+  for (var i = models.length-1; i >= 0; i--) {
+    if (!models[i].rendering()) {
+      this.logger_.error('At least one model (id=' + models[i].id + ') ' +
+                         'has no rendering attached.');
+      return false;
+    }
   }
   return true;
 };
@@ -1563,16 +1598,26 @@ rhizo.ui.RenderingBootstrap.prototype.getDragHandleSelector_ = function() {
   }
 };
 
+/**
+ * Attach events and additional functionality to each newly generated
+ * rendering.
+ *
+ * @param {!Object} rawRenderings The newly generated renderings, as a jQuery
+ *     collection.
+ * @param {!Array.<!rhizo.model.SuperModel>} models The models the renderings
+ *     were generated for.
+ * @private
+ */
 rhizo.ui.RenderingBootstrap.prototype.decorateRenderings_ = function(
-    rawRenderings) {
+    rawRenderings, models) {
   // Can renderings cache their dimensions?
   if (this.canCacheDimensions_()) {
-    this.startDimensionCaching_();
+    this.startDimensionCaching_(models);
   }
 
   // Do renderings support an expanded state?
   if (this.expandable_()) {
-    this.startExpandable_(rawRenderings);
+    this.startExpandable_(rawRenderings, models);
   }
 
   // Listen for click events on renderings.
@@ -1596,11 +1641,14 @@ rhizo.ui.RenderingBootstrap.prototype.canCacheDimensions_ = function() {
 };
 
 /**
+ * @param {!Array.<!rhizo.model.SuperModel>} models The models renderings were
+ *     generated for.
  * @private
  */
-rhizo.ui.RenderingBootstrap.prototype.startDimensionCaching_ = function() {
-  for (var i = this.renderings_.length-1; i >= 0; i--) {
-    this.renderings_[i].startDimensionCaching();
+rhizo.ui.RenderingBootstrap.prototype.startDimensionCaching_ = function(
+    models) {
+  for (var i = models.length-1; i >= 0; i--) {
+    models[i].rendering().startDimensionCaching();
   }
 };
 
@@ -1620,16 +1668,20 @@ rhizo.ui.RenderingBootstrap.prototype.expandable_ = function() {
 };
 
 /**
+ * @param {!Object} rawRenderings The newly generated renderings, as a jQuery
+ *     collection.
+ * @param {!Array.<!rhizo.model.SuperModel>} models The models renderings were
+ *     generated for.
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.startExpandable_ = function(
-    rawRenderings) {
+    rawRenderings, models) {
   var expander = $('<div />',
                    {'class': 'rhizo-expand-model ' +
                        'rhizo-icon rhizo-maximize-icon',
                     title: 'Maximize'});
-  for (var i = this.renderings_.length-1; i >= 0; i--) {
-    this.renderings_[i].startExpandable(expander.clone());
+  for (var i = models.length-1; i >= 0; i--) {
+    models[i].rendering().startExpandable(expander.clone());
   }
 
   // register the hover effect to show/hide the expand icon
@@ -1651,6 +1703,9 @@ rhizo.ui.RenderingBootstrap.prototype.startExpandable_ = function(
 
 /**
  * Start tracking click events on renderings.
+ *
+ * @param {!Object} rawRenderings The newly generated renderings, as a jQuery
+ *     collection.
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
@@ -1683,6 +1738,9 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
 
 /**
  * Enable support for dragging renderings.
+ *
+ * @param {!Object} rawRenderings The newly generated renderings, as a jQuery
+ *     collection.
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.startDraggable_ = function(

@@ -149,7 +149,9 @@ rhizo.bootstrap.Bootstrap.prototype.deployWithLoader = function(loader) {
  * managed by this bootstrapper. The boostrapper must have already been
  * prepared before invoking this method.
  *
- * @param {Array.<*>} models The list of data items to visualize.
+ * @param {Array.<*>} opt_models The optional list of data items to visualize
+ *     at visualization startup. Models can be later added or removed using
+ *     the provided methods on rhizo.UserAgent.
  * @param {*} opt_metamodel A descriptor for the attributes and properties that
  *     each model in the visualization has. Can be omitted if the metamodel has
  *     been specified via configuration options.
@@ -157,7 +159,7 @@ rhizo.bootstrap.Bootstrap.prototype.deployWithLoader = function(loader) {
  *     of model instances. Can be omitted if the renderer has been specified via
  *     configuration options.
  */
-rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(models,
+rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(opt_models,
                                                               opt_metamodel,
                                                               opt_renderer) {
   var metamodel = this.options_.metamodel || opt_metamodel;
@@ -175,7 +177,7 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(models,
 
   if (this.project_.metaReady()) {
     this.template_.metaReady();
-    this.project_.deploy(models);
+    this.project_.deploy(opt_models);
     this.template_.ready();
   }
   this.gui_.done();

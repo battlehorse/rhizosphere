@@ -63,6 +63,7 @@
     <script src="{{ hostname }}/static/src/js/rhizo.layout.treemap.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.model.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.model.loader.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/src/js/rhizo.model.manager.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.autorender.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.gviz.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.ui.js" type="text/javascript" charset="utf-8"></script>

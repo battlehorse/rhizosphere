@@ -56,6 +56,31 @@ rhizo.model.SuperModel.prototype.unwrap = function() {
 };
 
 /**
+ * Destroys any expensive resources attached to this model, making it ready
+ * for disposal and removal from the visualization.
+ */
+rhizo.model.SuperModel.prototype.destroy = function() {
+  if (this.rendering_) {
+    this.rendering_.destroy();
+    this.rendering_ = null;
+  }
+};
+
+/**
+ * Returns whether the visibility and filtering status of this model are out
+ * of sync (for example, the model is not filtered but still is not visible
+ * in the visualization).
+ *
+ * @return {boolean} Whether the visibility and filtering status of this model
+ *     are out of sync.
+ */
+rhizo.model.SuperModel.prototype.isDirtyVisibility = function() {
+  return !this.isFiltered() && (
+      this.rendering_ == null ||
+      this.rendering_.visibility == rhizo.ui.Visibility.HIDDEN);
+};
+
+/**
  * @return {boolean} Whether this model participates in layout operations.
  *     A model won't respond to layouts if it's filtered or pinned.
  */
