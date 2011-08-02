@@ -1465,9 +1465,9 @@ rhizo.ui.RenderingBootstrap.prototype.buildRenderings = function(models) {
  */
 rhizo.ui.RenderingBootstrap.prototype.numRenderedModels_ = function() {
   var numRenderedModels = 0;
-  for (var modelId in this.project_.modelsMap()) {
-    numRenderedModels += (
-        this.project_.model(modelId).rendering() == null ? 0 : 1);
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    numRenderedModels += models[i].rendering() == null ? 0 : 1;
   }
   return numRenderedModels;
 };

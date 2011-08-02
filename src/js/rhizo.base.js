@@ -206,9 +206,9 @@ rhizo.Project.prototype.modelsDeployed_ = function(success, opt_details) {
  */
 rhizo.Project.prototype.destroy = function() {
   rhizo.state.getMasterOverlord().detachProject(this);
-  var modelsMap = this.modelManager_.modelsMap();
-  for (var modelId in modelsMap) {
-    var rendering = modelsMap[modelId].rendering();
+  var models = this.modelManager_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    var rendering = models[i].rendering();
     if (rendering) {
       // Give renderings a chance to cleanup.
       rendering.beforeDestroy();
@@ -233,6 +233,17 @@ rhizo.Project.prototype.uuid = function() {
  */
 rhizo.Project.prototype.model = function(id) {
   return this.modelManager_.modelsMap()[id];
+};
+
+/**
+ * Returns the list of models that are part of this project. Preferable over
+ * modelsMap() for faster iterations.
+ *
+ * @return {!Array.<!rhizo.model.SuperModel>} The list of models that are part
+ *     of this project.
+ */
+rhizo.Project.prototype.models = function() {
+  return this.modelManager_.models();
 };
 
 /**
@@ -369,9 +380,9 @@ rhizo.Project.prototype.userAgent = function() {
 rhizo.Project.prototype.alignFx = function() {
   var numUnfilteredModels = 0;
   var numVisibleModels = 0;
-  var modelsMap = this.modelManager_.modelsMap();
-  for (var modelId in modelsMap) {
-    var model = modelsMap[modelId];
+  var models = this.modelManager_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    var model = models[i];
     if (!model.isFiltered()) {
       numUnfilteredModels++;
     }

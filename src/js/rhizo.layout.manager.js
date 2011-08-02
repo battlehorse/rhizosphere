@@ -320,11 +320,11 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   this.gui_.universe.move(0, 0, {'bottom': 0, 'right': 0});
 
   // Identify all the models that can be laid out.
-  var modelsMap = this.project_.modelsMap();
+  var models = this.project_.models();
   var freeModels = [];
-  for (var id in modelsMap) {
-    if (modelsMap[id].isAvailableForLayout()) {
-      freeModels.push(modelsMap[id]);
+  for (var i = models.length-1; i >= 0; i--) {
+    if (models[i].isAvailableForLayout()) {
+      freeModels.push(models[i]);
     }
   }
 
@@ -334,7 +334,7 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   dirty = engine.layout(this.renderingPipeline_,
                         boundingLayoutBox,
                         freeModels,
-                        modelsMap,
+                        this.project_.modelsMap(),
                         this.project_.metaModel(),
                         options) || dirty;
 

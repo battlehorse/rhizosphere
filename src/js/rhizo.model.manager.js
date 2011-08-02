@@ -84,11 +84,36 @@ rhizo.model.ModelManager = function(project, options) {
    */
   this.modelsMap_ = {};
 
+  /**
+   * The list of all models currently deployed on the visualization.
+   *
+   * @type {!Array.<!rhizo.model.SuperModel>}
+   * @private
+   */
+  this.models_ = [];
+
   this.project_.eventBus().addPreprocessor(
       'model', this.onBeforeModelChange_, this, /* first */ true);
   this.project_.eventBus().subscribe('model', this.onModelChange_, this);
 };
 
+/**
+ * Returns the list of models that are part of this project. Preferable over
+ * modelsMap() for faster iterations.
+ *
+ * @return {!Array.<!rhizo.model.SuperModel>} The list of models that are part
+ *     of this project.
+ */
+rhizo.model.ModelManager.prototype.models = function() {
+  return this.models_;
+};
+
+/**
+ * Returns the set of models that are part of this project, keyed by their
+ * unique id.
+ * @return {!Object.<string, rhizo.model.SuperModel>} The set of models that
+ *     are part of this project.
+ */
 rhizo.model.ModelManager.prototype.modelsMap = function() {
   return this.modelsMap_;
 };
@@ -241,6 +266,7 @@ rhizo.model.ModelManager.prototype.addModels_ = function(superModels) {
   var dirtyVisibility = false;
   for (var i = superModels.length-1; i >= 0; i--) {
     this.modelsMap_[superModels[i].id] = superModels[i];
+    this.models_.push(superModels[i]);
     dirtyVisibility = superModels[i].isDirtyVisibility() || dirtyVisibility;
   }
   return dirtyVisibility;
@@ -260,6 +286,14 @@ rhizo.model.ModelManager.prototype.removeModels_ = function(superModels) {
     superModels[i].destroy();
     dirtyVisibility = superModels[i].isDirtyVisibility() || dirtyVisibility;
     delete this.modelsMap_[superModels[i].id];
+  }
+
+  // Rebuilds the list of visualization models. Note that this turns any removal
+  // into an O(N) operation (which still has acceptable performances, on
+  // desktop, for Rhizosphere-sized datasets of XXK datapoints).
+  this.models_ = [];
+  for (var modelId in this.modelsMap_) {
+    this.models_.push(this.modelsMap_[modelId]);
   }
   return dirtyVisibility;
 };

@@ -141,8 +141,9 @@ rhizo.selection.SelectionManager.prototype.allSelected = function() {
  */
 rhizo.selection.SelectionManager.prototype.allDeselected = function() {
   var allDeselected = {};
-  var allModels = this.project_.modelsMap();
-  for (var modelId in allModels) {
+  var allModels = this.project_.models();
+  for (var i = allModels.length-1; i >= 0; i--) {
+    var modelId = allModels[i].id;
     if (!(modelId in this.selectionMap_)) {
       allDeselected[modelId] = allModels[modelId];
     }
@@ -156,8 +157,9 @@ rhizo.selection.SelectionManager.prototype.allDeselected = function() {
  */
 rhizo.selection.SelectionManager.prototype.getNumFocused = function() {
   var count = 0;
-  for (var modelId in this.project_.modelsMap()) {
-    if (!this.project_.model(modelId).isFiltered('__selection__')) {
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    if (!models[i].isFiltered('__selection__')) {
       count++;
     }
   }
@@ -170,8 +172,9 @@ rhizo.selection.SelectionManager.prototype.getNumFocused = function() {
  */
 rhizo.selection.SelectionManager.prototype.getNumHidden = function() {
   var count = 0;
-  for (var modelId in this.project_.modelsMap()) {
-    if (this.project_.model(modelId).isFiltered('__selection__')) {
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    if (models[i].isFiltered('__selection__')) {
       count++;
     }
   }
@@ -185,10 +188,10 @@ rhizo.selection.SelectionManager.prototype.getNumHidden = function() {
  */
 rhizo.selection.SelectionManager.prototype.allFocused = function() {
   var focused = {};
-  var allModels = this.project_.modelsMap();
-  for (var modelId in allModels) {
-    if (!allModels[modelId].isFiltered('__selection__')) {
-      focused[modelId] = allModels[modelId];
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    if (!models[i].isFiltered('__selection__')) {
+      focused[models[i].id] = models[i];
     }
   }
   return focused;
@@ -201,10 +204,10 @@ rhizo.selection.SelectionManager.prototype.allFocused = function() {
  */
 rhizo.selection.SelectionManager.prototype.allHidden = function() {
   var hidden = {};
-  var allModels = this.project_.modelsMap();
-  for (var modelId in allModels) {
-    if (allModels[modelId].isFiltered('__selection__')) {
-      hidden[modelId] = allModels[modelId];
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    if (models[i].isFiltered('__selection__')) {
+      hidden[models[i].id] = models[i];
     }
   }
   return hidden;
@@ -290,7 +293,7 @@ rhizo.selection.SelectionManager.prototype.onBeforeSelection_ = function(
       }
       break;
     case 'resetFocus':
-      message['models'] = this.getAllHiddenModels_(this.project_.modelsMap());
+      message['models'] = this.getAllHiddenModels_();
       break;
     default:
       rspCallback(false, 'Invalid selection operation: ' + message['action']);
@@ -366,19 +369,16 @@ rhizo.selection.SelectionManager.prototype.getAllModelIds_ = function(
 };
 
 /**
- * Returns the list of all models (by their ids) from the input modelMap that
- * are currently hidden.
+ * Returns the list of all models (by their ids) that are currently hidden.
  *
- * @param {!Object.<*, rhizo.model.SuperModel>} modelsMap A mapping of model
- *     ids to model instances.
  * @return {!Array.<*>} The list of hidden model ids.
  */
-rhizo.selection.SelectionManager.prototype.getAllHiddenModels_ = function(
-    modelsMap) {
+rhizo.selection.SelectionManager.prototype.getAllHiddenModels_ = function() {
   var modelIds = [];
-  for (var modelId in modelsMap) {
-    if (modelsMap[modelId].isFiltered('__selection__')) {
-      modelIds.push(modelId);
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    if (models[i].isFiltered('__selection__')) {
+      modelIds.push(models[i].id);
     }
   }
   return modelIds;
@@ -473,9 +473,10 @@ rhizo.selection.SelectionManager.prototype.focus_ = function(
   }
 
   var filteredIds = [];
-  for (var modelId in this.project_.modelsMap()) {
-    if (!(modelId in focusedIds)) {
-      filteredIds.push(modelId);
+  var models = this.project_.models();
+  for (i = models.length-1; i >= 0; i--) {
+    if (!(models[i].id in focusedIds)) {
+      filteredIds.push(models[i].id);
     }
   }
   this.hide_(filteredIds, incremental);

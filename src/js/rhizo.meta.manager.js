@@ -127,10 +127,9 @@ rhizo.meta.FilterManager.prototype.enableFilterAutocommit = function(enable) {
   if (this.filterAutocommit_) {
     // If there are any greyed models when auto-filtering is re-enabled, we
     // commit the filter.
-    var modelsMap = this.project_.modelsMap();
-    for (var modelId in modelsMap) {
-      if (modelsMap[modelId].rendering().visibility ==
-          rhizo.ui.Visibility.GREY) {
+    var models = this.project_.models();
+    for (var i = models.length-1; i >= 0; i--) {
+      if (models[i].rendering().visibility == rhizo.ui.Visibility.GREY) {
         this.commitFilter();
         break;
       }
@@ -182,11 +181,10 @@ rhizo.meta.FilterManager.prototype.filterDiff = function(targetFilters) {
  */
 rhizo.meta.FilterManager.prototype.removeFilterFromModels = function(
     metaModelKey) {
-  var modelsMap = this.project_.modelsMap();
+  var models = this.project_.models();
   var modelsAffected = false;
-  for (var modelId in modelsMap) {
-    modelsAffected =
-        modelsMap[modelId].resetFilter(metaModelKey) || modelsAffected;
+  for (var i = models.length-1; i >= 0; i--) {
+    modelsAffected = models[i].resetFilter(metaModelKey) || modelsAffected;
   }
   return modelsAffected;
 };
@@ -223,9 +221,9 @@ rhizo.meta.FilterManager.prototype.alignVisibility = function(
   var forceLayout = false;
   var modelsToFadeOut = [];
   var modelsToFadeIn = [];
-  var modelsMap = this.project_.modelsMap();
-  for (var modelId in modelsMap) {
-    var model = modelsMap[modelId];
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    var model = models[i];
     var rendering = model.rendering();
     if (model.isFiltered()) {
       if (rendering.visibility > filtered_visibility) {
@@ -309,12 +307,12 @@ rhizo.meta.FilterManager.prototype.filterAllModelsOnKey_ = function(
     metaModelKey, filterValue) {
   this.filters_[metaModelKey] = filterValue;
 
-  var modelsMap = this.project_.modelsMap();
   var modelsChange = false;
-  for (var modelId in modelsMap) {
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
     modelsChange =
         this.filterModelOnKey_(
-            metaModelKey, filterValue, modelsMap[modelId]) || modelsChange;
+            metaModelKey, filterValue, models[i]) || modelsChange;
   }
   return modelsChange;
 };
@@ -367,9 +365,9 @@ rhizo.meta.FilterManager.prototype.mustLayoutAfterFilter_ = function() {
   if (this.filterAutocommit_) {
     return true;
   }
-  var modelsMap = this.project_.modelsMap();
-  for (var modelId in modelsMap) {
-    if (modelsMap[modelId].isDirtyVisibility()) {
+  var models = this.project_.models();
+  for (var i = models.length-1; i >= 0; i--) {
+    if (models[i].isDirtyVisibility()) {
       return true;
     }
   }
