@@ -1088,6 +1088,8 @@ rhizo.ui.component.SelectionManager = function(project, options) {
                                     'rhizo.ui.component.SelectionManager');
   project.eventBus().subscribe(
       'selection', this.onSelectionChanged_, this, /* committed */ true);
+  project.eventBus().subscribe(
+      'model', this.onModelChanged_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.ui.component.SelectionManager,
                rhizo.ui.component.Component);
@@ -1157,6 +1159,15 @@ rhizo.ui.component.SelectionManager.prototype.onSelectionChanged_ = function(
       message['action'] == 'hide') {
     this.setNumFilteredModels(this.project_.selectionManager().getNumHidden());
   }
+};
+
+/**
+ * Updates the number of currently hidden models because of changes in the set
+ * of models part of the visualization.
+ * @private
+ */
+rhizo.ui.component.SelectionManager.prototype.onModelChanged_ = function() {
+  this.setNumFilteredModels(this.project_.selectionManager().getNumHidden());
 };
 
 /**

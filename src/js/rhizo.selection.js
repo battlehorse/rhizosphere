@@ -102,6 +102,7 @@ rhizo.selection.SelectionManager = function(project) {
   this.project_.eventBus().addPreprocessor(
       'selection', this.onBeforeSelection_, this, /* first */ true);
   this.project_.eventBus().subscribe('selection', this.onSelection_, this);
+  this.project_.eventBus().subscribe('model', this.onModelChange_, this);
 };
 
 /**
@@ -207,6 +208,22 @@ rhizo.selection.SelectionManager.prototype.allHidden = function() {
     }
   }
   return hidden;
+};
+
+/**
+ * Callback invoked when the set of models that are part of the visualization
+ * changes because of additions and removals. Updates the internal list
+ * of selected models.
+ *
+ * @param {Object} message The received message.
+ * @private
+ */
+rhizo.selection.SelectionManager.prototype.onModelChange_ = function(message) {
+  if (message['action'] == 'remove') {
+    for (var i = 0; i < message['models'].length; i++) {
+      delete this.selectionMap_[message['models'][i].id];
+    }
+  }
 };
 
 /**
