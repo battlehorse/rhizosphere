@@ -842,7 +842,7 @@ rhizo.ui.meta.CategoryKindUi.prototype.extractMetamodelOptions_ = function() {
   var metadata = this.project_.metaModel()[this.metaModelKey_];
   this.fixedCategories_ = metadata['categories'] || null;
   if (this.fixedCategories_) {
-    for (var i = this.fixedCategories_.length; i >= 0; i--) {
+    for (var i = this.fixedCategories_.length-1; i >= 0; i--) {
       this.categories_[this.fixedCategories_[i]] = true;
     }
   }
