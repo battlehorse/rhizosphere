@@ -36,6 +36,11 @@
  *   channel, for the rest of the project to catch up on user requests to
  *   modify the set of filters applied to the visualization.
  *
+ * - If needed, register for notifications on other channels. For example,
+ *   if the user interfaces show information computed from the current set of
+ *   models, it should subscribe to the 'model' eventbus channel, to be
+ *   notified whenever models are added or removed from the visualization.
+ *
  * The rhizo.ui.meta.FilterUi base class can be used to simplify ui development.
  */
 
