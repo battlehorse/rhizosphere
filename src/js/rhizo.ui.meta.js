@@ -93,6 +93,8 @@ rhizo.ui.meta.FilterUi = function(project, metaModelKey) {
   this.metaModelKey_ = metaModelKey;
 
   this.project_.eventBus().subscribe('filter', this.onFilter_, this);
+  this.project_.eventBus().subscribe('model', this.onModelChange_, this,
+      /* committed */ true);
 };
 
 /**
@@ -165,6 +167,33 @@ rhizo.ui.meta.FilterUi.prototype.renderControls = function() {
   return null;
 };
 
+/**
+ * Callback invoked when models are added or removed from the visualization.
+ * @param {Object} message The message describing the model additions or
+ *     removals. See rhizo.model.ModelManager documentation for the expected
+ *     message structure.
+ * @private
+ */
+rhizo.ui.meta.FilterUi.prototype.onModelChange_ = function(message) {
+  var remove = message['action'] == 'remove';
+  this.modelsChanged(remove, message['models'], this.project_.models());
+  this.setFilterValue(
+      this.project_.filterManager().getFilterValue(this.metaModelKey_));
+};
+
+/**
+ * Helper function for subclasses to override. Updates the user interface in
+ * response to changes in the set of models that are part of the visualization.
+ *
+ * @param {boolean} remove Whether models have been added or removed.
+ * @param {!Array.<!rhizo.model.SuperModel>} deltaModels The list of models that
+ *     have changed (added or removed).
+ * @param {!Array.<!rhizo.model.SuperModel>} allModels The list of all models
+ *     that are currently part of the visualization.
+ */
+rhizo.ui.meta.FilterUi.prototype.modelsChanged = function(
+    remove, deltaModels, allModels) {};
+
 
 /**
  * User interface class for basic text input.
@@ -216,6 +245,33 @@ rhizo.ui.meta.DateKindUi = function(project, metaModelKey) {
   this.year_ = null;
   this.month_ = null;
   this.day_ = null;
+
+  /**
+   * A fixed range of selectable years in the year picker. This field is
+   * filled only when a fixed year range is specified on the metamodel entry
+   * this UI is assigned to. If defined, the year picker will always show the
+   * same set of selectable years, no matter what the span of years actually
+   * covered by visualization models is.
+   *
+   * The object has only two keys: 'min' and 'max' for the minimum and maximum
+   * acceptable years (inclusive).
+   *
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.fixedYearRange_ = null;
+
+  /**
+   * The range of selectable years in the year picker, as derived from the
+   * span of years covered by the models currently part of the visualization.
+   *
+   * The object has only two keys: 'min' and 'max' for the minimum and maximum
+   * acceptable years (inclusive).
+   *
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.yearRange_ = null;
   rhizo.ui.meta.FilterUi.call(this, project, metaModelKey);
 };
 rhizo.inherits(rhizo.ui.meta.DateKindUi, rhizo.ui.meta.FilterUi);
@@ -223,12 +279,10 @@ rhizo.meta.defaultRegistry.registerKindUi(
     rhizo.meta.Kind.DATE, rhizo.ui.meta.DateKindUi);
 
 rhizo.ui.meta.DateKindUi.prototype.renderControls = function() {
-  var metadata = this.project_.metaModel()[this.metaModelKey_];
+  this.extractFixedYearRange_();
   this.year_ = $("<select style='vertical-align:top' />");
-  this.year_.append("<option value='yyyy'>yyyy</option>");
-  for (var i = metadata.minYear ; i <= metadata.maxYear; i++) {
-    this.year_.append("<option value='" + i + "'>" + i + "</option>");
-  }
+  this.updateYearRanges_();
+
   this.month_ = $("<select style='vertical-align:top' />");
   this.month_.append("<option value='mm'>mm</option>");
   for (i = 0; i < this.monthMap_.length; i++) {
@@ -245,6 +299,9 @@ rhizo.ui.meta.DateKindUi.prototype.renderControls = function() {
   
   $(this.year_).add($(this.month_)).add($(this.day_)).change(
       jQuery.proxy(function(ev) {
+        // When the user explicitly changes the selected year, remove all
+        // stale entries that may be consequences of model additions/removals.
+        $(this.year_).find('option[disabled="disabled"]').remove();
         var year = $(this.year_).val();
         var month = $(this.month_).val();
         var day = $(this.day_).val();
@@ -264,9 +321,113 @@ rhizo.ui.meta.DateKindUi.prototype.renderControls = function() {
 
 rhizo.ui.meta.DateKindUi.prototype.setFilterValue = function(value) {
   value = value || [undefined, undefined, undefined];
+
+  $(this.year_).find('option[disabled="disabled"]').remove();
+  if (value[0] && (
+      !this.yearRange_ || 
+      value[0] < this.yearRange_.min || 
+      value[0] > this.yearRange_.max)) {
+    // The requested year falls outside the available year range. Create a
+    // disabled entry to represent it.
+    this.createYearOptions_(
+        value[0],
+        null,
+        /* disabled */ true,
+        /* prepend */ !this.yearRange_ || value[0] < this.yearRange_.min);
+  }
+
   this.year_.val(value[0] || 'yyyy');
   this.month_.val(value[1] || 'mm');
   this.day_.val(value[2] || 'dd');
+};
+
+/**
+ * Extracts the range of selectable years to be mandatorily shown in the year
+ * picker, if defined in the metamodel entry this UI is assigned to.
+ * @private
+ */
+rhizo.ui.meta.DateKindUi.prototype.extractFixedYearRange_ = function() {
+  var metadata = this.project_.metaModel()[this.metaModelKey_];
+  if (typeof(metadata.minYear) != 'undefined' && metadata.minYear != null &&
+      typeof(metadata.maxYear) != 'undefined' && metadata.maxYear != null) {
+    this.fixedYearRange_ = {
+        min: parseInt(metadata.minYear, 10),
+        max: parseInt(metadata.maxYear, 10)
+    };
+    this.yearRange_ = this.fixedYearRange_;
+  }
+};
+
+/**
+ * Updates the range of years spanned by the year picker.
+ * @private
+ */
+rhizo.ui.meta.DateKindUi.prototype.updateYearRanges_ = function() {
+  this.year_.children().remove();
+  this.year_.append("<option value='yyyy'>yyyy</option>");
+  if (this.yearRange_) {
+    this.createYearOptions_(this.yearRange_.min, this.yearRange_.max);
+  }
+};
+
+/**
+ * Fills the year picker with a set of years.
+ * @param {number} minYear The minimum year the picker should contain
+ *     (inclusive).
+ * @param {number=} opt_maxYear The maximum year the picker should contain
+ *     (inclusive), or undefined to add only minYear.
+ * @param {boolean=} opt_disabled Whether the added years should be selectable
+ *     or not. Defaults to true.
+ * @param {boolean=} opt_prepend Whether the added years should be added
+ *     at the beginning or at the end of the year picker list.
+ * @private
+ */
+rhizo.ui.meta.DateKindUi.prototype.createYearOptions_ = function(
+    minYear, opt_maxYear, opt_disabled, opt_prepend) {
+  var maxYear = typeof(opt_maxYear) == 'number' ? opt_maxYear : minYear;
+  for (var i = minYear; i <= maxYear; i++) {
+    var opt = '<option value="' + i + '" ' +
+        (!!opt_disabled ? 'disabled="disabled"' : '' ) +
+        '>' + i + '</option>';
+    !!opt_prepend ?
+        this.year_.children(':first').after(opt) :
+        this.year_.append(opt);
+  }
+};
+
+/**
+ * Callback invoked when models are added or removed from the visualization, to
+ * compute the set of selectable years in the year picker based on the range of
+ * dates spanned by visualization models (unless a fixed year range is
+ * specified in the metamodel entry this UI is assigned to).
+ *
+ * @param {boolean} remove Whether models have been added or removed.
+ * @param {!Array.<!rhizo.model.SuperModel>} deltaModels The list of models that
+ *     have changed (added or removed).
+ * @param {!Array.<!rhizo.model.SuperModel>} allModels The list of all models
+ *     that are currently part of the visualization.
+ * @override
+ */
+rhizo.ui.meta.DateKindUi.prototype.modelsChanged = function(
+    remove, deltaModels, allModels) {
+  if (this.fixedYearRange_) {
+    return;
+  }
+  if (allModels.length == 0) {
+    this.yearRange_ = null;
+    this.updateYearRanges_();
+    return;
+  }
+  var minYear = Number.POSITIVE_INFINITY, maxYear = Number.NEGATIVE_INFINITY;
+  for (var i = allModels.length-1; i >= 0; i--) {
+    var modelDate = allModels[i].unwrap()[this.metaModelKey_];
+    if (modelDate) {
+      minYear = Math.min(minYear, modelDate.getFullYear());
+      maxYear = Math.max(maxYear, modelDate.getFullYear());
+    }
+  }
+  this.yearRange_ = {min: minYear, max: maxYear};
+  this.updateYearRanges_();
 };
 
 
@@ -284,8 +445,57 @@ rhizo.ui.meta.RangeKindUi = function(project, metaModelKey) {
   this.minLabel_ = null;
   this.maxLabel_ = null;
 
-  this.metadataMin_ = null;
-  this.metadataMax_ = null;
+  /**
+   * A fixed range of selectable values. This field is filled only when a
+   * fixed range is specified in the metamodel entry this UI is assigned to.
+   * If defined, the slider will always span the specified range, no matter
+   * what the span of values actually covered by the visualization models is.
+   *
+   *
+   * The object has only two keys: 'min' and 'max' for the minimum and maximum
+   * range extents (inclusive).
+   *
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.fixedRange_ = null;
+
+  /**
+   * The range of selectable values, as derived from the set of values spanned
+   * by the models currently part of the visualization.
+   *
+   * The object has only two keys: 'min' and 'max' for the minimum and maximum
+   * range extents (inclusive).
+   *
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.range_ = null;
+
+  /**
+   * As 'range_' but normalized to the filter scale (see toModelScale() and 
+   * toFilterScale()).
+   *
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.rangeFilterScale_ = null;
+
+  /**
+   * The stepping between slider ticks, if specified in the metamodel entry this
+   * UI is assigned to.
+   * @type {number}
+   * @private
+   */
+  this.stepping_ = null;
+
+  /**
+   * The number of fixed steps the slider should enforce, if specified in the
+   * metamodel entry this UI is assigned to.
+   * @type {number}
+   * @private
+   */
+  this.steps_ = null;
   rhizo.ui.meta.FilterUi.call(this, project, metaModelKey);
 };
 rhizo.inherits(rhizo.ui.meta.RangeKindUi, rhizo.ui.meta.FilterUi);
@@ -293,69 +503,19 @@ rhizo.meta.defaultRegistry.registerKindUi(
     rhizo.meta.Kind.RANGE, rhizo.ui.meta.RangeKindUi);
 
 rhizo.ui.meta.RangeKindUi.prototype.renderControls = function() {
-  var metadata = this.project_.metaModel()[this.metaModelKey_];
-  this.slider_ = $("<div class='rhizo-slider' />");
-  this.minLabel_ = $('<span />', {'class': 'rhizo-slider-label'}).
-      text(this.toHumanLabel(metadata.min));
-  this.maxLabel_ = $('<span />', {'class': 'rhizo-slider-label'}).
-      text(this.toHumanLabel(metadata.max));
+  this.extractMetamodelOptions_();
+  this.minLabel_ = $('<span />', {'class': 'rhizo-slider-label'});
+  this.maxLabel_ = $('<span />', {'class': 'rhizo-slider-label'});
 
-  this.metadataMin_ = metadata.min;
-  this.metadataMax_ = metadata.max;
-
-  var minFilterScale = this.toFilterScale(metadata.min);
-  var maxFilterScale = this.toFilterScale(metadata.max);
-  var steppingFilterScale;
-  if (metadata.stepping) {
-    steppingFilterScale = this.toFilterScale(metadata.stepping);
-  }
-
-  // wrap slide handler into a closure to preserve access to the RangeKind
-  // filter.
-  var slideCallback = jQuery.proxy(function(ev, ui) {
-      if (ui.values[0] != minFilterScale) {
-        // min slider has moved
-        this.minLabel_.
-            text(this.toHumanLabel(this.toModelScale(ui.values[0]))).
-            addClass("rhizo-slider-moving");
-        this.maxLabel_.removeClass("rhizo-slider-moving");
-      }
-      if (ui.values[1] != maxFilterScale) {
-        // max slider has moved
-        this.maxLabel_.
-            text(this.toHumanLabel(this.toModelScale(ui.values[1]))).
-            addClass("rhizo-slider-moving");
-        this.minLabel_.removeClass("rhizo-slider-moving");
-      }
-  }, this);
-
-  // wrap change handler into a closure to preserve access to the RangeKind
-  // filter.
-  var stopCallback = jQuery.proxy(function(ev, ui) {
-      var minSlide = Math.max(this.toModelScale(ui.values[0]), metadata.min);
-      var maxSlide = Math.min(this.toModelScale(ui.values[1]), metadata.max);
-      this.minLabel_.text(this.toHumanLabel(minSlide)).removeClass(
-          "rhizo-slider-moving");
-      this.maxLabel_.text(this.toHumanLabel(maxSlide)).removeClass(
-          "rhizo-slider-moving");
-      if (minSlide != this.metadataMin_ || maxSlide != this.metadataMax_) {
-        this.doFilter({ min: minSlide, max: maxSlide });
-      } else {
-        this.doFilter(null);
-      }
-  }, this);
-
-  $(this.slider_).slider({
-    stepping: steppingFilterScale,
-    steps: metadata.steps,
+  this.slider_ = $("<div class='rhizo-slider' />").slider({
+    stepping: this.stepping_ ? this.toFilterScale(this.stepping_) : null,
+    steps: this.steps_,
     range: true,
-    min: minFilterScale,
-    max: maxFilterScale,
-    slide: slideCallback,
-    stop: stopCallback,
-    orientation: 'horizontal',
-    values: [minFilterScale, maxFilterScale]
+    slide: jQuery.proxy(this.onSlide_, this),
+    stop: jQuery.proxy(this.onStopSlide_, this),
+    orientation: 'horizontal'
   });
+  this.updateRange_();
 
   return rhizo.ui.meta.labelWrap(this.project_, this.metaModelKey_,
       $(this.minLabel_).
@@ -364,10 +524,134 @@ rhizo.ui.meta.RangeKindUi.prototype.renderControls = function() {
       add($(this.slider_)));
 };
 
+/**
+ * Extracts slider configuration options as defined in the metamodel entry this
+ * UI is assigned to. This includes the fixed range of selectable values the
+ * slider should span, stepping and steps configuration.
+ * @private
+ */
+rhizo.ui.meta.RangeKindUi.prototype.extractMetamodelOptions_ = function() {
+  var metadata = this.project_.metaModel()[this.metaModelKey_];
+  if (typeof(metadata.min) != 'undefined' && metadata.min != null &&
+      typeof(metadata.max) != 'undefined' && metadata.max != null) {
+    this.fixedRange_ = {
+        min: parseFloat(metadata.min),
+        max: parseFloat(metadata.max)
+    };
+    this.range_ = this.fixedRange_;
+    this.rangeFilterScale_ = {
+      min: this.toFilterScale(this.range_.min),
+      max: this.toFilterScale(this.range_.max)
+    };
+  }
+  this.stepping_ = metadata.stepping;
+  this.steps_ = metadata.steps;
+};
+
+/**
+ * Updates the slider range.
+ * @private
+ */
+rhizo.ui.meta.RangeKindUi.prototype.updateRange_ = function() {
+  this.slider_.slider('option', {
+    min: this.rangeFilterScale_ ? this.rangeFilterScale_.min : 0,
+    max: this.rangeFilterScale_ ? this.rangeFilterScale_.max : 100
+  }).slider(this.rangeFilterScale_ ? 'enable' : 'disable');
+};
+
+/**
+ * Event callback triggered while the user is moving one of the slider thumbs.
+ *
+ * @param {*} ev
+ * @param {*} ui 
+ * @private
+ */
+rhizo.ui.meta.RangeKindUi.prototype.onSlide_ = function(ev, ui) {
+  if (ui.values[0] != this.rangeFilterScale_.min) {
+    // min slider has moved
+    this.minLabel_.
+        text(this.toHumanLabel(this.toModelScale(ui.values[0]))).
+        addClass("rhizo-slider-moving");
+    this.maxLabel_.removeClass("rhizo-slider-moving");
+  }
+  if (ui.values[1] != this.rangeFilterScale_.max) {
+    // max slider has moved
+    this.maxLabel_.
+        text(this.toHumanLabel(this.toModelScale(ui.values[1]))).
+        addClass("rhizo-slider-moving");
+    this.minLabel_.removeClass("rhizo-slider-moving");
+  }
+};
+
+/**
+ * Event callback triggered while the user stops moving one of the slider
+ * thumbs.
+ *
+ * @param {*} ev
+ * @param {*} ui 
+ * @private
+ */
+rhizo.ui.meta.RangeKindUi.prototype.onStopSlide_ = function(ev, ui) {
+  var minSlide = Math.max(this.toModelScale(ui.values[0]), this.range_.min);
+  var maxSlide = Math.min(this.toModelScale(ui.values[1]), this.range_.max);
+  this.minLabel_.text(this.toHumanLabel(minSlide)).removeClass(
+      "rhizo-slider-moving");
+  this.maxLabel_.text(this.toHumanLabel(maxSlide)).removeClass(
+      "rhizo-slider-moving");
+  if (minSlide != this.range_.min || maxSlide != this.range_.max) {
+    this.doFilter({ min: minSlide, max: maxSlide });
+  } else {
+    this.doFilter(null);
+  }
+};
+
+/**
+ * Callback invoked when models are added or removed from the visualization, to
+ * compute the updated slider range based on the range of values spanned by
+ * visualization models.
+ *
+ * @param {boolean} remove Whether models have been added or removed.
+ * @param {!Array.<!rhizo.model.SuperModel>} deltaModels The list of models that
+ *     have changed (added or removed).
+ * @param {!Array.<!rhizo.model.SuperModel>} allModels The list of all models
+ *     that are currently part of the visualization.
+ * @override
+ */
+rhizo.ui.meta.RangeKindUi.prototype.modelsChanged = function(
+    remove, deltaModels, allModels) {
+  if (this.fixedRange_) {
+    return;
+  }
+  if (allModels.length == 0) {
+    this.range_ = null;
+    this.rangeFilterScale_ = null;
+    this.updateRange_();
+    return;
+  }
+  var min = Number.POSITIVE_INFINITY; max = Number.NEGATIVE_INFINITY;
+  for (var i = allModels.length-1; i >= 0; i--) {
+    var modelValue = allModels[i].unwrap()[this.metaModelKey_];
+    if (typeof(modelValue) != 'undefined' && typeof(modelValue) != 'null') {
+      min = Math.min(min, modelValue);
+      max = Math.max(max, modelValue);
+    }
+  }
+  this.range_ = {min: min, max: max};
+  this.rangeFilterScale_ = {
+    min: this.toFilterScale(this.range_.min),
+    max: this.toFilterScale(this.range_.max)
+  };
+  this.updateRange_();
+};
+
 rhizo.ui.meta.RangeKindUi.prototype.setFilterValue = function(value) {
+  if (!this.range_) {
+    this.minLabel_.add(this.maxLabel_).text('-');
+    return;
+  }
   value = {
-    min: value ? this.clamp_(value.min) : this.metadataMin_,
-    max: value ? this.clamp_(value.max) : this.metadataMax_
+    min: value ? this.clamp_(value.min) : this.range_.min,
+    max: value ? this.clamp_(value.max) : this.range_.max
   };
   this.minLabel_.text(this.toHumanLabel(value.min));
   this.maxLabel_.text(this.toHumanLabel(value.max));
@@ -427,7 +711,7 @@ rhizo.ui.meta.RangeKindUi.prototype.toHumanLabel = function(modelValue) {
  * @private
  */
 rhizo.ui.meta.RangeKindUi.prototype.clamp_ = function(val) {
-  return Math.min(this.metadataMax_, Math.max(this.metadataMin_, val));
+  return Math.max(this.range_.min, Math.min(this.range_.max, val));
 };
 
 
@@ -479,8 +763,35 @@ rhizo.ui.meta.BooleanKindUi.prototype.setFilterValue = function(value) {
  * @extends rhizo.ui.meta.FilterUi
  */
 rhizo.ui.meta.CategoryKindUi = function(project, metaModelKey) {
-  this.categories_ = null;
+  this.categoryPicker_ = null;
+
+  /**
+   * Whether multiple choice is allowed or not.
+   * @type {boolean}
+   * @private
+   */
   this.multiple_ = false;
+
+  /**
+   * A fixed list of categories for the category picker. This field is
+   * filled only when categories are explicitly specified on the
+   * metamodel entry this UI is assigned to. If defined, the category picker
+   * will always show the same set of categories to choose from.
+   *
+   * @type {Array.<string>}
+   * @private
+   */
+  this.fixedCategories_ = null;
+
+  /**
+   * The set of categories for the category picker, as derived from the
+   * set of unique categories found in the models currently part of the
+   * visualization.
+   *
+   * @type {!Object.<string, boolean>}
+   * @private
+   */
+  this.categories_ = {};
   rhizo.ui.meta.FilterUi.call(this, project, metaModelKey);
 };
 rhizo.inherits(rhizo.ui.meta.CategoryKindUi, rhizo.ui.meta.FilterUi);
@@ -488,27 +799,24 @@ rhizo.meta.defaultRegistry.registerKindUi(
     rhizo.meta.Kind.CATEGORY, rhizo.ui.meta.CategoryKindUi);
 
 rhizo.ui.meta.CategoryKindUi.prototype.renderControls = function() {
-  var metadata = this.project_.metaModel()[this.metaModelKey_];
-  this.multiple_ = !!metadata.multiple;
-  this.categories_ = $("<select " +
-                       (metadata.multiple ? 'multiple size="4" ' : '') +
-                       " style='vertical-align:top' />");
-  this.categories_.append("<option value=''>-</option>");
-  for (var i = 0; i < metadata.categories.length; i++) {
-    this.categories_.append("<option value='" + metadata.categories[i] + "'>" +
-                            metadata.categories[i] +
-                            "</option>");
-  }
+  this.extractMetamodelOptions_();
+  this.categoryPicker_ = $(
+      "<select " + (this.multiple_ ? 'multiple size="4" ' : '') +
+      " style='vertical-align:top' />");
+  this.updateCategories_();
 
-  $(this.categories_).change(jQuery.proxy(function(ev) {
+  $(this.categoryPicker_).change(jQuery.proxy(function(ev) {
+    // When the user explicitly changes the selected year, remove all
+    // stale entries that may be consequences of model additions/removals.
+    $(this.categoryPicker_).find('option[disabled="disabled"]').remove();
     var selectedCategories = [];
-    if (metadata.multiple) {
-      selectedCategories = $.grep($(this.categories_).val(),
+    if (this.multiple_) {
+      selectedCategories = $.grep($(this.categoryPicker_).val(),
           function(category) {
         return category != '';
       });
-    } else if ($(this.categories_).val().length > 0) {
-      selectedCategories = [ $(this.categories_).val() ];
+    } else if ($(this.categoryPicker_).val().length > 0) {
+      selectedCategories = [ $(this.categoryPicker_).val() ];
     }
     if (selectedCategories.length == 0) {
       selectedCategories = null;
@@ -516,10 +824,92 @@ rhizo.ui.meta.CategoryKindUi.prototype.renderControls = function() {
     this.doFilter(selectedCategories);
   }, this));
   return rhizo.ui.meta.labelWrap(
-      this.project_, this.metaModelKey_, this.categories_);
+      this.project_, this.metaModelKey_, this.categoryPicker_);
+};
+
+/**
+ * Extracts configuration options as defined in the metamodel entry this
+ * UI is assigned to. This includes the fixed range of selectable categories
+ * the picker should contain and where multiple selection is allowed or not.
+ * @private
+ */
+rhizo.ui.meta.CategoryKindUi.prototype.extractMetamodelOptions_ = function() {
+  var metadata = this.project_.metaModel()[this.metaModelKey_];
+  this.fixedCategories_ = metadata['categories'] || null;
+  if (this.fixedCategories_) {
+    for (var i = this.fixedCategories_.length; i >= 0; i--) {
+      this.categories_[this.fixedCategories_[i]] = true;
+    }
+  }
+  this.multiple_ = !!metadata['multiple']
+};
+
+/**
+ * Updates the set of categories the picker allows to choose from.
+ * @private
+ */
+rhizo.ui.meta.CategoryKindUi.prototype.updateCategories_ = function() {
+  this.categoryPicker_.children().remove();
+  this.categoryPicker_.append("<option value=''>-</option>");
+
+  var sortedCategories = [];
+  for (var category in this.categories_) {
+    sortedCategories.push(category);
+  }
+  sortedCategories.sort();
+  for (var i = 0; i < sortedCategories.length; i++) {
+    this.categoryPicker_.append(
+        "<option value='" + sortedCategories[i] + "'>" +
+        sortedCategories[i] + "</option>");
+  }
 };
 
 rhizo.ui.meta.CategoryKindUi.prototype.setFilterValue = function(value) {
+  this.categoryPicker_.find('option[disabled="disabled"]').remove();
+  if (value) {
+    var categories = $.isArray(value) ? value : [value];
+    for (var i = categories.length-1; i >= 0; i--) {
+      if (!(categories[i] in this.categories_)) {
+        this.categoryPicker_.append(
+            "<option value='" + categories[i] + "' disabled='disabled'>" +
+            categories[i] + "</option>");
+      }
+    }
+  }
   // val() accepts both a single string and an array.
-  this.categories_.val(value || (this.multiple_ ? [] : ''));
+  this.categoryPicker_.val(value || (this.multiple_ ? [] : ''));
+};
+
+/**
+ * Callback invoked when models are added or removed from the visualization, to
+ * compute the updated set of categories based on the range of values spanned
+ * by visualization models.
+ *
+ * @param {boolean} remove Whether models have been added or removed.
+ * @param {!Array.<!rhizo.model.SuperModel>} deltaModels The list of models that
+ *     have changed (added or removed).
+ * @param {!Array.<!rhizo.model.SuperModel>} allModels The list of all models
+ *     that are currently part of the visualization.
+ * @override
+ */
+rhizo.ui.meta.CategoryKindUi.prototype.modelsChanged = function(
+    remove, deltaModels, allModels) {
+  if (this.fixedCategories_) {
+    return;
+  }
+
+  this.categories_ = {};
+  if (allModels.length == 0) {
+    this.updateCategories_();
+    return;
+  }
+  for (var i = allModels.length-1; i >= 0; i--) {
+    var modelCategories = allModels[i].unwrap()[this.metaModelKey_];
+    if (!modelCategories) { continue; }
+    if (!$.isArray(modelCategories)) { modelCategories = [ modelCategories ]; }
+    for (var j = modelCategories.length-1; j >= 0; j--) {
+      this.categories_[modelCategories[j]] = true;
+    }
+  }
+  this.updateCategories_();
 };

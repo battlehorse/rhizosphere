@@ -576,6 +576,9 @@ rhizo.meta.CategoryKind.prototype.survivesFilter =
   if (!$.isArray(modelValue)) {
     modelValue = [modelValue];
   }
+  if (!$.isArray(filterValue)) {
+    filterValue = [filterValue];
+  }
 
   // AND-filter
 
