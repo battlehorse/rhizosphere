@@ -100,7 +100,7 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
  * @param {!rhizo.UserAgent} unused_ua unused.
  * @private
  */
-rhizo.gviz.Rhizosphere.prototype.ready_= function(unused_ua) {
+rhizo.gviz.Rhizosphere.prototype.ready_ = function(unused_ua) {
   google.visualization.events.trigger(this, 'ready', {});
 };
 
