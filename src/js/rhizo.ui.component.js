@@ -101,15 +101,14 @@ rhizo.ui.component.Progress.prototype.update = function(value, opt_text) {
     this.pbarText_.text(opt_text);
   }
   if (value >= 100) {
-    this.destroy_();
+    this.destroy();
   }
 };
 
 /**
  * Destroys the progress bar.
- * @private
  */
-rhizo.ui.component.Progress.prototype.destroy_ = function() {
+rhizo.ui.component.Progress.prototype.destroy = function() {
   if (this.pbarPanel_.is(':visible')) {
     setTimeout(jQuery.proxy(function() {
       this.pbarPanel_.fadeOut(function() {
@@ -423,7 +422,9 @@ rhizo.ui.component.Container.prototype.ready = function() {
  *
  * A template can notify an external component about the state of the
  * initialization process. By default a rhizo.ui.component.Progress progressbar
- * is used, but it can be customized via setProgressHandler().
+ * is used, but it can be customized via setProgressHandler(). The default
+ * progress bar can be disabled by setting the 'enableLoadingIndicator' project
+ * configuration option to false.
  *
  * @param {rhizo.Project} project The project this template belongs to.
  * @param {*} options Project-wide configuration options
@@ -436,7 +437,9 @@ rhizo.ui.component.Template = function(project, options, template_key) {
   rhizo.ui.component.Container.call(this, project, options, template_key);
 
   this.viewport_ = new rhizo.ui.component.Viewport(project, options);
-  this.progress_ = new rhizo.ui.component.Progress();
+  if (!!options['enableLoadingIndicator']) {
+    this.progress_ = new rhizo.ui.component.Progress();
+  }
 };
 rhizo.inherits(rhizo.ui.component.Template, rhizo.ui.component.Container);
 
@@ -450,6 +453,9 @@ rhizo.inherits(rhizo.ui.component.Template, rhizo.ui.component.Container);
  *     Set to null to disable progress reporting altogether.
  */
 rhizo.ui.component.Template.prototype.setProgressHandler = function(progress) {
+  if (this.progress_) {
+    this.progress_.destroy();
+  }
   this.progress_ = progress;
 };
 

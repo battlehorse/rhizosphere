@@ -60,6 +60,7 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
   }
   this.options_ = { selectfilter: '.rhizo-model:visible',
                     enableHTML5History: true,
+                    enableLoadingIndicator: true,
                     enableAnims: true};
   if (opt_options) {
     $.extend(this.options_, opt_options);
