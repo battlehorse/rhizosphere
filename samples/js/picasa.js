@@ -93,24 +93,16 @@
       });
 
       // Build the metamodel
-      var myDecimalKind = new rhizo.meta.DecimalRangeKind(2);
-      rhizo.meta.defaultRegistry.registerKindUiFactory(myDecimalKind,
-          function(project, metaModelKey) {
-            var ui = new rhizo.ui.meta.RangeKindUi(project, metaModelKey);
-            ui.toHumanLabel = rhizo.ui.toHumanLabel;
-            return ui;
-          }
-      );
-
-      var myDateKind = new rhizo.meta.DateKind('y');
-      rhizo.meta.defaultRegistry.registerKindUi(
-          myDateKind, rhizo.ui.meta.DateKindUi);
-
       var metamodel = {
         author: { kind: rhizo.meta.Kind.STRING, label: "Name" },
         title: { kind: rhizo.meta.Kind.STRING, label: "Title" },
-        resolution: { kind: myDecimalKind, label: "Resolution"},
-        published: { kind: myDateKind, label: "Published"}
+        resolution: {
+          kind: rhizo.meta.Kind.DECIMALRANGE,
+          label: "Resolution",
+          toHumanLabel: rhizo.ui.toHumanLabel,
+          precision: 2
+        },
+        published: { kind: rhizo.meta.Kind.DATE, label: "Published", clusterBy: 'y'}
       };
 
       // Roll everything out.

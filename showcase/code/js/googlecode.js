@@ -62,15 +62,6 @@ rhizo.meta.defaultRegistry.registerKind(
 rhizo.meta.defaultRegistry.registerKindUi(
     'nonNumericId', rhizo.ui.meta.TextKindUi);
 
-// Register a date kind customized to cluster over months.
-rhizo.meta.defaultRegistry.registerKindFactory('customDate', function() {
-  return new rhizo.meta.DateKind('m');
-});
-rhizo.meta.defaultRegistry.registerKindUiFactory('customDate',
-    function(project, metaModelKey) {
-      return new rhizo.ui.meta.DateKindUi(project, metaModelKey);
-    }
-);
 
 /**
  * Builds the visualization metamodel from the statistics built server-side
@@ -89,27 +80,30 @@ googlecode.buildMetamodel = function(stats) {
     owner_name: {kind: rhizo.meta.Kind.CATEGORY, label: 'Owner',
                  categories: stats.owners},
 
-    created: {kind: 'customDate',
+    created: {kind: rhizo.meta.Kind.DATE,
               label: "Created",
               minYear: stats.created.minyear,
-              maxYear: stats.created.maxyear },
+              maxYear: stats.created.maxyear,
+              clusterBy: 'm'},
     created_ago: {kind: rhizo.meta.Kind.RANGE,
                   label: "Created (days ago)",
                   min: 0, max: stats.created.daysago },
-    updated: {kind: 'customDate',
+    updated: {kind: rhizo.meta.Kind.DATE,
               label: "Updated",
               minYear: stats.updated.minyear,
-              maxYear: stats.updated.maxyear },
+              maxYear: stats.updated.maxyear,
+              clusterBy: 'm'},
     updated_ago: {kind: rhizo.meta.Kind.RANGE,
                   label: "Updated (days ago)",
                   min: 0, max: stats.updated.daysago }
   };
 
   if (stats.closed_date) {
-    metamodel.closed_date = {kind: 'customDate',
+    metamodel.closed_date = {kind: rhizo.meta.Kind.DATE,
                              label: "Closed date",
                              minYear: stats.closed_date.minyear,
-                             maxYear: stats.closed_date.maxyear };
+                             maxYear: stats.closed_date.maxyear,
+                             clusterBy: 'm'};
   }
 
   for (var label_key in stats.composite_labels.names) {

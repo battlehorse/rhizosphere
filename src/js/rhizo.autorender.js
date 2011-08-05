@@ -97,7 +97,8 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
     // size Field is the first numeric field
     var kind = this.metamodel_[key].kind;
     kind = typeof(kind) == 'string' ?
-        rhizo.meta.defaultRegistry.createNewKind(kind) : kind;
+        rhizo.meta.defaultRegistry.createNewKind(kind, this.metamodel_[key]) :
+        kind;
     if (!this.sizeField_ && kind.isNumeric()) {
       this.sizeField_ = key;
       continue;
@@ -116,7 +117,8 @@ rhizo.autorender.AR.prototype.locateDefaultFields_ = function() {
 rhizo.autorender.AR.prototype.locateMinMax_ = function(models, key) {
     var kind = this.metamodel_[key].kind;
     kind = typeof(kind) == 'string' ?
-        rhizo.meta.defaultRegistry.createNewKind(kind) : kind;
+        rhizo.meta.defaultRegistry.createNewKind(kind, this.metamodel_[key]) :
+        kind;
   if (kind.isNumeric() &&
       typeof(this.metamodel_[key].min) != 'undefined' &&
       typeof(this.metamodel_[key].max) != 'undefined') {

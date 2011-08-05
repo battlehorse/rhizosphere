@@ -38,14 +38,17 @@ rhizo.meta.Kind.STRINGARRAY = 'stringArray';
 /**
  * An extensions of the basic number type to handle decimal (floating point)
  * numbers.
- * @param {number=} opt_precision The precision (in terms of decimal digits
- *     after the floating point) to use when parsing and clustering decimal
- *     numbers. Users of this filter are strongly encouraged to customize this
- *     setting on a per-field basis.
+ * @param {Object} metamodelEntry The metamodel entry this decimal type is
+ *     assigned to. The metamodel entry can be enriched with an additional
+ *     'precision' property to customize the precision (in terms of decimal
+ *     digits after the floating point) to use when parsing and clustering
+ *     decimal numbers. Users of this filter are strongly encouraged to
+ *     customize this setting on a per-field basis.
  * @constructor
  */
-rhizo.meta.DecimalKind = function(opt_precision) {
-  this.precision_ = opt_precision || 2;
+rhizo.meta.DecimalKind = function(metamodelEntry) {
+  this.precision_ = typeof(metamodelEntry['precision']) == 'number' ?
+      metamodelEntry['precision'] : 2;
 };
 rhizo.meta.defaultRegistry.registerKind(
     rhizo.meta.Kind.DECIMAL, rhizo.meta.DecimalKind);
@@ -90,14 +93,17 @@ rhizo.meta.DecimalKind.prototype.isNumeric = function() {
 /**
  * An extension of the basic range type to handle ranges of decimal values.
  *
- * @param {number=} opt_precision The precision (in terms of decimal digits
- *     after the floating point) to use when parsing and clustering decimal
- *     numbers. Users of this filter are strongly encouraged to customize this
- *     setting on a per-field basis.
+ * @param {Object} metamodelEntry The metamodel entry this decimal type is
+ *     assigned to. The metamodel entry can be enriched with an additional
+ *     'precision' property to customize the precision (in terms of decimal
+ *     digits after the floating point) to use when parsing and clustering
+ *     decimal numbers. Users of this filter are strongly encouraged to
+ *     customize this setting on a per-field basis.
  * @constructor
  */
-rhizo.meta.DecimalRangeKind = function(opt_precision) {
-  this.precision_ = typeof(opt_precision) == 'number' ? opt_precision : 2;
+rhizo.meta.DecimalRangeKind = function(metamodelEntry) {
+  this.precision_ = typeof(metamodelEntry['precision']) == 'number' ?
+      metamodelEntry['precision'] : 2;
   this.scale_ = Math.pow(10, this.precision_);
 };
 rhizo.meta.defaultRegistry.registerKind(
@@ -132,19 +138,23 @@ rhizo.meta.DecimalRangeKind.prototype.toUserScale = function(modelValue) {
  * specialized for operating over decimal ranges of values using a logarithmic
  * scale.
  *
- * @param {number=} opt_precision The precision (in terms of decimal digits
- *     after the floating point) to use when parsing and clustering decimal
- *     numbers. Users of this filter are strongly encouraged to customize this
- *     setting on a per-field basis.
- * @param {boolean=} opt_oneplus If true, then the transformation applied
- *     to convert between user and model scale will be Log10(1+x) rather than
- *     Log10(x) (useful if your dataset has values that start from 0).
+ * @param {Object} metamodelEntry The metamodel entry this logarithm type is
+ *     assigned to. The metamodel entry can be enriched with an additional set
+ *     of properties:
+ *     - 'precision': defines the precision (in terms of decimal digits after
+ *       the floating point) to use when parsing and clustering decimal
+ *       numbers. Users of this filter are strongly encouraged to customize
+ *       this setting on a per-field basis.
+ *     - 'oneplus': If true, then the transformation applied to convert between
+ *       user and model scale will be Log10(1+x) rather than Log10(x) (useful
+ *       if your dataset has values that start from 0).
  * @constructor
  */
-rhizo.meta.LogarithmRangeKind = function(opt_precision, opt_oneplus) {
-  this.precision_ = typeof(opt_precision) == 'number' ? opt_precision : 2;
+rhizo.meta.LogarithmRangeKind = function(metamodelEntry) {
+  this.precision_ = typeof(metamodelEntry['precision']) == 'number' ?
+      metamodelEntry['precision'] : 2;
   this.scale_ = Math.pow(10, this.precision_);
-  this.oneplus_ = !!opt_oneplus;
+  this.oneplus_ = !!metamodelEntry['oneplus'];
 };
 rhizo.meta.defaultRegistry.registerKind(
     rhizo.meta.Kind.LOGARITHMRANGE, rhizo.meta.LogarithmRangeKind);

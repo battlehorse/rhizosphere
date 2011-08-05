@@ -700,13 +700,21 @@ rhizo.ui.meta.RangeKindUi.prototype.toFilterScale = function(modelValue) {
 /**
  * Converts a numeric value into a human readable form.
  *
- * The default implementation of this method is a no-op. Custom filters
- * extending the range slider should customize this method according to their
- * needs. rhizo.ui.toHumanLabel() is a useful helper in this case.
+ * The default implementation of this method searches for a custom formatting
+ * function looking up the 'toHumanLabel' property on the metamodel entry this
+ * Kind instance is assigned to.
+ *
+ * Custom filters extending the range slider should customize this method
+ * according to their needs. rhizo.ui.toHumanLabel() is a useful helper in this
+ * case.
  *
  * @param {number} modelValue the value to be converted
  */
 rhizo.ui.meta.RangeKindUi.prototype.toHumanLabel = function(modelValue) {
+  var metamodelEntry = this.project_.metaModel()[this.metaModelKey_];
+  if (typeof(metamodelEntry['toHumanLabel']) == 'function') {
+    return metamodelEntry['toHumanLabel'].call(metamodelEntry, modelValue);
+  }
   return modelValue;
 };
 

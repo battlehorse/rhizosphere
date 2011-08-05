@@ -30,29 +30,40 @@
     return this.name + "(" + this.id + ")";
   };
 
-  // Use a custom LogarithmRangeKind initialized with custom options and
-  // register it under the 'customLogKind' symbolic name.
-  rhizo.meta.defaultRegistry.registerKindFactory('customLogKind', function() {
-    return new rhizo.meta.LogarithmRangeKind(2, true);
-  });
-
-  // Use a custom ui for the newly registered kind, extending the plain
-  // range slider with a custom label rendering code.
-  rhizo.meta.defaultRegistry.registerKindUiFactory('customLogKind',
-      function(project, metaModelKey) {
-        var ui = new rhizo.ui.meta.RangeKindUi(project, metaModelKey);
-        ui.toHumanLabel = rhizo.ui.toHumanLabel;
-        return ui;
-  });
-
   // Define the metamodel, using the custom metamodel Kind defined above.
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: 'Name'},
-    internetUsers: { kind: 'customLogKind', label: 'Internet Users', min: 0, max: 300000000 },
-    population: { kind: 'customLogKind', label: 'Population', min: 0, max: 1400000000},
+    internetUsers: { 
+        kind: rhizo.meta.Kind.LOGARITHMRANGE, 
+        label: 'Internet Users', 
+        min: 0, max: 300000000,
+        precision: 2,
+        oneplus: true,
+        toHumanLabel: rhizo.ui.toHumanLabel
+    },
+    population: {
+        kind: rhizo.meta.Kind.LOGARITHMRANGE, 
+        label: 'Population',
+        min: 0, max: 1400000000,
+        precision: 2,
+        oneplus: true,
+        toHumanLabel: rhizo.ui.toHumanLabel
+    },
     birthRate: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Birth Rate' },
-    oilConsumption: { kind: 'customLogKind', label: 'Oil Consumption' },
-    gdp: { kind: 'customLogKind', label: 'GDP per capita' }
+    oilConsumption: {
+        kind: rhizo.meta.Kind.LOGARITHMRANGE,
+        label: 'Oil Consumption',
+        precision: 2,
+        oneplus: true,
+        toHumanLabel: rhizo.ui.toHumanLabel
+    },
+    gdp: { 
+        kind: rhizo.meta.Kind.LOGARITHMRANGE,
+        label: 'GDP per capita',
+        precision: 2,
+        oneplus: true,
+        toHumanLabel: rhizo.ui.toHumanLabel
+    }
   };
 
   var renderer = {

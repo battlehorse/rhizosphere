@@ -245,17 +245,20 @@ rhizo.meta.KindRegistry.prototype.registerKindUiFactory = function(
 /**
  * Creates a new metamodel Kind implementation class of the requested type.
  * @param {string} key The key identifying the metamodel Kind to create.
+ * @param {Object} metamodelEntry The metamodel entry the Kind will be
+ *     assigned to.
  * @return {Object} The newly created metamodel Kind implementation class.
  */
-rhizo.meta.KindRegistry.prototype.createNewKind = function(key) {
+rhizo.meta.KindRegistry.prototype.createNewKind = function(
+    key, metamodelEntry) {
   if (!(key in this.registry_)) {
     return null;
   }
   var kind = null;
   if (this.registry_[key]['method'] == 'ctor') {
-    kind = new this.registry_[key]['ctor']();
+    kind = new this.registry_[key]['ctor'](metamodelEntry);
   } else {
-    kind = this.registry_[key]['factory']();
+    kind = this.registry_[key]['factory'](metamodelEntry);
   }
   // Attach a user interface specification to the newly crated Kind instance
   // using uiRegistry contents.
@@ -444,17 +447,19 @@ rhizo.meta.RangeKind.prototype.isNumeric =
 /**
  * Describes a basic date type with custom clustering criteria.
  *
- * @param {string=} opt_clusterby The clustering criteria. 'y' for year-based
- *     clustering, 'm' for month, 'd' for day. Defaults to year-based
- *     clustering.
+ * @param {Object} metamodelEntry The metamodel entry this date type is
+ *     assigned to. The metamodel entry can be enriched with an additional
+ *     'clusterBy' property to customize the clustering criteria: 'y' for
+ *     year-based clustering, 'm' for month, 'd' for day. Defaults to
+ *     year-based clustering.
  * @constructor
  */
-rhizo.meta.DateKind = function(opt_clusterby) {
+rhizo.meta.DateKind = function(metamodelEntry) {
   this.monthMap_ = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
     'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-  this.clusterby_ = opt_clusterby || 'y';
+  this.clusterby_ = metamodelEntry['clusterBy'] || 'y';
   if (this.clusterby_ != 'y' &&
       this.clusterby_ != 'm' &&
       this.clusterby_ != 'd') {

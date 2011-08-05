@@ -280,7 +280,7 @@ rhizo.Project.prototype.setMetaModel = function(metaModel) {
   for (key in this.metaModel_) {
     if (typeof(this.metaModel_[key].kind) == 'string') {
       this.metaModel_[key].kind = this.metaModelRegistry_.createNewKind(
-          this.metaModel_[key].kind);
+          this.metaModel_[key].kind, this.metaModel_[key]);
     }
   }
 };
