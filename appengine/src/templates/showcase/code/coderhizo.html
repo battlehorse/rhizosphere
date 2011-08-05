@@ -52,6 +52,7 @@
 <body>
   <div id="rhizo-googlecode" class="googlecode-container" ></div>
   <script type="text/javascript">
+    var ua;
     $(document).ready(function() {
       var project_name = '{{project}}';
       // Parse statistics about the issues fetched from Google Code Hosting.
@@ -79,7 +80,7 @@
       // Start the bootstrap sequence.
       var bootstrapper = new rhizo.bootstrap.Bootstrap($('#rhizo-googlecode'),
                                                        options);
-      bootstrapper.prepare();
+      ua = bootstrapper.prepare();
 
       // Load all the models.
       var models = [];

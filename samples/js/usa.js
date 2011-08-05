@@ -305,9 +305,7 @@
 
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: "Name" },
-    kind: { kind: rhizo.meta.Kind.CATEGORY, label: "Kind" ,
-            categories: [ 'City', 'State', 'Division', 'Region', 'Country'],
-            multiple: true },
+    kind: { kind: rhizo.meta.Kind.CATEGORY, label: "Kind" , multiple: true },
     election: {kind: rhizo.meta.Kind.CATEGORY, label: "Elections",
                categories: elections },
     hierarchy: { kind: rhizo.meta.Kind.NUMBER, label: "Hierarchy", isLink: true}

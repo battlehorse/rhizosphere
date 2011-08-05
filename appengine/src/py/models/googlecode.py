@@ -296,12 +296,6 @@ class IssueStats(object):
   """Aggregated statistics about a collection of Issues."""
 
   def __init__(self):
-    # The entire set of unique stats found among the analyzed issues.
-    self.statuses = set()
-
-    # The range of stars that analyzed issues have.
-    self.stars = {'min': 0, 'max': 0}
-
     # The entire set of issue owners and reporters (creators) of all the
     # analyzed issues.
     self._owners = set()
@@ -330,10 +324,6 @@ class IssueStats(object):
   def Compute(self, issues):
     """Extracts statistics from a list of issues."""
     for issue in issues:
-      # Statuses and stars
-      self.statuses.add(issue.status)
-      self.stars['max'] = max(self.stars['max'], issue.stars)
-
       # Issue owner and reporter
       if issue.owner:
         self._owners.add(issue.owner.name)
@@ -465,10 +455,8 @@ class JSONHelper(object):
   def StatsToJSON(self, stats):
     """Converts IssueStats to a JSON string."""
     json = {
-      'statuses': [status for status in stats.statuses],
       'owners': stats.owners,
       'reporters': stats.reporters,
-      'stars' : stats.stars,
       'created': stats.created,
       'updated': stats.updated,
       'plain_labels': [label for label in stats.plain_labels],

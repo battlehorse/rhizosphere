@@ -46,12 +46,10 @@
 
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: "Name" },
-    age: { kind: rhizo.meta.Kind.RANGE, label: "Age", min: 20, max: 40, stepping: 1},
+    age: { kind: rhizo.meta.Kind.RANGE, label: "Age" },
     male: { kind: rhizo.meta.Kind.BOOLEAN, label: "Male" },
-    hobbies: { kind: rhizo.meta.Kind.CATEGORY, label: "Hobbies" ,
-               categories: [ 'fishing', 'soccer', 'computer games' , 'cycling'],
-               multiple: true},
-    salary: {kind: rhizo.meta.Kind.RANGE, label: "Salary", min:100, max: 300},
+    hobbies: { kind: rhizo.meta.Kind.CATEGORY, label: "Hobbies", multiple: true},
+    salary: {kind: rhizo.meta.Kind.RANGE, label: "Salary" },
     parentName: { kind: rhizo.meta.Kind.STRING, label: "Parent", isLink: true, linkKey: 'name'}
   };
 

@@ -131,11 +131,7 @@
               min: 1, max: 5, stepping: 1},
     price: { kind: rhizo.meta.Kind.RANGE, label: "Price", min: 1, max: 100},
     paperback: { kind: rhizo.meta.Kind.BOOLEAN, label: "Paperback" },
-    genres: { kind: rhizo.meta.Kind.CATEGORY, label: "Genres" , 
-              categories: [ 'sci-fi', 'fantasy', 'crime' , 'politics',
-                            'fiction', 'romance', 'programming', 'manual',
-                            'history'] , 
-              multiple: true}
+    genres: { kind: rhizo.meta.Kind.CATEGORY, label: "Genres", multiple: true} 
   };
 
   var renderer = {

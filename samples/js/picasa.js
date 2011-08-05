@@ -92,19 +92,6 @@
         }
       });
 
-      // Post-processing to identify model characteristics and ranges required
-      // by the metaModel.
-      var minResolution = Number.POSITIVE_INFINITY;
-      var maxResolution = Number.NEGATIVE_INFINITY;
-      var minYear = 3000;
-      var maxYear = 0;
-      $.each(models, function(i, model) {
-        minResolution = Math.min(minResolution, model.resolution);
-        maxResolution = Math.max(maxResolution, model.resolution);
-        minYear = Math.min(minYear, model.published.getFullYear());
-        maxYear = Math.max(maxYear, model.published.getFullYear());
-      });
-
       // Build the metamodel
       var myDecimalKind = new rhizo.meta.DecimalRangeKind(2);
       rhizo.meta.defaultRegistry.registerKindUiFactory(myDecimalKind,
@@ -122,10 +109,8 @@
       var metamodel = {
         author: { kind: rhizo.meta.Kind.STRING, label: "Name" },
         title: { kind: rhizo.meta.Kind.STRING, label: "Title" },
-        resolution: { kind: myDecimalKind, label: "Resolution",
-                      min: minResolution, max: maxResolution },
-        published: { kind: myDateKind, label: "Published",
-                     minYear: minYear, maxYear: maxYear }
+        resolution: { kind: myDecimalKind, label: "Resolution"},
+        published: { kind: myDateKind, label: "Published"}
       };
 
       // Roll everything out.

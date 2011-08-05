@@ -48,16 +48,11 @@
   // Define the metamodel, using the custom metamodel Kind defined above.
   var metamodel = {
     name: { kind: rhizo.meta.Kind.STRING, label: 'Name'},
-    internetUsers: { kind: 'customLogKind', label: 'Internet Users',
-                     min: 0, max: 300000000 },
-    population: { kind: 'customLogKind', label: 'Population',
-                  min: 0, max: 1400000000},
-    birthRate: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Birth Rate',
-                 min: 0, max: 55.0},
-    oilConsumption: { kind: 'customLogKind', label: 'Oil Consumption',
-                      min: 0, max: 20000000},
-    gdp: { kind: 'customLogKind', label: 'GDP per capita',
-           min: 0, max: 130000}
+    internetUsers: { kind: 'customLogKind', label: 'Internet Users', min: 0, max: 300000000 },
+    population: { kind: 'customLogKind', label: 'Population', min: 0, max: 1400000000},
+    birthRate: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Birth Rate' },
+    oilConsumption: { kind: 'customLogKind', label: 'Oil Consumption' },
+    gdp: { kind: 'customLogKind', label: 'GDP per capita' }
   };
 
   var renderer = {

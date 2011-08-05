@@ -80,12 +80,9 @@ googlecode.buildMetamodel = function(stats) {
   var metamodel = {
     id: {kind: 'nonNumericId', label: 'Id'},
     summary: {kind: rhizo.meta.Kind.STRING, label: 'Summary'},
-    state: {kind: rhizo.meta.Kind.CATEGORY, label: 'State',
-            categories: ['open', 'closed']},
-    status: {kind: rhizo.meta.Kind.CATEGORY, label: 'Status',
-             categories: stats.statuses},
-    stars: {kind: rhizo.meta.Kind.RANGE, label: "Stars",
-            min: stats.stars.min, max: stats.stars.max },
+    state: {kind: rhizo.meta.Kind.CATEGORY, label: 'State'},
+    status: {kind: rhizo.meta.Kind.CATEGORY, label: 'Status'},
+    stars: {kind: rhizo.meta.Kind.RANGE, label: "Stars"},
 
     reporter_name: {kind: rhizo.meta.Kind.CATEGORY, label: 'Reporter',
                     categories: stats.reporters},
