@@ -34,12 +34,16 @@ import com.rhizospherejs.gwt.client.bridge.JSONStringModelBridge;
 import com.rhizospherejs.gwt.client.bridge.JavaScriptObjectModelBridge;
 import com.rhizospherejs.gwt.client.bridge.JsoBuilder;
 import com.rhizospherejs.gwt.client.bridge.ModelBridge;
+import com.rhizospherejs.gwt.client.handlers.ErrorEvent;
 import com.rhizospherejs.gwt.client.handlers.FilterEvent;
+import com.rhizospherejs.gwt.client.handlers.HasErrorHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasFilterHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasLayoutHandlers;
+import com.rhizospherejs.gwt.client.handlers.HasModelChangeHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasReadyHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasSelectionHandlers;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
+import com.rhizospherejs.gwt.client.handlers.ModelChangeEvent;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
 import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
 import com.rhizospherejs.gwt.client.meta.AttributeBuilder;
@@ -64,9 +68,8 @@ import java.util.Map;
  * <ul>
  * <li>The Rhizosphere javascript libraries have already been injected in the
  *   DOM (see {@link RhizosphereLoader}).</li>
- * <li>The visualization has been properly configured by defining the models,
- *   metamodel and renderer the visualization will use. (see
- *   {@link Rhizosphere#addModel(Object)},
+ * <li>The visualization has been properly configured by defining metamodel and
+ *   renderer the visualization will use. (see
  *   {@link Rhizosphere#setMetaModel(RhizosphereMetaModel)} and
  *   {@link Rhizosphere#setRenderer(RhizosphereRenderer)}).</li>
  * </ul>
@@ -128,6 +131,75 @@ import java.util.Map;
  * Rhizosphere can be configured an tweaked via {@link RhizosphereOptions}.
  *
  * <p>
+ * Once you have finished configuring Rhizosphere, attach it to your GWT
+ * application. Once the visualization completes its initialization it fires
+ * a {@link ReadyEvent}. After the {@link ReadyEvent} has fired, you can
+ * programmatically manipulate the visualization: this includes adding and
+ * removing visualization models
+ * ({@link #addModel(Object, RhizosphereCallback1)} and related methods) and
+ * other operations like filtering
+ * ({@link #doFilter(Map, RhizosphereCallback)}), selection
+ * ({@link #doSelection(String, Collection, RhizosphereCallback)}) and layout
+ * changes
+ * ({@link #doLayout(String, JSONObject, Collection, RhizosphereCallback)}).
+ * 
+ * <p>
+ * The following code snippet demonstrates how to initialize a Rhizosphere
+ * visualization using POJOs.
+ * <pre><code>
+ * RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+ *
+ *   public void run() {
+ *     // Create some default options.
+ *     RhizosphereOptions&lt;Employee&gt; options = RhizosphereOptions.create();
+ *     options.setTemplate("default");
+ *     options.setLogLevel(LogLevel.DEBUG);
+ *
+ *     // Create a new Rhizosphere visualization suited to display Employee
+ *     // POJOs (not shown here).
+ *     final Rhizosphere rhizosphere = new Rhizosphere&lt;Employee&gt;(options);
+ *
+ *     // Makes Rhizosphere aware of the objects that we want to visualize.
+ *     // This step is mandatory if you are using your custom POJOs as
+ *     // Rhizosphere models.
+ *     rhizosphere.prepareFor(GWT.create(Employee.class));
+ *
+ *     // Sets the renderer that will visualize each Employee.
+ *     rhizosphere.setRenderer(new EmployeeRenderer());
+ *
+ *     // Configure Rhizosphere to use all available space within its
+ *     // container.
+ *     rhizosphere.setWidth("100%");
+ *     rhizosphere.setHeight("100%");
+ *     
+ *     // Attach an event listener to be notified whenever the visualization
+ *     // is ready to accept programmatic actions.
+ *     rhizosphere.addReadyHandler(new ReadyEvent.Handler() {
+ *
+ *       public void onReady(ReadyEvent event) {
+ *         if (event.isSuccess()) {
+ *           // The visualization is ready. Add some models to it.
+ *           List<Employee> employees = new LinkedList<Employee>();
+ *           employees.add(new Employee(...));
+ *           employees.add(new Employee(...));
+ *           ...
+ *           employees.add(new Employee(...));
+ *           rhizosphere.addModels(employees, null);
+ *         }
+ *       }
+ *     });
+ *     
+ *     // Add Rhizosphere to the GWT app ('container' can be a GWT panel).
+ *     container.add(rhizosphere);
+ *   }
+ * }
+ * </code></pre>
+ * 
+ * <p>
+ * See <a href="http://rhizospheregwt.appspot.com">rhizospheregwt.appspot.com</a>
+ * for more examples and links to source code, including the example above.
+ *
+ * <p>
  * Rhizosphere conforms to the Google Visualization API specifications. If you
  * want to use Rhizosphere as a Google Visualization, see
  * {@link com.rhizospherejs.gwt.client.gviz.GVizRhizosphere}.
@@ -138,8 +210,9 @@ import java.util.Map;
  * @author battlehorse@google.com (Riccardo Govoni)
  * @author dinoderek@google.com (Dino Derek Hughes)
  */
-public class Rhizosphere<T> extends Composite
-    implements HasReadyHandlers, HasFilterHandlers, HasLayoutHandlers, HasSelectionHandlers {
+public class Rhizosphere<T> extends Composite implements
+    HasReadyHandlers, HasFilterHandlers, HasLayoutHandlers, HasSelectionHandlers,
+    HasModelChangeHandlers, HasErrorHandlers {
 
   /**
    * Manages the lifecycle of Rhizosphere renderings. Each datapoint of the
@@ -211,13 +284,6 @@ public class Rhizosphere<T> extends Composite
   private RhizosphereOptions<T> options;
 
   /**
-   * The dataset that Rhizosphere will visualize, after conversion of each
-   * datapoint into a JavaScriptObject (suitable to be passed to underlying
-   * Rhizosphere js library).
-   */
-  private Collection<JavaScriptObject> models;
-
-  /**
    * The bridge to convert models from the format externally provided (POJOs,
    * JavaScriptObject, JSONObject or String) to the format internally required
    * by Rhizosphere (custom tailored JavaScriptObjects).
@@ -245,6 +311,11 @@ public class Rhizosphere<T> extends Composite
    * The visualization renderer.
    */
   private RhizosphereRenderer<T> renderer;
+  
+  /**
+   * A native renderer that wraps the externally provided GWT one.
+   */
+  private NativeRenderer<T> nativeRenderer;
 
   /**
    * The visualization bootstrapper.
@@ -271,7 +342,6 @@ public class Rhizosphere<T> extends Composite
    */
   public Rhizosphere(final RhizosphereOptions<T> options) {
     this.options = options;
-    models = new ArrayList<JavaScriptObject>();
 
     RhizoPanel p = new RhizoPanel();
     initWidget(p);
@@ -285,7 +355,8 @@ public class Rhizosphere<T> extends Composite
   /**
    * Prepares Rhizosphere to handle custom POJOs as visualization models.
    * You must invoke this method before passing your models to Rhizosphere
-   * (that is, before your first call to {@link Rhizosphere#addModel(Object)}).
+   * (that is, before your first call to
+   * {@link Rhizosphere#addModel(Object, RhizosphereCallback1)}).
    *
    * If the visualization uses opaque models (JavaScriptObject, JSONObject or
    * JSON strings), it is not necessary to call this method.
@@ -377,70 +448,6 @@ public class Rhizosphere<T> extends Composite
   }
 
   /**
-   * Adds the specified model to the visualization.
-   *
-   * Models can be defined as JavaScriptObject, JSONObject, String (assumed to
-   * represent a JSON-encoded object) or custom POJOs.
-   *
-   * If custom POJOs are used, Rhizosphere must first be prepared to handle
-   * them via {@link #prepareFor(RhizosphereMapping)}.
-   *
-   * @param model The model, i.e. a datapoint of the dataset you want to
-   *     visualize, to add.
-   * @return An opaque reference to the model just added, that can be later
-   *     used for programmatic actions that address specific models.
-   * @throws com.google.gwt.json.client.JSONException If the model type is a
-   *     String and it cannot be successfully converted into a JSON object.
-   * @throws RhizosphereException If {@code prepareFor} was not called with the
-   *     correct class before passing a custom POJO to this method.
-   */
-  public RhizosphereModelRef addModel(final T model) {
-    ModelBridge<T> factory = getModelBridge(model);
-    assert factory != null;
-    if ((model instanceof CustomRhizosphereMetaModel) && !configuredCustomMetaModel) {
-      assert metaModel != null;
-      ((CustomRhizosphereMetaModel) model).setCustomRhizosphereMetaModelAttributes(metaModel);
-      configuredCustomMetaModel = true;
-    }
-
-    JavaScriptObject jso = factory.bridge(model);
-    models.add(jso);
-    return RhizosphereModelRef.asModelRef(jso);
-  }
-
-  /**
-   * Returns a suitable ModelBridge instance for the type of model used by the
-   * visualization.
-   */
-  private ModelBridge<T> getModelBridge(final T model) {
-    if (modelBridge == null) {
-      modelBridge = tryBuildDefaultModelBridges(model);
-      if (modelBridge == null) {
-        throw new RhizosphereException("No Rhizosphere mapping registered for "
-            + model.getClass());
-      }
-    }
-    return modelBridge;
-  }
-
-  /**
-   * Instantiate a built-in model bridge for basic model types
-   * (JavaScriptObject, JSONObject, String).
-   */
-  private ModelBridge<T> tryBuildDefaultModelBridges(final T model) {
-    if (model instanceof String) {
-      return new JSONStringModelBridge().cast();
-    }
-    if (model instanceof JSONObject) {
-      return new JSONObjectModelBridge().cast();
-    }
-    if (model instanceof JavaScriptObject) {
-      return new JavaScriptObjectModelBridge().cast();
-    }
-    return null;
-  }
-
-  /**
    * Sets the visualization metamodel. If custom POJOs are used as visualization
    * models, a metamodel is automatically built based on
    * {@link RhizosphereModelAttribute} annotations found on the POJOs. It is
@@ -522,6 +529,204 @@ public class Rhizosphere<T> extends Composite
   public HandlerRegistration addSelectionHandler(SelectionEvent.Handler handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
+  
+  /**
+   * Register a handler to be notified whenever new models are added or removed
+   * from the visualization.
+   * @param handler The handler to notify.
+   */
+  @Override
+  public HandlerRegistration addModelChangeHandler(ModelChangeEvent.Handler handler) {
+    return addHandler(handler, ModelChangeEvent.getType());
+  }
+ 
+  /**
+   * Register a handler to be notified whenever errors occur or are cleared
+   * from the visualization.
+   * @param handler The handler to notify.
+   */
+  @Override
+  public HandlerRegistration addErrorHandler(ErrorEvent.Handler handler) {
+    return addHandler(handler, ErrorEvent.getType());
+  }
+  
+  /**
+   * Adds the specified model to the visualization.
+   *
+   * Models can be defined as JavaScriptObject, JSONObject, String (assumed to
+   * represent a JSON-encoded object) or custom POJOs.
+   *
+   * If custom POJOs are used, Rhizosphere must first be prepared to handle
+   * them via {@link #prepareFor(RhizosphereMapping)}.
+   * 
+   * If multiple models needs to be added at the same time, it is strongly
+   * recommended to use the {@link #addModels(Collection, RhizosphereCallback1)}
+   * alternative, for performance reasons.
+   *
+   * @param modelToAdd The model, i.e. a datapoint of the dataset you want to
+   *     visualize, to add.
+   * @param cb An optional callback describing whether the operation was
+   *     successful or not. When successful, the callback will contain an
+   *     opaque reference to the model just added, that can be later used for
+   *     other programmatic actions that address specific models.
+   * @throws com.google.gwt.json.client.JSONException If the model type is a
+   *     String and it cannot be successfully converted into a JSON object.
+   * @throws RhizosphereException If {@code prepareFor} was not called with the
+   *     correct class before passing a custom POJO to this method.
+   */
+  public void addModel(final T modelToAdd, final RhizosphereCallback1<RhizosphereModelRef> cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false,  "Visualization is not deployed yet", null);
+      }
+      return;
+    }
+
+    final RhizosphereModelRef ref = convertModelForAdd(modelToAdd);
+    userAgent.addModel(ref, new RhizosphereCallback() {
+      
+      @Override
+      public void run(boolean success, String details) {
+        if (cb != null) {
+          cb.run(success, details, ref);
+        }
+      }
+    });
+  }
+  
+  /**
+   * Adds one or more models to the visualization.
+   * 
+   * Models can be defined as JavaScriptObject, JSONObject, String (assumed to
+   * represent a JSON-encoded object) or custom POJOs.
+   *
+   * If custom POJOs are used, Rhizosphere must first be prepared to handle
+   * them via {@link #prepareFor(RhizosphereMapping)}.
+   *
+   * @param modelsToAdd The models, i.e. datapoints of the dataset you want to
+   *     visualize, to add.
+   * @param cb An optional callback describing whether the operation was
+   *     successful or not. When successful, the callback will contain a list
+   *     of opaque references to the models just added, that can be later used
+   *     for other programmatic actions that address specific models. The list
+   *     ordering matches the one of the input {@code modelsToAdd} collection.
+   * @throws com.google.gwt.json.client.JSONException If the model type is a
+   *     String and it cannot be successfully converted into a JSON object.
+   * @throws RhizosphereException If {@code prepareFor} was not called with the
+   *     correct class before passing custom POJOs to this method.
+   */
+  public void addModels(final Collection<T> modelsToAdd,
+                        final RhizosphereCallback1<List<RhizosphereModelRef>> cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false,  "Visualization is not deployed yet", null);
+      }
+      return;
+    }
+    
+    final List<RhizosphereModelRef> refs = new ArrayList<RhizosphereModelRef>();
+    for (T model : modelsToAdd) {
+      refs.add(convertModelForAdd(model));
+    }
+    userAgent.addModels(refs, new RhizosphereCallback() {
+      
+      @Override
+      public void run(boolean success, String details) {
+        if (cb != null) {
+          cb.run(success, details, refs);
+        }
+      }
+    });
+  }
+  
+  private RhizosphereModelRef convertModelForAdd(final T model) {
+    ModelBridge<T> factory = getModelBridge(model);
+    assert factory != null;
+    if ((model instanceof CustomRhizosphereMetaModel) && !configuredCustomMetaModel) {
+      assert metaModel != null;
+      ((CustomRhizosphereMetaModel) model).setCustomRhizosphereMetaModelAttributes(metaModel);
+      configuredCustomMetaModel = true;
+    }
+
+    return RhizosphereModelRef.asModelRef(factory.bridge(model));
+  }
+
+  /**
+   * Returns a suitable ModelBridge instance for the type of model used by the
+   * visualization.
+   */
+  private ModelBridge<T> getModelBridge(final T model) {
+    if (modelBridge == null) {
+      modelBridge = tryBuildDefaultModelBridges(model);
+      if (modelBridge == null) {
+        throw new RhizosphereException("No Rhizosphere mapping registered for "
+            + model.getClass());
+      }
+      if (nativeRenderer != null) {
+        // The native renderer has already been created (i.e. the visualization
+        // has already been deployed), but the modelBridge was not.
+        // This occurs whenever non-POJO models are used, in which case the
+        // bridge is defined only when the first model instance is added to
+        // Rhizosphere, after deployment (when POJOs are used, the model bridge
+        // is defined during the prepareFor() calls.
+        nativeRenderer.setModelExtractor(modelBridge);
+      }
+    }
+    return modelBridge;
+  }
+
+  /**
+   * Instantiate a built-in model bridge for basic model types
+   * (JavaScriptObject, JSONObject, String).
+   */
+  private ModelBridge<T> tryBuildDefaultModelBridges(final T model) {
+    if (model instanceof String) {
+      return new JSONStringModelBridge().cast();
+    }
+    if (model instanceof JSONObject) {
+      return new JSONObjectModelBridge().cast();
+    }
+    if (model instanceof JavaScriptObject) {
+      return new JavaScriptObjectModelBridge().cast();
+    }
+    return null;
+  }  
+  
+  /**
+   * Removes one model from the visualization.
+   *
+   * @param modelRef A reference to the model to remove.
+   * @param cb An optional callback describing the outcome of the requested
+   *     operation.
+   */
+  public void removeModel(final RhizosphereModelRef modelRef, RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false,  "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.removeModel(modelRef, cb);
+  }
+
+  /**
+   * Removes one or more models from the visualization.
+   *
+   * @param modelRefs A collection of references pointing to the models to
+   *     remove.
+   * @param cb An optional callback describing the outcome of the requested
+   *     operation.
+   */
+  public void removeModels(final Collection<RhizosphereModelRef> modelRefs,
+                           RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false,  "Visualization is not deployed yet");
+      }
+      return;
+    }
+    userAgent.removeModels(modelRefs, cb);
+  }  
 
   /**
    * Programmatically applies a faceted filter on visualization models on the
@@ -691,6 +896,42 @@ public class Rhizosphere<T> extends Composite
     }    
     userAgent.doLayout(engine, state, positions, cb);
   }
+  
+  /**
+   * Remove all error notifications currently showing in the visualization.
+   * @param cb An optional callback invoked with the outcome of the error
+   *     removal operation.
+   */  
+  public void clearErrors(RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }    
+    userAgent.clearErrors(cb);
+  }
+
+  /**
+   * Adds an error notification to the visualization. The notification will
+   * not be displayed unless
+   * {@link RhizosphereOptions#setShowErrorsInViewport(boolean)} is set to
+   * {@code true}.
+   *
+   * @param errorDetails The contents of the error notification.
+   * @param cb An optional callback invoked with the outcome of the error
+   *     addition operation.
+   */  
+  public void addError(String errorDetails, RhizosphereCallback cb) {
+    if (!bootstrap.isDeployed()) {
+      if (cb != null) {
+        cb.run(false, "Visualization is not deployed yet");
+      }
+      return;
+    }    
+    userAgent.addError(errorDetails, cb);
+  }
+
 
   /**
    * Resolves a collection of opaque model references into model instances.
@@ -737,9 +978,16 @@ public class Rhizosphere<T> extends Composite
       // Explicit positioning may get lost on reparenting, e.g. if the
       // widget was located inside an AbsolutePanel.
       getElement().getStyle().setPosition(Position.RELATIVE);
-    } else if (!models.isEmpty()) {
-      NativeRenderer<T> nativeRenderer = createNativeRenderer();
-      bootstrap.deployExplicit(models, metaModel, nativeRenderer);      
+    } else {
+      assert nativeRenderer == null;
+      nativeRenderer = createNativeRenderer();
+      
+      // TODO(battlehorse): Rhizosphere-GWT only allows the addition/removal of
+      // models after the visualization has been deployed. Make it possible
+      // to add/remove models even before deploy. This requires the
+      // modelManager and layoutManager to be available at project construction
+      // time (see rhizo.base.js).
+      bootstrap.deployExplicit(null, metaModel, nativeRenderer);
     }
     super.onLoad();
   }
@@ -755,11 +1003,13 @@ public class Rhizosphere<T> extends Composite
    *     configuration options.
    */
   private NativeRenderer<T> createNativeRenderer() {
+    // The modelBridge may still be unknown at this stage.
+    assert widgetBridge != null;
     if (renderer != null) {
       return new NativeRenderer<T>(renderer, widgetBridge, modelBridge);
     }
 
-    NativeRenderer<T>  nativeRenderer = options.getNativeRenderer();
+    NativeRenderer<T> nativeRenderer = options.getNativeRenderer();
     if (nativeRenderer == null) {
       throw new RhizosphereException(
           "You must define a renderer for your Rhizosphere visualization.");

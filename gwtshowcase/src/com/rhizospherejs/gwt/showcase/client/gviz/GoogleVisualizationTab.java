@@ -43,6 +43,7 @@ import com.rhizospherejs.gwt.client.RhizosphereKind;
 import com.rhizospherejs.gwt.client.RhizosphereLoader;
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
+import com.rhizospherejs.gwt.client.RhizosphereOptions.LogLevel;
 import com.rhizospherejs.gwt.client.gviz.GVizRhizosphere;
 import com.rhizospherejs.gwt.client.gviz.GVizRhizosphere.DataTableModel;
 import com.rhizospherejs.gwt.client.gviz.GVizRhizosphere.GVizRenderer;
@@ -262,7 +263,9 @@ public class GoogleVisualizationTab extends Composite implements DataTableChange
     // Defines a custom renderer via configuration options.
     rhizosphereOptions.setRenderer(new PersonRenderer(this));
     rhizosphereOptions.setCacheDimensions(true);
-    rhizosphereOptions.setEnableHTML5History(false);    
+    rhizosphereOptions.setEnableHTML5History(false);
+    rhizosphereOptions.setEnableLoadingIndicator(false);
+    rhizosphereOptions.setLogLevel(LogLevel.DEBUG);
 
     // Enhance the metamodel Rhizosphere automatically generates from the
     // DataTable. In particular, configure Rhizosphere to use a Date data type
@@ -270,8 +273,7 @@ public class GoogleVisualizationTab extends Composite implements DataTableChange
     RhizosphereMetaModel meta = RhizosphereMetaModel.create();
     meta.newAttribute("dob").
       setKind(RhizosphereKind.DATE).
-      setLabel("Date of Birth").
-      setYearRange(2005, 2011);
+      setLabel("Date of Birth");
 
     // Extend the automatically generated metamodel with the provided info.
     rhizosphereOptions.setMetaModelFragment(meta);

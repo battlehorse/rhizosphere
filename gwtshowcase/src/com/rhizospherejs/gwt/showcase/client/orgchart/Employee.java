@@ -16,24 +16,21 @@
 
 package com.rhizospherejs.gwt.showcase.client.orgchart;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import com.rhizospherejs.gwt.client.CustomRhizosphereMetaModel;
 import com.rhizospherejs.gwt.client.CustomRhizosphereModel;
 import com.rhizospherejs.gwt.client.RhizosphereKind;
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
+import com.rhizospherejs.gwt.client.RhizosphereMetaModel.Attribute;
 import com.rhizospherejs.gwt.client.RhizosphereModel;
 import com.rhizospherejs.gwt.client.RhizosphereModelAttribute;
 import com.rhizospherejs.gwt.client.bridge.JsoBuilder;
 import com.rhizospherejs.gwt.client.meta.AttributeDescriptor;
 import com.rhizospherejs.gwt.client.meta.HasCategories;
+import com.rhizospherejs.gwt.client.meta.HasCustomParameters;
 import com.rhizospherejs.gwt.client.meta.HasKind;
-import com.rhizospherejs.gwt.client.meta.HasKindFactory;
 import com.rhizospherejs.gwt.client.meta.HasLink;
+import com.rhizospherejs.gwt.client.meta.HasPrecision;
 import com.rhizospherejs.gwt.client.meta.HasRange;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A POJO representing an employee, annotated so that it can be used within a
@@ -43,22 +40,9 @@ import java.util.Set;
  */
 public class Employee implements
     RhizosphereModel, CustomRhizosphereModel, CustomRhizosphereMetaModel {
-
+  
   public static final int MIN_AGE = 10;
-  public static final int MAX_AGE = 50;
-
-  private static String[] getAllHobbies() {
-    Set<String> allHobbies = new HashSet<String>();
-    allHobbies.add("fishing");
-    allHobbies.add("soccer");
-    allHobbies.add("computer games");
-    allHobbies.add("role playing");
-    allHobbies.add("volleyball");
-    allHobbies.add("swimming");
-    allHobbies.add("shopping");
-    allHobbies.add("paintball");
-    return allHobbies.toArray(new String[allHobbies.size()]);
-  }
+  public static final int MAX_AGE = 50;  
 
   private String employeeId;
   private String parentEmployeeId;
@@ -142,10 +126,11 @@ public class Employee implements
     return hobbies;
   }
 
-  // Hobbies are a category kind that can have multiple values.
+  // Hobbies are a category kind that can have multiple values. Automatically
+  // infer the set of categories from the set of employees.
   static class HobbiesDescriptor implements AttributeDescriptor, HasKind, HasCategories {
     @Override public RhizosphereKind kind() { return RhizosphereKind.CATEGORY; }
-    @Override public String[] categories() { return getAllHobbies(); }
+    @Override public String[] categories() { return null; }
     @Override public boolean multiple() { return true; }
     @Override public boolean hierarchy() { return false; }
   }
@@ -156,28 +141,17 @@ public class Employee implements
   }
 
   // Salary should be surfaced as a range-type attribute that utilizes a
-  // logarithmic scale.
-  static class SalaryDescriptor implements AttributeDescriptor, HasKindFactory, HasRange {
-
-    // A factory method is used to define the kind of this attribute, which
-    // gives us the opportunity to customize how the logarithmic slider will
-    // show up in the UI.
-    @Override public final native JavaScriptObject kindFactory() /*-{
-      return function() {
-        return new $wnd.rhizo.meta.LogarithmRangeKind(2, true);
-      };
+  // logarithmic scale. Infer the range scale from the set of employees.
+  // Specify a pair of custom parameters not directly accessible from GWT code
+  // to customize the rendering of the range filter.
+  static class SalaryDescriptor implements  
+      AttributeDescriptor, HasKind, HasPrecision, HasCustomParameters {
+    @Override public RhizosphereKind kind() { return RhizosphereKind.LOGARITHMRANGE; }
+    @Override public int precision() { return 2; }
+    @Override public final native void setCustomParameters(Attribute attribute) /*-{
+      attribute['oneplus'] = true;
+      attribute['toHumanLabel'] = $wnd.rhizo.ui.toHumanLabel;
     }-*/;
-    @Override public final native JavaScriptObject kindUiFactory() /*-{
-      return function(project, metaModelKey) {
-        var ui = new $wnd.rhizo.ui.meta.RangeKindUi(project, metaModelKey);
-        ui.toHumanLabel = $wnd.rhizo.ui.toHumanLabel;
-        return ui;
-      };
-    }-*/;
-    @Override public double maxRange() { return 500000; }
-    @Override public double minRange() { return 0; }
-    @Override public double stepping() { return 0; }
-    @Override public double steps() { return 0; }
   }
 
   // This method shows how you can manually define additional model attributes

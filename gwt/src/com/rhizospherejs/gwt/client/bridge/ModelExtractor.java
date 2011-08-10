@@ -20,9 +20,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Extracts the Java object that was originally used to represent a Rhizosphere
- * model (via {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object)})
- * from the JavaScriptObject (used in the visualization Javascript library code)
- * that wraps it.
+ * model (via {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object,
+ * com.rhizospherejs.gwt.client.RhizosphereCallback1)}) from the
+ * JavaScriptObject (used in the visualization Javascript library code) that
+ * wraps it.
  *
  * @param <T> The models' type of the Rhizosphere visualization this extractor
  *     is attached to.
@@ -33,9 +34,10 @@ public interface ModelExtractor<T> {
   /**
    * Extracts the Java object that was originally used to represent a
    * Rhizosphere model (via
-   * {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object)}) from
-   * the JavaScriptObject (used in the visualization javascript library code)
-   * that wraps it.
+   * {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object,
+   * com.rhizospherejs.gwt.client.RhizosphereCallback1)}) from the
+   * JavaScriptObject (used in the visualization javascript library code) that
+   * wraps it.
    *
    * @param jso The wrapping JavaScriptObject.
    * @return The wrapped model object.

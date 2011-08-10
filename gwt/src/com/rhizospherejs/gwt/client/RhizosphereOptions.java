@@ -78,6 +78,41 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
       this[key] = value;
     }-*/;
   }
+  
+  /**
+   * Enumeration of logging levels that the Rhizosphere visualization can use
+   * for client-side logging. All Rhizosphere logs are directed to the
+   * browser console, if available.
+   */
+  public enum LogLevel {
+    /**
+     * Deepest level of logging, for debug purposes.
+     */
+    DEBUG,
+    
+    /**
+     * Intermediate logging level that discards lowest level debug messages.
+     */
+    INFO,
+    
+    /**
+     * Intermediate logging level that discards debug and informational
+     * messages.
+     */
+    WARN, 
+    
+    /**
+     * Excludes all debugging information, but retains timings and performance
+     * profiling logs.
+     */
+    TIME, 
+    
+    /**
+     * Default log level. Only error messages that require user attention are
+     * logged.
+     */
+    ERROR;
+  }
 
   /**
    * Creates a new options instance.
@@ -96,6 +131,22 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
   public final native void setAllowConfigFromUrl(boolean allowConfigFromUrl) /*-{
     this['allowConfigFromUrl'] = allowConfigFromUrl;
   }-*/;
+  
+  /**
+   * Sets the logging level for the Rhizosphere library.
+   *
+   * @param level The log level to use.
+   */
+  public final void setLogLevel(LogLevel level) {
+    if (level == null) {
+      level = LogLevel.ERROR;
+    }
+    nativeSetLogLevel(level.toString().toLowerCase());
+  }
+  
+  private native void nativeSetLogLevel(String level) /*-{
+    this['logLevel'] = level;
+  }-*/;
 
   /**
    * Whether Rhizosphere should use animation to smooth transitions such as
@@ -111,6 +162,22 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
    */
   public final native void setEnableHTML5History(boolean enableHTML5History) /*-{
     this['enableHTML5History'] = enableHTML5History;
+  }-*/;
+  
+  /**
+   * Whether to display some form of load indicator (such as a progress bar)
+   * while the Rhizosphere visualization is loading.
+   */
+  public final native void setEnableLoadingIndicator(boolean enableLoadingIndicator) /*-{
+    this['enableLoadingIndicator'] = enableLoadingIndicator;
+  }-*/;
+  
+  /**
+   * Whether user-visible notifications should be displayed in the visualization
+   * viewport in response to visualization errors.
+   */
+  public final native void setShowErrorsInViewport(boolean showErrorsInViewport) /*-{
+    this['showErrorsInViewport'] = showErrorsInViewport;
   }-*/;
 
   /**

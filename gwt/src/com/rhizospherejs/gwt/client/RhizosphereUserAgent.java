@@ -22,8 +22,10 @@ import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 
+import com.rhizospherejs.gwt.client.handlers.ErrorEvent;
 import com.rhizospherejs.gwt.client.handlers.FilterEvent;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
+import com.rhizospherejs.gwt.client.handlers.ModelChangeEvent;
 import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
 
 import java.util.ArrayList;
@@ -262,6 +264,137 @@ private JavaScriptObject nativeUserAgent;
       }    
     });
   }-*/;
+  
+  /**
+   * Programmatically adds one model to the visualization.
+   *
+   * @param modelRef The model to add to the visualization. It must not be
+   *     already part of it.
+   * @param cb An optional callback invoked with the outcome of the model
+   *     addition operation.
+   */
+  void addModel(RhizosphereModelRef modelRef, RhizosphereCallback cb) {
+    JsArray<RhizosphereModelRef> modelRefs = nativeNewJsArray();
+    if (modelRef != null) {
+      modelRefs.push(modelRef);
+    }
+    nativeAddModels(nativeUserAgent, modelRefs, cb);
+  }
+  
+  /**
+   * Programmatically adds one or more models to the visualization.
+   *
+   * @param models The collection of visualization models to add to the
+   *     visualization. The models must not be already part of it.
+   * @param cb An optional callback invoked with the outcome of the model
+   *     addition operation.
+   */
+  void addModels(Collection<RhizosphereModelRef> models, RhizosphereCallback cb) {
+    JsArray<RhizosphereModelRef> modelRefs = null;
+    if (models != null && !models.isEmpty()) {
+      modelRefs = nativeNewJsArray();
+      for (RhizosphereModelRef modelRef : models) {
+        modelRefs.push(modelRef);
+      }
+    }
+    nativeAddModels(nativeUserAgent, modelRefs, cb);
+  }
+  
+  private native void nativeAddModels(JavaScriptObject nativeUserAgent,
+                                        JsArray<RhizosphereModelRef> modelRefs,
+                                        RhizosphereCallback cb) /*-{
+    nativeUserAgent.addModels(modelRefs, function(status, details) {
+      if (cb) {
+        cb.@com.rhizospherejs.gwt.client.RhizosphereCallback::run(ZLjava/lang/String;)(status, details);
+      }
+    });
+  }-*/;
+  
+  /**
+   * Programmatically removes one model from the visualization.
+   *
+   * @param modelRef The model to remove.
+   * @param cb An optional callback invoked with the outcome of the model
+   *     removal operation.
+   */
+  void removeModel(RhizosphereModelRef modelRef, RhizosphereCallback cb) {
+    JsArray<RhizosphereModelRef> modelRefs = nativeNewJsArray();
+    if (modelRef != null) {
+      modelRefs.push(modelRef);
+    }
+    nativeRemoveModels(nativeUserAgent, modelRefs, cb);
+  }
+
+  /**
+   * Programmatically removes one or more models from the visualization.
+   *
+   * @param models The collection of visualization models to remove from the
+   *     visualization.
+   * @param cb An optional callback invoked with the outcome of the model
+   *     removal operation.
+   */
+  void removeModels(Collection<RhizosphereModelRef> models, RhizosphereCallback cb) {
+    JsArray<RhizosphereModelRef> modelRefs = null;
+    if (models != null && !models.isEmpty()) {
+      modelRefs = nativeNewJsArray();
+      for (RhizosphereModelRef modelRef : models) {
+        modelRefs.push(modelRef);
+      }
+    }
+    nativeRemoveModels(nativeUserAgent, modelRefs, cb);    
+  }
+
+  private native void nativeRemoveModels(JavaScriptObject nativeUserAgent,
+                                         JsArray<RhizosphereModelRef> modelRefs,
+                                         RhizosphereCallback cb) /*-{
+    nativeUserAgent.removeModels(modelRefs, function(status, details) {
+      if (cb) {
+        cb.@com.rhizospherejs.gwt.client.RhizosphereCallback::run(ZLjava/lang/String;)(status, details);
+      }
+    });
+  }-*/;
+  
+  /**
+   * Adds an error notification to the visualization. The notification will
+   * not be displayed unless
+   * {@link RhizosphereOptions#setShowErrorsInViewport(boolean)} is set to
+   * {@code true}.
+   *
+   * @param errorDetails The contents of the error notification.
+   * @param cb An optional callback invoked with the outcome of the error
+   *     addition operation.
+   */
+  void addError(String errorDetails, RhizosphereCallback cb) {
+    nativeAddError(nativeUserAgent, errorDetails, cb);
+  }
+  
+  private native void nativeAddError(JavaScriptObject nativeUserAgent,
+                                     String errorDetails,
+                                     RhizosphereCallback cb) /*-{
+    nativeUserAgent.addError([errorDetails], function(status, details) {
+      if (cb) {
+        cb.@com.rhizospherejs.gwt.client.RhizosphereCallback::run(ZLjava/lang/String;)(status, details);
+      }
+    });
+  }-*/;
+  
+  /**
+   * Remove all error notifications currently showing in the visualization.
+   * @param cb An optional callback invoked with the outcome of the error
+   *     removal operation.
+   */
+  void clearErrors(RhizosphereCallback cb) {
+    nativeClearErrors(nativeUserAgent, cb);
+  }
+  
+  private native void nativeClearErrors(JavaScriptObject nativeUserAgent,
+                                        RhizosphereCallback cb) /*-{
+    nativeUserAgent.clearErrors(function(status, details) {
+      if (cb) {
+        cb.@com.rhizospherejs.gwt.client.RhizosphereCallback::run(ZLjava/lang/String;)(status, details);
+      }
+    });
+  }-*/;
 
   /**
    * Registers native listeners on all event types and binds them to callbacks
@@ -277,7 +410,7 @@ private JavaScriptObject nativeUserAgent;
       var incremental = typeof(message['incremental']) == 'boolean' ? message['incremental'] : true;
       var models = message['models'] || [];
       for (var i = 0; i < models.length; i++) {
-        models[i] = nativeUserAgent.getProject().modelsMap()[models[i]].unwrap();
+        models[i] = nativeUserAgent.getProject().model(models[i]).unwrap();
       }
       this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onSelection(Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;Z)(action, models, incremental);
     }, this);
@@ -287,10 +420,33 @@ private JavaScriptObject nativeUserAgent;
       var state = message['state'] || {};
       var positions = message['positions'] || [];
       for (var i = 0; i < positions.length; i++) {
-        positions[i]['ref'] = nativeUserAgent.getProject().modelsMap()[positions[i].id].unwrap();
+        positions[i]['ref'] = nativeUserAgent.getProject().model(positions[i].id).unwrap();
       }
       this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onLayout(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JsArray;)(engine, state, positions);
-    }, this);        
+    }, this);
+
+    nativeUserAgent.addModelListener(function(message) {
+      var action = message['action'] || null;
+      var models = message['models'];
+      for (var i = 0; i < models.length; i++) {
+        models[i] = models[i].unwrap();
+      }
+      this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onModelChange(Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(action, models);
+    }, this);
+    
+    nativeUserAgent.addErrorListener(function(message) {
+      if (!!message['clear']) {
+        this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onErrorsClear()();
+      } else {
+        var args = message['arguments'] || [];
+        var errorDetails = [];
+        for (var i = 0; i < args.length; i++) {
+          errorDetails.push(String(args[i]));
+        }
+        var errorMsg = errorDetails.join(' ');
+        this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onErrorAdd(Ljava/lang/String;)(errorMsg);
+      }
+    }, this);
   }-*/;
 
   /**
@@ -325,6 +481,34 @@ private JavaScriptObject nativeUserAgent;
       positions.add(jsPositions.get(i));
     }
     LayoutEvent.fire(ownerVisualization, engine, new JSONObject(state), positions);
+  }
+  
+  /**
+   * Callback invoked when one or more models are added or removed from the
+   * visualization.
+   */
+  private void onModelChange(String action, JsArray<RhizosphereModelRef> jsModels) {
+    List<RhizosphereModelRef> models = new ArrayList<RhizosphereModelRef>();
+    for (int i = 0; i < jsModels.length(); i++) {
+      models.add(jsModels.get(i));
+    }
+    ModelChangeEvent.fire(ownerVisualization, action, models);
+  }
+  
+  /**
+   * Callback invoked when error notifications are cleared from the 
+   * visualization.
+   */
+  private void onErrorsClear() {
+    ErrorEvent.fire(ownerVisualization, true, null);
+  }
+  
+  /**
+   * Callback invoked when one error notification is added to the
+   * visualization.
+   */
+  private void onErrorAdd(String errorDetails) {
+    ErrorEvent.fire(ownerVisualization, false, errorDetails);
   }
 
   private final native <T> T nativeNewJsArray() /*-{

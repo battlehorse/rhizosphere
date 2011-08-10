@@ -157,6 +157,26 @@ import com.google.gwt.core.client.JsArrayString;
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public final class RhizosphereMetaModel extends JavaScriptObject {
+  
+  /**
+   * Enumeration of valid clustering criteria for
+   * {@link Attribute#setDateClusterBy(DateClusterCriteria)} settings. 
+   */
+  public enum DateClusterCriteria { 
+    DAY("d"),
+    MONTH("m"),
+    YEAR("y");
+    
+    private String clusterBy;
+    
+    DateClusterCriteria(String clusterBy) {
+      this.clusterBy = clusterBy;
+    }
+    
+    public String getClusterBy() {
+      return clusterBy;
+    }
+  }
 
   /**
    * A single metamodel attribute.
@@ -231,6 +251,9 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
      * kind can have. Unused for other attribute kinds.
      *
      * @param categories The set of categories the attribute values can have.
+     *     Use {@code null} to let Rhizosphere determine the set of categories
+     *     automatically based on the current set of items that are part of
+     *     the visualization.
      * @param multiple Whether the attribute can have multiple categories or
      *     just one.
      * @param hierarchy Whether the categories represent a branch of a
@@ -240,9 +263,12 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
      */
     public Attribute setCategories(
         final String[] categories, final boolean multiple, final boolean hierarchy) {
-      JsArrayString jsArray = JavaScriptObject.createArray().cast();
-      for (String category : categories) {
-        jsArray.push(category);
+      JsArrayString jsArray = null;
+      if (categories != null && categories.length > 0) {
+        jsArray = JavaScriptObject.createArray().cast();
+        for (String category : categories) {
+          jsArray.push(category);
+        }
       }
       nativeSetCategories(jsArray, multiple, hierarchy);
       return this;
@@ -250,7 +276,9 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
 
     private native void nativeSetCategories(
         JsArrayString categories, boolean multiple, boolean hierarchy) /*-{
-      this['categories'] = categories;
+      if (categories) {
+        this['categories'] = categories;
+      }
       this['multiple'] = multiple;
       this['isHierarchy'] = hierarchy;
     }-*/;
@@ -332,10 +360,28 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
         this['steps'] = steps;
       }
     }-*/;
+    
+    /**
+     * Sets the precision an attribute of {@link RhizosphereKind#DECIMAL},
+     * {@link RhizosphereKind#DECIMALRANGE} or
+     * {@link RhizosphereKind#LOGARITHMRANGE} type should use when handling
+     * floating point numbers. Unused for other attribute kinds.
+     * 
+     * @param precision The requested precision.
+     * @return the Attribute itself, for chaining.
+     */
+    public Attribute setPrecision(final int precision) {
+      nativeSetPrecision(precision);
+      return this;
+    }
+    
+    private native void nativeSetPrecision(int precision) /*-{
+      this['precision'] = precision;
+    }-*/;
 
     /**
-     * Set the range of years an attribute of {@link RhizosphereKind#DATE} can
-     * have. Unused for other attribute kinds.
+     * Set the range of years an attribute of {@link RhizosphereKind#DATE} type
+     * can have. Unused for other attribute kinds.
      *
      * @param minYear The minimum year the attribute can have.
      * @param maxYear The maximum year the attribute can have.
@@ -349,6 +395,22 @@ public final class RhizosphereMetaModel extends JavaScriptObject {
     private native void nativeSetYearRange(int minYear, int maxYear) /*-{
       this['minYear'] = minYear;
       this['maxYear'] = maxYear;
+    }-*/;
+    
+    /**
+     * Set the clustering criteria an attribute of {@link RhizosphereKind#DATE}
+     * type should use when grouping dates. Unused for other attribute kinds.
+     *
+     * @param criteria The grouping criteria to use.
+     * @return the Attribute itself, for chaining.
+     */    
+    public Attribute setDateClusterBy(final DateClusterCriteria criteria) {
+      nativeSetDateClusterBy(criteria.getClusterBy());
+      return this;
+    }
+    
+    private native void nativeSetDateClusterBy(String clusterBy) /*-{
+      this['clusterBy'] = clusterBy;
     }-*/;
   }
 

@@ -28,6 +28,12 @@ package com.rhizospherejs.gwt.client.meta;
  */
 public interface HasCategories {
 
+  /**
+   * The set of categories the attribute values can have.
+   * Use {@code null} to let Rhizosphere determine the set of categories
+   * automatically based on the current set of items that are part of
+   * the visualization.
+   */
   public String[] categories();
 
   /**

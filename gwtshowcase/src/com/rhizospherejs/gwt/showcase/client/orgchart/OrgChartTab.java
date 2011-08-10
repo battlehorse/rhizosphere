@@ -35,10 +35,12 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.rhizospherejs.gwt.client.Rhizosphere;
 import com.rhizospherejs.gwt.client.RhizosphereCallback;
+import com.rhizospherejs.gwt.client.RhizosphereCallback1;
 import com.rhizospherejs.gwt.client.RhizosphereLoader;
 import com.rhizospherejs.gwt.client.RhizosphereModelPosition;
 import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
+import com.rhizospherejs.gwt.client.RhizosphereOptions.LogLevel;
 import com.rhizospherejs.gwt.client.handlers.FilterEvent;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
@@ -46,6 +48,7 @@ import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -140,6 +143,7 @@ public class OrgChartTab extends Composite {
             // Create some default options.
             RhizosphereOptions<Employee> options = RhizosphereOptions.create();
             options.setTemplate("default");
+            options.setLogLevel(LogLevel.DEBUG);
             options.setEnableHTML5History(false);
 
             // Create a new Rhizosphere visualization suited to display Employee objects.
@@ -150,31 +154,6 @@ public class OrgChartTab extends Composite {
             // Rhizosphere models.
             rhizosphere.prepareFor(GWT.create(Employee.class));
 
-            // Defines the data to visualize.
-            rhizosphere.addModel(new Employee(
-                "1", null, "John", 30, true, new String[] {"fishing", "soccer"}, 400000));
-            rhizosphere.addModel(new Employee(
-                "2", "1", "Mark", 20, true, new String[] {"fishing", "soccer"}, 10000));
-            rhizosphere.addModel(new Employee(
-                "3", "1", "Battlehorse", 31, true,
-                new String[] {"computer games", "soccer"}, 25000));
-            sara = rhizosphere.addModel(new Employee(
-                "4", "3", "Sara", 25, false,
-                new String[] {"role playing", "volleyball", "swimming"}, 100000));
-            jennifer = rhizosphere.addModel(new Employee(
-                "5", "3", "Jennifer", 25, false, new String[] {"fishing", "role playing"}, 50000));
-            rhizosphere.addModel(new Employee(
-                "6", "2", "Dave", 48, true,
-                new String[] {"role playing", "computer games", "swimming", "shopping"}, 75000));
-            rhizosphere.addModel(new Employee(
-                "7", "2", "Carl", 33, true, new String[] {"computer games", "swimming"}, 250000));
-            rhizosphere.addModel(new Employee(
-                "8", "6", "Aaron", 22, true, new String[] {}, 120000));
-            rhizosphere.addModel(new Employee(
-                "9", "6", "Lucy", 18, false, new String[] {"fishing", "swimming"}, 4000));
-            rhizosphere.addModel(new Employee(
-                "10", "7", "Jacob", 43, true, new String[] {"paintball", "soccer"}, 90000));
-
             // Sets the renderer that will visualize each Employee.
             rhizosphere.setRenderer(new EmployeeRenderer());
 
@@ -182,7 +161,7 @@ public class OrgChartTab extends Composite {
             // container.
             rhizosphere.setWidth("100%");
             rhizosphere.setHeight("100%");
-
+            
             // Attach event listeners for all supported Rhizosphere events, and
             // dump event contents in a textarea.
             // A production application would use the event contents to keep
@@ -193,7 +172,10 @@ public class OrgChartTab extends Composite {
             rhizosphere.addReadyHandler(new ReadyEvent.Handler() {
               @Override
               public void onReady(ReadyEvent event) {
-                enableActionButtons();
+                if (event.isSuccess()) {
+                  addModels();
+                  enableActionButtons();
+                }
               }
             });
 
@@ -255,6 +237,48 @@ public class OrgChartTab extends Composite {
 
   private void appendLog(String log) {
     logArea.setValue(log + '\n' + logArea.getValue());
+  }
+  
+  private void addModels() {
+    // Defines the data to visualize.
+    List<Employee> employees = new LinkedList<Employee>();
+    employees.add(new Employee(
+        "1", null, "John", 30, true, new String[] {"fishing", "soccer"}, 400000));
+    employees.add(new Employee(
+        "2", "1", "Mark", 20, true, new String[] {"fishing", "soccer"}, 10000));
+    employees.add(new Employee(
+        "3", "1", "Battlehorse", 31, true,
+        new String[] {"computer games", "soccer"}, 25000));
+    employees.add(new Employee(
+        "4", "3", "Sara", 25, false, 
+        new String[] {"role playing", "volleyball", "swimming"}, 100000));
+    employees.add(new Employee(
+        "5", "3", "Jennifer", 25, false,
+        new String[] {"fishing", "role playing"}, 50000));
+    employees.add(new Employee(
+        "6", "2", "Dave", 48, true,
+        new String[] {"role playing", "computer games", "swimming", "shopping"}, 75000));
+    employees.add(new Employee(
+        "7", "2", "Carl", 33, true, new String[] {"computer games", "swimming"}, 250000));
+    employees.add(new Employee(
+        "8", "6", "Aaron", 22, true, new String[] {}, 120000));
+    employees.add(new Employee(
+        "9", "6", "Lucy", 18, false, new String[] {"fishing", "swimming"}, 4000));
+    employees.add(new Employee(
+        "10", "7", "Jacob", 43, true, new String[] {"paintball", "soccer"}, 90000));
+    
+    // Add a set of models via the bulk addModels() method and register a
+    // callback to get hold of some models' references.    
+    rhizosphere.addModels(employees, new RhizosphereCallback1<List<RhizosphereModelRef>>() {
+
+      @Override
+      public void run(boolean success, String details, List<RhizosphereModelRef> refs) {
+        if (success) {
+          sara = refs.get(3);
+          jennifer = refs.get(4);
+        }
+      }
+    });
   }
 
   /**

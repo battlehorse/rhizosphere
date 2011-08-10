@@ -28,7 +28,8 @@ import com.google.gwt.core.client.JavaScriptObject;
  * Apart from a few stock model bridges for generic cases (see
  * {@link JavaScriptObjectModelBridge}), all model bridges will be
  * code-generated to match the model types sent to
- * {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object)}.
+ * {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object,
+ * com.rhizospherejs.gwt.client.RhizosphereCallback1)}.
  *
  * @param <T> The models' type that this bridge can convert.
  * @author battlehorse@google.com (Riccardo Govoni)
@@ -88,7 +89,7 @@ public abstract class ModelBridge<T> implements ModelExtractor<T> {
    * for any Rhizosphere model object).
    */
   private final native void ensureModelId(JavaScriptObject model) /*-{
-    if (!model['id']) {
+    if (typeof(model['id']) == 'null' || typeof(model['id']) == 'undefined') {
       model['id'] = model['__gwt_ObjectId'];
     }
   }-*/;

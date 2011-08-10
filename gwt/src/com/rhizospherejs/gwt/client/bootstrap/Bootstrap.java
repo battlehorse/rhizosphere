@@ -68,8 +68,8 @@ public class Bootstrap extends JavaScriptObject {
   private static native Bootstrap nativeCreate(Element container, 
                                                JavaScriptObject options,
                                                HasReadyHandlers readyHandler) /*-{
-    var callback = function() {
-      @com.rhizospherejs.gwt.client.handlers.ReadyEvent::fire(Lcom/rhizospherejs/gwt/client/handlers/HasReadyHandlers;)(readyHandler);
+    var callback = function(unused_userAgent, success, opt_details) {
+      @com.rhizospherejs.gwt.client.handlers.ReadyEvent::fire(Lcom/rhizospherejs/gwt/client/handlers/HasReadyHandlers;ZLjava/lang/String;)(readyHandler, success, opt_details);
     };
     return new $wnd.rhizo.bootstrap.Bootstrap(container, options, callback);
   }-*/;

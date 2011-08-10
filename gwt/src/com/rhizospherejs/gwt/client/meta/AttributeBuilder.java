@@ -108,11 +108,21 @@ public class AttributeBuilder {
                       ((HasRange) descriptor).stepping(),
                       ((HasRange) descriptor).steps());
     }
+    
+    if (descriptor instanceof HasPrecision) {
+      target.setPrecision(
+        ((HasPrecision) descriptor).precision());
+    }
 
     if (descriptor instanceof HasYearRange) {
       target.setYearRange(
           ((HasYearRange) descriptor).minYear(),
           ((HasYearRange) descriptor).maxYear());
+    }
+    
+    if (descriptor instanceof HasDateClusterBy) {
+      target.setDateClusterBy(
+          ((HasDateClusterBy) descriptor).clusterBy());
     }
   }
 

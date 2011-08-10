@@ -65,8 +65,9 @@ public class NativeRenderer<T> {
 
   /**
    * Mapping between Javascript equivalents of Rhizosphere models (as resulting
-   * from {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object)} and
-   * their renderings (as GWT widgets).
+   * from {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object,
+   * com.rhizospherejs.gwt.client.RhizosphereCallback1)} and their renderings
+   * (as GWT widgets).
    */
   private Map<JavaScriptObject, Widget> modelWidgetMap;
 

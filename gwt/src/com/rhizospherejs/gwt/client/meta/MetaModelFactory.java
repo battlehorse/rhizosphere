@@ -22,7 +22,8 @@ import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
  * Abstract factory class to assemble {@link RhizosphereMetaModel} instances.
  * <p>
  * Implementations are code-generated to match the model types sent to
- * {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object)}.
+ * {@link com.rhizospherejs.gwt.client.Rhizosphere#addModel(Object, 
+ * com.rhizospherejs.gwt.client.RhizosphereCallback1)}.
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */

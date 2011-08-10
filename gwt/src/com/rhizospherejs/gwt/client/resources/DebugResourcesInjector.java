@@ -57,6 +57,7 @@ public class DebugResourcesInjector implements ResourcesInjector {
         "rhizosphere/src/js/rhizo.layout.treemap.js",
         "rhizosphere/src/js/rhizo.model.js",
         "rhizosphere/src/js/rhizo.model.loader.js",
+        "rhizosphere/src/js/rhizo.model.manager.js",
         "rhizosphere/src/js/rhizo.autorender.js",
         "rhizosphere/src/js/rhizo.gviz.js",
         "rhizosphere/src/js/rhizo.ui.js",

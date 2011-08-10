@@ -39,13 +39,12 @@ import com.rhizospherejs.gwt.client.RhizosphereKind;
 import com.rhizospherejs.gwt.client.RhizosphereLoader;
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
+import com.rhizospherejs.gwt.client.RhizosphereOptions.LogLevel;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
 import com.rhizospherejs.gwt.showcase.client.resources.Resources;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Tab that demonstrates Rhizosphere integration with an external datasource.
@@ -235,10 +234,12 @@ public class BooksTab extends Composite {
         // Create some default options.
         RhizosphereOptions<Book> options = RhizosphereOptions.create();
         options.setTemplate("default");
+        
         options.setEnableHTML5History(false);
+        options.setLogLevel(LogLevel.DEBUG);
 
         // Create a new Rhizosphere visualization suited to display Book objects.
-        Rhizosphere<Book> rhizo = new Rhizosphere<Book>(options);
+        final Rhizosphere<Book> rhizo = new Rhizosphere<Book>(options);
 
         // Register an handler that will trigger once Rhizosphere is ready
         // for user interaction, at which point we re-enable search
@@ -246,6 +247,7 @@ public class BooksTab extends Composite {
         rhizo.addReadyHandler(new ReadyEvent.Handler() {
           @Override
           public void onReady(ReadyEvent event) {
+            rhizo.addModels(books.values(), null);
             showSearchCompleted(false);
           }
         });
@@ -254,22 +256,6 @@ public class BooksTab extends Composite {
         // container.        
         rhizo.setWidth("100%");
         rhizo.setHeight("100%");
-
-        // Parses the list of books collected so far and add them to the
-        // Rhizosphere visualization. At the same time, collect statistics.
-        int minNumPages = Integer.MAX_VALUE;
-        int maxNumPages = Integer.MIN_VALUE;
-        int minPublishedYear = Integer.MAX_VALUE;
-        int maxPublishedYear = Integer.MIN_VALUE;
-        Set<String> queries = new HashSet<String>();
-        for (Book b: books.values()) {
-          rhizo.addModel(b);
-          minNumPages = Math.min(minNumPages, b.getNumberOfPages());
-          maxNumPages = Math.max(maxNumPages, b.getNumberOfPages());
-          minPublishedYear = Math.min(minPublishedYear, b.getPublishedYear());
-          maxPublishedYear = Math.max(maxPublishedYear, b.getPublishedYear());
-          queries.add(b.getQuery());
-        }
 
         // Explicitly define the visualization metamodel, defining which fields
         // the user should be able to interact with.
@@ -285,16 +271,14 @@ public class BooksTab extends Composite {
           setLabel("ISBN");
         meta.newAttribute("publishedYear").
           setKind(RhizosphereKind.RANGE).
-          setLabel("Published Year").
-          setRange(minPublishedYear, maxPublishedYear, 0, 0);
+          setLabel("Published Year");
         meta.newAttribute("pageCount").
           setKind(RhizosphereKind.RANGE).
-          setLabel("Num Pages").
-          setRange(minNumPages, maxNumPages, 0, 0);
+          setLabel("Num Pages");
         meta.newAttribute("query").
           setKind(RhizosphereKind.CATEGORY).
           setLabel("Search query").
-          setCategories(queries.toArray(new String[queries.size()]), false, true);
+          setCategories(/* auto-infer categories */ null, false, true);
 
         // Registers the metamodel and renderer.
         rhizo.setMetaModel(meta);

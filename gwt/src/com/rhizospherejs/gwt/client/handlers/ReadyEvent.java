@@ -20,8 +20,8 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
 /**
- * Event to notify that a Rhizosphere visualization is ready for user
- * interaction.
+ * Event to notify that a Rhizosphere visualization has completed
+ * initialization is ready for user interaction.
  * <p>
  * This event is supported only by
  * {@link com.rhizospherejs.gwt.client.Rhizosphere} instances. If you are
@@ -45,16 +45,46 @@ public class ReadyEvent extends GwtEvent<ReadyEvent.Handler> {
    * The event type.
    */
   static Type<ReadyEvent.Handler> TYPE;
+  private boolean success;
+  private String errorDetails;
+  
+  private ReadyEvent(boolean success, String errorDetails) {
+    this.success = success;
+    this.errorDetails = errorDetails;
+  }
+  
+  /**
+   * Returns whether Rhizosphere initialization was successful or not.
+   *
+   * @return Whether Rhizosphere initialization was successful or not.
+   */
+  public boolean isSuccess() {
+    return success;
+  }
+
+  /**
+   * If Rhizosphere initialization was not successful, returns a details
+   * message explaining what went wrong.
+   *
+   * @return A details message describing Rhizosphere initialization failures,
+   *     or {@code null} if initialization was successful.
+   */
+  public String getErrorDetails() {
+    return isSuccess() ? null : errorDetails;
+  }
 
   /**
    * Fires a {@link ReadyEvent} on all registered handlers in the handler
    * source.
    *
    * @param source the source of the handlers
+   * @param success Whether the visualization successfully initialized or not.
+   * @param errorDetails Details about initialization failures, or {@code null}
+   *     if {@code success} is {@code true}.
    */
-  public static void fire(HasReadyHandlers source) {
+  public static void fire(HasReadyHandlers source, boolean success, String errorDetails) {
     if (TYPE != null) {
-      ReadyEvent event = new ReadyEvent();
+      ReadyEvent event = new ReadyEvent(success, errorDetails);
       source.fireEvent(event);
     }
   }

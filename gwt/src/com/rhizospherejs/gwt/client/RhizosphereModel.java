@@ -34,13 +34,13 @@ package com.rhizospherejs.gwt.client;
  *   {@link CustomRhizosphereMetaModel}</li>
  * <li>Prepare Rhizosphere to receive instances of the configured POJOs via
  *   {@link Rhizosphere#prepareFor(RhizosphereMapping)}.</li>
- * <li>Feed Rhizosphere with POJO instances via
- *   {@link Rhizosphere#addModel(Object)} and attach the visualization widget
- *   to your GWT app.
+ * <li>Attach the Rhizosphere visualization widget to your GWT app and, once
+ *   it fires the 'ready' event, feed it with POJO instances via
+ *   {@link Rhizosphere#addModel(Object, RhizosphereCallback1)}.
  * </ul>
  * <p>
  * Rhizosphere internally uses custom tailored JavaScriptObjects to represent
- * visualization models. The information provided by the steps above guide
+ * visualization models. The information provided by the steps above guides
  * Rhizosphere conversion process from custom POJOs to JavaScriptObjects that
  * can be understood by the underlying Rhizosphere native javascript library.
  * 
