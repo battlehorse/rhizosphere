@@ -15,79 +15,102 @@
   limitations under the License.
 */
 
+/**
+ * @fileOverview Rhizosphere logging facilities.
+ */
+
 // RHIZODEP=rhizo
-namespace("rhizo");
+namespace("rhizo.log");
 
-rhizo.nativeConsoleExists = function() {
-  return typeof(console) !== 'undefined' && console != null;
-};
+/**
+ * Creates a new logger object. The logger is tailored to target the browser
+ * console, with the following additions: a log level can be configured,
+ * causing all logging messages below the desired level to be silently
+ * discarded. The logger can be attached to a project, in which case all (and
+ * only) 'error'-level messages will published on the project event bus for
+ * other listeners to react to them. Error-level messages are assumed to
+ * require the user attention, so listeners can collect them for the purpose of
+ * displaying visible error messages.
+ *
+ * @param {rhizo.Project=} opt_project The optional visualization project the
+ *     logger belongs to.
+ * @param {Object=} opt_options An optional configuration object. The only
+ *     setting currently used is 'logLevel' to define which log messages to
+ *     ignore and which to display. The following values are accepted:
+ *     'debug', 'info', 'warn', 'time', 'error'. At 'error' level only messages
+ *     that require the user attention are retained. The 'time' level extends
+ *     the previous one to include performance timings and application
+ *     profiling. 'warn', 'info' and 'debug' levels further extend the scope of
+ *     logged messages, with the last one being the most detailed.
+ * @return {!Object} A logger object that exposes an API equivalent to the
+ *     browser console API (see http://getfirebug.com/logging), including the
+ *     standard error(), warn() and info() methods. Depending on the chosen
+ *     log level, parts of the console API will be no-ops.
+ */
+rhizo.log.newLogger = function(opt_project, opt_options) {
+  var logLevel = rhizo.log.getLogLevel(opt_options);
+  var logger = {};
 
-rhizo.NoOpLogger = function() {};
-rhizo.NoOpLogger.prototype.info = function() {};
-rhizo.NoOpLogger.prototype.error = function() {};
-rhizo.NoOpLogger.prototype.warn = function() {};
-
-rhizo.NativeLogger = function() {};
-
-rhizo.NativeLogger.prototype.info = function(message) {
-  console.info(message);
-};
-
-rhizo.NativeLogger.prototype.error = function(message) {
-  console.error(message);
-};
-
-rhizo.NativeLogger.prototype.warn = function(message) {
-  console.warn(message);
-};
-
-rhizo.Logger = function(gui) {
-  this.console_ = gui.getComponent('rhizo.ui.component.Console');
-  this.rightBar_ = gui.getComponent('rhizo.ui.component.RightBar');
-};
-
-rhizo.Logger.prototype.log_ = function(message, opt_severity) {
-  var severity = opt_severity || 'info';
-  var highlightColor = "#888";
-  switch(severity) {
-    case "error":
-      highlightColor = "#ff0000";
-      break;
-    case "warn":
-      highlightColor = "#ffff00";
-      break;
+  var methods = 'dir dirxml count debug log info warn time timeEnd group groupEnd error'.split(' ');
+  var logThresholdReached = false;
+  for (var i = methods.length; i >= 0; i--) {
+    logThresholdReached ?
+        rhizo.log.createNoOp(methods[i], logger) :
+        rhizo.log.createDelegate(methods[i], logger, console);
+    logThresholdReached = logThresholdReached || methods[i] == logLevel;
   }
 
-  var d = new Date();
-  var dateMsg = d.getHours() + ":" +
-                d.getMinutes() + ":" +
-                d.getSeconds() + " ";
-  var htmlMsg = $("<p class='rhizo-log-" + severity + "'>" +
-                  dateMsg + message + "</p>");
-
-  this.console_.getContents().prepend(htmlMsg);
-  if (opt_severity) {
-    htmlMsg.effect("highlight", {color: highlightColor }, 1000);
+  if (opt_project) {
+    var delegate = logger['error'];
+    logger['error'] = function() {
+      opt_project.eventBus().publish(
+          'error', 
+          {arguments: Array.prototype.slice.call(arguments)});
+      delegate.apply(logger, arguments);
+    };
   }
-  if (!this.console_.getContents().is(':visible') && opt_severity) {
-    if (this.rightBar_ && !this.rightBar_.isCollapsed()) {
-      this.rightBar_.getToggle().effect(
-          "highlight", {color: highlightColor }, 1000);
-    } else {
-      this.console_.getHeader().effect(
-          "highlight", {color: highlightColor }, 1000);
-    }
-  }
+  return logger;
 };
 
-rhizo.Logger.prototype.info = function(message) {
-  this.log_(message);
+/**
+ * Extracts the desired log level new loggers should use.
+ * @param {Object=} opt_options The logger configuration object.
+ * @return The desired log level. Defaults to 'error' if unspecified.
+ */
+rhizo.log.getLogLevel = function(opt_options) {
+  var logLevel = (opt_options || {})['logLevel'] || 'error';
+  var chooseableLevels = {
+    debug: true, info: true, warn: true, time: true, error: true};
+  if (!(logLevel in chooseableLevels)) {
+    logLevel = 'error';
+  };
+  return logLevel;
 };
 
-rhizo.Logger.prototype.error = function(message) {
-  this.log_(message, "error");
+/**
+ * Creates a pass-through delegate method from sourceLogger to targetLogger.
+ *
+ * @param {string} method The method to delegate.
+ * @param {!Object} sourceLogger The source logger that will receive method
+ *     calls.
+ * @param {!Object} targetLogger The target logger the calls will be delegated
+ *     to, iff it exposes the same method handling the call.
+ */
+rhizo.log.createDelegate = function(method, sourceLogger, targetLogger) {
+  sourceLogger[method] = function() {
+    targetLogger && targetLogger[method] && 
+    typeof(targetLogger[method]) == 'function' &&
+        targetLogger[method].apply(targetLogger, arguments);
+  };
 };
 
-rhizo.Logger.prototype.warn = function(message) {
-  this.log_(message, "warn");
+/**
+ * Creatse a no-op method on the given logger.
+ *
+ * @param {string} method The no-op method to add.
+ * @param {!Object} sourceLogger The logger to modify
+ */
+rhizo.log.createNoOp = function(method, sourceLogger) {
+  sourceLogger[method] = function() {};
 };
+

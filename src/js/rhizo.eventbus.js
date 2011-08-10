@@ -51,9 +51,17 @@ rhizo.eventbus.uuidKey_ = '__rhizo_event_uuid';
  *
  * NOTE that although the EventBus exposes a completely asynchronous API, the
  * current implementation uses synchronous delivery of messages.
+ *
+ * @param {!Object} logger A logger instance.
  * @constructor
  */
-rhizo.eventbus.EventBus = function() {
+rhizo.eventbus.EventBus = function(logger) {
+  /**
+   * @param {!Object}
+   * @private
+   */
+  this.logger_ = logger;
+
   /**
    * @private
    * @type {!Object.<string, rhizo.eventbus.Channel_>}
@@ -162,7 +170,12 @@ rhizo.eventbus.EventBus.prototype.publish = function(
     opt_callback && opt_callback.call(opt_sender, true);
     return;
   }
+  this.logger_.group('message publish on channel ' + channel);
+  this.logger_.debug('message payload ', message);
+  this.logger_.time('Eventbus::publish');
   this.channels_[channel].publish(message, opt_callback, opt_sender);
+  this.logger_.timeEnd('Eventbus::publish');
+  this.logger_.groupEnd('message publish on channel ' + channel);
 };
 
 rhizo.eventbus.EventBus.prototype.getChannel_ = function(channel) {

@@ -28,7 +28,9 @@ namespace("rhizo.gviz");
  * for more detailed information about using Google Visualizations.
  *
  * The visualization fires a 'ready' event once it has finished loading and is
- * ready to accept user interaction.
+ * ready to accept user interaction. It fires an 'error' event if it fails
+ * drawing. The 'error' event contains details describing the specific error
+ * that occurred.
  *
  * @param {HTMLElement} container The element that will contain the
  *    visualization. It must have an explicit CSS position set (either
@@ -75,18 +77,25 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
     // it is to destroy and rebuild the entire visualization.
     this.project_.destroy();
   }
-  var bootstrapper = new rhizo.bootstrap.Bootstrap(
-      this.container_, opt_options, jQuery.proxy(this.ready_, this));
 
-  var logger = rhizo.nativeConsoleExists() ?
-      new rhizo.NativeLogger() :  new rhizo.NoOpLogger();
-  this.project_ = bootstrapper.prepare().getProject();
+  // Mandatorily disable the display of errors in the visualization viewport,
+  // as this is already handled by google.visualization.errors management
+  // in the bootstrap completion callback.
+  var options = {showErrorsInViewport: false};
+  if (opt_options) {
+    $.extend(options, opt_options);
+  }
 
-  var initializer = new rhizo.gviz.Initializer(datatable, logger, opt_options);
+  var initializer = new rhizo.gviz.Initializer(
+      datatable, rhizo.log.newLogger(null, options), options);
   if (!initializer.parse()) {
     // The datatable is empty, we skip visualization deployment.
-    this.ready_();
+    this.deployComplete_(null, true);
   } else {
+    var bootstrapper = new rhizo.bootstrap.Bootstrap(
+        this.container_, options, jQuery.proxy(this.deployComplete_, this));
+
+    this.project_ = bootstrapper.prepare().getProject();
     bootstrapper.deployExplicit(initializer.models,
                                 initializer.metamodel,
                                 initializer.renderer);
@@ -94,14 +103,29 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
 };
 
 /**
- * Fires the Google Visualization 'ready' event to notify visualization users
- * that Rhizosphere is ready for interaction.
+ * Fires the Google Visualization 'ready' or 'error' event to notify
+ * visualization users that Rhizosphere is either ready for interaction or
+ * failed drawing.
  *
  * @param {!rhizo.UserAgent} unused_ua unused.
+ * @param {boolean} success Whether the Rhizosphere visualization successfully
+ *     deployed or otherwise failed.
+ * @param {string=} opt_details The error details in case of failure.
  * @private
  */
-rhizo.gviz.Rhizosphere.prototype.ready_ = function(unused_ua) {
-  google.visualization.events.trigger(this, 'ready', {});
+rhizo.gviz.Rhizosphere.prototype.deployComplete_ = function(
+    unused_ua, success, opt_details) {
+  if (success) {
+    google.visualization.events.trigger(this, 'ready', {});
+  } else {
+    var errorId = google.visualization.errors.addError(
+        this.container_,
+        opt_details, null,
+        {style: 'position: absolute; top: 0; right: 0; z-index: 350'});
+    google.visualization.events.trigger(this, 'error', {
+      'id': errorId, 'message': opt_details
+    });
+  }
 };
 
 
@@ -192,8 +216,9 @@ rhizo.gviz.Rhizosphere.prototype.ready_ = function(unused_ua) {
  *
  * @param {google.visualization.DataTable} dataTable The dataset to extract
  *     Rhizosphere metamodel and models from.
- * @param {*} logger A logger object that exposes error(), warn() and info()
- *     methods.
+ * @param {!Object} logger A generic logger that exposes an API equivalent to
+ *     the browser console API (see http://getfirebug.com/logging), including
+ *     the standard error(), warn() and info() methods.
  * @param {*} opt_options key-value map of Visualization-wide configuration
  *     options.
  */
@@ -374,7 +399,7 @@ rhizo.gviz.Initializer.prototype.transformDataTableIfNeeded_ = function(
   for (var i = 0, clen = this.dt_.getNumberOfColumns(); i < clen;) {
     if (i in colGroups) {
       if (this.isValidModelTree_(i, colGroups[i])) {
-        this.logger_.info('Column group starting at ' + i +
+        this.logger_.debug('Column group starting at ' + i +
             ' is a valid model tree. Transforming the datatable.');
         this.packHierarchy_(i, colGroups[i]);
         return true;
@@ -387,7 +412,7 @@ rhizo.gviz.Initializer.prototype.transformDataTableIfNeeded_ = function(
     var categoryColumn = this.getCategoryColumnData_(i);
     if (categoryColumn && categoryColumn['hierarchy']) {
       if (this.isValidModelTree_(i)) {
-        this.logger_.info('Hierarchy column at position ' + i +
+        this.logger_.debug('Hierarchy column at position ' + i +
             ' is a valid model tree. Transforming the datatable.');
         this.packHierarchy_(i);
         return true;

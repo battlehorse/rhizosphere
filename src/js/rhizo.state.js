@@ -81,7 +81,7 @@
  *   same page.
  */
 
-// RHIZODEP=rhizo
+// RHIZODEP=rhizo,rhizo.log
 namespace("rhizo.state");
 
 /**
@@ -583,6 +583,7 @@ rhizo.state.ProjectStateBinder.prototype.onTransition = function(opt_delta,
  * @private
  */
 rhizo.state.ProjectStateBinder.prototype.pushDeltaChange_ = function(delta) {
+  this.project_.logger().debug('Received delta state change to push: ', delta);
   var facet = delta.facet;
   var facetState = delta.facetState;
   if (facet == rhizo.state.Facets.LAYOUT) {
@@ -603,6 +604,7 @@ rhizo.state.ProjectStateBinder.prototype.pushDeltaChange_ = function(delta) {
  * @private
  */
 rhizo.state.ProjectStateBinder.prototype.pushFullState_ = function(state) {
+  this.project_.logger().debug('Received full state change to push: ', state);
   var projectState = state.uuids[this.overlord_.uuid()] || {};
   this.pushFilterChange_(projectState[rhizo.state.Facets.FILTER]);
   this.pushSelectionChange_(
@@ -836,10 +838,12 @@ rhizo.state.HistoryStateBinder.prototype.onRemove = function() {
  * Helper that manages all interactions with HTML5 History for all the
  * HistoryBinder instances that exist.
  * @param {rhizo.state.MasterOverlord} masterOverlord
+ * @param {!Object} logger
  * @constructor
  */
-rhizo.state.HistoryHelper = function(masterOverlord) {
+rhizo.state.HistoryHelper = function(masterOverlord, logger) {
   this.master_ = masterOverlord;
+  this.logger_ = logger;
   this.listeners_ = {};
   this.initialStateReceived_ = false;
 
@@ -880,8 +884,9 @@ rhizo.state.HistoryHelper.prototype.sync = function(state, opt_replace) {
   // We assume the initial state was never fired during the init process,
   // as is the case of Safari/MacOs when we are landing directly on the
   // visualization page (not arriving from history browse).
+  this.logger_.debug('Pushing history state, replace=', !!opt_replace);
   this.initialStateReceived_ = true;
-  if (opt_replace) {
+  if (!!opt_replace) {
     window.history.replaceState(state, /* empty title */ '');
   } else {
     window.history.pushState(state, /* empty title */ '');
@@ -894,7 +899,10 @@ rhizo.state.HistoryHelper.prototype.sync = function(state, opt_replace) {
  * @private
  */
 rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
+  this.logger_.debug('History popstate event: ', evt.originalEvent.state);
   if (!this.initialStateReceived_) {
+    this.logger_.debug('History event is initial.');
+
     // A PopStateEvent is fired on page load when we are arriving on the page
     // as a consequence of browser back/forward navigation. The event contains
     // the initial state Rhizosphere visualizations should be restored to.
@@ -911,6 +919,8 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
         this.master_.setInitialState(rhizo.state.Bindings.HISTORY,
                                      initial_state);
       }
+    } else {
+      this.logger_.debug('Initial history event is null.');
     }
     return;
   }
@@ -943,7 +953,7 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
       // This can happen in some weird cases. For example:
       // - if we are on Chrome/Linux,
       // - and we set an initial state with replacement (as when resuming the
-      //   the initial following of a remove visualization)
+      //   the initial following of a remote visualization)
       // Then:
       // - a popState event will be fired _after_ the initial state was set.
       // Since we performed a state replace, the popstate event will contain
@@ -955,6 +965,7 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
     delta = this.diff_(this.master_.state(), target_state);
   }
 
+  this.logger_.debug('Delta change extracted from history: ', delta);
   if (delta.uuid in this.listeners_) {
     // If a listener responsible for the affected visualization still exists,
     // notify it and rely on it to update the master state.
@@ -1050,14 +1061,31 @@ rhizo.state.getMasterOverlord = function() {
 
 
 /**
+ * The detail level rhizo.state.HistoryHelper will use in logging history
+ * events.
+ *
+ * This is defined as a global variable (to customize before
+ * Rhizosphere libraries are loaded) because HistoryHelper is a global
+ * object shared across multiple visualizations.
+ *
+ * It is not namespaced, as the 'rhizo' namespace will not exist yet when
+ * the user customizes it.
+ *
+ * @type {string}
+ */
+rhizosphereHistoryLogLevel = window['rhizosphereHistoryLogLevel'] || 'error';
+
+
+/**
  * The singleton helper that manages all interactions with HTML5 History.
  * @type {rhizo.state.HistoryHelper}
  * @private
  */
 rhizo.state.history_ = null;
 if (window.history && typeof(window.history.pushState) == 'function') {
+  var logger = rhizo.log.newLogger(null, {logLevel: rhizosphereHistoryLogLevel});
   rhizo.state.history_ = new rhizo.state.HistoryHelper(
-      rhizo.state.getMasterOverlord());
+      rhizo.state.getMasterOverlord(), logger);
 }
 
 

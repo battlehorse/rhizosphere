@@ -34,11 +34,11 @@ rhizo.Project = function(gui, opt_options) {
   this.options_ = opt_options || {};
   this.gui_ = gui;
 
-  if (rhizo.nativeConsoleExists()) {
-    this.logger_ = new rhizo.NativeLogger();
-  } else {
-    this.logger_ = new rhizo.NoOpLogger();
-  }
+  /**
+   * The project logger.
+   * @private
+   */
+  this.logger_ = rhizo.log.newLogger(this, opt_options);
 
   /**
    * Manages transitions in visualization state.
@@ -54,7 +54,7 @@ rhizo.Project = function(gui, opt_options) {
    * @type {!rhizo.eventbus.EventBus}
    * @private
    */
-  this.eventBus_ = new rhizo.eventbus.EventBus();
+  this.eventBus_ = new rhizo.eventbus.EventBus(this.logger_);
 
   /**
    * @type {rhizo.model.ModelManager}
@@ -89,46 +89,34 @@ rhizo.Project = function(gui, opt_options) {
 };
 
 /**
- * Triggers phase 1/3 of Rhizosphere initialization sequence, where the
- * visualization chrome is initially created and set up.
+ * Initializes the Rhizosphere visualization managed by this project from the
+ * provided metaModel and renderer (received via their respective setters).
+ *
+ * At this stage Rhizosphere differentiates its UI and logic to match the type
+ * of data that will subsequently visualize. This includes configuring the
+ * layout and filtering capabilities to match the received metaModel.
+ *
+ * After this stage, the visualization is ready to perform any operation
+ * exposed by the visualization user agent, including model additions and
+ * removals.
+ *
+ * The metaModel formal correctness is verified at this point, by checking that
+ * every metaModel entry has a separate kind instance. MetaModels are stateful,
+ * so kinds cannot be shared.
+ *
+ * @return {!Object.<string, *>} An object describing the outcome of the
+ *     deployment phase. It contains two keys: 'success', pointing to a
+ *     boolean, indicates whether the deployment was successful. 'details',
+ *     pointing to a string, contains the error details in case of failure.
  */
-rhizo.Project.prototype.chromeReady = function() {
-  // All the static UI components are in place. This might include the
-  // logging console.
-  if (this.gui_.getComponent('rhizo.ui.component.Console')) {
-    this.logger_ = new rhizo.Logger(this.gui_);
-  }
-};
-
-/**
- * Triggers phase 2/3 of Rhizosphere initialization sequence, which updates the
- * visualization to match the provided metaModel and renderer.
- */
-rhizo.Project.prototype.metaReady = function() {
-  if (!this.checkMetaModel_()) {
-    return false;
-  }
-
-  // Delay instantiation of those managers that depend on the rendering
-  // infrastructure to be present to work properly.
-  this.modelManager_ = new rhizo.model.ModelManager(this, this.options_);
-  this.layoutManager_ = new rhizo.layout.LayoutManager(this, this.options_);
-  this.layoutManager_.initEngines(rhizo.layout.layouts);
-  return true;
-};
-
-/**
- * Verify the metaModel formal correctness, by checking that every metaModel
- * entry has a separate kind instance. MetaModels are stateful, so kinds cannot
- * be shared.
- * @private
- */
-rhizo.Project.prototype.checkMetaModel_ = function() {
+rhizo.Project.prototype.deploy = function() {
   var allKinds = [];
   for (var key in this.metaModel_) {
     if (!this.metaModel_[key].kind) {
-      this.logger_.error('Verify your metamodel: missing kind for ' + key);
-      return false;
+      return {
+        success: false,
+        details: 'Verify your metamodel: missing kind for ' + key
+      };
     }
     allKinds.push(this.metaModel_[key].kind);
   }
@@ -137,64 +125,32 @@ rhizo.Project.prototype.checkMetaModel_ = function() {
   for (var i = 0; i < allKinds.length; i++) {
     for (var j = i+1; j < allKinds.length; j++) {
       if (allKinds[i] === allKinds[j]) {
-        this.logger_.error('Verify your metaModel: shared kind instances.');
-        return false;
+        return {
+          success: false,
+          details: 'Verify your metaModel: shared kind instances.'
+        };
       }
     }
   }
-  return true;
-};
 
-/**
- * Triggers phase 3/3 of Rhizosphere visualization initialization sequence,
- * where the actual visualization models are deployed and made visible.
- *
- * @param {Array=} opt_models An optional set of models to visualize at project
- *     startup. Models can be later added or removed using the dedicated
- *     methods on rhizo.UserAgent.
- */
-rhizo.Project.prototype.deploy = function(opt_models) {
-  if (opt_models) {
-    this.eventBus_.publish('model', {
-        'action': 'add',
-        'models': opt_models,
-        'delayLayout': true
-    }, this.modelsDeployed_, this);
-  } else {
-    this.modelsDeployed_(true);
-  }
-};
-
-/**
- * Callback invoked after the first models deployment during visualization
- * initialization.
- *
- * @param {boolean} success Whether the initial set of models was successfully
- *     deployed.
- * @param {string=} opt_details In case of failure, a descriptive message
- *     detailing the deployment failure.
- * @private
- */
-rhizo.Project.prototype.modelsDeployed_ = function(success, opt_details) {
-  if (!success) {
-    this.logger_.error('Deploy failed: ' + opt_details);
-    return;
-  }
-
-  // We manually disable animations for the initial layout (the browser is
-  // already busy creating the whole dom).
-  this.gui_.disableFx(true);
+  // Delay instantiation of those managers that depend on the rendering
+  // infrastructure to be present to work properly.
+  this.modelManager_ = new rhizo.model.ModelManager(this, this.options_);
+  this.layoutManager_ = new rhizo.layout.LayoutManager(this, this.options_);
+  this.layoutManager_.initEngines(rhizo.layout.layouts);
 
   // Enable HTML5 history (if requested) and rebuild visualization state
   // (either from defaults or from HTML5 history itself).
+  // Rebuilding the full state has no visual impact at this point, since
+  // the visualization does not contain any models yet.
   var bindings = [];
   if (this.options_.enableHTML5History) {
     bindings.push(rhizo.state.Bindings.HISTORY);
   }
   rhizo.state.getMasterOverlord().attachProject(this, bindings);
   this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
-  // re-aligning animation settings
-  this.alignFx();
+
+  return {success: true};
 };
 
 /**
@@ -206,12 +162,14 @@ rhizo.Project.prototype.modelsDeployed_ = function(success, opt_details) {
  */
 rhizo.Project.prototype.destroy = function() {
   rhizo.state.getMasterOverlord().detachProject(this);
-  var models = this.modelManager_.models();
-  for (var i = models.length-1; i >= 0; i--) {
-    var rendering = models[i].rendering();
-    if (rendering) {
-      // Give renderings a chance to cleanup.
-      rendering.beforeDestroy();
+  if (this.modelManager_) {
+    var models = this.modelManager_.models();
+    for (var i = models.length-1; i >= 0; i--) {
+      var rendering = models[i].rendering();
+      if (rendering) {
+        // Give renderings a chance to cleanup.
+        rendering.beforeDestroy();
+      }
     }
   }
   this.gui_.destroy();
@@ -421,7 +379,9 @@ rhizo.UserAgent = function(project) {
   this.listeners_ = {
     'selection': [],
     'filter': [],
-    'layout': []
+    'layout': [],
+    'model': [],
+    'error': []
   };
 };
 
@@ -569,6 +529,41 @@ rhizo.UserAgent.prototype.removeModelListener = function(
     opt_listener, opt_listenerCallback) {
   this.unsubscribe_('model', opt_listener, opt_listenerCallback);
 };
+
+/**
+ * Adds a listener that will be notified whenever an error occurs on the
+ * visualization.
+ *
+ * @param {!function(Object)} listenerCallback The callback to invoke when
+ *     models are added or removed from the visualization. The callback is
+ *     passed a 'message' describing the event. The message contains either
+ *     a 'clear' field (indicating the desire to clear previous errors) or
+ *     an 'arguments' field (pointing to an array of objects representing the
+ *     error details).
+ * @param {!Object} listener The object in whose scope ('this') the callback
+ *     will be invoked.
+ */
+rhizo.UserAgent.prototype.addErrorListener = function(
+    listenerCallback, listener) {
+  this.subscribe_('error', listenerCallback, listener);
+};
+
+/**
+ * Removes one or more listeners registered for error events.
+ * If both parameters are specified, only the specific callback is removed. If
+ * only opt_listener is specified, all the callbacks associated to that listener
+ * are removed. If neither parameter is specified, all the callbacks associated
+ * to error events are removed.
+ *
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.removeErrorListener = function(
+    opt_listener, opt_listenerCallback) {
+  this.unsubscribe_('error', opt_listener, opt_listenerCallback);
+};
+
 
 /**
  * Adds a callback/listener pair to the notification list for events published
@@ -767,3 +762,30 @@ rhizo.UserAgent.prototype.removeModels = function(models, opt_callback) {
   }, opt_callback, this);
 };
 
+/**
+ * Adds one error to the visualization. This would tipycally result in a
+ * visual notification shown to the user.
+ *
+ * @param {Array} args An array containing arbitrary error details.
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the error addition request has been dispatched. Receives
+ *     two parameters: a boolean describing whether the operation was rejected
+ *     and an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.addError = function(args, opt_callback) {
+  this.project_.eventBus().publish(
+      'error', {'arguments': args}, opt_callback, this);
+};
+
+/**
+ * Clears all visualization errors, if any.
+ *
+ * @param {function(boolean, string=)=} opt_callback An optional callback
+ *     invoked after the error clearing request has been dispatched. Receives
+ *     two parameters: a boolean describing whether the operation was rejected
+ *     and an optional string containing the rejection details, if any.
+ */
+rhizo.UserAgent.prototype.clearErrors = function(opt_callback) {
+  this.project_.eventBus().publish(
+      'error', {'clear': true}, opt_callback, this);
+};

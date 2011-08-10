@@ -294,6 +294,7 @@ rhizo.layout.LayoutManager.prototype.onBeforeEngineLayout_ = function(
  * @private
  */
 rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
+  this.project_.logger().time('LayoutManager::onLayout');
   var lastEngine = this.engines_[this.curEngineName_];
   var options = $.extend({}, message['options'], this.options_);
 
@@ -327,6 +328,8 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
       freeModels.push(models[i]);
     }
   }
+  this.project_.logger().debug(
+      freeModels.length + ' models available for layout');
 
   // Compute the layout.
   var boundingLayoutBox = new rhizo.layout.LayoutBox(
@@ -352,6 +355,9 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   // If the layout altered visibility of some models, or we are forced to do so,
   // realign models' visibility.
   if (dirty || options['forcealign']) {
+    this.project_.logger().debug(
+        'Align visibility dirty=', dirty,
+        ' forceAlign=', options['forcealign']);
     this.project_.filterManager().alignVisibility();
   }
 
@@ -359,6 +365,7 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   if (message['positions']) {
     this.moveModels_(message['positions']);
   }
+  this.project_.logger().timeEnd('LayoutManager::onLayout');
 };
 
 /**

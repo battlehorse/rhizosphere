@@ -215,6 +215,7 @@ rhizo.meta.FilterManager.prototype.applyAllFiltersToModel = function(model) {
  */
 rhizo.meta.FilterManager.prototype.alignVisibility = function(
     opt_filtered_visibility) {
+  this.project_.logger().time('FilterManager::alignVisibility');
   var vis = rhizo.ui.Visibility;
   var filtered_visibility = opt_filtered_visibility || vis.HIDDEN;
 
@@ -239,6 +240,11 @@ rhizo.meta.FilterManager.prototype.alignVisibility = function(
   }
   rhizo.ui.fadeAllRenderingsTo(modelsToFadeOut, filtered_visibility);
   rhizo.ui.fadeAllRenderingsTo(modelsToFadeIn, vis.VISIBLE);
+  this.project_.logger().timeEnd('FilterManager::alignVisibility');
+  this.project_.logger().debug(
+      (modelsToFadeOut.length + modelsToFadeIn.length) +
+      ' models changed visibility');
+  this.project_.logger().debug('Dirty layout after alignVisibility');
   return forceLayout;
 };
 
@@ -270,6 +276,7 @@ rhizo.meta.FilterManager.prototype.onBeforeFilter_ = function(
  * @private
  */
 rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
+  this.project_.logger().time('FilterManager::onFilter');
   var modelsChange = false;
   for (var metaModelKey in message) {
     var filterValue = message[metaModelKey];
@@ -293,6 +300,7 @@ rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
       this.alignVisibility(rhizo.ui.Visibility.GREY);
     }
   }
+  this.project_.logger().timeEnd('FilterManager::onFilter');
 };
 
 /**

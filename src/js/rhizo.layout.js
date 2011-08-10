@@ -326,7 +326,6 @@ rhizo.layout.FlowLayout.prototype.layout = function(pipeline,
   var lineHeight = 0;
 
   // reorder supermodels
-  this.project_.logger().info("Sorting by " + order);
   supermodels.sort(rhizo.meta.sortBy(order, meta[order].kind, reverse));
 
   // layout supermodels
@@ -418,8 +417,6 @@ rhizo.layout.BucketLayout.prototype.layout = function(pipeline,
                                                       options) {
   var reverse = !!this.getState().reverse;
   var bucketBy = this.getState().bucketBy;
-  this.project_.logger().info("Bucketing by " + bucketBy);
-
   this.internalFlowLayout_.setState({order: bucketBy, reverse: reverse});
 
   var clusterFunction;

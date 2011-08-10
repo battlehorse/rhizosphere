@@ -246,9 +246,7 @@ googlecode.template.StandardTemplate.prototype.defaultLeftComponents = function(
 
 googlecode.template.StandardTemplate.prototype.defaultRightComponents =
     function(project, options) {
-  return [
-      new rhizo.ui.component.Console(project, options)
-  ];
+  return [];
 };
 
 

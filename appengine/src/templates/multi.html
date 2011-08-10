@@ -53,9 +53,11 @@
         for (var i = 0; i < divs.length; i++) {
           new rhizo.bootstrap.Bootstrap(
               $(divs[i]),
-              {template: 'bottom',
-               platform: 'default',
-               device: 'default'
+              {
+                logLevel: {% if logLevel %}'{{ logLevel }}'{% else %}null{% endif %},
+                template: 'bottom',
+                platform: 'default',
+                device: 'default'
               }).prepareAndDeploy(samples[i]);
         }
       });

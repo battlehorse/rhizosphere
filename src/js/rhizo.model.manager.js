@@ -241,6 +241,7 @@ rhizo.model.ModelManager.prototype.checkModels_ = function(
  * @private
  */
 rhizo.model.ModelManager.prototype.onModelChange_ = function(message) {
+  this.project_.logger().time('ModelManager::onModelChange');
   var superModels = message['models'] || [];
   if (superModels.length > 0) {
     var dirtyVisibility = message['action'] == 'remove' ? 
@@ -249,6 +250,9 @@ rhizo.model.ModelManager.prototype.onModelChange_ = function(message) {
       this.project_.layoutManager().forceLayout();
     }
   }
+  this.project_.logger().debug(
+      this.models_.length + ' models in visualization');
+  this.project_.logger().timeEnd('ModelManager::onModelChange');
 };
 
 /**

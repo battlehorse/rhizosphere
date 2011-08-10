@@ -16,8 +16,8 @@
 */
 
 /**
- * Definition of Rhizosphere loaders, and global functions to access the
- * registry of known loaders.
+ * @fileOverview Definition of Rhizosphere loaders, and global functions to
+ * access the registry of known loaders.
  *
  * A loader is responsible for loading the 3 main components a Rhizosphere
  * visualization needs to be properly displayed:
@@ -42,7 +42,9 @@
  *     the optional renderer as parameters.
  *     'options' contains visualization-wide configuration options that can be
  *     used to tune the loading. 'logger' is a generic logger that exposes
- *     error(), warn() and info() methods.
+ *     an API equivalent to the browser console API (see
+ *     http://getfirebug.com/logging), including the standard error(), warn()
+ *     and info() methods.
  *
  * Loaders should be registered in the rhizo.model.loader.loaders array.
  * When Rhizosphere is bootstrapped with a generic URI and an explicit loader is

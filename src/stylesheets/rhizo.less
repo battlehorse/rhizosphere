@@ -56,6 +56,10 @@
 @selection-background: #F796FF;
 @selection-border: #7E18AC;
 
+/* Errors */
+@error-background-color: #C00000;
+@error-color: #fff;
+
 /* Derived colors for Rhizosphere specific entities */
 @model-background: @background;
 @border-color: @primary-chrome;
@@ -308,6 +312,25 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   cursor: pointer;
+}
+
+/******************
+  Error notifications
+ ******************/
+
+.rhizo-error {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 350;
+  background-color: @error-background-color; 
+  color: @error-color;
+}
+
+.rhizo-error P {
+  padding: 0;
+  margin: 0.2em;
+  font-size: 0.9em;
 }
 
 /******************
@@ -649,57 +672,6 @@
   opacity: 0;
   visibility: hidden;
   .shadow(1px, 1px, 2px, @dark-secondary-background);
-}
-
-/******************
-  Console
- *****************/
-.rhizo-console-header {
-  border: 1px solid @border-color;
-  border-top: 0px;
-  min-height: 20px;
-  padding: 3px 0 0 5px;
-  font-variant: small-caps;
-  background-color: @background;
-}
-
-.rhizo-console-close {
-  float: right;
-  border: 2px solid @border-color;
-  font-family: sans-serif;
-  color: @primary-link;
-  width: 12px;
-  height: 12px;
-  margin-right: 2px;
-  text-align: center;
-}
-
-.rhizo-console-close:hover {
-  cursor: pointer;
-}
-
-.rhizo-console-contents {
-  border: 1px solid @border-color;
-  border-top-width: 0px;
-  font-size: 0.9em;
-  height: 400px;
-  overflow: hidden;
-  background-color: @secondary-background;
-  clear: right;
-  display: none;
-}
-
-.rhizo-console-contents P {
-  margin: 1px 0;
-  padding: 0;
-}
-
-.rhizo-console-contents P.rhizo-log-error {
-  background-color: #ff9999;
-}
-
-.rhizo-console-contents P.rhizo-log-warning {
-  background-color: #ffff99;
 }
 
 /******************

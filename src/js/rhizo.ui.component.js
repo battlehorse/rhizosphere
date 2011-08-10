@@ -774,6 +774,9 @@ rhizo.ui.component.HBox.prototype.toggleComponent = function(key,
 rhizo.ui.component.Viewport = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options);
   this.universeTargetPosition_ = {top: 0, left: 0};
+  if (options['showErrorsInViewport']) {
+    project.eventBus().subscribe('error', this.onError_, this);
+  }
 };
 rhizo.inherits(rhizo.ui.component.Viewport, rhizo.ui.component.Component);
 
@@ -864,6 +867,31 @@ rhizo.ui.component.Viewport.prototype.panUniverse_ = function(deltaX,
   this.universe_.stop().animate(this.universeTargetPosition_);
 };
 
+/**
+ * Callback invoked whenever an error occurs in the project, if the viewport
+ * has been configured to display error notifications.
+ *
+ * @param {Object} message The eventbus message describing the layout change.
+ * @private
+ */
+rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
+  if (!!message['clear']) {
+    $(this.viewport_).find('.rhizo-error').remove();
+  } else {
+    var errorContainer = $(this.viewport_).find('.rhizo-error');
+    if (errorContainer.length == 0) {
+      errorContainer = $("<div />", {'class': 'rhizo-error'}).
+          appendTo(this.viewport_);
+    }
+    var args = message['arguments'] || [];
+    var errorMsg = ['An error occurred: '];
+    for (var i = 0; i < args.length; i++) {
+      errorMsg.push(String(args[i]));
+    }
+    $("<p />").text(errorMsg.join(' ')).appendTo(errorContainer);
+  }
+}
+
 
 /* ==== Component specializations ==== */
 
@@ -923,66 +951,6 @@ rhizo.ui.component.Logo.prototype.render = function() {
   }
 
   return panel.get(0);
-};
-
-
-/**
- * A logging console that collects messages and notifications.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
- * @constructor
- */
-rhizo.ui.component.Console = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
-                                    'rhizo.ui.component.Console');
-};
-rhizo.inherits(rhizo.ui.component.Console, rhizo.ui.component.Component);
-
-rhizo.ui.component.Console.prototype.render = function() {
-  this.toggleButton_ = $('<div />', {'class': 'rhizo-console-close'}).
-      html('&#8659;');
-
-  this.consoleHeader_ = $('<div />', {'class': 'rhizo-console-header'});
-  this.consoleHeader_.append(this.toggleButton_).append('Log Console');
-
-  this.consoleContents_ = $('<div />', {'class': 'rhizo-console-contents'});
-
-  this.activate_();
-  return [this.consoleHeader_.get(0), this.consoleContents_.get(0)];
-};
-
-/**
- * @private
- */
-rhizo.ui.component.Console.prototype.activate_ = function() {
-  this.toggleButton_.click(jQuery.proxy(function() {
-    if (this.consoleContents_.is(":visible")) {
-      this.consoleContents_.slideUp("slow", jQuery.proxy(function() {
-        this.toggleButton_.html("&#8659;");
-        this.consoleContents_.empty();
-      }, this));
-    } else {
-      this.consoleContents_.slideDown("slow", jQuery.proxy(function() {
-        this.toggleButton_.html("&#8657;");
-      }, this));
-    }
-  }, this));
-};
-
-/**
- * @return {*} The jQuery object pointing to the element containing all the
- *     console messages accumulated so far.
- */
-rhizo.ui.component.Console.prototype.getContents = function() {
-  return this.consoleContents_;
-};
-
-
-/**
- * @return {*} The jQuery object pointing to the console header.
- */
-rhizo.ui.component.Console.prototype.getHeader = function() {
-  return this.consoleHeader_;
 };
 
 
@@ -1063,6 +1031,7 @@ rhizo.ui.component.Layout.prototype.ready = function() {
  * Ensure that the layout component UI reflects the currently chosen engine.
  *
  * @param {Object} message The eventbus message describing the layout change.
+ * @private
  */
 rhizo.ui.component.Layout.prototype.onLayout_ = function(message) {
   this.layoutSelector_.val(message['engine']);
@@ -1303,7 +1272,7 @@ rhizo.ui.component.AutocommitPanel.prototype.render = function() {
   this.hideButton_ =
       $('<button />', {disabled: 'disabled'}).
       text('Apply filters').
-      appendTo(autocommitPanel);
+      prependTo(autocommitPanel);
   return autocommitPanel;
 };
 
@@ -2022,7 +1991,6 @@ rhizo.ui.component.StandardTemplate.prototype.defaultLeftComponents = function(
 rhizo.ui.component.StandardTemplate.prototype.defaultRightComponents =
     function(project, options) {
   return [
-      new rhizo.ui.component.Console(project, options),
       new rhizo.ui.component.Actions(project, options)
   ];
 };

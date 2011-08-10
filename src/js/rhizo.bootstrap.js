@@ -40,9 +40,12 @@ rhizo.bootstrap.uuids_ = 0;
  * @param {*} opt_options Visualization-wide configuration options, as
  *     described at
  *     http://www.rhizospherejs.com/doc/contrib_tables.html#options.
- * @param {?function(rhizo.UserAgent)} opt_callback
+ * @param {function(rhizo.UserAgent, boolean, string=)=} opt_callback
  *     Optional callback invoked on the visualization is completely initialized.
- *     Receives the rhizo.UserAgent managing the visualization as a parameter.
+ *     Receives 3 parameters: the rhizo.UserAgent managing the visualization, a
+ *     boolean indicating whether the visualization successfully initialized
+ *     and a string containing the error details if the initialization was
+ *     not sucessful.
  * @constructor
  */
 rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
@@ -59,13 +62,14 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
     $(container).attr('id', 'rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
   }
   this.options_ = { selectfilter: '.rhizo-model:visible',
+                    showErrorsInViewport: true,
                     enableHTML5History: true,
                     enableLoadingIndicator: true,
                     enableAnims: true};
   if (opt_options) {
     $.extend(this.options_, opt_options);
   }
-  this.ready_callback_ = opt_callback;
+  this.callback_ = opt_callback;
 };
 
 /**
@@ -106,7 +110,6 @@ rhizo.bootstrap.Bootstrap.prototype.prepare = function() {
   this.gui_ = this.initGui_();
   this.project_ = new rhizo.Project(this.gui_, this.options_);
   this.template_ = this.initTemplate_(this.project_, this.gui_, this.options_);
-  this.project_.chromeReady();
   return this.project_.userAgent();
 };
 
@@ -163,6 +166,7 @@ rhizo.bootstrap.Bootstrap.prototype.deployWithLoader = function(loader) {
 rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(opt_models,
                                                               opt_metamodel,
                                                               opt_renderer) {
+  this.project_.logger().time('Bootstrap::deployExplicit'); 
   var metamodel = this.options_.metamodel || opt_metamodel;
   if (this.options_.metamodelFragment) {
     $.extend(metamodel, this.options_.metamodelFragment);
@@ -176,16 +180,53 @@ rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(opt_models,
                                                               this.options_));
   }
 
-  if (this.project_.metaReady()) {
-    this.template_.metaReady();
-    this.project_.deploy(opt_models);
-    this.template_.ready();
+  var outcome = this.project_.deploy();
+  if (!outcome.success) {
+    this.project_.logger().error(outcome.details);
+    this.template_.setProgressHandler(null);
+    this.gui_.done();
+    this.deployed_ = true;
+    this.callback_ && this.callback_(
+        this.project_.userAgent(), outcome.success, outcome.details);
+    this.project_.logger().timeEnd('Bootstrap::deployExplicit'); 
+    return;
   }
+
+  this.template_.metaReady();
+  if (opt_models && opt_models.length > 0) {
+
+    // We manually disable animations for the initial layout (the browser is
+    // already busy creating the whole dom).
+    this.gui_.disableFx(true);
+
+    this.project_.userAgent().addModels(
+        opt_models, jQuery.proxy(this.modelsAdded_, this));
+  } else {
+    this.modelsAdded_(true);
+  }
+};
+
+/**
+ * Callback invoked after the project initial set of models has been deployed.
+ *
+ * @param {boolean} success Whether the model deployment was successful and all
+ *     the models were well-formed.
+ * @param {string=} opt_details The error details, if the model deployment
+ *     failed for any reason.
+ * @private
+ */
+rhizo.bootstrap.Bootstrap.prototype.modelsAdded_ = function(
+    success, opt_details) {
+  if (!success) {
+    this.project_.logger().error(opt_details);
+  }
+  this.project_.alignFx();
+  this.template_.ready();
   this.gui_.done();
-  if (this.ready_callback_) {
-    this.ready_callback_(this.project_.userAgent());
-  }
   this.deployed_ = true;
+  this.callback_ && this.callback_(
+      this.project_.userAgent(), success, opt_details);
+  this.project_.logger().timeEnd('Bootstrap::deployExplicit');
 };
 
 /**

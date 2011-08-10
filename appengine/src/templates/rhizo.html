@@ -2,6 +2,15 @@
 <html>
   <head>
     <title>Rhizosphere</title>
+    <!--
+      Uncomment the following script tag to enable detailed logging of
+      Rhizosphere history management functions.
+    -->
+    <!--
+    <script>
+      rhizosphereHistoryLogLevel = 'debug';
+    </script>
+    -->
 
    <!--
     Google services integration. Autoloads:
@@ -50,6 +59,7 @@
         {% endif %}
 
         var options = {
+          logLevel: {% if logLevel %}'{{ logLevel }}'{% else %}null{% endif %},
           allowConfigFromUrl: true
           {% if use_channels %}
             ,template: 'broadcast'

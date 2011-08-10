@@ -139,7 +139,9 @@
   </table>
   <div>
     <button id="redraw_button">Redraw all</button>
-    <button id="redraw_alternate_button">Redraw Rhizosphere with no options</button>
+    <button id="redraw_nodata">Redraw all with no data</button>
+    <button id="redraw_nooptions">Redraw Rhizosphere with no options</button>
+    <button id="redraw_error">Redraw Rhizosphere with errors</button>
   </div>
   <div id="output"></div>
 
@@ -148,117 +150,157 @@
     google.load("visualization", "1", {packages:['corechart', 'table']});
     google.setOnLoadCallback(visualizationApiLoaded);
     var chart, table, rhizosphere;
-    var chartOptions, tableOptions, rhizosphereOptions;
-    var chartData, tableData, rhizosphereData;
+    var rhizosphereOptions;
+    var data;
 
-      function visualizationApiLoaded() {
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Name', 'name');
-        data.addColumn('number', 'Age', 'age');
-        data.addColumn('number', 'Weight', 'weight');
-        data.addColumn('string', 'Gender', 'gender');
-        data.addRows([
-            ['Bob', 8, 12, 'male'],
-            ['Alice', 4, 5.5, 'female'],
-            ['Mary', 11, 14, 'female'],
-            ['Mark', 4, 4.5, 'male'],
-            ['Victoria', 3, 3.5, 'female'],
-            ['Robert', 6.5, 7, 'male'],
-            ['Paul', 13, 16, 'male'],
-            ['Jenny', 7, 9, 'female'],
-            ['Dorothy', 10, 9, 'female'],
-            ['Marcel', 9.5, 15, 'male'],
-            ['Sara', 15, 18, 'female']
-        ]);
+    function visualizationApiLoaded() {
+      data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name', 'name');
+      data.addColumn('number', 'Age', 'age');
+      data.addColumn('number', 'Weight', 'weight');
+      data.addColumn('string', 'Gender', 'gender');
+      data.addRows([
+          ['Bob', 8, 12, 'male'],
+          ['Alice', 4, 5.5, 'female'],
+          ['Mary', 11, 14, 'female'],
+          ['Mark', 4, 4.5, 'male'],
+          ['Victoria', 3, 3.5, 'female'],
+          ['Robert', 6.5, 7, 'male'],
+          ['Paul', 13, 16, 'male'],
+          ['Jenny', 7, 9, 'female'],
+          ['Dorothy', 10, 9, 'female'],
+          ['Marcel', 9.5, 15, 'male'],
+          ['Sara', 15, 18, 'female']
+      ]);
 
-        // Chart setup
-        chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
-        google.visualization.events.addListener(chart, 'ready', chart_ready);
-
-        chartData = new google.visualization.DataView(data);
-        chartData.setColumns([1, 2]);
-
-        chartOptions = {
+      // Chart setup
+      chart = new google.visualization.ChartWrapper({
+          'containerId': 'chart_div',
+          'chartType': 'ScatterChart',
+          'options': {
             width: 400, height: 240,
             title: 'Age vs. Weight comparison',
             hAxis: {title: 'Age', minValue: 0, maxValue: 15},
             vAxis: {title: 'Weight', minValue: 0, maxValue: 20},
-            legend: 'none'};
-        chart.draw(chartData, chartOptions);
-
-        // Table setup
-        table = new google.visualization.Table(document.getElementById('table_div'));
-        google.visualization.events.addListener(table, 'ready', table_ready);
-
-        tableData = data;
-        tableOptions = {width: 400};
-        table.draw(tableData, tableOptions);
-
-        // Rhizosphere setup
-        var renderer = {
-          render: function(model) {
-            return $("<div class='rhizo-sample'>" +
-                 "<p><b><span style='color:" +
-                 (model.gender == 'male' ? "blue" : "pink") + "'>"+
-                 model.name + "</span></b></p>" +
-                 "<p><span class='dim'>Age:</span>" + model.age + "</p>" +
-                 "<p><span class='dim'>Weight:</span>" + model.weight + "</p>" +
-                 "</div>");
+            legend: 'none'
           },
-          cacheDimensions: true
-        };
-
-        var metamodelFragment = {
-          gender: { kind: rhizo.meta.Kind.CATEGORY, label: 'Gender' ,
-               categories: [ 'male', 'female']},
-          weight: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Weight', min: 0, max: 20}
-        };
-
-        rhizosphere = new rhizo.gviz.Rhizosphere(document.getElementById('rhizo_div'));
-        google.visualization.events.addListener(rhizosphere, 'ready', rhizosphere_ready);
-
-        rhizosphereData = data;
-        rhizosphereOptions = {
-            renderer: renderer,
-            metamodelFragment: metamodelFragment,
-            template: 'default',
-            enableLoadingIndicator: false
-        };
-
-        rhizosphere.draw(rhizosphereData, rhizosphereOptions);
-      }
-
-      function chart_ready() {
-        appendLog('Chart is ready.');
-      }
-
-      function table_ready() {
-        appendLog('Table is ready.');
-      }
-
-      function rhizosphere_ready() {
-        appendLog('Rhizosphere is ready.');
-      }
-
-      function appendLog(message) {
-        var p = document.createElement('P');
-        p.innerHTML = message;
-        document.getElementById('output').appendChild(p);
-      }
-
-      $().ready(function() {
-        $('#redraw_button').click(function() {
-          appendLog("Redraw.");
-          chart.draw(chartData, chartOptions);
-          table.draw(tableData, tableOptions);
-          rhizosphere.draw(rhizosphereData, rhizosphereOptions);
-        });
-
-        $('#redraw_alternate_button').click(function() {
-          appendLog("Redrawing Rhizosphere with no options.");
-          rhizosphere.draw(rhizosphereData);
-        });
+          'dataTable': data,
+          'view': {'columns': [1, 2]}
       });
+      google.visualization.events.addListener(chart, 'ready', chart_ready);
+      chart.draw();
+
+      // Table setup
+      table = new google.visualization.ChartWrapper({
+          'containerId': 'table_div',
+          'chartType': 'Table',
+          'options': {width: 400},
+          'dataTable': data
+      });
+      google.visualization.events.addListener(table, 'ready', table_ready);
+      table.draw();
+
+      // Rhizosphere setup
+      var renderer = {
+        render: function(model) {
+          return $("<div class='rhizo-sample'>" +
+               "<p><b><span style='color:" +
+               (model.gender == 'male' ? "blue" : "pink") + "'>"+
+               model.name + "</span></b></p>" +
+               "<p><span class='dim'>Age:</span>" + model.age + "</p>" +
+               "<p><span class='dim'>Weight:</span>" + model.weight + "</p>" +
+               "</div>");
+        },
+        cacheDimensions: true
+      };
+
+      var metamodelFragment = {
+        gender: { kind: rhizo.meta.Kind.CATEGORY, label: 'Gender' ,
+             categories: [ 'male', 'female']},
+        weight: { kind: rhizo.meta.Kind.DECIMALRANGE, label: 'Weight', min: 0, max: 20}
+      };
+
+      rhizosphereOptions = {
+          logLevel: {% if logLevel %}'{{ logLevel }}'{% else %}null{% endif %},
+          renderer: renderer,
+          metamodelFragment: metamodelFragment,
+          template: 'default',
+          enableLoadingIndicator: false
+      };
+      rhizosphere = new google.visualization.ChartWrapper({
+          'containerId': 'rhizo_div',
+          'chartType': 'rhizo.gviz.Rhizosphere',
+          'options': rhizosphereOptions,
+          'dataTable': data
+      });
+      google.visualization.events.addListener(rhizosphere, 'ready', rhizosphere_ready);
+      google.visualization.events.addListener(rhizosphere, 'error', rhizosphere_error);
+      rhizosphere.draw();
+    }
+
+    function chart_ready() {
+      appendLog('Chart is ready.');
+    }
+
+    function table_ready() {
+      appendLog('Table is ready.');
+    }
+
+    function rhizosphere_ready() {
+      appendLog('Rhizosphere is ready.');
+    }
+
+    function rhizosphere_error(details) {
+      appendLog('Rhizosphere failed drawing: ' + details.message);
+    }
+
+    function appendLog(message) {
+      var p = document.createElement('P');
+      p.innerHTML = message;
+      document.getElementById('output').appendChild(p);
+    }
+
+    $().ready(function() {
+      $('#redraw_button').click(function() {
+        appendLog("Redraw.");
+        chart.setDataTable(data); chart.draw();
+        table.setDataTable(data); table.draw();
+
+        rhizosphere.setDataTable(data);
+        rhizosphere.setOptions(rhizosphereOptions);
+        rhizosphere.draw();
+      });
+
+      $('#redraw_nooptions').click(function() {
+        appendLog("Redrawing Rhizosphere with no options.");
+        rhizosphere.setDataTable(data);
+        rhizosphere.setOptions({});
+        rhizosphere.draw();
+      });
+
+      $('#redraw_nodata').click(function() {
+        appendLog("Redrawing all visualizations with no data.");
+        var view = new google.visualization.DataView(data);
+        view.hideRows(view.getViewRows());
+        chart.setDataTable(view); chart.draw();
+        table.setDataTable(view); table.draw();
+        rhizosphere.setDataTable(view); rhizosphere.draw();
+      });
+
+      $('#redraw_error').click(function() {
+        appendLog("Redrawing Rhizosphere with drawing errors.");
+
+        // metamodel fragment purposefully broken
+        var sharedMetamodelKind = {};
+        rhizosphere.setOptions({
+          metamodelFragment: {
+            gender: { kind: sharedMetamodelKind },
+            weight: { kind: sharedMetamodelKind }
+          }
+        });
+        rhizosphere.draw();
+      });
+    });
   </script>
 </body>
 </html>

@@ -143,7 +143,6 @@ rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
                                                     meta,
                                                     options) {
   var parentKey = this.getState().parentKey;
-  this.project_.logger().info("Creating tree by " + parentKey);
 
   // detect rendering direction
   var vertical = this.getState().direction == 'ver';

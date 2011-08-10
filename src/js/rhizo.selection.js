@@ -309,6 +309,7 @@ rhizo.selection.SelectionManager.prototype.onBeforeSelection_ = function(
  * @private
  */
 rhizo.selection.SelectionManager.prototype.onSelection_ = function(message) {
+  this.project_.logger().time('SelectionManager::onSelection');
   switch (message['action']) {
     case 'select':  // includes 'toggle'
     case 'selectAll':
@@ -335,6 +336,7 @@ rhizo.selection.SelectionManager.prototype.onSelection_ = function(message) {
       this.deselect_(this.getAllModelIds_(this.selectionMap_));
       break;
   }
+  this.project_.logger().timeEnd('SelectionManager::onSelection');
 };
 
 /**
@@ -497,7 +499,8 @@ rhizo.selection.SelectionManager.prototype.hide_ = function(
     this.project_.filterManager().removeFilterFromModels('__selection__');
   }
   for (var i = modelIds.length-1; i >= 0; i--) {
-    this.project_.model(modelIds[i]).filter('__selection__');
+    var model = this.project_.model(modelIds[i]);
+    if (model) { model.filter('__selection__'); }
   }
   // after changing the filter status of some elements, recompute fx settings.
   this.project_.alignFx();

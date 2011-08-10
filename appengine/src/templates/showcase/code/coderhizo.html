@@ -73,6 +73,7 @@
 
       // Set up visulization options.
       var options = {
+        logLevel: {% if logLevel %}'{{ logLevel }}'{% else %}null{% endif %},
         allowConfigFromUrl: true,
         template: 'broadcast'
       };

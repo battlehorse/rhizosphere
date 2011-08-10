@@ -330,6 +330,7 @@ rhizo.ui.RenderingPipeline.prototype.artifact =  function(artifact) {
  *   the top-left corner of the visualization universe.
  */
 rhizo.ui.RenderingPipeline.prototype.apply = function() {
+  this.project_.logger().time('RenderingPipeline::apply');
   var boundingRect = {
       top: Number.POSITIVE_INFINITY,
       left: Number.POSITIVE_INFINITY,
@@ -362,6 +363,7 @@ rhizo.ui.RenderingPipeline.prototype.apply = function() {
   }
   this.computeBoundingRectangleArea_(boundingRect);
   this.artifactLayer_.fadeIn();
+  this.project_.logger().timeEnd('RenderingPipeline::apply');
   return boundingRect;
 };
 
