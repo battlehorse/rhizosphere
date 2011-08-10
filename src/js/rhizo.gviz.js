@@ -90,6 +90,7 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
       datatable, rhizo.log.newLogger(null, options), options);
   if (!initializer.parse()) {
     // The datatable is empty, we skip visualization deployment.
+    this.project_ = null;
     this.deployComplete_(null, true);
   } else {
     var bootstrapper = new rhizo.bootstrap.Bootstrap(
