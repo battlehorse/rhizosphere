@@ -633,19 +633,24 @@ rhizo.ui.meta.RangeKindUi.prototype.modelsChanged = function(
     this.updateRange_();
     return;
   }
-  var min = Number.POSITIVE_INFINITY; max = Number.NEGATIVE_INFINITY;
+  var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
   for (var i = allModels.length-1; i >= 0; i--) {
-    var modelValue = allModels[i].unwrap()[this.metaModelKey_];
-    if (typeof(modelValue) != 'undefined' && typeof(modelValue) != 'null') {
+    var modelValue = parseFloat(allModels[i].unwrap()[this.metaModelKey_]);
+    if (!isNaN(modelValue)) {
       min = Math.min(min, modelValue);
       max = Math.max(max, modelValue);
     }
   }
-  this.range_ = {min: min, max: max};
-  this.rangeFilterScale_ = {
-    min: this.toFilterScale(this.range_.min),
-    max: this.toFilterScale(this.range_.max)
-  };
+  if (min == Number.POSITIVE_INFINITY || max == Number.NEGATIVE_INFINITY) {
+    this.range_ = null;
+    this.rangeFilterScale_ = null;
+  } else {
+    this.range_ = {min: min, max: max};
+    this.rangeFilterScale_ = {
+      min: this.toFilterScale(this.range_.min),
+      max: this.toFilterScale(this.range_.max)
+    };
+  }
   this.updateRange_();
 };
 
