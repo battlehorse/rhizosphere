@@ -57,7 +57,7 @@ rhizo.eventbus.uuidKey_ = '__rhizo_event_uuid';
  */
 rhizo.eventbus.EventBus = function(logger) {
   /**
-   * @param {!Object}
+   * @type {!Object}
    * @private
    */
   this.logger_ = logger;
