@@ -22,6 +22,8 @@
 .rhizo-tree-connector{background-color:#6391de;}
 .rhizo-tree-syntheticnode{height:20px;max-width:200px;min-width:100px;}
 .rhizo-tree-syntheticnode,.rhizo-treemap-syntheticnode{border:1px solid #6391de;background-color:#ffffff;-webkit-box-shadow:1px 1px 2px #dadee8;-moz-box-shadow:1px 1px 2px #dadee8;box-shadow:1px 1px 2px #dadee8;z-index:10;margin:0;padding:0;overflow:hidden;text-align:center;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;}
+.rhizo-error{position:absolute;top:0;right:0;z-index:350;background-color:#c00000;color:#ffffff;}
+.rhizo-error P{padding:0;margin:0.2em;font-size:0.9em;}
 .rhizo-progressbar-panel{position:absolute;z-index:5000;-webkit-box-shadow:5px 5px 5px #dadee8;-moz-box-shadow:5px 5px 5px #dadee8;box-shadow:5px 5px 5px #dadee8;width:300px;height:100px;border:1px solid #6391de;background-color:#fff;}
 .rhizo-progressbar{margin:5px 10px;}
 .rhizo-progressbar-text{text-align:center;color:#222222;margin-bottom:5px;}
@@ -43,6 +45,7 @@
 .rhizo-slider-moving{background-color:#ffee88;-moz-border-radius:3px;border-radius:3px;}
 .rhizo-slider-label{font-weight:bold;}
 .rhizo-slider{margin:5px 30px 0 5px;}
+.rhizo-slider.ui-disabled .ui-slider-handle,.rhizo-slider.ui-disabled .ui-slider-range{display:none;}
 .rhizo-floating-panel .rhizo-slider{margin-right:5px;}
 .rhizo-floating-panel .rhizo-filter{margin-top:0;padding:0 4px;border:0;height:100%;width:80%;clear:left;}
 .rhizo-floating-panel.rhizo-filter-container{overflow:hidden;}
@@ -72,13 +75,6 @@
 .rhizo-action{border:1px solid #6391de;-moz-border-radius:3px;border-radius:3px;margin-top:5px;background-color:#ffffff;height:40px;padding-top:20px;text-align:center;}
 .rhizo-action:hover{cursor:pointer;}
 .rhizo-droppable-action{border:1px solid #6391de;-moz-border-radius:3px;border-radius:3px;background-color:#ffffff;width:200px;height:200px;color:#7788cc;position:absolute;opacity:0;visibility:hidden;-webkit-box-shadow:1px 1px 2px #dadee8;-moz-box-shadow:1px 1px 2px #dadee8;box-shadow:1px 1px 2px #dadee8;}
-.rhizo-console-header{border:1px solid #6391de;border-top:0px;min-height:20px;padding:3px 0 0 5px;font-variant:small-caps;background-color:#ffffff;}
-.rhizo-console-close{float:right;border:2px solid #6391de;font-family:sans-serif;color:#2200cc;width:12px;height:12px;margin-right:2px;text-align:center;}
-.rhizo-console-close:hover{cursor:pointer;}
-.rhizo-console-contents{border:1px solid #6391de;border-top-width:0px;font-size:0.9em;height:400px;overflow:hidden;background-color:#ebeff9;clear:right;display:none;}
-.rhizo-console-contents P{margin:1px 0;padding:0;}
-.rhizo-console-contents P.rhizo-log-error{background-color:#ff9999;}
-.rhizo-console-contents P.rhizo-log-warning{background-color:#ffff99;}
 .rhizo-icon{display:inline-block;border:1px solid #2e4987;width:14px;height:14px;-moz-border-radius:2px;border-radius:2px;margin-right:0.2em;vertical-align:top;text-align:center;font-weight:bold;}
 .rhizo-icon:hover{border-color:#6a7eac;cursor:pointer;background-color:rgba(255, 255, 255, 0.8);}
 .rhizo-icon.rhizo-maximize-icon{height:10px;border-top-width:4px;}
