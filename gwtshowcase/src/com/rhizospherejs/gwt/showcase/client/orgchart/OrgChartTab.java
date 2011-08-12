@@ -105,7 +105,8 @@ public class OrgChartTab extends Composite {
   TextArea logArea;
   
   @UiField
-  Button resetFilters, salaryFilter, salaryGenderFilter, select, layout, layoutPositions;
+  Button resetFilters, salaryFilter, salaryGenderFilter, select, layout, layoutPositions,
+      createError, clearErrors;
 
   private Rhizosphere<Employee> rhizosphere;
 
@@ -292,6 +293,8 @@ public class OrgChartTab extends Composite {
     select.setEnabled(true);
     layout.setEnabled(true);
     layoutPositions.setEnabled(true);
+    createError.setEnabled(true);
+    clearErrors.setEnabled(true);
   }
 
   // All the following handlers demonstrate how to issue programmatic commands
@@ -340,5 +343,15 @@ public class OrgChartTab extends Composite {
     List<RhizosphereModelPosition> positions = new ArrayList<RhizosphereModelPosition>();
     positions.add(RhizosphereModelPosition.create(sara, 400, 300));
     rhizosphere.doLayout(null, null, positions, logCallback);
+  }
+  
+  @UiHandler("createError")
+  void addError(ClickEvent event) {
+    rhizosphere.addError("Error message!", null);
+  }
+  
+  @UiHandler("clearErrors")
+  void removeAllErrors(ClickEvent event) {
+    rhizosphere.clearErrors(null);
   }
 }

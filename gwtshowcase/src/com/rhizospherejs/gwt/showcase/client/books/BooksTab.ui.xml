@@ -14,7 +14,8 @@
   limitations under the License.
  -->
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-     xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+     xmlns:g='urn:import:com.google.gwt.user.client.ui'
+     xmlns:r='urn:import:com.rhizospherejs.gwt.client'>
   <ui:with field='res' type='com.rhizospherejs.gwt.showcase.client.resources.Resources'/>
   <ui:style>
     .form { 
@@ -29,8 +30,7 @@
     }
     .formfield { display: inline-block; white-space: nowrap; }
     .formlabel { display: inline-block; color: #666; }
-    .loading { display: inline-block; }
-    .noresults { display: inline-block; }
+    .loading,.noresults,.error { display: inline-block; }
     .stayover {
       z-index: 300;
     }
@@ -48,11 +48,17 @@
         <a href="http://code.google.com/apis/books/">Google Book Search</a>).
         Enter some topics in the search box to add relevant books to
         Rhizosphere. You can do multiple searches to add more books to
-        Rhizosphere.
+        Rhizosphere. You can remove books from Rhizosphere by clicking the
+        <em>close</em> icon on each book, or selecting multiple books and
+        clicking the <em>Remove select</em> button. 
       </p>
       <p class='{res.tabsCss.demoOverview}'>
         In this demo Rhizosphere defines a custom metamodel to describe the
         JSON feed and a custom widget-based renderer to display each book.
+      </p>
+      <p class='{res.tabsCss.demoOverview}'>
+        The demo also show how dynamically add and remove items to a
+        visualization and how to programmatically interact with them.
       </p>
       <p class='{res.tabsCss.demoOverview}'>Relevant source code files:
         <a href="http://code.google.com/p/rhizosphere/source/browse/gwtshowcase/src/com/rhizospherejs/gwt/showcase/client/books/BooksTab.java">BooksTab.java</a>,
@@ -65,9 +71,12 @@
           <label class='{style.formlabel}'>Find books about:</label>
           <g:TextBox ui:field='searchInput' />
           <g:Button ui:field='submitButton' >Catch'em all</g:Button>
-          <g:Button ui:field='clearButton' visible='false' >Clear</g:Button>
+          <g:Button ui:field='removeButton' visible='false' >Remove</g:Button>
           <g:Label ui:field='loadingMessage' addStyleNames='{style.loading}' visible='false'>
             Loading...
+          </g:Label>
+          <g:Label ui:field='errorMessage' addStyleNames='{style.error}' visible='false'>
+            An error occurred while loading Rhizosphere.
           </g:Label>
           <g:Label ui:field='noResultsMessage' addStyleNames='{style.noresults}' visible='false'>
             No results found.
@@ -79,9 +88,10 @@
       </g:HTMLPanel>
     </g:north>
     <g:center>
-      <g:SimplePanel
-          ui:field='rhizosphereContainer'
-          addStyleNames='{res.booksCss.bookVisualization}'></g:SimplePanel>
+      <r:RhizosphereLazyPanel
+          addStyleNames='{res.booksCss.bookVisualization}'
+          width="100%" height="100%" ui:field="rhizospherePanel">
+      </r:RhizosphereLazyPanel>
     </g:center>
   </g:DockLayoutPanel>
 </ui:UiBinder>

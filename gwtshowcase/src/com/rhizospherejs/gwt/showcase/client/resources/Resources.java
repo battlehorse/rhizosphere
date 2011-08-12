@@ -39,6 +39,13 @@ public interface Resources extends ClientBundle {
   ImageResource person();
 
   /**
+   * Icon representing a loading spinner.
+   */
+  @Source("com/rhizospherejs/gwt/showcase/resources/loading_icon.gif")
+  @ImageOptions(height=23, width=23)
+  ImageResource loadingIcon();
+
+  /**
    * Repeatable pattern for a drag handler.
    */
   @Source("com/rhizospherejs/gwt/showcase/resources/grippy.png")

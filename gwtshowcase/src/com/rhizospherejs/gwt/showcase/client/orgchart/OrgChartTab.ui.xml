@@ -89,6 +89,8 @@
           <g:Button ui:field='select' enabled="false">Select Sara, Jennifer</g:Button>
           <g:Button ui:field='layout' enabled="false">Apply random layout</g:Button>
           <g:Button ui:field='layoutPositions' enabled="false">Move Sara</g:Button>
+          <g:Button ui:field='createError' enabled="false">Create Error</g:Button>
+          <g:Button ui:field='clearErrors' enabled="false">Clear Errors</g:Button>
           <g:TextArea ui:field='logArea' addStyleNames='{style.logArea}'>
           </g:TextArea>
         </div>

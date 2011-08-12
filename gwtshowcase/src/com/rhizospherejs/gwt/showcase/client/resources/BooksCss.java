@@ -36,4 +36,6 @@ public interface BooksCss extends CssResource {
   String bookVisualization();
   
   String bookDragHandler();
+  
+  String bookCloseButton();
 }
