@@ -277,6 +277,7 @@ public class BooksTab extends Composite {
         }
       }
       rhizosphere.doSelection("deselectAll", null, null);
+      selectedBooks.clear();
       removeButton.setText("Remove all");
       
     } else {
