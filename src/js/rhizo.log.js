@@ -56,7 +56,7 @@ rhizo.log.newLogger = function(opt_project, opt_options) {
   for (var i = methods.length; i >= 0; i--) {
     logThresholdReached ?
         rhizo.log.createNoOp(methods[i], logger) :
-        rhizo.log.createDelegate(methods[i], logger, console);
+        rhizo.log.createDelegate(methods[i], logger, window['console']);
     logThresholdReached = logThresholdReached || methods[i] == logLevel;
   }
 
