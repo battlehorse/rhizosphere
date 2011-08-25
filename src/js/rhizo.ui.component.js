@@ -772,7 +772,8 @@ rhizo.ui.component.HBox.prototype.toggleComponent = function(key,
  * @constructor
  */
 rhizo.ui.component.Viewport = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options);
+  rhizo.ui.component.Component.call(
+      this, project, options, 'rhizo.ui.component.Viewport');
   this.universeTargetPosition_ = {top: 0, left: 0};
   if (options.showErrorsInViewport()) {
     project.eventBus().subscribe('error', this.onError_, this);
@@ -789,10 +790,98 @@ rhizo.ui.component.Viewport.prototype.render = function() {
   this.gui_.setViewport(this.viewport_);
   this.gui_.setUniverse(this.universe_);
 
+  this.selection_trigger_ = $('<div />', {
+      'class': 'rhizo-selection-trigger',
+      'title': 'Start selecting items'}).appendTo(this.viewport_);
+
   return this.viewport_.get(0);
 };
 
 rhizo.ui.component.Viewport.prototype.ready = function() {
+  // The ordering matters: if selection is configured before dragging, the
+  // latter won't work.
+  this.activateDraggableViewport_();
+  this.activateSelectableViewport_();
+};
+
+/**
+ * Enable drag-selection on the viewport and the selection mode toggle.
+ * @private
+ */
+rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
+    function() {
+  var project = this.project_;
+  this.selection_trigger_.click(function() {
+    project.gui().toggleSelectionMode();
+  });
+
+  this.viewport_.selectable({
+    disabled: true,  // initially disabled.
+    selected: function(ev, ui) {
+      var selected_id = $(ui.selected).data("id");
+      if (selected_id) {
+        project.eventBus().publish(
+            'selection', {'action': 'select', 'models': selected_id});
+      }
+    },
+    unselected: function(ev, ui) {
+      var deselected_id = $(ui.unselected).data("id");
+      if (deselected_id) {
+        project.eventBus().publish(
+            'selection', {'action': 'deselect', 'models': deselected_id});
+      }
+    },
+    // TODO: disabled until incremental refresh() is implemented
+    // autoRefresh: false,
+    filter: this.options_.selectFilter(),
+    tolerance: 'touch',
+    distance: 1
+  });
+
+  this.viewport_.click(jQuery.proxy(function(ev, ui) {
+    if (this.isOnEmptySpace_(ev)) {
+      project.eventBus().publish('selection', {'action': 'deselectAll'});
+    }
+  }, this));
+};
+
+/**
+ * Checks whether an event was raised on empty space, i.e. somewhere in the
+ * viewport, but not on top of any models or any other elements.
+ *
+ * Since the viewport and the universe may be not on top of each other, the
+ * method checks whether any of the two is the original target of the event.
+ *
+ * @param {Event} evt the event to inspect.
+ * @returns {boolean} true if the click occurred on the viewport, false
+ *   otherwise.
+ * @private
+ */
+rhizo.ui.component.Viewport.prototype.isOnEmptySpace_ = function(evt) {
+  return $(evt.target).hasClass('rhizo-viewport') ||
+         $(evt.target).hasClass('rhizo-universe');
+};
+
+/**
+ * Toggles the title of the selection trigger depending on the status of the
+ * viewport.
+ *
+ * @param {boolean} selectionModeOn Whether the viewport is currently in
+ *     selection mode or not.
+ */
+rhizo.ui.component.Viewport.prototype.toggleSelectionTrigger =
+    function(selectionModeOn) {
+ this.selection_trigger_.attr(
+     'title',
+     selectionModeOn ? 'Stop selecting items' : 'Start selecting items');
+};
+
+/**
+ * Activate handlers that make the viewport draggable and scrollable (using
+ * the mousewheel).
+ * @private
+ */
+rhizo.ui.component.Viewport.prototype.activateDraggableViewport_ = function() {
   this.viewport_.draggable({
     cancel: '.rhizo-model',
     helper: jQuery.proxy(function() {
@@ -1085,10 +1174,6 @@ rhizo.ui.component.SelectionManager.prototype.onEvent = function(evt) {
 rhizo.ui.component.SelectionManager.prototype.render = function() {
   var selectionPanel = $('<div />', {'class': 'rhizo-selection'});
 
-  this.selection_trigger_ = $('<div />', {
-      'class': 'rhizo-selection-trigger',
-      'title': 'Start selecting items'}).appendTo(this.gui_.viewport);
-
   this.selectButton_ = $('<button />', {disabled: 'disabled'}).
       text('Work on selected items only');
   this.resetButton_ = $('<button />', {disabled: 'disabled'}).text('Reset');
@@ -1098,14 +1183,6 @@ rhizo.ui.component.SelectionManager.prototype.render = function() {
 };
 
 rhizo.ui.component.SelectionManager.prototype.ready = function() {
-  this.activateSelectableViewport_();
-  this.activateButtons_();
-};
-
-/**
- * @private
- */
-rhizo.ui.component.SelectionManager.prototype.activateButtons_ = function() {
   this.selectButton_.removeAttr('disabled').click(jQuery.proxy(function() {
     // Don't specify the sender, so to receive callbacks even for events that
     // this same class triggers.
@@ -1132,7 +1209,7 @@ rhizo.ui.component.SelectionManager.prototype.onSelectionChanged_ = function(
   if (message['action'] == 'focus' ||
       message['action'] == 'resetFocus' ||
       message['action'] == 'hide') {
-    this.setNumFilteredModels(this.project_.selectionManager().getNumHidden());
+    this.setNumFilteredModels_(this.project_.selectionManager().getNumHidden());
   }
 };
 
@@ -1142,86 +1219,16 @@ rhizo.ui.component.SelectionManager.prototype.onSelectionChanged_ = function(
  * @private
  */
 rhizo.ui.component.SelectionManager.prototype.onModelChanged_ = function() {
-  this.setNumFilteredModels(this.project_.selectionManager().getNumHidden());
-};
-
-/**
- * Checks whether an event was raised on empty space, i.e. somewhere in the
- * viewport, but not on top of any models or any other elements.
- *
- * Since the viewport and the universe may be not on top of each other, the
- * method checks whether any of the two is the original target of the event.
- *
- * @param {Event} evt the event to inspect.
- * @returns {boolean} true if the click occurred on the viewport, false
- *   otherwise.
- * @private
- */
-rhizo.ui.component.SelectionManager.prototype.isOnEmptySpace_ = function(evt) {
-  return $(evt.target).hasClass('rhizo-viewport') ||
-         $(evt.target).hasClass('rhizo-universe');
-};
-
-/**
- * @private
- */
-rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
-    function() {
-  var project = this.project_;
-  this.selection_trigger_.click(function() {
-    project.gui().toggleSelectionMode();
-  });
-
-  this.gui_.viewport.selectable({
-    disabled: true,  // initially disabled.
-    selected: function(ev, ui) {
-      var selected_id = $(ui.selected).data("id");
-      if (selected_id) {
-        project.eventBus().publish(
-            'selection', {'action': 'select', 'models': selected_id});
-      }
-    },
-    unselected: function(ev, ui) {
-      var deselected_id = $(ui.unselected).data("id");
-      if (deselected_id) {
-        project.eventBus().publish(
-            'selection', {'action': 'deselect', 'models': deselected_id});
-      }
-    },
-    // TODO: disabled until incremental refresh() is implemented
-    // autoRefresh: false,
-    filter: this.options_.selectFilter(),
-    tolerance: 'touch',
-    distance: 1
-  });
-
-  this.gui_.viewport.click(jQuery.proxy(function(ev, ui) {
-    if (this.isOnEmptySpace_(ev)) {
-      project.eventBus().publish('selection', {'action': 'deselectAll'});
-    }
-  }, this));
-};
-
-/**
- * Toggles the title of the selection trigger depending on the status of the
- * viewport.
- *
- * @param {boolean} selectionModeOn Whether the viewport is currently in
- *     selection mode or not.
- */
-rhizo.ui.component.SelectionManager.prototype.toggleSelectionTrigger =
-    function(selectionModeOn) {
- this.selection_trigger_.attr(
-     'title',
-     selectionModeOn ? 'Stop selecting items' : 'Start selecting items');
+  this.setNumFilteredModels_(this.project_.selectionManager().getNumHidden());
 };
 
 /**
  * Sets the number of models that have been filtered out via selections.
  * @param {number} numFilteredModels The number of models that are currently
  *     filtered because of selection choices.
+ * @private
  */
-rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels =
+rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels_ =
     function(numFilteredModels) {
   if (numFilteredModels > 0) {
     this.resetButton_.
