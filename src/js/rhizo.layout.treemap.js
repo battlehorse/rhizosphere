@@ -513,15 +513,12 @@ rhizo.layout.TreeMapLayout.prototype.validateState_ = function(otherState) {
  *     visualization models, mapping from the model id the associated SuperModel
  *     instance.
  * @param {*} meta The project metamodel.
- * @param {*} options The composition of project-wide configuration options and
- *     layout-specific ones.
  */
 rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
                                                        layoutBox,
                                                        supermodels,
                                                        allmodels,
-                                                       meta,
-                                                       options) {
+                                                       meta) {
   var areaMeta = this.getState().area;
   var colorMeta = this.getState().color;
   var parentKey = this.getState().parentKey;
@@ -597,7 +594,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
   return this.numHiddenModels_ > 0;
 };
 
-rhizo.layout.TreeMapLayout.prototype.cleanup = function(sameEngine, options) {
+rhizo.layout.TreeMapLayout.prototype.cleanup = function() {
   if (this.numHiddenModels_ > 0) {
     // There were hidden models, reset their filter and mark visibility as
     // dirty to force visibility alignment.

@@ -133,15 +133,12 @@ rhizo.layout.TreeLayout.prototype.validateState_ = function(otherState) {
  *     visualization models, mapping from the model id the associated SuperModel
  *     instance.
  * @param {*} meta The project metamodel.
- * @param {*} options The composition of project-wide configuration options and
- *     layout-specific ones.
  */
 rhizo.layout.TreeLayout.prototype.layout = function(pipeline,
                                                     layoutBox,
                                                     supermodels,
                                                     allmodels,
-                                                    meta,
-                                                    options) {
+                                                    meta) {
   var parentKey = this.getState().parentKey;
 
   // detect rendering direction

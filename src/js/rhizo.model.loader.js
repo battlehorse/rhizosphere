@@ -208,7 +208,7 @@ rhizo.model.loader.GoogleGadget.prototype.load = function(callback,
  * @param {function(Array.<*>, *, *)} callback Callback function that will be
  *     invoked once the resource has been loaded and all data necessary for a
  *     Rhizosphere visualization (models, metamodel, renderer) are available.
- * @param {*} options Visualization-wide configuration options.
+ * @param {!rhizo.Options} options Visualization-wide configuration options.
  * @param {*} logger A logger that exposes info(), error() and warn() logging
  *     functions.
  */

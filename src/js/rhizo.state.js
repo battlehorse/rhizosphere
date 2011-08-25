@@ -81,7 +81,7 @@
  *   same page.
  */
 
-// RHIZODEP=rhizo,rhizo.log
+// RHIZODEP=rhizo,rhizo.log,rhizo.options
 namespace("rhizo.state");
 
 /**
@@ -1083,7 +1083,8 @@ rhizosphereHistoryLogLevel = window['rhizosphereHistoryLogLevel'] || 'error';
  */
 rhizo.state.history_ = null;
 if (window.history && typeof(window.history.pushState) == 'function') {
-  var logger = rhizo.log.newLogger(null, {logLevel: rhizosphereHistoryLogLevel});
+  var logger = rhizo.log.newLogger(
+      null, new rhizo.Options({logLevel: rhizosphereHistoryLogLevel}));
   rhizo.state.history_ = new rhizo.state.HistoryHelper(
       rhizo.state.getMasterOverlord(), logger);
 }

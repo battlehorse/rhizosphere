@@ -151,8 +151,8 @@ rhizo.ui.component.Phase = {
 /**
  * Defines a Component, the basic building block of the Rhizosphere UI.
  *
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the component will use to register
  *     itself with the project GUI.
  * @constructor
@@ -239,8 +239,8 @@ rhizo.ui.component.Component.prototype.ready = function() {};
  * A Container is a specialized component that can contain other components
  * within itself.
  *
- * @param {rhizo.Project} project The project this container belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this container belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the container will use to register
  *     itself with the project GUI.
  * @constructor
@@ -426,8 +426,8 @@ rhizo.ui.component.Container.prototype.ready = function() {
  * progress bar can be disabled by setting the 'enableLoadingIndicator' project
  * configuration option to false.
  *
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
@@ -437,7 +437,7 @@ rhizo.ui.component.Template = function(project, options, template_key) {
   rhizo.ui.component.Container.call(this, project, options, template_key);
 
   this.viewport_ = new rhizo.ui.component.Viewport(project, options);
-  if (!!options['enableLoadingIndicator']) {
+  if (options.isLoadingIndicatorEnabled()) {
     this.progress_ = new rhizo.ui.component.Progress();
   }
 };
@@ -532,8 +532,8 @@ rhizo.ui.component.Template.prototype.ready = function() {
  * a linear fashion, prepending each component with an header containing its
  * title (if the component defined one).
  *
- * @param {rhizo.Project} project The project this box belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this box belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
@@ -570,8 +570,8 @@ rhizo.ui.component.VBox.prototype.renderSingleComponent = function(component) {
 /**
  * A collapsible box sitting on the right of the viewport.
  *
- * @param {rhizo.Project} project The project this box belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this box belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
@@ -646,8 +646,8 @@ rhizo.ui.component.RightBar.prototype.isCollapsed = function() {
  * An horizontal bar that cointains links to activate other components, which
  * will be displayed as floating panels above the links bar.
  *
- * @param {rhizo.Project} project The project this box belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this box belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
@@ -716,7 +716,7 @@ rhizo.ui.component.HBox.prototype.renderClickable_ = function(title,
  * the correspondent link in the links bar, any other open component is closed,
  * so that only one component at a time is always visible.
  *
- * @param {*} The object describing the toggle-able component.
+ * @param {*} curToggle The object describing the toggle-able component.
  * @private
  */
 rhizo.ui.component.HBox.prototype.activateToggle_ = function(curToggle) {
@@ -767,14 +767,14 @@ rhizo.ui.component.HBox.prototype.toggleComponent = function(key,
  * The Viewport is the core of the visualization, where all models renderings
  * are displayed and laid out.
  *
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.Viewport = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options);
   this.universeTargetPosition_ = {top: 0, left: 0};
-  if (options['showErrorsInViewport']) {
+  if (options.showErrorsInViewport()) {
     project.eventBus().subscribe('error', this.onError_, this);
   }
 };
@@ -890,15 +890,15 @@ rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
     }
     $("<p />").text(errorMsg.join(' ')).appendTo(errorContainer);
   }
-}
+};
 
 
 /* ==== Component specializations ==== */
 
 /**
  * The visualization logo.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {boolean} titleless Whether this component should have a title or not.
  * @param {boolean} sliding Whether the link section should be hidden by default
  *     and slide into view only when requested.
@@ -956,8 +956,8 @@ rhizo.ui.component.Logo.prototype.render = function() {
 
 /**
  * The layout selector component.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.Layout = function(project, options) {
@@ -1054,8 +1054,8 @@ rhizo.ui.component.Layout.prototype.updateVisibleEngineControls_ = function() {
 
 /**
  * Handles selections and selection-based filtering.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.SelectionManager = function(project, options) {
@@ -1190,7 +1190,7 @@ rhizo.ui.component.SelectionManager.prototype.activateSelectableViewport_ =
     },
     // TODO: disabled until incremental refresh() is implemented
     // autoRefresh: false,
-    filter: this.options_.selectfilter,
+    filter: this.options_.selectFilter(),
     tolerance: 'touch',
     distance: 1
   });
@@ -1236,8 +1236,8 @@ rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels =
 /**
  * A panel that enables/disables filters autocommit functionality.
  *
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.AutocommitPanel = function(project, options) {
@@ -1322,8 +1322,8 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
 /**
  * Renders a series of filters as a stack, with all filters showing one on
  * top of the other.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.FilterStackContainer = function(project, options) {
@@ -1557,8 +1557,8 @@ rhizo.ui.component.FilterStackContainer.prototype.onFilterChanged_ = function(
  * Renders a series of filters as a 'book', with only filter showing at any
  * time, and additional controls to flip between one filter and the next.
  *
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.FilterBookContainer = function(project, options) {
@@ -1663,8 +1663,8 @@ rhizo.ui.component.FilterBookContainer.prototype.metaModelWithUi_ = function() {
 
 /**
  * A legend to describes model color and size coding.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.Legend = function(project, options) {
@@ -1735,8 +1735,8 @@ rhizo.ui.component.Legend.prototype.metaReady = function() {
 
 /**
  * Experimental component to handle user-specified actions on models.
- * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.ui.component.Actions = function(project, options) {
@@ -1804,10 +1804,10 @@ rhizo.ui.component.Actions.prototype.ready = function() {
             } else {
               var countSelected = 0;
               var all_selected = project.selectionManager().allSelected();
-              for (var id in all_selected) { countSelected++;}
+              for ( id in all_selected) { countSelected++;}
               alert("Action applied on " + countSelected + " elements");
 
-              for (var id in all_selected) {
+              for (id in all_selected) {
                 all_selected[id].rendering().
                     refreshPosition().
                     moveToMark().
@@ -1836,8 +1836,8 @@ rhizo.ui.component.Actions.prototype.ready = function() {
  * interactive controls are defined externally and all Rhizosphere interactions
  * occur via programmatic API calls.
  *
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
@@ -1855,8 +1855,8 @@ rhizo.inherits(rhizo.ui.component.BareTemplate, rhizo.ui.component.Template);
  * the available screen estate is reduced (such as in gadgets). Collects all
  * the visualization controls in a links bar at the bottom of the screen.
  *
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
@@ -1883,8 +1883,8 @@ rhizo.ui.component.BottomTemplate.prototype.initComponents_ = function(
 
 /**
  * Returns the list of default template components. Subclasses can override.
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
@@ -1927,8 +1927,8 @@ rhizo.ui.component.BottomTemplate.prototype.addtoBottomBar = function(
 
 /**
  * Default Rhizosphere UI template.
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
@@ -1954,7 +1954,7 @@ rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
   }
 
   var right_components = this.defaultRightComponents(project, options);
-  for (var i = 0; i < right_components.length; i++) {
+  for (i = 0; i < right_components.length; i++) {
     this.rightbox_.addComponent(right_components[i]);
   }
 
@@ -1965,8 +1965,8 @@ rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
 /**
  * Returns the list of default template components that will be added to the
  * left bar. Subclasses can override.
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
@@ -1983,8 +1983,8 @@ rhizo.ui.component.StandardTemplate.prototype.defaultLeftComponents = function(
 /**
  * Returns the list of default template components that will be added to the
  * right bar. Subclasses can override.
- * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
+ * @param {!rhizo.Project} project The project this template belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */

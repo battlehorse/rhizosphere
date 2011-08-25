@@ -58,7 +58,7 @@ namespace('rhizo.model');
  *     not (defaults: false).
  *
  * @param {!rhizo.Project} project The project this model manager belongs to.
- * @param {!Object} options Project-wide configuration options.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.model.ModelManager = function(project, options) {

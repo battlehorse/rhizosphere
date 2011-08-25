@@ -82,7 +82,7 @@ namespace('rhizo.layout');
  * - Applies the 'bucket' layout, resetting it to its default state.
  *
  * @param {!rhizo.Project} project The project this layout manager belongs to.
- * @param {!Object} options Project-wide configuration options.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.layout.LayoutManager = function(project, options) {
@@ -108,7 +108,7 @@ rhizo.layout.LayoutManager = function(project, options) {
   this.project_ = project;
 
   /**
-   * @type {!Object}
+   * @type {!rhizo.Options}
    * @private
    */
   this.options_ = options;
@@ -296,7 +296,7 @@ rhizo.layout.LayoutManager.prototype.onBeforeEngineLayout_ = function(
 rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   this.project_.logger().time('LayoutManager::onLayout');
   var lastEngine = this.engines_[this.curEngineName_];
-  var options = $.extend({}, message['options'], this.options_);
+  var options = message['options'] || {};
 
   // Update the name of the current engine.
   this.curEngineName_ = message['engine'];
@@ -305,8 +305,7 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   var dirty = false;
   if (lastEngine && lastEngine.cleanup) {
     // cleanup previous layout engine.
-    dirty = lastEngine.cleanup(
-        lastEngine == engine, options) || dirty;
+    dirty = lastEngine.cleanup(lastEngine == engine) || dirty;
   }
 
   // Empty the rendering pipeline
@@ -333,7 +332,7 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
 
   // Compute the layout.
   var boundingLayoutBox = new rhizo.layout.LayoutBox(
-      this.gui_.viewport, this.options_.layoutConstraints);
+      this.gui_.viewport, this.options_.layoutConstraints());
   dirty = engine.layout(this.renderingPipeline_,
                         boundingLayoutBox,
                         freeModels,

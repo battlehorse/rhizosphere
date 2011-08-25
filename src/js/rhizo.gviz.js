@@ -15,7 +15,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.meta,rhizo.autorender,rhizo.log
+// RHIZODEP=rhizo.meta,rhizo.autorender,rhizo.log,rhizo.options
 namespace("rhizo.gviz");
 
 /**
@@ -81,10 +81,8 @@ rhizo.gviz.Rhizosphere.prototype.draw = function(datatable, opt_options) {
   // Mandatorily disable the display of errors in the visualization viewport,
   // as this is already handled by google.visualization.errors management
   // in the bootstrap completion callback.
-  var options = {showErrorsInViewport: false};
-  if (opt_options) {
-    $.extend(options, opt_options);
-  }
+  var options = new rhizo.Options(opt_options);
+  options.merge({showErrorsInViewport: false});
 
   var initializer = new rhizo.gviz.Initializer(
       datatable, rhizo.log.newLogger(null, options), options);
@@ -220,15 +218,14 @@ rhizo.gviz.Rhizosphere.prototype.deployComplete_ = function(
  * @param {!Object} logger A generic logger that exposes an API equivalent to
  *     the browser console API (see http://getfirebug.com/logging), including
  *     the standard error(), warn() and info() methods.
- * @param {*} opt_options key-value map of Visualization-wide configuration
- *     options.
+ * @param {!rhizo.Options} options Visualization-wide configuration options.
  */
 rhizo.gviz.Initializer = function(dataTable,
                                   logger,
-                                  opt_options) {
+                                  options) {
   this.dt_ = dataTable;
   this.logger_ = logger;
-  this.options_ = opt_options || {};
+  this.options_ = options;
 };
 
 /**
@@ -251,8 +248,7 @@ rhizo.gviz.Initializer.prototype.parse = function() {
   // receiving a complete metamodel via configuration options.
   this.metamodel = this.buildMetaModel_(colGroups);
   this.models = this.loadModels_(this.metamodel, colGroups);
-  this.renderer = this.options_.renderer ?
-                  this.options_.renderer :
+  this.renderer = this.options_.renderer() ||
                   this.createDefaultRenderer_(this.metamodel, this.models);
   return true;
 };
@@ -841,21 +837,27 @@ rhizo.gviz.Initializer.prototype.buildAutoRenderInfo_ =
     function(metamodelKey, metamodelEntry) {
   var ar = {};
   var hasArAttribute = false;
-  if (this.options_['arMaster'] &&
+  if (this.options_.autoRenderMasterField() &&
       this.matchAutoRenderOption_(
-          this.options_['arMaster'], metamodelEntry['label'], metamodelKey)) {
+          this.options_.autoRenderMasterField(),
+          metamodelEntry['label'],
+          metamodelKey)) {
     ar.master = true;
     hasArAttribute = true;
   }
-  if (this.options_['arSize'] &&
+  if (this.options_.autoRenderSizeField() &&
       this.matchAutoRenderOption_(
-          this.options_['arSize'], metamodelEntry['label'], metamodelKey)) {
+          this.options_.autoRenderSizeField(),
+          metamodelEntry['label'],
+          metamodelKey)) {
     ar.bind = (ar.bind ? ar.bind : '') + 'size ';
     hasArAttribute = true;
   }
-  if (this.options_['arColor'] &&
+  if (this.options_.autoRenderColorField() &&
       this.matchAutoRenderOption_(
-          this.options_['arColor'], metamodelEntry['label'], metamodelKey)) {
+          this.options_.autoRenderColorField(),
+          metamodelEntry['label'],
+          metamodelKey)) {
     ar.bind = (ar.bind ? ar.bind : '') + 'color ';
     hasArAttribute = true;
   }
@@ -946,8 +948,8 @@ rhizo.gviz.Initializer.prototype.createDefaultRenderer_ =
     function(metamodel, models) {
   return new rhizo.autorender.AR(metamodel,
                                  models,
-                                 this.options_.arDefaults,
-                                 this.options_.arNumFields);
+                                 this.options_.autoRenderUseDefaults(),
+                                 this.options_.autoRenderNumberOfFields());
   // return new rhizo.gviz.DebugRenderer(this.dt_);
 };
 

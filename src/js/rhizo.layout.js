@@ -225,8 +225,9 @@ rhizo.layout.ScrambleLayout = function(unused_project) {};
  *     visualization models, mapping from the model id the associated SuperModel
  *     instance.
  * @param {*} meta The project metamodel.
- * @param {*} options The composition of project-wide configuration options and
- *     layout-specific ones.
+ * @param {!Object.<string, *>} options Key-value map of layout options. The
+ *     set of available options is the same supported by 'layout' eventbus
+ *     messages, as described in rhizo.layout.LayoutManager documentation.
  */
 rhizo.layout.ScrambleLayout.prototype.layout = function(pipeline,
                                                         layoutBox,
@@ -311,15 +312,12 @@ rhizo.layout.FlowLayout.prototype.validateState_ = function(otherState) {
  *     visualization models, mapping from the model id the associated SuperModel
  *     instance.
  * @param {*} meta The project metamodel.
- * @param {*} options The composition of project-wide configuration options and
- *     layout-specific ones.
  */
 rhizo.layout.FlowLayout.prototype.layout = function(pipeline,
                                                     layoutBox,
                                                     supermodels,
                                                     allmodels,
-                                                    meta,
-                                                    options) {
+                                                    meta) {
   var order = this.getState().order;
   var reverse = !!this.getState().reverse;
   var maxWidth = layoutBox.width;
@@ -347,7 +345,7 @@ rhizo.layout.FlowLayout.prototype.layout = function(pipeline,
   return false;
 };
 
-rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine, options) {
+rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine) {
   this.top = this.left = 5;
   return false;
 };
@@ -406,15 +404,12 @@ rhizo.layout.BucketLayout.prototype.validateState_ = function(otherState) {
  *     visualization models, mapping from the model id the associated SuperModel
  *     instance.
  * @param {*} meta The project metamodel.
- * @param {*} options The composition of project-wide configuration options and
- *     layout-specific ones.
  */
 rhizo.layout.BucketLayout.prototype.layout = function(pipeline,
                                                       layoutBox,
                                                       supermodels,
                                                       allmodels,
-                                                      meta,
-                                                      options) {
+                                                      meta) {
   var reverse = !!this.getState().reverse;
   var bucketBy = this.getState().bucketBy;
   this.internalFlowLayout_.setState({order: bucketBy, reverse: reverse});
@@ -468,8 +463,7 @@ rhizo.layout.BucketLayout.prototype.layout = function(pipeline,
                                             layoutBox,
                                             buckets[bucketKey],
                                             allmodels,
-                                            meta,
-                                            options) || dirty;
+                                            meta) || dirty;
 
     // re-position for next bucket
     this.internalFlowLayout_.top += 10;
@@ -514,8 +508,8 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
 };
 
-rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine, options) {
-  this.internalFlowLayout_.cleanup(sameEngine, options);
+rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine) {
+  this.internalFlowLayout_.cleanup(sameEngine);
   return false;
 };
 

@@ -47,6 +47,7 @@
     <!-- Rhizosphere libraries -->
     {% if debug %}
     <script src="{{ hostname }}/static/src/js/rhizo.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/src/js/rhizo.options.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.eventbus.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.jquery.js" type="text/javascript" charset="utf-8"></script>
     <script src="{{ hostname }}/static/src/js/rhizo.log.js" type="text/javascript" charset="utf-8"></script>

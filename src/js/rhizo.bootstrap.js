@@ -15,7 +15,7 @@
   limitations under the License.
 */
 
-// RHIZODEP=rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.jquery,rhizo.ui.gui
+// RHIZODEP=rhizo.options,rhizo.model.loader,rhizo.base,rhizo.ui.component,rhizo.jquery,rhizo.ui.gui
 namespace('rhizo.bootstrap');
 
 
@@ -37,8 +37,9 @@ rhizo.bootstrap.uuids_ = 0;
  *     visualization. It must have an explicit CSS position set (either
  *     'relative' or 'absolute'). You are free to set its width and height and
  *     Rhizosphere will render itself within the given constraints.
- * @param {*} opt_options Visualization-wide configuration options, as
- *     described at
+ * @param {(Object.<string, *>|rhizo.Options)=} opt_options Visualization-wide
+ *     configuration options, specified either as a key-value map or using
+ *     a rhizo.Options object. The set of allowed keys is described at
  *     http://www.rhizospherejs.com/doc/contrib_tables.html#options.
  * @param {function(rhizo.UserAgent, boolean, string=)=} opt_callback
  *     Optional callback invoked on the visualization is completely initialized.
@@ -61,14 +62,7 @@ rhizo.bootstrap.Bootstrap = function(container, opt_options, opt_callback) {
     // based on this.
     $(container).attr('id', 'rhizo-uuid-' + (rhizo.bootstrap.uuids_++));
   }
-  this.options_ = { selectfilter: '.rhizo-model:visible',
-                    showErrorsInViewport: true,
-                    enableHTML5History: true,
-                    enableLoadingIndicator: true,
-                    enableAnims: true};
-  if (opt_options) {
-    $.extend(this.options_, opt_options);
-  }
+  this.options_ = new rhizo.Options(opt_options);
   this.callback_ = opt_callback;
 };
 
@@ -133,6 +127,8 @@ rhizo.bootstrap.Bootstrap.prototype.deploy = function(opt_resource) {
                             jQuery.proxy(this.deployExplicit, this),
                             this.options_,
                             this.project_.logger());
+  } else {
+    this.deployExplicit();
   }
 };
 
@@ -157,25 +153,29 @@ rhizo.bootstrap.Bootstrap.prototype.deployWithLoader = function(loader) {
  *     at visualization startup. Models can be later added or removed using
  *     the provided methods on rhizo.UserAgent.
  * @param {*} opt_metamodel A descriptor for the attributes and properties that
- *     each model in the visualization has. Can be omitted if the metamodel has
+ *     each model in the visualization has. Ignored if the metamodel has
  *     been specified via configuration options.
  * @param {*} opt_renderer A component capable of creating HTML representation
- *     of model instances. Can be omitted if the renderer has been specified via
+ *     of model instances. Ignored if the renderer has been specified via
  *     configuration options.
  */
 rhizo.bootstrap.Bootstrap.prototype.deployExplicit = function(opt_models,
                                                               opt_metamodel,
                                                               opt_renderer) {
-  this.project_.logger().time('Bootstrap::deployExplicit'); 
-  var metamodel = this.options_.metamodel || opt_metamodel;
-  if (this.options_.metamodelFragment) {
-    $.extend(metamodel, this.options_.metamodelFragment);
-  }
-  this.project_.setMetaModel(metamodel);
-  this.project_.setRenderer(this.options_.renderer || opt_renderer);
+  this.project_.logger().time('Bootstrap::deployExplicit');
 
-  if (this.project_.renderer().getSizeRange ||
-      this.project_.renderer().getColorRange) {
+  var additionalOptions = {};
+  if (opt_metamodel && !this.options_.metamodel()) {
+    additionalOptions['metamodel'] = opt_metamodel;
+  }
+  if (opt_renderer && !this.options_.renderer()) {
+    additionalOptions['renderer'] = opt_renderer;
+  }
+  this.options_.merge(additionalOptions);
+
+  if (this.options_.renderer() &&
+      (this.options_.renderer().getSizeRange ||
+       this.options_.renderer().getColorRange)) {
     this.template_.addComponent(new rhizo.ui.component.Legend(this.project_,
                                                               this.options_));
   }
@@ -234,9 +234,9 @@ rhizo.bootstrap.Bootstrap.prototype.modelsAdded_ = function(
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
-  if (this.options_.platform && this.options_.device) {
-    return {platform: this.options_.platform,
-            device: this.options_.device};
+  if (this.options_.platform() && this.options_.device()) {
+    return {platform: this.options_.platform(),
+            device: this.options_.device()};
   }
   var ua = navigator.userAgent;
   if (ua.toLowerCase().indexOf('ipad') != -1) {
@@ -251,16 +251,16 @@ rhizo.bootstrap.Bootstrap.prototype.identifyPlatformAndDevice_ = function() {
 
 /**
  * Identifies the best template to use for the visualization.
- * @param {rhizo.ui.gui.GUI} gui
- * @param {*} options
+ * @param {!rhizo.ui.gui.GUI} gui
+ * @param {!rhizo.Options} options
  * @return {function(rhizo.Project):rhizo.ui.component.Template} A factory for
  *     the template to use.
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.identifyTemplate_ = function(gui, options) {
-  if (options.template &&
-      options.template in rhizo.ui.component.templates) {
-    return rhizo.ui.component.templates[options.template];
+  var template = options.template();
+  if (template && template in rhizo.ui.component.templates) {
+    return rhizo.ui.component.templates[template];
   }
 
   // No specific template has been forced. Select a specific one based on
@@ -285,7 +285,7 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   var gui = new rhizo.ui.gui.GUI(this.container_,
                                  platformDevice.platform,
                                  platformDevice.device);
-  gui.disableFx(!this.options_.enableAnims);
+  gui.disableFx(!this.options_.areAnimationsEnabled());
 
   // Extends jQuery with all the additional behaviors required by Rhizosphere
   // Disable animations and other performance tunings if needed.
@@ -293,16 +293,16 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
   // TODO(battlehorse): this must happen at the global level, and not locally
   // for every single visualization.
   // See http://code.google.com/p/rhizosphere/issues/detail?id=68.
-  rhizo.jquery.init(gui, this.options_.enableAnims, true);
+  rhizo.jquery.init(gui, this.options_.areAnimationsEnabled(), true);
 
   return gui;
 };
 
 /**
  * Initializes the template that will render this project chrome.
- * @param {rhizo.Project} project
- * @param {rhizo.ui.gui.GUI} gui
- * @param {*} options
+ * @param {!rhizo.Project} project
+ * @param {!rhizo.ui.gui.GUI} gui
+ * @param {!rhizo.Options} options
  * @return {rhizo.ui.component.Template} The project template.
  * @private
  */
@@ -326,7 +326,7 @@ rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(project,
  * @private
  */
 rhizo.bootstrap.Bootstrap.prototype.tryInitResourceFromUrl_ = function() {
-  if (!this.options_.allowConfigFromUrl) {
+  if (!this.options_.allowConfigFromUrl()) {
     this.project_.logger().warn(
         'Sources extraction from url is disabled');
     return null;

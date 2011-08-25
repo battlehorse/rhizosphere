@@ -16,7 +16,7 @@
 */
 
 // Global project namespace
-// RHIZODEP=rhizo,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.selection,rhizo.meta.manager,rhizo.state
+// RHIZODEP=rhizo,rhizo.options,rhizo.log,rhizo.model,rhizo.ui,rhizo.layout,rhizo.layout.manager,rhizo.eventbus,rhizo.selection,rhizo.meta.manager,rhizo.state
 namespace("rhizo");
 
 
@@ -24,21 +24,27 @@ namespace("rhizo");
  * Projects are the central entities that manage an entire Rhizosphere
  * visualization.
  *
- * @param {rhizo.ui.gui.GUI} gui The GUI associated to this visualization.
- * @param {*} opt_options A key-value map of project-wide customization
- *     options.
+ * @param {!rhizo.ui.gui.GUI} gui The GUI associated to this visualization.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
-rhizo.Project = function(gui, opt_options) {
+rhizo.Project = function(gui, options) {
   this.metaModelRegistry_ = rhizo.meta.defaultRegistry;
-  this.options_ = opt_options || {};
+
+  /**
+   * Project-wide configuration options.
+   *
+   * @type {!rhizo.Options}
+   * @private
+   */
+  this.options_ = options;
   this.gui_ = gui;
 
   /**
    * The project logger.
    * @private
    */
-  this.logger_ = rhizo.log.newLogger(this, opt_options);
+  this.logger_ = rhizo.log.newLogger(this, this.options_);
 
   /**
    * Manages transitions in visualization state.
@@ -66,8 +72,7 @@ rhizo.Project = function(gui, opt_options) {
    * @type {!rhizo.selection.SelectionManager}
    * @private
    */
-  this.selectionManager_ = new rhizo.selection.SelectionManager(
-      this, this.options_);
+  this.selectionManager_ = new rhizo.selection.SelectionManager(this);
 
   /**
    * @type {rhizo.layout.LayoutManager}
@@ -90,7 +95,7 @@ rhizo.Project = function(gui, opt_options) {
 
 /**
  * Initializes the Rhizosphere visualization managed by this project from the
- * provided metaModel and renderer (received via their respective setters).
+ * provided metaModel and renderer (received via configuration options).
  *
  * At this stage Rhizosphere differentiates its UI and logic to match the type
  * of data that will subsequently visualize. This includes configuring the
@@ -110,27 +115,9 @@ rhizo.Project = function(gui, opt_options) {
  *     pointing to a string, contains the error details in case of failure.
  */
 rhizo.Project.prototype.deploy = function() {
-  var allKinds = [];
-  for (var key in this.metaModel_) {
-    if (!this.metaModel_[key].kind) {
-      return {
-        success: false,
-        details: 'Verify your metamodel: missing kind for ' + key
-      };
-    }
-    allKinds.push(this.metaModel_[key].kind);
-  }
-
-  // Ensure that there are no shared meta instances in the metaModel.
-  for (var i = 0; i < allKinds.length; i++) {
-    for (var j = i+1; j < allKinds.length; j++) {
-      if (allKinds[i] === allKinds[j]) {
-        return {
-          success: false,
-          details: 'Verify your metaModel: shared kind instances.'
-        };
-      }
-    }
+  var outcome = this.parseOptions_();
+  if (!outcome.success) {
+    return outcome;
   }
 
   // Delay instantiation of those managers that depend on the rendering
@@ -144,12 +131,113 @@ rhizo.Project.prototype.deploy = function() {
   // Rebuilding the full state has no visual impact at this point, since
   // the visualization does not contain any models yet.
   var bindings = [];
-  if (this.options_.enableHTML5History) {
+  if (this.options_.isHTML5HistoryEnabled()) {
     bindings.push(rhizo.state.Bindings.HISTORY);
   }
   rhizo.state.getMasterOverlord().attachProject(this, bindings);
   this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
 
+  return {success: true};
+};
+
+/**
+ * Extracts and validates the visualization metamodel and renderer as received
+ * via configuration options.
+ *
+ * @return {!Object.<string, *>} An object describing the outcome of the
+ *     validation. It contains two keys: 'success', pointing to a boolean,
+ *     indicates whether the validation was successful. 'details',
+ *     pointing to a string, contains the error details in case of failure.
+ * @private
+ */
+rhizo.Project.prototype.parseOptions_ = function() {
+  var outcome = this.parseMetaModel_();
+  if (!outcome.success) {
+    return outcome;
+  }
+  outcome = this.parseRenderer_();
+  if (!outcome.success) {
+    return outcome;
+  }
+  return {success: true};
+};
+
+/**
+ * Extracts and validates the visualization metamodel as received via
+ * configuration options.
+ *
+ * @return {!Object.<string, *>} An object describing the outcome of the
+ *     validation. It contains two keys: 'success', pointing to a boolean,
+ *     indicates whether the validation was successful. 'details',
+ *     pointing to a string, contains the error details in case of failure.
+ * @private
+ */
+rhizo.Project.prototype.parseMetaModel_ = function() {
+  if (!this.options_.metamodel()) {
+    return {
+      success: false,
+      details: 'Missing metaModel specification'
+    };
+  }
+
+  // Clone the metamodel so we can manipulate it.
+  // Also, merge any fragments that have been defined.
+  this.metaModel_ = $.extend(
+      {}, this.options_.metamodel(), this.options_.metamodelFragment());
+
+  var allKinds = [];
+  for (var key in this.metaModel_) {
+    if (!this.metaModel_[key].kind) {
+      // Delete all spurious metamodel keys that have no attached kind.
+      // This includes, for instance, GWT-generated keys like __gwt_ObjectId.
+      // (this implies the cloned metamodel object cannot be passed back to GWT
+      // code).
+      delete this.metaModel_[key];
+    } else {
+      // Resolves all 'kind' specifications into metamodel Kind instances.
+      // Uses the default kind registry to resolve against.
+      if (typeof(this.metaModel_[key].kind) == 'string') {
+        this.metaModel_[key].kind = this.metaModelRegistry_.createNewKind(
+            this.metaModel_[key].kind, this.metaModel_[key]);
+      }
+      allKinds.push(this.metaModel_[key].kind);
+    }
+  }
+
+  // Ensure that there are no shared meta instances in the metaModel, since
+  // Kind instances are stateful.
+  for (var i = 0; i < allKinds.length; i++) {
+    for (var j = i+1; j < allKinds.length; j++) {
+      if (allKinds[i] === allKinds[j]) {
+        return {
+          success: false,
+          details: 'Verify your metaModel: shared kind instances.'
+        };
+      }
+    }
+  }
+  return {success: true};
+};
+
+/**
+ * Extracts and validates the visualization renderer as received via
+ * configuration options.
+ *
+ * @return {!Object.<string, *>} An object describing the outcome of the
+ *     validation. It contains two keys: 'success', pointing to a boolean,
+ *     indicates whether the validation was successful. 'details',
+ *     pointing to a string, contains the error details in case of failure.
+ * @private
+ */
+rhizo.Project.prototype.parseRenderer_ = function() {
+  // TODO(battlehorse): perform a more comprehensive renderer validation.
+  if (!this.options_.renderer()) {
+    return {
+      success: false,
+      details: 'Missing renderer'
+    };
+  }
+  this.renderer_ = this.options_.renderer();
   return {success: true};
 };
 
@@ -218,31 +306,6 @@ rhizo.Project.prototype.metaModel = function() {
   return this.metaModel_;
 };
 
-rhizo.Project.prototype.setMetaModel = function(metaModel) {
-  //TODO(battlehorse): raise error if the metamodel is not valid or null.
-  // Clone the metamodel so we can manipulate it.
-  this.metaModel_ = $.extend({}, metaModel);
-
-  // Delete all spurious metamodel keys that have no attached kind.
-  // This includes, for instance, GWT-generated keys like __gwt_ObjectId.
-  // (this implies the cloned metamodel object cannot be passed back to GWT
-  // code).
-  for (var key in this.metaModel_) {
-    if (!this.metaModel_[key].kind) {
-      delete this.metaModel_[key];
-    }
-  }
-
-  // Resolves all 'kind' specifications into metamodel Kind instances.
-  // Uses the default kind registry to resolve against.
-  for (key in this.metaModel_) {
-    if (typeof(this.metaModel_[key].kind) == 'string') {
-      this.metaModel_[key].kind = this.metaModelRegistry_.createNewKind(
-          this.metaModel_[key].kind, this.metaModel_[key]);
-    }
-  }
-};
-
 /**
  * Returns the metamodel registry this project uses.
  * @return {!rhizo.meta.KindRegistry} the metamodel registry this project uses.
@@ -253,11 +316,6 @@ rhizo.Project.prototype.metaModelRegistry = function() {
 
 rhizo.Project.prototype.renderer = function() {
   return this.renderer_;
-};
-
-rhizo.Project.prototype.setRenderer = function(renderer) {
-  // TODO(battlehorse): raise error if the renderer is not valid or null.
-  this.renderer_ = renderer;
 };
 
 rhizo.Project.prototype.gui = function() {
@@ -348,7 +406,7 @@ rhizo.Project.prototype.alignFx = function() {
       numVisibleModels++;
     }
   }
-  this.gui_.disableFx(!this.options_.enableAnims ||
+  this.gui_.disableFx(!this.options_.areAnimationsEnabled() ||
                       numUnfilteredModels > 200 ||
                       numVisibleModels > 200);
 };

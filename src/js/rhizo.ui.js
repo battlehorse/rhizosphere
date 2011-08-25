@@ -1394,9 +1394,9 @@ rhizo.ui.SyntheticRendering.prototype.getDimensions =
  *
  * @param {*} renderer Externally provided renderer, to convert models into
  *     their HTML rendering counterparts.
- * @param {rhizo.ui.gui.GUI} gui The project gui.
- * @param {rhizo.Project} project The project itself.
- * @param {*} options Project-wide options.
+ * @param {!rhizo.ui.gui.GUI} gui The project gui.
+ * @param {!rhizo.Project} project The project itself.
+ * @param {!rhizo.Options} options Project-wide options.
  * @constructor
  */
 rhizo.ui.RenderingBootstrap = function(renderer, gui, project, options) {
@@ -1639,7 +1639,8 @@ rhizo.ui.RenderingBootstrap.prototype.decorateRenderings_ = function(
  * @private
  */
 rhizo.ui.RenderingBootstrap.prototype.canCacheDimensions_ = function() {
-  return (!!this.renderer_.cacheDimensions) || (!!this.options_.cacheDimensions);
+  return (!!this.renderer_.cacheDimensions) ||
+      this.options_.forceDimensionCaching();
 };
 
 /**

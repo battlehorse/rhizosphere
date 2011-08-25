@@ -34,7 +34,7 @@ namespace("rhizo.log");
  *
  * @param {rhizo.Project=} opt_project The optional visualization project the
  *     logger belongs to.
- * @param {Object=} opt_options An optional configuration object. The only
+ * @param {rhizo.Options=} opt_options An optional configuration object. The only
  *     setting currently used is 'logLevel' to define which log messages to
  *     ignore and which to display. The following values are accepted:
  *     'debug', 'info', 'warn', 'time', 'error'. At 'error' level only messages
@@ -74,16 +74,19 @@ rhizo.log.newLogger = function(opt_project, opt_options) {
 
 /**
  * Extracts the desired log level new loggers should use.
- * @param {Object=} opt_options The logger configuration object.
+ * @param {rhizo.Options=} opt_options The logger configuration object.
  * @return The desired log level. Defaults to 'error' if unspecified.
  */
 rhizo.log.getLogLevel = function(opt_options) {
-  var logLevel = (opt_options || {})['logLevel'] || 'error';
+  var logLevel = 'error';
+  if (opt_options && opt_options.logLevel()) {
+    logLevel = opt_options.logLevel();
+  }
   var chooseableLevels = {
     debug: true, info: true, warn: true, time: true, error: true};
   if (!(logLevel in chooseableLevels)) {
     logLevel = 'error';
-  };
+  }
   return logLevel;
 };
 

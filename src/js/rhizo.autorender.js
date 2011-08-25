@@ -29,8 +29,7 @@ rhizo.autorender.AR = function(metamodel,
     this.metamodelFields_++;
   }
     
-  this.fallbackToDefaults_ = typeof(opt_fallbackToDefaults) == 'undefined' ?
-                             true : opt_fallbackToDefaults;
+  this.fallbackToDefaults_ =!!opt_fallbackToDefaults;
   this.locateFields_();
 
   var autoShownFields = 0; // counts the number of fields that will always show
@@ -45,9 +44,8 @@ rhizo.autorender.AR = function(metamodel,
     autoShownFields++;    
   }
   
-  this.numfields_ = typeof(opt_numfields) == 'undefined' ? 
-      5 : 
-      Math.max(opt_numfields, autoShownFields);
+  this.numfields_ = opt_numfields === undefined || opt_numfields === null ?
+      5 : Math.max(opt_numfields, autoShownFields);
 
   // An autorender can always have its dimensions cached.
   this.cacheDimensions = true;

@@ -106,8 +106,8 @@ namespace("rhizo.broadcast");
  * A dual-purpose UI component to let the user start/stop broadcasting or
  * start/stop the remote following of a broadcasting visualization.
  *
- * @param {rhizo.Project} project  The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project  The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.broadcast.BaseComponent = function(project, options) {
@@ -159,8 +159,8 @@ rhizo.broadcast.BaseComponent.prototype.ready = function() {
  * stop/resume following. The componet tries to attach to the broadcasting
  * channel at startup.
  *
- * @param {rhizo.Project} project  The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project  The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {string} followed_channel_uuid The broadcasting channel uuid.
  * @constructor
  */
@@ -275,8 +275,8 @@ rhizo.broadcast.FollowComponent.prototype.stopFollowing_ = function() {
  * A component specialed for broadcasting visualizations, that lets the user
  * start/stop broadcasting the visualization state.
  *
- * @param {rhizo.Project} project  The project this component belongs to.
- * @param {*} options Project-wide configuration options.
+ * @param {!rhizo.Project} project  The project this component belongs to.
+ * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
 rhizo.broadcast.BroadcastComponent = function(project, options) {
