@@ -48,6 +48,7 @@ rhizo.Options = function(opt_optionsObj) {
       enableHTML5History: true,
       enableLoadingIndicator: true,
       enableAnims: true,
+      enableDragAndDrop: true,
       allowConfigFromUrl: false,
       logLevel: 'error',
       cacheDimensions: false,
@@ -220,6 +221,14 @@ rhizo.Options.prototype.isHTML5HistoryEnabled = function() {
  */
 rhizo.Options.prototype.isLoadingIndicatorEnabled = function() {
   return !!this.options_['enableLoadingIndicator'];
+};
+
+/**
+ * @return {boolean} Whether visualization models can be dragged around using
+ *     the mouse.
+ */
+rhizo.Options.prototype.isDragAndDropEnabled = function() {
+  return !!this.options_['enableDragAndDrop'];
 };
 
 /**

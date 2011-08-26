@@ -1623,12 +1623,14 @@ rhizo.ui.RenderingBootstrap.prototype.decorateRenderings_ = function(
   // Listen for click events on renderings.
   this.startClick_(rawRenderings);
 
-  // Enable dragging.
-  // This may take some time, especially for thousands of models, so we do
-  // this in a timeout callback, to give the UI the possibility to refresh.
-  window.setTimeout(jQuery.proxy(function() {
-      this.startDraggable_(rawRenderings);
-    }, this), 100);
+  if (this.project_.options().isDragAndDropEnabled()) {
+    // Enable dragging.
+    // This may take some time, especially for thousands of models, so we do
+    // this in a timeout callback, to give the UI the possibility to refresh.
+    window.setTimeout(jQuery.proxy(function() {
+        this.startDraggable_(rawRenderings);
+      }, this), 100);
+  }
 };
 
 /**
