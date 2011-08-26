@@ -82,10 +82,9 @@ namespace('rhizo.layout');
  * - Applies the 'bucket' layout, resetting it to its default state.
  *
  * @param {!rhizo.Project} project The project this layout manager belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
-rhizo.layout.LayoutManager = function(project, options) {
+rhizo.layout.LayoutManager = function(project) {
   /**
    * The default layout engine used when the visualization starts.
    * TODO(battlehorse): http://code.google.com/p/rhizosphere/issues/detail?id=61
@@ -106,12 +105,6 @@ rhizo.layout.LayoutManager = function(project, options) {
    * @private
    */
   this.project_ = project;
-
-  /**
-   * @type {!rhizo.Options}
-   * @private
-   */
-  this.options_ = options;
 
   /**
    * The visualization GUI
@@ -332,7 +325,7 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
 
   // Compute the layout.
   var boundingLayoutBox = new rhizo.layout.LayoutBox(
-      this.gui_.viewport, this.options_.layoutConstraints());
+      this.gui_.viewport, this.project_.options().layoutConstraints());
   dirty = engine.layout(this.renderingPipeline_,
                         boundingLayoutBox,
                         freeModels,

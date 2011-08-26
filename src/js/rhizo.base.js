@@ -122,8 +122,8 @@ rhizo.Project.prototype.deploy = function() {
 
   // Delay instantiation of those managers that depend on the rendering
   // infrastructure to be present to work properly.
-  this.modelManager_ = new rhizo.model.ModelManager(this, this.options_);
-  this.layoutManager_ = new rhizo.layout.LayoutManager(this, this.options_);
+  this.modelManager_ = new rhizo.model.ModelManager(this);
+  this.layoutManager_ = new rhizo.layout.LayoutManager(this);
   this.layoutManager_.initEngines(rhizo.layout.layouts);
 
   // Enable HTML5 history (if requested) and rebuild visualization state
@@ -270,6 +270,13 @@ rhizo.Project.prototype.destroy = function() {
  */
 rhizo.Project.prototype.uuid = function() {
   return this.gui_.container.attr('id');
+};
+
+/**
+ * @return {!rhizo.Options} Project-wide configuration options.
+ */
+rhizo.Project.prototype.options = function() {
+  return this.options_;
 };
 
 /**

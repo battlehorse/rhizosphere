@@ -121,16 +121,7 @@ rhizo.ui.component.Progress.prototype.destroy = function() {
 };
 
 
-/* ==== Events and other enums ==== */
-
-/**
- * Enumeration of the types of events that components can fire to each other.
- * @enum {string}
- */
-rhizo.ui.component.EventType = {
-  ACTIVATE: 'activate',  // the component has been activated.
-  DEACTIVATE: 'deactivate'  // the component has been deactivated.
-};
+/* ==== Phases other enums ==== */
 
 
 /**
@@ -163,9 +154,6 @@ rhizo.ui.component.Component = function(project, options, opt_key) {
   this.options_ = options;
 
   this.key_ = opt_key;
-  if (opt_key) {
-    this.gui_.addComponent(opt_key, this);
-  }
 };
 
 /**
@@ -193,13 +181,6 @@ rhizo.ui.component.Component.prototype.title = function() {
 rhizo.ui.component.Component.prototype.titleClass = function() {
   return null;
 };
-
-/**
- * Callback method whenever an event that affects the component occurs.
- * Subclasses should override.
- * @param {rhizo.ui.component.EventType} evt The type of event that occurred.
- */
-rhizo.ui.component.Component.prototype.onEvent = function(evt) {};
 
 /**
  * Renders the component. Subclasses should override to define the HTML
@@ -244,6 +225,7 @@ rhizo.ui.component.Component.prototype.ready = function() {};
  * @param {?string} opt_key Optional key the container will use to register
  *     itself with the project GUI.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.Container = function(project, options, opt_key) {
   rhizo.ui.component.Component.call(this, project, options, opt_key);
@@ -328,6 +310,7 @@ rhizo.ui.component.Container.prototype.phase = function() {
  *
  * @return {Array.<HTMLElement>|HTMLElement} The set of elements (can be one
  *     or more) that define the container structure.
+ * @override
  */
 rhizo.ui.component.Container.prototype.render = function() {
   this.phase_ = rhizo.ui.component.Phase.RENDER;
@@ -387,6 +370,7 @@ rhizo.ui.component.Container.prototype.renderSingleComponent = function(
 /**
  * Dispatches the notification that the project metamodel and renderer are now
  * known to all the components managed by this container.
+ * @override
  */
 rhizo.ui.component.Container.prototype.metaReady = function() {
   this.phase_ = rhizo.ui.component.Phase.METAREADY;
@@ -399,6 +383,7 @@ rhizo.ui.component.Container.prototype.metaReady = function() {
 /**
  * Dispatches the notification the visualization is now ready to all the
  * components managed by this container.
+ * @override
  */
 rhizo.ui.component.Container.prototype.ready = function() {
   this.phase_ = rhizo.ui.component.Phase.READY;
@@ -432,6 +417,7 @@ rhizo.ui.component.Container.prototype.ready = function() {
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
+ * @extends {rhizo.ui.component.Container}
  */
 rhizo.ui.component.Template = function(project, options, template_key) {
   rhizo.ui.component.Container.call(this, project, options, template_key);
@@ -462,6 +448,7 @@ rhizo.ui.component.Template.prototype.setProgressHandler = function(progress) {
 /**
  * Adds a component to this template.
  * @param {rhizo.ui.component.Component} component The component to add
+ * @override
  */
 rhizo.ui.component.Template.prototype.addComponent = function(component) {
   var new_renderings = rhizo.ui.component.Container.prototype.addComponent.call(
@@ -478,6 +465,7 @@ rhizo.ui.component.Template.prototype.addComponent = function(component) {
  *
  * @return {HTMLElement} The project GUI container, filled with the template
  *     contents.
+ * @override
  */
 rhizo.ui.component.Template.prototype.render = function() {
   var all_renderings = rhizo.ui.component.Container.prototype.render.call(this);
@@ -502,6 +490,7 @@ rhizo.ui.component.Template.prototype.renderSingleComponent = function(
   return null;  // The rendering has already been appened to the container.
 };
 
+/** @inheritDoc */
 rhizo.ui.component.Template.prototype.metaReady = function() {
   if (this.progress_) {
     this.progress_.update(40, 'Metadata loaded. Updating components...');
@@ -513,6 +502,7 @@ rhizo.ui.component.Template.prototype.metaReady = function() {
   }
 };
 
+/** @inheritDoc */
 rhizo.ui.component.Template.prototype.ready = function() {
   if (this.progress_) {
     this.progress_.update(80, 'Models loaded. Activating UI...');
@@ -538,6 +528,7 @@ rhizo.ui.component.Template.prototype.ready = function() {
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
  * @constructor
+ * @extends {rhizo.ui.component.Container}
  */
 rhizo.ui.component.VBox = function(project, options, opt_key, boxclass) {
   rhizo.ui.component.Container.call(this, project, options, opt_key);
@@ -546,11 +537,13 @@ rhizo.ui.component.VBox = function(project, options, opt_key, boxclass) {
 };
 rhizo.inherits(rhizo.ui.component.VBox, rhizo.ui.component.Container);
 
+/** @inheritDoc */
 rhizo.ui.component.VBox.prototype.renderContainer = function() {
   this.panel_ = $('<div />', {'class': this.boxclass_});
   return this.panel_.get(0);
 };
 
+/** @inheritDoc */
 rhizo.ui.component.VBox.prototype.renderSingleComponent = function(component) {
   var title = component.title();
   if (title) {
@@ -576,6 +569,7 @@ rhizo.ui.component.VBox.prototype.renderSingleComponent = function(component) {
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
  * @constructor
+ * @extends {rhizo.ui.component.Container}
  */
 rhizo.ui.component.RightBar = function(project, options, opt_key, boxclass) {
   rhizo.ui.component.Container.call(this, project, options, opt_key);
@@ -583,6 +577,7 @@ rhizo.ui.component.RightBar = function(project, options, opt_key, boxclass) {
 };
 rhizo.inherits(rhizo.ui.component.RightBar, rhizo.ui.component.Container);
 
+/** @inheritDoc */
 rhizo.ui.component.RightBar.prototype.renderContainer = function() {
   this.toggle_ = $('<div />', {'class': 'rhizo-right-pop'}).html('&#x25c2;');
   this.rightBar_ = $('<div />', {'class': this.boxclass_}).
@@ -591,6 +586,7 @@ rhizo.ui.component.RightBar.prototype.renderContainer = function() {
   return [this.rightBar_.get(0), this.toggle_.get(0)];
 };
 
+/** @inheritDoc */
 rhizo.ui.component.RightBar.prototype.renderSingleComponent = function(
     component) {
   var title = component.title();
@@ -652,19 +648,23 @@ rhizo.ui.component.RightBar.prototype.isCollapsed = function() {
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
  * @constructor
+ * @extends {rhizo.ui.component.Container}
  */
 rhizo.ui.component.HBox = function(project, options, opt_key, boxclass) {
   rhizo.ui.component.Container.call(this, project, options, opt_key, boxclass);
   this.toggles_ = [];
   this.boxclass_ = boxclass;
+  project.eventBus().subscribe('userAction', this.onUserAction_, this);
 };
 rhizo.inherits(rhizo.ui.component.HBox, rhizo.ui.component.Container);
 
+/** @inheritDoc */
 rhizo.ui.component.HBox.prototype.renderContainer = function() {
   this.bar_ = $('<div />', {'class': this.boxclass_});
   return this.bar_.get(0);
 };
 
+/** @inheritDoc */
 rhizo.ui.component.HBox.prototype.renderSingleComponent = function(
     component, opt_position) {
   var toggle = {
@@ -720,6 +720,8 @@ rhizo.ui.component.HBox.prototype.renderClickable_ = function(title,
  * @private
  */
 rhizo.ui.component.HBox.prototype.activateToggle_ = function(curToggle) {
+  var eventBus = this.project_.eventBus();
+  var eventSource = this;
   curToggle.clickable.click(jQuery.proxy(function() {
     jQuery.each(this.toggles_, jQuery.proxy(function(j, toggle) {
       if (toggle == curToggle) {
@@ -730,32 +732,38 @@ rhizo.ui.component.HBox.prototype.activateToggle_ = function(curToggle) {
         $(toggle.clickable).removeClass('rhizo-section-open');
       }
       if (this.phase() == rhizo.ui.component.Phase.READY)  {
-        toggle.component.onEvent(
-            $(toggle.clickable).hasClass('rhizo-section-open') ?
-              rhizo.ui.component.EventType.ACTIVATE :
-              rhizo.ui.component.EventType.DEACTIVATE);
+        eventBus.publish(
+            'userAction', {
+              'action': 'componentActivation',
+              'componentKey': toggle.key,
+              'active': $(toggle.clickable).hasClass('rhizo-section-open')
+            }, /* callback */ null, eventSource);
       }
     }, this));
   }, this));
 };
 
 /**
- * Toggles the visibility of the component identified by the given key.
+ * Callback invoked whenever a user action occurs on the project. In particular
+ * we care whether the user requested activation or de-activation of a
+ * component hosted within this container from elsewhere in the UI.
  *
- * @param {string} key The key of the component to toggle.
- * @param {boolean} active Whether the component should be activated (made
- *     visible) or deactivated.
+ * @param {Object} message The eventbus message describing the user action.
+ * @private
  */
-rhizo.ui.component.HBox.prototype.toggleComponent = function(key,
-                                                             active) {
-  for (var i = 0; i < this.toggles_.length; i++) {
-    if (this.toggles_[i].key == key) {
-      var currentActive = this.toggles_[i].clickable.
-          hasClass('rhizo-section-open');
-      if (currentActive != active) {
-        this.toggles_[i].clickable.click();
+rhizo.ui.component.HBox.prototype.onUserAction_ = function(message) {
+  if (message['action'] == 'componentActivation') {
+    var key = message['componentKey'];
+    var active = !!message['active'];
+    for (var i = 0; i < this.toggles_.length; i++) {
+      if (this.toggles_[i].key == key) {
+        var currentActive = this.toggles_[i].clickable.
+            hasClass('rhizo-section-open');
+        if (currentActive != active) {
+          this.toggles_[i].clickable.click();
+        }
+        break;
       }
-      break;
     }
   }
 };
@@ -770,17 +778,25 @@ rhizo.ui.component.HBox.prototype.toggleComponent = function(key,
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.Viewport = function(project, options) {
   rhizo.ui.component.Component.call(
       this, project, options, 'rhizo.ui.component.Viewport');
   this.universeTargetPosition_ = {top: 0, left: 0};
+  this.allowBoxSelection_ = options.isBoxSelectionMode();
+  this.selectionModeOn_ = false;
+
   if (options.showErrorsInViewport()) {
     project.eventBus().subscribe('error', this.onError_, this);
+  }
+  if (this.allowBoxSelection_) {
+    project.eventBus().subscribe('userAction', this.onUserAction_, this);
   }
 };
 rhizo.inherits(rhizo.ui.component.Viewport, rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.Viewport.prototype.render = function() {
   this.viewport_ = $('<div/>', {'class': 'rhizo-viewport'});
   this.universe_ = $('<div/>', {'class': 'rhizo-universe'}).
@@ -790,18 +806,34 @@ rhizo.ui.component.Viewport.prototype.render = function() {
   this.gui_.setViewport(this.viewport_);
   this.gui_.setUniverse(this.universe_);
 
-  this.selection_trigger_ = $('<div />', {
-      'class': 'rhizo-selection-trigger',
-      'title': 'Start selecting items'}).appendTo(this.viewport_);
+  if (this.allowBoxSelection_) {
+    this.selection_trigger_ = $('<div />', {
+        'class': 'rhizo-selection-trigger',
+        'title': 'Start selecting items'}).appendTo(this.viewport_);
+  }
 
   return this.viewport_.get(0);
 };
 
+/** @override */
 rhizo.ui.component.Viewport.prototype.ready = function() {
   // The ordering matters: if selection is configured before dragging, the
   // latter won't work.
   this.activateDraggableViewport_();
-  this.activateSelectableViewport_();
+  if (this.allowBoxSelection_) {
+    this.activateSelectableViewport_();
+  }
+
+  if (this.project_.options().isClickSelectionMode() ||
+      this.project_.options().isBoxSelectionMode()) {
+    // If any form of selection mechanism is allowed, let the user cancel
+    // selections by clicking empty viewport areas.
+    this.viewport_.click(jQuery.proxy(function(ev, ui) {
+      if (this.isOnEmptySpace_(ev)) {
+        this.project_.eventBus().publish('selection', {'action': 'deselectAll'});
+      }
+    }, this));
+  }
 };
 
 /**
@@ -810,39 +842,37 @@ rhizo.ui.component.Viewport.prototype.ready = function() {
  */
 rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     function() {
-  var project = this.project_;
-  this.selection_trigger_.click(function() {
-    project.gui().toggleSelectionMode();
-  });
+  this.selection_trigger_.click(jQuery.proxy(function() {
+    this.toggleSelectionMode_(!this.selectionModeOn_);
+    this.project_.eventBus().publish(
+        'userAction', {
+            'action': 'selection',
+            'isOn': this.selectionModeOn_
+        }, /* callback */ null, this);
+  }, this));
 
   this.viewport_.selectable({
     disabled: true,  // initially disabled.
-    selected: function(ev, ui) {
+    selected: jQuery.proxy(function(ev, ui) {
       var selected_id = $(ui.selected).data("id");
       if (selected_id) {
-        project.eventBus().publish(
+        this.project_.eventBus().publish(
             'selection', {'action': 'select', 'models': selected_id});
       }
-    },
-    unselected: function(ev, ui) {
+    }, this),
+    unselected: jQuery.proxy(function(ev, ui) {
       var deselected_id = $(ui.unselected).data("id");
       if (deselected_id) {
-        project.eventBus().publish(
+        this.project_.eventBus().publish(
             'selection', {'action': 'deselect', 'models': deselected_id});
       }
-    },
+    }, this),
     // TODO: disabled until incremental refresh() is implemented
     // autoRefresh: false,
     filter: this.options_.selectFilter(),
     tolerance: 'touch',
     distance: 1
   });
-
-  this.viewport_.click(jQuery.proxy(function(ev, ui) {
-    if (this.isOnEmptySpace_(ev)) {
-      project.eventBus().publish('selection', {'action': 'deselectAll'});
-    }
-  }, this));
 };
 
 /**
@@ -863,17 +893,29 @@ rhizo.ui.component.Viewport.prototype.isOnEmptySpace_ = function(evt) {
 };
 
 /**
- * Toggles the title of the selection trigger depending on the status of the
- * viewport.
+ * Transitions the viewport from operating in selection mode vs dragging/panning
+ * mode and viceversa.
  *
- * @param {boolean} selectionModeOn Whether the viewport is currently in
- *     selection mode or not.
+ * @param {boolean} selectionModeOn Whether the viewport selection mode should
+ *     be activated or not.
+ * @private
  */
-rhizo.ui.component.Viewport.prototype.toggleSelectionTrigger =
-    function(selectionModeOn) {
+rhizo.ui.component.Viewport.prototype.toggleSelectionMode_ = function(
+    selectionModeOn) {
+  // Update the current status.
+ this.selectionModeOn_ = selectionModeOn;
+
+  // Change the viewport operation mode.
+  var selectable_status = this.selectionModeOn_ ? 'enable' : 'disable';
+  var draggable_status = this.selectionModeOn_ ? 'disable' : 'enable';
+  this.viewport_.selectable(selectable_status).
+      draggable(draggable_status).
+      toggleClass('rhizo-selection-mode', this.selectionModeOn_);
+
+  // Update the title of the selection trigger.
  this.selection_trigger_.attr(
      'title',
-     selectionModeOn ? 'Stop selecting items' : 'Start selecting items');
+     this.selectionModeOn_ ? 'Stop selecting items' : 'Start selecting items');
 };
 
 /**
@@ -960,7 +1002,8 @@ rhizo.ui.component.Viewport.prototype.panUniverse_ = function(deltaX,
  * Callback invoked whenever an error occurs in the project, if the viewport
  * has been configured to display error notifications.
  *
- * @param {Object} message The eventbus message describing the layout change.
+ * @param {Object} message The eventbus message describing the error that
+ *     occurred.
  * @private
  */
 rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
@@ -981,6 +1024,20 @@ rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
   }
 };
 
+/**
+ * Callback invoked whenever a user action occurs on the project. In particular
+ * we care whether the user initiated a selection operation from elsewhere in
+ * the UI.
+ *
+ * @param {Object} message The eventbus message describing the user action.
+ * @private
+ */
+rhizo.ui.component.Viewport.prototype.onUserAction_ = function(message) {
+  if (message['action'] == 'selection') {
+    this.toggleSelectionMode_(!!message['isOn']);
+  }
+};
+
 
 /* ==== Component specializations ==== */
 
@@ -992,6 +1049,7 @@ rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
  * @param {boolean} sliding Whether the link section should be hidden by default
  *     and slide into view only when requested.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.Logo = function(project, options, titleless, sliding) {
   rhizo.ui.component.Component.call(this, project, options, 'rhizo.ui.component.Logo');
@@ -1000,10 +1058,12 @@ rhizo.ui.component.Logo = function(project, options, titleless, sliding) {
 };
 rhizo.inherits(rhizo.ui.component.Logo, rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.Logo.prototype.title = function() {
   return this.titleless_ ? null : '?';
 };
 
+/** @override */
 rhizo.ui.component.Logo.prototype.render = function() {
   var panel = $('<div />', {'class': 'rhizo-logo'});
   var header = $('<h1>Rhizosphere</h1>').appendTo(panel);
@@ -1048,6 +1108,7 @@ rhizo.ui.component.Logo.prototype.render = function() {
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.Layout = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
@@ -1056,10 +1117,12 @@ rhizo.ui.component.Layout = function(project, options) {
 };
 rhizo.inherits(rhizo.ui.component.Layout, rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.Layout.prototype.title = function() {
   return 'Display';
 };
 
+/** @override */
 rhizo.ui.component.Layout.prototype.render = function() {
   this.layoutPanel_ = $('<div />');
   this.layoutOptions_ = $('<div />', {'class': 'rhizo-layout-extra-options'}).
@@ -1075,6 +1138,7 @@ rhizo.ui.component.Layout.prototype.render = function() {
   return this.layoutPanel_.get(0);
 };
 
+/** @override */
 rhizo.ui.component.Layout.prototype.metaReady = function() {
   this.layoutSelector_.children().remove();
   this.layoutControlsMap_ = {};
@@ -1104,6 +1168,7 @@ rhizo.ui.component.Layout.prototype.metaReady = function() {
       jQuery.proxy(this.updateVisibleEngineControls_, this));
 };
 
+/** @override */
 rhizo.ui.component.Layout.prototype.ready = function() {
   this.layoutSelector_.change(jQuery.proxy(function() {
     // TODO(battlehorse): forcealign should be true only if there are
@@ -1146,6 +1211,7 @@ rhizo.ui.component.Layout.prototype.updateVisibleEngineControls_ = function() {
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.SelectionManager = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
@@ -1154,23 +1220,18 @@ rhizo.ui.component.SelectionManager = function(project, options) {
       'selection', this.onSelectionChanged_, this, /* committed */ true);
   project.eventBus().subscribe(
       'model', this.onModelChanged_, this, /* committed */ true);
+  project.eventBus().subscribe(
+      'userAction', this.onUserAction_, this);
 };
 rhizo.inherits(rhizo.ui.component.SelectionManager,
                rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.SelectionManager.prototype.title = function() {
   return 'Selection';
 };
 
-rhizo.ui.component.SelectionManager.prototype.onEvent = function(evt) {
-  var isActive = evt == rhizo.ui.component.EventType.ACTIVATE;
-  if (this.gui_.isSelectionModeOn() != isActive) {
-    // Selection mode is not enabled, but the selection panel is active,
-    // or viceversa.
-    this.gui_.toggleSelectionMode();
-  }
-};
-
+/** @override */
 rhizo.ui.component.SelectionManager.prototype.render = function() {
   var selectionPanel = $('<div />', {'class': 'rhizo-selection'});
 
@@ -1182,6 +1243,7 @@ rhizo.ui.component.SelectionManager.prototype.render = function() {
   return selectionPanel.get(0);
 };
 
+/** @override */
 rhizo.ui.component.SelectionManager.prototype.ready = function() {
   this.selectButton_.removeAttr('disabled').click(jQuery.proxy(function() {
     // Don't specify the sender, so to receive callbacks even for events that
@@ -1223,6 +1285,37 @@ rhizo.ui.component.SelectionManager.prototype.onModelChanged_ = function() {
 };
 
 /**
+ * Callback invoked whenever a user action occurs on the project. In particular
+ * we care whether the user initiated a selection operation from elsewhere in
+ * the UI.
+ *
+ * @param {Object} message The eventbus message describing the user action.
+ * @private
+ */
+rhizo.ui.component.SelectionManager.prototype.onUserAction_ = function(
+    message) {
+  if (message['action'] == 'selection') {
+    // User initiated a selection operation. Ensure this component is the
+    // active one, by firing a component activation request.
+    this.project_.eventBus().publish(
+        'userAction', {
+            'action': 'componentActivation',
+            'componentKey': this.key(),
+            'active': !!message['isOn']
+        }, /* callback */ null, this);
+  } else if (message['action'] == 'componentActivation' &&
+             message['componentKey'] == this.key()) {
+    // This component was activated. Initiate a user selection operation as
+    // a consequence.
+    this.project_.eventBus().publish(
+        'userAction', {
+            'action': 'selection',
+            'isOn': !!message['active']
+        }, /* callback */ null, this);
+  }
+};
+
+/**
  * Sets the number of models that have been filtered out via selections.
  * @param {number} numFilteredModels The number of models that are currently
  *     filtered because of selection choices.
@@ -1246,6 +1339,7 @@ rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels_ =
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.AutocommitPanel = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
@@ -1265,6 +1359,7 @@ rhizo.ui.component.AutocommitPanel.prototype.registerCallback = function(
   this.callback_ = callback;
 };
 
+/** @override */
 rhizo.ui.component.AutocommitPanel.prototype.render = function() {
   var autocommitPanel =
       $('<div />', {'class': 'rhizo-filter rhizo-autocommit-panel'});
@@ -1283,6 +1378,7 @@ rhizo.ui.component.AutocommitPanel.prototype.render = function() {
   return autocommitPanel;
 };
 
+/** @override */
 rhizo.ui.component.AutocommitPanel.prototype.ready = function() {
   this.autocommit_.removeAttr('disabled').click(jQuery.proxy(function(ev) {
     this.setAutocommit_(this.autocommit_.is(':checked'));
@@ -1332,6 +1428,7 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.FilterStackContainer = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
@@ -1370,10 +1467,12 @@ rhizo.ui.component.FilterStackContainer = function(project, options) {
 rhizo.inherits(rhizo.ui.component.FilterStackContainer,
                rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.FilterStackContainer.prototype.title = function() {
   return 'Filters';
 };
 
+/** @override */
 rhizo.ui.component.FilterStackContainer.prototype.render = function() {
   this.filterPanel_ = $('<div />', {'class': 'rhizo-filter-container'});
   this.filterPanel_.append(this.autocommitPanel_.render());
@@ -1384,6 +1483,7 @@ rhizo.ui.component.FilterStackContainer.prototype.render = function() {
   return this.filterPanel_.get(0);
 };
 
+/** @override */
 rhizo.ui.component.FilterStackContainer.prototype.metaReady = function() {
   var metaModel = this.metaModelWithUi_();
   var filtersNum = 0;
@@ -1434,6 +1534,7 @@ rhizo.ui.component.FilterStackContainer.prototype.renderFilterSelector_ =
   this.filterPanel_.append(this.filterSelector_);
 };
 
+/** @override */
 rhizo.ui.component.FilterStackContainer.prototype.ready = function() {
   // Every single filter implementation auto-activates itself when created.
   // Here we only need to activate the navigation between filters.
@@ -1567,6 +1668,7 @@ rhizo.ui.component.FilterStackContainer.prototype.onFilterChanged_ = function(
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.FilterBookContainer = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
@@ -1577,10 +1679,12 @@ rhizo.ui.component.FilterBookContainer = function(project, options) {
 rhizo.inherits(rhizo.ui.component.FilterBookContainer,
                rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.FilterBookContainer.prototype.title = function() {
   return 'Filters';
 };
 
+/** @override */
 rhizo.ui.component.FilterBookContainer.prototype.render = function() {
   this.filterPanel_ = $('<div />', {'class': 'rhizo-filter-container'});
 
@@ -1601,6 +1705,7 @@ rhizo.ui.component.FilterBookContainer.prototype.render = function() {
   return this.filterPanel_.get(0);
 };
 
+/** @override */
 rhizo.ui.component.FilterBookContainer.prototype.metaReady = function() {
   if (this.project_.filterManager().isFilterAutocommit()) {
     this.commitFilterLink_.css('display', 'none');
@@ -1618,6 +1723,7 @@ rhizo.ui.component.FilterBookContainer.prototype.metaReady = function() {
   }
 };
 
+/** @override */
 rhizo.ui.component.FilterBookContainer.prototype.ready = function() {
   this.autocommitPanel_.ready();
   this.commitFilterLink_.click(jQuery.proxy(function() {
@@ -1673,6 +1779,7 @@ rhizo.ui.component.FilterBookContainer.prototype.metaModelWithUi_ = function() {
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.Legend = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options,
@@ -1681,16 +1788,19 @@ rhizo.ui.component.Legend = function(project, options) {
 };
 rhizo.inherits(rhizo.ui.component.Legend, rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.Legend.prototype.title = function() {
   return 'Legend';
 };
 
+/** @override */
 rhizo.ui.component.Legend.prototype.render = function() {
   this.legendPanel_ = $('<div />', {'class': "rhizo-legend-panel"});
   $('<p />').text('Legend is not available yet.').appendTo(this.legendPanel_);
   return this.legendPanel_.get(0);
 };
 
+/** @override */
 rhizo.ui.component.Legend.prototype.metaReady = function() {
   // Currently only works in tandem with rhizo.autorender.AR
   if (!this.project_.renderer().getSizeRange &&
@@ -1745,16 +1855,19 @@ rhizo.ui.component.Legend.prototype.metaReady = function() {
  * @param {!rhizo.Project} project The project this component belongs to.
  * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.Actions = function(project, options) {
   rhizo.ui.component.Component.call(this, project, options);
 };
 rhizo.inherits(rhizo.ui.component.Actions, rhizo.ui.component.Component);
 
+/** @override */
 rhizo.ui.component.Actions.prototype.title = function() {
   return 'Actions';
 };
 
+/** @override */
 rhizo.ui.component.Actions.prototype.render = function() {
   var actionsContainer = $('<div />', {'class': 'rhizo-actions'});
 
@@ -1767,6 +1880,7 @@ rhizo.ui.component.Actions.prototype.render = function() {
   return actionsContainer.get(0);
 };
 
+/** @override */
 rhizo.ui.component.Actions.prototype.ready = function() {
   if ($('.rhizo-action', this.gui_.container).length > 0) {
     var gui = this.gui_;
@@ -1849,6 +1963,7 @@ rhizo.ui.component.Actions.prototype.ready = function() {
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
+ * @extends {rhizo.ui.component.Template}
  */
 rhizo.ui.component.BareTemplate = function(project, options, template_key) {
   rhizo.ui.component.Template.call(this, project, options, template_key);
@@ -1868,6 +1983,7 @@ rhizo.inherits(rhizo.ui.component.BareTemplate, rhizo.ui.component.Template);
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
+ * @extends {rhizo.ui.component.Template}
  */
 rhizo.ui.component.BottomTemplate = function(project, options, template_key) {
   rhizo.ui.component.Template.call(this, project, options, template_key);
@@ -1910,6 +2026,7 @@ rhizo.ui.component.BottomTemplate.prototype.defaultComponents = function(
  * newly added components to the template bottom links bar.
  *
  * @param {rhizo.ui.component.Component} component The component to add.
+ * @override
  */
 rhizo.ui.component.BottomTemplate.prototype.addComponent = function(component) {
   this.addtoBottomBar(component);
@@ -1940,6 +2057,7 @@ rhizo.ui.component.BottomTemplate.prototype.addtoBottomBar = function(
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
+ * @extends {rhizo.ui.component.Template}
  */
 rhizo.ui.component.StandardTemplate = function(project, options, template_key) {
   rhizo.ui.component.Template.call(this, project, options, template_key);
@@ -2007,6 +2125,7 @@ rhizo.ui.component.StandardTemplate.prototype.defaultRightComponents =
  * newly added components to the template left controls bar.
  *
  * @param {rhizo.ui.component.Component} component The component to add.
+ * @override
  */
 rhizo.ui.component.StandardTemplate.prototype.addComponent = function(
     component)  {

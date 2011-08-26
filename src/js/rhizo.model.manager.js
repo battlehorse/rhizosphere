@@ -58,10 +58,9 @@ namespace('rhizo.model');
  *     not (defaults: false).
  *
  * @param {!rhizo.Project} project The project this model manager belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
-rhizo.model.ModelManager = function(project, options) {
+rhizo.model.ModelManager = function(project) {
   /**
    * @type {!rhizo.Project}
    * @private
@@ -73,7 +72,7 @@ rhizo.model.ModelManager = function(project, options) {
    * @private
    */
   this.renderingBootstrap_ = new rhizo.ui.RenderingBootstrap(
-      this.project_.renderer(), this.project_.gui(), this.project_, options);
+      this.project_.renderer(), this.project_.gui(), this.project_);
 
   /**
    * The map of all models currently deployed on the visualization, keyed by

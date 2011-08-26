@@ -499,11 +499,13 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
   bucketHeader.text(header).
                css('position', 'absolute').
                css('left', 5).
-               css('top', this.internalFlowLayout_.top).
-               click(jQuery.proxy(function() {
-                 this.project_.eventBus().publish(
-                     'selection', {'action': 'toggle', 'models': modelIds});
-               }, this));
+               css('top', this.internalFlowLayout_.top);
+  if (this.project_.options().isClickSelectionMode()) {
+    bucketHeader.click(jQuery.proxy(function() {
+        this.project_.eventBus().publish(
+            'selection', {'action': 'toggle', 'models': modelIds});
+        }, this));
+  }
   pipeline.artifact(bucketHeader);
   this.internalFlowLayout_.top += bucketHeader.height() + 5;
 };

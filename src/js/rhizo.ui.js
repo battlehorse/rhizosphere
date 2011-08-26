@@ -1396,15 +1396,13 @@ rhizo.ui.SyntheticRendering.prototype.getDimensions =
  *     their HTML rendering counterparts.
  * @param {!rhizo.ui.gui.GUI} gui The project gui.
  * @param {!rhizo.Project} project The project itself.
- * @param {!rhizo.Options} options Project-wide options.
  * @constructor
  */
-rhizo.ui.RenderingBootstrap = function(renderer, gui, project, options) {
+rhizo.ui.RenderingBootstrap = function(renderer, gui, project) {
   this.renderer_ = renderer;
   this.gui_ = gui;
   this.project_ = project;
   this.logger_ = project.logger();
-  this.options_ = options;
 };
 
 /**
@@ -1640,7 +1638,7 @@ rhizo.ui.RenderingBootstrap.prototype.decorateRenderings_ = function(
  */
 rhizo.ui.RenderingBootstrap.prototype.canCacheDimensions_ = function() {
   return (!!this.renderer_.cacheDimensions) ||
-      this.options_.forceDimensionCaching();
+      this.project_.options().forceDimensionCaching();
 };
 
 /**
@@ -1732,9 +1730,11 @@ rhizo.ui.RenderingBootstrap.prototype.startClick_ = function(rawRenderings) {
       // requests so.
       return false;
     }
-    
-    this.project_.eventBus().publish(
-        'selection', {'action': 'toggle', 'models': model.id});
+
+    if (this.project_.options().isClickSelectionMode()) {
+      this.project_.eventBus().publish(
+          'selection', {'action': 'toggle', 'models': model.id});
+    }
     return false;
   }, this));
 };

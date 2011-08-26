@@ -43,6 +43,7 @@ namespace("rhizo");
 rhizo.Options = function(opt_optionsObj) {
   this.options_ = {  // Defaults
       selectfilter: '.rhizo-model:visible',
+      selectionMode: 'all',
       showErrorsInViewport: true,
       enableHTML5History: true,
       enableLoadingIndicator: true,
@@ -165,6 +166,35 @@ rhizo.Options.prototype.logLevel = function() {
  */
 rhizo.Options.prototype.selectFilter = function() {
   return this.asString_('selectfilter');
+};
+
+/**
+ * @return {string} What selection capabilities to activate on the user
+ *     interface: 'none' (no selection can be performed via the UI, programmatic
+ *     events via the project eventbus are still accepted), 'click' (only model
+ *     selection by clicking on model renderings or other UI elements that
+ *     allow click-based selection, like layout headers), 'box' (box selection
+ *     by drawing selection boxes in the viewport) and 'all' (both 'click' and
+ *     'box' modes).
+ */
+rhizo.Options.prototype.selectionMode = function() {
+  return this.asString_('selectionMode');
+};
+
+/**
+ * @return {boolean} Whether 'click' selection, as defined for the
+ *     'selectionMode' option, is allowed.
+ */
+rhizo.Options.prototype.isClickSelectionMode = function() {
+  return this.selectionMode() == 'click' || this.selectionMode() == 'all';
+};
+
+/**
+ * @return {boolean} Whether 'box' selection, as defined for the
+ *     'selectionMode' option, is allowed.
+ */
+rhizo.Options.prototype.isBoxSelectionMode = function() {
+  return this.selectionMode() == 'box' || this.selectionMode() == 'all';
 };
 
 /**

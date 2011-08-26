@@ -92,18 +92,20 @@ rhizo.layout.treemap.TreeMapNode.prototype.buildSyntheticRendering_ = function(
     treenode) {
   var raw_node = $('<div />', {'class': 'rhizo-treemap-syntheticnode'}).
       text(treenode.payload() || 'Everything Else');
-  raw_node.click(jQuery.proxy(function() {
-    var childNodes = [];
-    var modelIds = [];
-    treenode.deepChildsAsArray(childNodes);
-    for (var i = childNodes.length-1; i >= 0; i--) {
-      if (!childNodes[i].synthetic()) {
-        modelIds.push(childNodes[i].id);
+  if (this.project_.options().isClickSelectionMode()) {
+    raw_node.click(jQuery.proxy(function() {
+      var childNodes = [];
+      var modelIds = [];
+      treenode.deepChildsAsArray(childNodes);
+      for (var i = childNodes.length-1; i >= 0; i--) {
+        if (!childNodes[i].synthetic()) {
+          modelIds.push(childNodes[i].id);
+        }
       }
-    }
-    this.project_.eventBus().publish(
-        'selection', {'action': 'toggle', 'models': modelIds});
-  }, this));
+      this.project_.eventBus().publish(
+          'selection', {'action': 'toggle', 'models': modelIds});
+    }, this));
+  }
 
   // node must be attached to the DOM when creating a SyntheticRendering, hence
   // we push it on the pipeline first.

@@ -20,8 +20,13 @@
 namespace("rhizo.ui.gui");
 
 /**
- * The visualization GUI, defined by the overall container, viewport, universe
- * and a collection of UI Components.
+ * The visualization GUI, defined by the overall container, viewport and
+ * universe.
+ *
+ * The GUI is not aware of the full list of other UI components
+ * that are part of it, as this list can vary depending on the template being
+ * used. Components can still communicate with each other via the project
+ * eventbus.
  *
  * @param {HTMLElement} container The HTML element that will contain the
  * @param {string} platform The platform we are currently running on (e.g.:
@@ -53,17 +58,8 @@ rhizo.ui.gui.GUI = function(container, platform, device) {
   // so the viewport is responsible for panning too.
   this.viewport = null;
 
-  // A set of additional components, each one identified by a unique name
-  // (map key).
-  //
-  // In addition to the mandatory components, defined above, a GUI can have
-  // extra components attached to it.
-  this.componentsMap_ = {};
-
   // Dictates whether animations are enabled or not.
   this.noFx = false;
-
-  this.selectionModeOn_ = false;
 };
 
 rhizo.ui.gui.GUI.prototype.done = function() {
@@ -106,14 +102,6 @@ rhizo.ui.gui.GUI.prototype.setUniverse = function(universe) {
   this.universe = universe;
 };
 
-rhizo.ui.gui.GUI.prototype.addComponent = function(component_key, component) {
-  this.componentsMap_[component_key] = component;
-};
-
-rhizo.ui.gui.GUI.prototype.getComponent = function(component_key) {
-  return this.componentsMap_[component_key];
-};
-
 /**
  * @return {boolean} Whether the GUI is 'small' (in terms of pixel area).
  *     Renderers might use this hint to customize the renderings they produce.
@@ -134,36 +122,6 @@ rhizo.ui.gui.GUI.prototype.allRenderingHints = function() {
     small: this.isSmall(),
     mobile: this.isMobile()
   };
-};
-
-/**
- * @return {boolean} Whether the viewport is in selection mode or not.
- */
-rhizo.ui.gui.GUI.prototype.isSelectionModeOn = function() {
-  return this.selectionModeOn_;
-};
-
-/**
- * Toggles the viewport between selection mode and panning mode (the default),
- * which determines how mouse drag operations will be interpreted.
- */
-rhizo.ui.gui.GUI.prototype.toggleSelectionMode = function() {
-  this.selectionModeOn_ = !this.selectionModeOn_;
-  var selectable_status = this.selectionModeOn_ ? 'enable' : 'disable';
-  var draggable_status = this.selectionModeOn_ ? 'disable' : 'enable';
-  this.viewport.selectable(selectable_status).
-      draggable(draggable_status).
-      toggleClass('rhizo-selection-mode');
-  this.getComponent('rhizo.ui.component.Viewport').
-      toggleSelectionTrigger(this.selectionModeOn_);
-
-  // If a BottomBar exists, ask it to make the SelectionManager component
-  // visible whenever we are in selection mode.
-  var bottomBar = this.getComponent('rhizo.ui.component.BottomBar');
-  if (bottomBar) {
-    bottomBar.toggleComponent('rhizo.ui.component.SelectionManager',
-                              this.selectionModeOn_); 
-  }
 };
 
 rhizo.ui.gui.GUI.prototype.disableFx = function(disabled) {
