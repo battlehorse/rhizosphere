@@ -324,24 +324,27 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
       freeModels.length + ' models available for layout');
 
   // Compute the layout.
-  var boundingLayoutBox = new rhizo.layout.LayoutBox(
-      this.gui_.viewport, this.project_.options().layoutConstraints());
-  dirty = engine.layout(this.renderingPipeline_,
-                        boundingLayoutBox,
-                        freeModels,
-                        this.project_.modelsMap(),
-                        this.project_.metaModel(),
-                        options) || dirty;
+  var resultLayoutBox = {top: 0, left: 0, width: 0, height: 0};
+  if (freeModels.length > 0) {
+    var boundingLayoutBox = new rhizo.layout.LayoutBox(
+        this.gui_.viewport, this.project_.options().layoutConstraints());
+    dirty = engine.layout(this.renderingPipeline_,
+                          boundingLayoutBox,
+                          freeModels,
+                          this.project_.modelsMap(),
+                          this.project_.metaModel(),
+                          options) || dirty;
 
-  // Apply the layout.
-  var resultLayoutBox = this.renderingPipeline_.apply();
+    // Apply the layout.
+    resultLayoutBox = this.renderingPipeline_.apply();
+  }
 
   // Resize the universe based on the occupied layout box.
   this.gui_.universe.css({
       'width': Math.max(resultLayoutBox.width + resultLayoutBox.left,
-                        this.gui_.viewport.width()),
+                        this.gui_.viewport.get(0).clientWidth),
       'height': Math.max(resultLayoutBox.height + resultLayoutBox.top,
-                         this.gui_.viewport.height())}).
+                         this.gui_.viewport.get(0).clientHeight)}).
       move(0, 0);
 
   // If the layout altered visibility of some models, or we are forced to do so,

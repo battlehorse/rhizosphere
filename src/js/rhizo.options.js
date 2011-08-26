@@ -44,6 +44,7 @@ rhizo.Options = function(opt_optionsObj) {
   this.options_ = {  // Defaults
       selectfilter: '.rhizo-model:visible',
       selectionMode: 'all',
+      panningMode: 'infinite',
       showErrorsInViewport: true,
       enableHTML5History: true,
       enableLoadingIndicator: true,
@@ -196,6 +197,16 @@ rhizo.Options.prototype.isClickSelectionMode = function() {
  */
 rhizo.Options.prototype.isBoxSelectionMode = function() {
   return this.selectionMode() == 'box' || this.selectionMode() == 'all';
+};
+
+/**
+ * @return {string} The visualization panning mode. Either 'infinite', where
+ *     the visualization pane extends limitlessly on both dimensions, 'native',
+ *     where native browser scrollbars are used to constrain the panning
+ *     are, or 'none', where no panning whatsoever is allowed.
+ */
+rhizo.Options.prototype.panningMode = function() {
+  return this.asString_('panningMode');
 };
 
 /**

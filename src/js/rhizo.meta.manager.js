@@ -238,7 +238,17 @@ rhizo.meta.FilterManager.prototype.alignVisibility = function(
       rendering.visibility = vis.VISIBLE;
     }
   }
-  rhizo.ui.fadeAllRenderingsTo(modelsToFadeOut, filtered_visibility);
+
+  // When native panning is used, the extent of the viewport scrollbars is
+  // measured based on the models actual positions, even if they are hidden.
+  // In this case we have to forcefully move them to the viewport origin for
+  // the scrollbars to have the correct length.
+  var repositionToOrigin =
+      this.project_.options().panningMode() == 'native' &&
+      filtered_visibility == vis.HIDDEN;
+
+  rhizo.ui.fadeAllRenderingsTo(
+      modelsToFadeOut, filtered_visibility, repositionToOrigin);
   rhizo.ui.fadeAllRenderingsTo(modelsToFadeIn, vis.VISIBLE);
   this.project_.logger().timeEnd('FilterManager::alignVisibility');
   this.project_.logger().debug(

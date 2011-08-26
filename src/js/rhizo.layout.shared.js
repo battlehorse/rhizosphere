@@ -161,8 +161,8 @@ rhizo.layout.LayoutBox = function(container, opt_layoutConstraints) {
    */
   this.height = 0;
 
-  this.maxWidth_ = $(container).width();
-  this.maxHeight_ = $(container).height();
+  this.maxWidth_ = $(container).get(0).clientWidth;
+  this.maxHeight_ = $(container).get(0).clientHeight;
   this.computeLayoutBox_(opt_layoutConstraints || {});
 };
 

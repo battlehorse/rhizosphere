@@ -121,16 +121,6 @@ rhizo.jquery.initAnimations_ = function(gui, enableAnims) {
         }
       });
     }
-
-    $.fn.fadeTo = function(target_vis) {
-      if (target_vis == rhizo.ui.Visibility.HIDDEN) {
-        this.fadeOut();
-      } else if (target_vis == rhizo.ui.Visibility.VISIBLE) {
-        this.fadeIn();
-      } else {  // rhizo.ui.Visibility.GREY
-        this.greyOut();
-      }
-    };
   })(jQuery);
 };
 

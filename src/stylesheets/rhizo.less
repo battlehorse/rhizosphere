@@ -267,7 +267,16 @@
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+.rhizo-panning-infinite,
+.rhizo-panning-none {
   overflow: hidden;
+}
+
+.rhizo-panning-native {
+  overflow: auto;
+  overflow-y: scroll;
 }
 
 .rhizo-universe {
@@ -276,7 +285,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-/*  border: 1px dotted #000;*/ /* uncomment this to debug endless desktop */
+  /* border: 1px dotted #000; */ /* uncomment this to debug endless desktop */
+}
+
+/* Enable a 'move' cursor if the user can pan the visualization by dragging
+   the background */
+.rhizo-panning-infinite .rhizo-universe {
+  cursor: move;
 }
 
 .rhizo-bucket-header {
@@ -286,7 +301,7 @@
   width: 200px;
   margin-bottom: 5px;
   color: @primary-chrome;
-  cursor: pointer;
+  cursor: auto;
 }
 
 .rhizo-tree-connector {
@@ -311,7 +326,7 @@
   text-align: center;
   white-space: nowrap;
   text-overflow: ellipsis;
-  cursor: pointer;
+  cursor: auto;
 }
 
 /******************
@@ -631,12 +646,37 @@
   cursor: pointer;
 }
 
-.rhizo-selection-mode .rhizo-selection-trigger {
+.rhizo-box-selecting .rhizo-selection-trigger {
   background-color: @warning-background;
 }
 
-.rhizo-viewport.rhizo-selection-mode {
+/* Click-based selection is enabled. Change the cursor for all the elements
+   that respond to click selection */
+.rhizo-selectionmode-click .rhizo-model,
+.rhizo-selectionmode-all .rhizo-model,
+.rhizo-selectionmode-click .rhizo-bucket-header,
+.rhizo-selectionmode-all .rhizo-bucket-header
+.rhizo-selectionmode-click .rhizo-tree-syntheticnode,
+.rhizo-selectionmode-all .rhizo-tree-syntheticnode,
+.rhizo-selectionmode-click .rhizo-treemap-syntheticnode,
+.rhizo-selectionmode-all .rhizo-treemap-syntheticnode {
+  cursor: pointer;
+}
+
+/* Viewport toggled to box selection */
+.rhizo-viewport.rhizo-box-selecting {
   .importantgradient(@alternate-secondary-background, @dark-alternate-secondary-background);
+  cursor: crosshair !important;
+}
+
+/* Viewport toggled to box selection, switching away from infinite panning.
+   Force a crosshair cursor instead of a move one. */
+.rhizo-viewport.rhizo-panning-infinite.rhizo-box-selecting .rhizo-universe {
+  cursor: crosshair !important;
+}
+
+/* box selection enabled by default because infinite panning is not used */
+.rhizo-universe.rhizo-box-selecting {
   cursor: crosshair !important;
 }
 
@@ -776,8 +816,10 @@
      to compute their offsetWidth / offsetHeight even when hidden. */
   visibility: hidden;
   opacity: 0;
+  cursor: auto;
 }
 
+/* Drag-n-drop enabled */
 .rhizo-drag-handle {
   cursor: pointer;
 }

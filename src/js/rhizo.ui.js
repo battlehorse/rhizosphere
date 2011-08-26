@@ -51,13 +51,29 @@ rhizo.ui.toHumanLabel = function(value) {
  * @param {Array.<rhizo.model.SuperModel>} models The list of models to affect.
  * @param {rhizo.ui.Visibility} visibility The visibility renderings should
  *     fade to.
+ * @param {boolean=} opt_repositionToOrigin Whether the models should also
+ *     be repositioned to the viewport origin, when completely hidden.
  */
-rhizo.ui.fadeAllRenderingsTo = function(models, visibility) {
+rhizo.ui.fadeAllRenderingsTo = function(
+    models, visibility, opt_repositionToOrigin) {
   var nodes = [];
   for (var i = 0; i < models.length; i++) {
     nodes.push(models[i].rendering().raw_());
   }
-  $(nodes).fadeTo(visibility);
+
+  if (visibility == rhizo.ui.Visibility.HIDDEN) {
+    $(nodes).fadeOut(function() {
+      if (!!opt_repositionToOrigin) {
+        for (var i = models.length-1; i >= 0; i--) {
+          models[i].rendering().move(0, 0, true);
+        }
+      }
+    });
+  } else if (visibility == rhizo.ui.Visibility.VISIBLE) {
+    $(nodes).fadeIn();
+  } else {  // rhizo.ui.Visibility.GREY
+    $(nodes).greyOut();
+  }
 };
 
 
@@ -1488,8 +1504,10 @@ rhizo.ui.RenderingBootstrap.prototype.rawrender_ = function(
   var naked_render = this.renderer_.render(model.unwrap(),
                                            model.expanded,
                                            this.gui_.allRenderingHints());
-  var renderingClass =
-      'rhizo-model' + (hasCustomDragHandle ? '' : ' rhizo-drag-handle');
+  var renderingClass = 'rhizo-model';
+  if (this.project_.options().isDragAndDropEnabled() && !hasCustomDragHandle) {
+    renderingClass += ' rhizo-drag-handle';
+  }
   if (typeof naked_render == 'string') {
     rawRenderings.push('<div class="');
     rawRenderings.push(renderingClass);

@@ -784,13 +784,53 @@ rhizo.ui.component.Viewport = function(project, options) {
   rhizo.ui.component.Component.call(
       this, project, options, 'rhizo.ui.component.Viewport');
   this.universeTargetPosition_ = {top: 0, left: 0};
-  this.allowBoxSelection_ = options.isBoxSelectionMode();
+
+  /**
+   * Whether viewport panning can occur limitlessly on both directions via
+   * (Google Maps-style) mouse dragging.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.infinitePanning_ = options.panningMode() == 'infinite';
+
+  /**
+   * Whether box selection mode can be toggled on and off. If box selection is
+   * not allowed a-priori this will be false. If the viewport uses native or
+   * no scrolling, then the default interaction mode is selection, so again
+   * toggling will be false.
+   * @type {boolean}
+   * @private
+   */
+  this.canToggleBoxSelection_ =
+      options.isBoxSelectionMode() && this.infinitePanning_;
   this.selectionModeOn_ = false;
+
+  /**
+   * Defines which area, the viewport or the universe, accepts box selection
+   * gestures from the user. This depends on the panning mode the visualization
+   * uses:
+   * - infinite panning: no scrollbars exist. Since the universe may be
+   *   positioned at an offset with respect to the viewport, user clicks might
+   *   fall in areas not covered by the universe. Therefore the viewport is the
+   *   designated handler for user selection gestures.
+   * - native panning: scrollbars exist on the viewport. Because of
+   *   http://bugs.jqueryui.com/ticket/4441 making the viewport selectable would
+   *   trigger the selection box while operating the scrollbar. The universe
+   *   will never be at an offset with respect to the viewport. Therefore the
+   *   universe is the designated handler for user selection gestures.
+   * - no panning: no scrollbars exist. The viewport and universe are guaranteed
+   *   to overlap across all the viewport visible area. Both the universe and
+   *   the viewport can collect user gestures.
+   * @type {!Object}
+   * @private
+   */
+  this.selectionArea_ = null;
 
   if (options.showErrorsInViewport()) {
     project.eventBus().subscribe('error', this.onError_, this);
   }
-  if (this.allowBoxSelection_) {
+  if (this.canToggleBoxSelection_) {
     project.eventBus().subscribe('userAction', this.onUserAction_, this);
   }
 };
@@ -798,15 +838,26 @@ rhizo.inherits(rhizo.ui.component.Viewport, rhizo.ui.component.Component);
 
 /** @override */
 rhizo.ui.component.Viewport.prototype.render = function() {
-  this.viewport_ = $('<div/>', {'class': 'rhizo-viewport'});
-  this.universe_ = $('<div/>', {'class': 'rhizo-universe'}).
+  var viewportClasses = [
+      'rhizo-viewport',
+      'rhizo-panning-' + this.project_.options().panningMode(),
+      'rhizo-selectionmode-' + this.project_.options().selectionMode()];
+  this.viewport_ = $('<div/>', {'class': viewportClasses.join(' ')});
+
+  var universeClasses = ['rhizo-universe'];
+  if (!this.infinitePanning_ && this.project_.options().isBoxSelectionMode()) {
+    universeClasses.push('rhizo-box-selecting');
+  }
+  this.universe_ = $('<div/>', {'class': universeClasses.join(' ')}).
       appendTo(this.viewport_);
+
+  this.selectionArea_ = this.infinitePanning_ ? this.viewport_ : this.universe_;
 
   // Update the GUI object.
   this.gui_.setViewport(this.viewport_);
   this.gui_.setUniverse(this.universe_);
 
-  if (this.allowBoxSelection_) {
+  if (this.canToggleBoxSelection_) {
     this.selection_trigger_ = $('<div />', {
         'class': 'rhizo-selection-trigger',
         'title': 'Start selecting items'}).appendTo(this.viewport_);
@@ -819,8 +870,10 @@ rhizo.ui.component.Viewport.prototype.render = function() {
 rhizo.ui.component.Viewport.prototype.ready = function() {
   // The ordering matters: if selection is configured before dragging, the
   // latter won't work.
-  this.activateDraggableViewport_();
-  if (this.allowBoxSelection_) {
+  if (this.infinitePanning_) {
+    this.activateDraggableViewport_();
+  }
+  if (this.project_.options().isBoxSelectionMode()) {
     this.activateSelectableViewport_();
   }
 
@@ -842,17 +895,22 @@ rhizo.ui.component.Viewport.prototype.ready = function() {
  */
 rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     function() {
-  this.selection_trigger_.click(jQuery.proxy(function() {
-    this.toggleSelectionMode_(!this.selectionModeOn_);
-    this.project_.eventBus().publish(
-        'userAction', {
-            'action': 'selection',
-            'isOn': this.selectionModeOn_
-        }, /* callback */ null, this);
-  }, this));
+  if (this.canToggleBoxSelection_) {
+    this.selection_trigger_.click(jQuery.proxy(function() {
+      this.toggleSelectionMode_(!this.selectionModeOn_);
+      this.project_.eventBus().publish(
+          'userAction', {
+              'action': 'selection',
+              'isOn': this.selectionModeOn_
+          }, /* callback */ null, this);
+    }, this));
+  }
 
-  this.viewport_.selectable({
-    disabled: true,  // initially disabled.
+  this.selectionArea_.selectable({
+    // If the viewport allows drag-based panning, then panning is the default
+    // mode and selection is initially disabled. Otherwise, the only action is
+    // selection and is enabled by default.
+    disabled: this.infinitePanning_,
     selected: jQuery.proxy(function(ev, ui) {
       var selected_id = $(ui.selected).data("id");
       if (selected_id) {
@@ -870,6 +928,7 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     // TODO: disabled until incremental refresh() is implemented
     // autoRefresh: false,
     filter: this.options_.selectFilter(),
+    cancel: this.options_.selectFilter(),
     tolerance: 'touch',
     distance: 1
   });
@@ -908,9 +967,9 @@ rhizo.ui.component.Viewport.prototype.toggleSelectionMode_ = function(
   // Change the viewport operation mode.
   var selectable_status = this.selectionModeOn_ ? 'enable' : 'disable';
   var draggable_status = this.selectionModeOn_ ? 'disable' : 'enable';
-  this.viewport_.selectable(selectable_status).
+  this.selectionArea_.selectable(selectable_status).
       draggable(draggable_status).
-      toggleClass('rhizo-selection-mode', this.selectionModeOn_);
+      toggleClass('rhizo-box-selecting', this.selectionModeOn_);
 
   // Update the title of the selection trigger.
  this.selection_trigger_.attr(
