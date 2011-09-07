@@ -42,6 +42,8 @@ import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
 import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
 import com.rhizospherejs.gwt.client.RhizosphereOptions.LogLevel;
+import com.rhizospherejs.gwt.client.RhizosphereOptions.PanningMode;
+import com.rhizospherejs.gwt.client.RhizosphereOptions.SelectionMode;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
 import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
 import com.rhizospherejs.gwt.showcase.client.resources.Resources;
@@ -124,6 +126,9 @@ public class BooksTab extends Composite {
       
       options.setEnableHTML5History(false);
       options.setEnableLoadingIndicator(false);
+      options.setEnableDragAndDrop(true);
+      options.setPanningMode(PanningMode.NATIVE);
+      options.setSelectionMode(SelectionMode.BOX);
       options.setLogLevel(LogLevel.DEBUG);
 
       // Create a new Rhizosphere visualization suited to display Book objects.

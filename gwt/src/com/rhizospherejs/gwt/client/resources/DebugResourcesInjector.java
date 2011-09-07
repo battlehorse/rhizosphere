@@ -41,6 +41,7 @@ public class DebugResourcesInjector implements ResourcesInjector {
   public void injectRhizoJavascript(Runnable callback) {
     String[] jsFiles = {
         "rhizosphere/src/js/rhizo.js",
+        "rhizosphere/src/js/rhizo.options.js",
         "rhizosphere/src/js/rhizo.eventbus.js",        
         "rhizosphere/src/js/rhizo.jquery.js",
         "rhizosphere/src/js/rhizo.log.js",

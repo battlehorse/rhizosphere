@@ -113,6 +113,56 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
      */
     ERROR;
   }
+  
+  /**
+   * Enumeration of selection modes that the Rhizosphere visualization allows. 
+   */
+  public enum SelectionMode {
+    /**
+     * No selection gestures are allowed on the visualization.
+     */
+    NONE,
+    
+    /**
+     * Only model selection by clicking on model renderings (or other UI
+     * elements that allow click-based selection, like layout headers) is
+     * allowed.
+     */
+    CLICK,
+    
+    /**
+     * Only box selection by drawing selection boxes in the visualization
+     * viewport is allowed.
+     */
+    BOX,
+    
+    /**
+     * All supported selection modes are allowed. 
+     */
+    ALL
+  }
+  
+  /**
+   * Enumeration of the panning modes that the Rhizosphere visualization allows
+   * for scrolling and panning gestures.
+   */
+  public enum PanningMode {
+    /**
+     * No panning or scrolling is allowed. The visualization viewport is fixed
+     * and any overflows will be hidden.
+     */
+    NONE,
+    
+    /**
+     * Native panning of the visualization viewport based on system scrollbars.
+     */
+    NATIVE,
+    
+    /**
+     * Emulated limitless 2D panning of the visualization viewport.
+     */
+    INFINITE
+  }
 
   /**
    * Creates a new options instance.
@@ -170,6 +220,36 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
    */
   public final native void setEnableLoadingIndicator(boolean enableLoadingIndicator) /*-{
     this['enableLoadingIndicator'] = enableLoadingIndicator;
+  }-*/;
+  
+  /**
+   * Whether to allow the dragging of visualization models within the
+   * visualization viewport.
+   */
+  public final native void setEnableDragAndDrop(boolean enableDragAndDrop) /*-{
+    this['enableDragAndDrop'] = enableDragAndDrop;
+  }-*/;
+  
+  /**
+   * Sets the visualization selection mode.
+   */
+  public final void setSelectionMode(SelectionMode selectionMode) {
+    nativeSetSelectionMode(selectionMode.name().toLowerCase());
+  }
+  
+  private native void nativeSetSelectionMode(String selectionMode) /*-{
+    this['selectionMode'] = selectionMode;
+  }-*/;
+  
+  /**
+   * Sets the visualization panning mode.
+   */
+  public final void setPanningMode(PanningMode panningMode) {
+    nativeSetPanningMode(panningMode.name().toLowerCase());
+  }
+  
+  private native void nativeSetPanningMode(String panningMode) /*-{
+    this['panningMode'] = panningMode;
   }-*/;
   
   /**
