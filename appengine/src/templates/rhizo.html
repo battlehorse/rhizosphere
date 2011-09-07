@@ -41,18 +41,18 @@
           // TODO(battlehorse): Broadcasting should rely on capabilities to
           // decide whether to activate itself or not, rather than URL
           // experimental parameters.
-          rhizo.ui.component.templates['broadcast'] = function(project, options) {
+          rhizo.ui.component.templates['broadcast'] = function(project) {
             var template;
             if (project.gui().isSmall() || project.gui().isMobile()) {
               template = new rhizo.ui.component.BottomTemplate(
-                  project, options, 'bottom');
+                  project, 'bottom');
               template.addtoBottomBar(new rhizo.broadcast.BaseComponent(
-                  project, options));
+                  project));
             } else {
               template = new rhizo.ui.component.StandardTemplate(
-                  project, options, 'default');
+                  project, 'default');
               template.addtoLeftBar(new rhizo.broadcast.BaseComponent(
-                  project, options));
+                  project));
             }
             return template;
           };

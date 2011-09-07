@@ -143,16 +143,13 @@ rhizo.ui.component.Phase = {
  * Defines a Component, the basic building block of the Rhizosphere UI.
  *
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the component will use to register
  *     itself with the project GUI.
  * @constructor
  */
-rhizo.ui.component.Component = function(project, options, opt_key) {
+rhizo.ui.component.Component = function(project, opt_key) {
   this.project_ = project;
   this.gui_ = project.gui();
-  this.options_ = options;
-
   this.key_ = opt_key;
 };
 
@@ -221,14 +218,13 @@ rhizo.ui.component.Component.prototype.ready = function() {};
  * within itself.
  *
  * @param {!rhizo.Project} project The project this container belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the container will use to register
  *     itself with the project GUI.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.Container = function(project, options, opt_key) {
-  rhizo.ui.component.Component.call(this, project, options, opt_key);
+rhizo.ui.component.Container = function(project, opt_key) {
+  rhizo.ui.component.Component.call(this, project, opt_key);
   this.components_ = [];
   this.phase_ = rhizo.ui.component.Phase.INIT;
 };
@@ -412,18 +408,17 @@ rhizo.ui.component.Container.prototype.ready = function() {
  * configuration option to false.
  *
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
  * @extends {rhizo.ui.component.Container}
  */
-rhizo.ui.component.Template = function(project, options, template_key) {
-  rhizo.ui.component.Container.call(this, project, options, template_key);
+rhizo.ui.component.Template = function(project, template_key) {
+  rhizo.ui.component.Container.call(this, project, template_key);
 
-  this.viewport_ = new rhizo.ui.component.Viewport(project, options);
-  if (options.isLoadingIndicatorEnabled()) {
+  this.viewport_ = new rhizo.ui.component.Viewport(project);
+  if (project.options().isLoadingIndicatorEnabled()) {
     this.progress_ = new rhizo.ui.component.Progress();
   }
 };
@@ -523,15 +518,14 @@ rhizo.ui.component.Template.prototype.ready = function() {
  * title (if the component defined one).
  *
  * @param {!rhizo.Project} project The project this box belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
  * @constructor
  * @extends {rhizo.ui.component.Container}
  */
-rhizo.ui.component.VBox = function(project, options, opt_key, boxclass) {
-  rhizo.ui.component.Container.call(this, project, options, opt_key);
+rhizo.ui.component.VBox = function(project, opt_key, boxclass) {
+  rhizo.ui.component.Container.call(this, project, opt_key);
   this.boxclass_ = boxclass;
   this.panel_ = null;
 };
@@ -564,15 +558,14 @@ rhizo.ui.component.VBox.prototype.renderSingleComponent = function(component) {
  * A collapsible box sitting on the right of the viewport.
  *
  * @param {!rhizo.Project} project The project this box belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
  * @constructor
  * @extends {rhizo.ui.component.Container}
  */
-rhizo.ui.component.RightBar = function(project, options, opt_key, boxclass) {
-  rhizo.ui.component.Container.call(this, project, options, opt_key);
+rhizo.ui.component.RightBar = function(project, opt_key, boxclass) {
+  rhizo.ui.component.Container.call(this, project, opt_key);
   this.boxclass_ = boxclass;
 };
 rhizo.inherits(rhizo.ui.component.RightBar, rhizo.ui.component.Container);
@@ -643,15 +636,14 @@ rhizo.ui.component.RightBar.prototype.isCollapsed = function() {
  * will be displayed as floating panels above the links bar.
  *
  * @param {!rhizo.Project} project The project this box belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} opt_key Optional key the box will use to register
  *     itself with the project GUI.
  * @param {string} boxclass The CSS class assigned to the box.
  * @constructor
  * @extends {rhizo.ui.component.Container}
  */
-rhizo.ui.component.HBox = function(project, options, opt_key, boxclass) {
-  rhizo.ui.component.Container.call(this, project, options, opt_key, boxclass);
+rhizo.ui.component.HBox = function(project, opt_key, boxclass) {
+  rhizo.ui.component.Container.call(this, project, opt_key, boxclass);
   this.toggles_ = [];
   this.boxclass_ = boxclass;
   project.eventBus().subscribe('userAction', this.onUserAction_, this);
@@ -776,13 +768,12 @@ rhizo.ui.component.HBox.prototype.onUserAction_ = function(message) {
  * are displayed and laid out.
  *
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.Viewport = function(project, options) {
+rhizo.ui.component.Viewport = function(project) {
   rhizo.ui.component.Component.call(
-      this, project, options, 'rhizo.ui.component.Viewport');
+      this, project, 'rhizo.ui.component.Viewport');
   this.universeTargetPosition_ = {top: 0, left: 0};
 
   /**
@@ -792,7 +783,7 @@ rhizo.ui.component.Viewport = function(project, options) {
    * @type {boolean}
    * @private
    */
-  this.infinitePanning_ = options.panningMode() == 'infinite';
+  this.infinitePanning_ = project.options().panningMode() == 'infinite';
 
   /**
    * Whether box selection mode can be toggled on and off. If box selection is
@@ -803,7 +794,7 @@ rhizo.ui.component.Viewport = function(project, options) {
    * @private
    */
   this.canToggleBoxSelection_ =
-      options.isBoxSelectionMode() && this.infinitePanning_;
+      project.options().isBoxSelectionMode() && this.infinitePanning_;
   this.selectionModeOn_ = false;
 
   /**
@@ -827,7 +818,7 @@ rhizo.ui.component.Viewport = function(project, options) {
    */
   this.selectionArea_ = null;
 
-  if (options.showErrorsInViewport()) {
+  if (project.options().showErrorsInViewport()) {
     project.eventBus().subscribe('error', this.onError_, this);
   }
   if (this.canToggleBoxSelection_) {
@@ -927,8 +918,8 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     }, this),
     // TODO: disabled until incremental refresh() is implemented
     // autoRefresh: false,
-    filter: this.options_.selectFilter(),
-    cancel: this.options_.selectFilter(),
+    filter: this.project_.options().selectFilter(),
+    cancel: this.project_.options().selectFilter(),
     tolerance: 'touch',
     distance: 1
   });
@@ -1103,15 +1094,14 @@ rhizo.ui.component.Viewport.prototype.onUserAction_ = function(message) {
 /**
  * The visualization logo.
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {boolean} titleless Whether this component should have a title or not.
  * @param {boolean} sliding Whether the link section should be hidden by default
  *     and slide into view only when requested.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.Logo = function(project, options, titleless, sliding) {
-  rhizo.ui.component.Component.call(this, project, options, 'rhizo.ui.component.Logo');
+rhizo.ui.component.Logo = function(project, titleless, sliding) {
+  rhizo.ui.component.Component.call(this, project, 'rhizo.ui.component.Logo');
   this.titleless_ = titleless;
   this.sliding_ = sliding;
 };
@@ -1165,13 +1155,11 @@ rhizo.ui.component.Logo.prototype.render = function() {
 /**
  * The layout selector component.
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.Layout = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
-                                    'rhizo.ui.component.Layout');
+rhizo.ui.component.Layout = function(project) {
+  rhizo.ui.component.Component.call(this, project, 'rhizo.ui.component.Layout');
   project.eventBus().subscribe('layout', this.onLayout_, this);
 };
 rhizo.inherits(rhizo.ui.component.Layout, rhizo.ui.component.Component);
@@ -1268,12 +1256,11 @@ rhizo.ui.component.Layout.prototype.updateVisibleEngineControls_ = function() {
 /**
  * Handles selections and selection-based filtering.
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.SelectionManager = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
+rhizo.ui.component.SelectionManager = function(project) {
+  rhizo.ui.component.Component.call(this, project,
                                     'rhizo.ui.component.SelectionManager');
   project.eventBus().subscribe(
       'selection', this.onSelectionChanged_, this, /* committed */ true);
@@ -1396,12 +1383,11 @@ rhizo.ui.component.SelectionManager.prototype.setNumFilteredModels_ =
  * A panel that enables/disables filters autocommit functionality.
  *
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.AutocommitPanel = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
+rhizo.ui.component.AutocommitPanel = function(project) {
+  rhizo.ui.component.Component.call(this, project,
                                     'rhizo.ui.component.AutocommitPanel');
   this.callback_ = null;
 };
@@ -1485,15 +1471,13 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
  * Renders a series of filters as a stack, with all filters showing one on
  * top of the other.
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.FilterStackContainer = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
+rhizo.ui.component.FilterStackContainer = function(project) {
+  rhizo.ui.component.Component.call(this, project,
                                     'rhizo.ui.component.FilterStackContainer');
-  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel(project,
-                                                                 options);
+  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel(project);
 
   /**
    * Number of metaModel keys that will trigger filter selection (instead of
@@ -1725,15 +1709,13 @@ rhizo.ui.component.FilterStackContainer.prototype.onFilterChanged_ = function(
  * time, and additional controls to flip between one filter and the next.
  *
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.FilterBookContainer = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
+rhizo.ui.component.FilterBookContainer = function(project) {
+  rhizo.ui.component.Component.call(this, project,
                                     'rhizo.ui.component.FilterBookContainer');
-  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel(project,
-                                                                 options);
+  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel(project);
 };
 rhizo.inherits(rhizo.ui.component.FilterBookContainer,
                rhizo.ui.component.Component);
@@ -1836,13 +1818,11 @@ rhizo.ui.component.FilterBookContainer.prototype.metaModelWithUi_ = function() {
 /**
  * A legend to describes model color and size coding.
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.Legend = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
-                                    'rhizo.ui.component.Legend');
+rhizo.ui.component.Legend = function(project) {
+  rhizo.ui.component.Component.call(this, project, 'rhizo.ui.component.Legend');
   this.legendPanel_ = null;
 };
 rhizo.inherits(rhizo.ui.component.Legend, rhizo.ui.component.Component);
@@ -1912,12 +1892,11 @@ rhizo.ui.component.Legend.prototype.metaReady = function() {
 /**
  * Experimental component to handle user-specified actions on models.
  * @param {!rhizo.Project} project The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  * @extends {rhizo.ui.component.Component}
  */
-rhizo.ui.component.Actions = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options);
+rhizo.ui.component.Actions = function(project) {
+  rhizo.ui.component.Component.call(this, project);
 };
 rhizo.inherits(rhizo.ui.component.Actions, rhizo.ui.component.Component);
 
@@ -2017,15 +1996,14 @@ rhizo.ui.component.Actions.prototype.ready = function() {
  * occur via programmatic API calls.
  *
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
  * @extends {rhizo.ui.component.Template}
  */
-rhizo.ui.component.BareTemplate = function(project, options, template_key) {
-  rhizo.ui.component.Template.call(this, project, options, template_key);
+rhizo.ui.component.BareTemplate = function(project, template_key) {
+  rhizo.ui.component.Template.call(this, project, template_key);
 
 };
 rhizo.inherits(rhizo.ui.component.BareTemplate, rhizo.ui.component.Template);
@@ -2037,25 +2015,24 @@ rhizo.inherits(rhizo.ui.component.BareTemplate, rhizo.ui.component.Template);
  * the visualization controls in a links bar at the bottom of the screen.
  *
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
  * @extends {rhizo.ui.component.Template}
  */
-rhizo.ui.component.BottomTemplate = function(project, options, template_key) {
-  rhizo.ui.component.Template.call(this, project, options, template_key);
-  this.initComponents_(project, options);
+rhizo.ui.component.BottomTemplate = function(project, template_key) {
+  rhizo.ui.component.Template.call(this, project, template_key);
+  this.initComponents_(project);
 };
 rhizo.inherits(rhizo.ui.component.BottomTemplate, rhizo.ui.component.Template);
 
 rhizo.ui.component.BottomTemplate.prototype.initComponents_ = function(
-    project, options) {
-  this.hbox_ = new rhizo.ui.component.HBox(project, options,
+    project) {
+  this.hbox_ = new rhizo.ui.component.HBox(project,
       'rhizo.ui.component.BottomBar', 'rhizo-bottom-bar');
 
-  var default_components = this.defaultComponents(project, options);
+  var default_components = this.defaultComponents(project);
   for (var i = 0; i < default_components.length; i++) {
     this.hbox_.addComponent(default_components[i]);
   }
@@ -2066,17 +2043,16 @@ rhizo.ui.component.BottomTemplate.prototype.initComponents_ = function(
 /**
  * Returns the list of default template components. Subclasses can override.
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
 rhizo.ui.component.BottomTemplate.prototype.defaultComponents = function(
-    project, options) {
+    project) {
   return [
-      new rhizo.ui.component.Layout(project, options),
-      new rhizo.ui.component.SelectionManager(project, options),
-      new rhizo.ui.component.FilterBookContainer(project, options),
-      new rhizo.ui.component.Logo(project, options, false, false)
+      new rhizo.ui.component.Layout(project),
+      new rhizo.ui.component.SelectionManager(project),
+      new rhizo.ui.component.FilterBookContainer(project),
+      new rhizo.ui.component.Logo(project, false, false)
   ];
 };
 
@@ -2111,33 +2087,32 @@ rhizo.ui.component.BottomTemplate.prototype.addtoBottomBar = function(
 /**
  * Default Rhizosphere UI template.
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @param {?string} template_key A unique key that identifies the template.
  *     Generates a CSS class name that can be used for template-specific UI
  *     skinning.
  * @constructor
  * @extends {rhizo.ui.component.Template}
  */
-rhizo.ui.component.StandardTemplate = function(project, options, template_key) {
-  rhizo.ui.component.Template.call(this, project, options, template_key);
-  this.initComponents_(project, options);
+rhizo.ui.component.StandardTemplate = function(project, template_key) {
+  rhizo.ui.component.Template.call(this, project, template_key);
+  this.initComponents_(project);
 };
 rhizo.inherits(rhizo.ui.component.StandardTemplate,
                rhizo.ui.component.Template);
 
 rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
-    project, options) {
-  this.leftbox_ = new rhizo.ui.component.VBox(project, options, /* key */ null,
+    project) {
+  this.leftbox_ = new rhizo.ui.component.VBox(project, /* key */ null,
                                               'rhizo-left');
   this.rightbox_ = new rhizo.ui.component.RightBar(
-      project, options, 'rhizo.ui.component.RightBar', 'rhizo-right');
+      project, 'rhizo.ui.component.RightBar', 'rhizo-right');
 
-  var left_components = this.defaultLeftComponents(project, options);
+  var left_components = this.defaultLeftComponents(project);
   for (var i = 0; i < left_components.length; i++) {
     this.leftbox_.addComponent(left_components[i]);
   }
 
-  var right_components = this.defaultRightComponents(project, options);
+  var right_components = this.defaultRightComponents(project);
   for (i = 0; i < right_components.length; i++) {
     this.rightbox_.addComponent(right_components[i]);
   }
@@ -2150,17 +2125,16 @@ rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
  * Returns the list of default template components that will be added to the
  * left bar. Subclasses can override.
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
 rhizo.ui.component.StandardTemplate.prototype.defaultLeftComponents = function(
-    project, options) {
+    project) {
   return [
-      new rhizo.ui.component.Logo(project, options, true, true),
-      new rhizo.ui.component.Layout(project, options),
-      new rhizo.ui.component.SelectionManager(project, options),
-      new rhizo.ui.component.FilterStackContainer(project, options)
+      new rhizo.ui.component.Logo(project, true, true),
+      new rhizo.ui.component.Layout(project),
+      new rhizo.ui.component.SelectionManager(project),
+      new rhizo.ui.component.FilterStackContainer(project)
   ];
 };
 
@@ -2168,14 +2142,13 @@ rhizo.ui.component.StandardTemplate.prototype.defaultLeftComponents = function(
  * Returns the list of default template components that will be added to the
  * right bar. Subclasses can override.
  * @param {!rhizo.Project} project The project this template belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options
  * @return {Array.<rhizo.ui.component.Component>} The list of default
  *     components that will be part of the template.
  */
 rhizo.ui.component.StandardTemplate.prototype.defaultRightComponents =
-    function(project, options) {
+    function(project) {
   return [
-      new rhizo.ui.component.Actions(project, options)
+      new rhizo.ui.component.Actions(project)
   ];
 };
 
@@ -2228,16 +2201,13 @@ rhizo.ui.component.StandardTemplate.prototype.addToRightBar = function(
  * @enum {string} Enumeration of available template factories.
  */
 rhizo.ui.component.templates = {
-  'bare': function(project, options) {
-    return new rhizo.ui.component.BareTemplate(
-        project, options, 'bare');
+  'bare': function(project) {
+    return new rhizo.ui.component.BareTemplate(project, 'bare');
   },
-  'bottom': function(project, options) {
-    return new rhizo.ui.component.BottomTemplate(
-        project, options, 'bottom');
+  'bottom': function(project) {
+    return new rhizo.ui.component.BottomTemplate(project, 'bottom');
   },
-  'default': function(project, options) {
-    return new rhizo.ui.component.StandardTemplate(
-        project, options, 'default');
+  'default': function(project) {
+    return new rhizo.ui.component.StandardTemplate(project, 'default');
   }
 };

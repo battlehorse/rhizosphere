@@ -107,11 +107,11 @@ namespace("rhizo.broadcast");
  * start/stop the remote following of a broadcasting visualization.
  *
  * @param {!rhizo.Project} project  The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
+ * @xtends {rhizo.ui.component.Component}
  */
-rhizo.broadcast.BaseComponent = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options,
+rhizo.broadcast.BaseComponent = function(project) {
+  rhizo.ui.component.Component.call(this, project,
                                     'rhizo.broadcast.BaseComponent');
   this.specialized_component_ = null;
 };
@@ -134,11 +134,11 @@ rhizo.broadcast.BaseComponent.prototype.render = function() {
   if ('follow' in urlParams && urlParams.pid == this.project_.uuid()) {
     // Start the component in following mode.
     this.specialized_component_ = new rhizo.broadcast.FollowComponent(
-        this.project_, this.options_, urlParams['follow']);
+        this.project_, urlParams['follow']);
   } else {
     // Start the component in broadcast mode.
     this.specialized_component_ = new rhizo.broadcast.BroadcastComponent(
-        this.project_, this.options_);
+        this.project_);
   }
 
   broadcastPanel.append(this.specialized_component_.render());
@@ -160,14 +160,13 @@ rhizo.broadcast.BaseComponent.prototype.ready = function() {
  * channel at startup.
  *
  * @param {!rhizo.Project} project  The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @param {string} followed_channel_uuid The broadcasting channel uuid.
  * @constructor
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.broadcast.FollowComponent = function(project,
-                                           options,
                                            followed_channel_uuid) {
-  rhizo.ui.component.Component.call(this, project, options);
+  rhizo.ui.component.Component.call(this, project);
   this.followed_channel_uuid_ = followed_channel_uuid;
   this.following_ = false;
 };
@@ -276,11 +275,10 @@ rhizo.broadcast.FollowComponent.prototype.stopFollowing_ = function() {
  * start/stop broadcasting the visualization state.
  *
  * @param {!rhizo.Project} project  The project this component belongs to.
- * @param {!rhizo.Options} options Project-wide configuration options.
  * @constructor
  */
-rhizo.broadcast.BroadcastComponent = function(project, options) {
-  rhizo.ui.component.Component.call(this, project, options);
+rhizo.broadcast.BroadcastComponent = function(project) {
+  rhizo.ui.component.Component.call(this, project);
   this.broadcasting_ = false;
 };
 rhizo.inherits(rhizo.broadcast.BroadcastComponent,

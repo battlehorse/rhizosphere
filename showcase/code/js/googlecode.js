@@ -164,15 +164,13 @@ googlecode.fixModels = function(models, stats) {
  *     function that will create template instances.
  */
 googlecode.template.buildTemplate = function(googlecode_project_name) {
-  return function(project, options) {
+  return function(project) {
     if (project.gui().isSmall() || project.gui().isMobile()) {
       return new googlecode.template.BottomTemplate(project,
-                                                    options,
                                                     'bottom',
                                                     googlecode_project_name);
     } else {
       return new googlecode.template.StandardTemplate(project,
-                                                      options,
                                                       'default',
                                                       googlecode_project_name);
     }
@@ -185,28 +183,29 @@ googlecode.template.buildTemplate = function(googlecode_project_name) {
  * customizations.
  *
  * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
  * @param {string} template_key The unique key that identifies the template.
  * @param {string} googlecode_project_name The name of Google Code project the
  *     visualization is about.
  * @constructor
+ * @extends {rhizo.ui.component.BottomTemplate}
  */
 googlecode.template.BottomTemplate = function(
-    project, options, template_key, googlecode_project_name) {
+    project, template_key, googlecode_project_name) {
   this.googlecode_project_name_ = googlecode_project_name;
-  rhizo.ui.component.BottomTemplate.call(this, project, options, template_key);
+  rhizo.ui.component.BottomTemplate.call(this, project, template_key);
 };
 rhizo.inherits(googlecode.template.BottomTemplate,
                rhizo.ui.component.BottomTemplate);
 
+/** @inheritDoc */
 googlecode.template.BottomTemplate.prototype.defaultComponents = function(
-    project, options) {
+    project) {
   return [
-      new rhizo.ui.component.Layout(project, options),
-      new rhizo.ui.component.SelectionManager(project, options),
-      new rhizo.ui.component.FilterBookContainer(project, options),
-      new rhizo.broadcast.BaseComponent(project, options),
-      new googlecode.template.Logo(project, options, false,
+      new rhizo.ui.component.Layout(project),
+      new rhizo.ui.component.SelectionManager(project),
+      new rhizo.ui.component.FilterBookContainer(project),
+      new rhizo.broadcast.BaseComponent(project),
+      new googlecode.template.Logo(project, false,
           this.googlecode_project_name_)
   ];
 };
@@ -217,35 +216,36 @@ googlecode.template.BottomTemplate.prototype.defaultComponents = function(
  * customizations.
  *
  * @param {rhizo.Project} project The project this template belongs to.
- * @param {*} options Project-wide configuration options
  * @param {string} template_key The unique key that identifies the template.
  * @param {string} googlecode_project_name The name of Google Code project the
  *     visualization is about.
  * @constructor
+ * @extends {rhizo.ui.component.StandardTemplate}
  */
 googlecode.template.StandardTemplate = function(
-    project, options, template_key, googlecode_project_name) {
+    project, template_key, googlecode_project_name) {
   this.googlecode_project_name_ = googlecode_project_name;
-  rhizo.ui.component.StandardTemplate.call(
-      this, project, options, template_key);
+  rhizo.ui.component.StandardTemplate.call(this, project, template_key);
 };
 rhizo.inherits(googlecode.template.StandardTemplate,
                rhizo.ui.component.StandardTemplate);
 
+/** @inheritDoc */
 googlecode.template.StandardTemplate.prototype.defaultLeftComponents = function(
-    project, options) {
+    project) {
   return [
-      new googlecode.template.Logo(project, options, true,
+      new googlecode.template.Logo(project, true,
           this.googlecode_project_name_),
-      new rhizo.broadcast.BaseComponent(project, options),
-      new rhizo.ui.component.Layout(project, options),
-      new rhizo.ui.component.SelectionManager(project, options),
-      new rhizo.ui.component.FilterStackContainer(project, options)
+      new rhizo.broadcast.BaseComponent(project),
+      new rhizo.ui.component.Layout(project),
+      new rhizo.ui.component.SelectionManager(project),
+      new rhizo.ui.component.FilterStackContainer(project)
   ];
 };
 
+/** @inheritDoc */
 googlecode.template.StandardTemplate.prototype.defaultRightComponents =
-    function(project, options) {
+    function(project) {
   return [];
 };
 
@@ -254,15 +254,14 @@ googlecode.template.StandardTemplate.prototype.defaultRightComponents =
  * A custom visualization Logo.
  *
  * @param {rhizo.Project} project The project this component belongs to.
- * @param {*} options Project-wide configuration options.
  * @param {boolean} titleless Whether this component should have a title or not.
  * @param {string} googlecode_project_name The name of Google Code project the
  *     visualization is about.
  * @constructor
  */
-googlecode.template.Logo = function(project, options, titleless,
+googlecode.template.Logo = function(project, titleless,
                                     googlecode_project_name) {
-  rhizo.ui.component.Component.call(this, project, options, 'googlecode.template.Logo');
+  rhizo.ui.component.Component.call(this, project, 'googlecode.template.Logo');
   this.titleless_ = titleless;
   this.googlecode_project_name_ = googlecode_project_name;
 };
