@@ -31,7 +31,7 @@
         font-family: sans-serif;
       }
     </style>
-    <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/jquery-ui-1.8.10.custom.css" type="text/css" media="screen" charset="utf-8">
+    <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/lib/stylesheets/rhizo.{{theme}}.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
 
@@ -47,7 +47,7 @@
 
     <!-- JQuery specific libraries -->
     <script src="{{ hostname }}/static/shared/js/jquery-1.5.1.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.10.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ hostname }}/static/shared/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Rhizosphere libraries -->
     {% if debug %}

@@ -516,6 +516,7 @@ rhizo.ui.meta.RangeKindUi.prototype.renderControls = function() {
     stepping: this.stepping_ ? this.toFilterScale(this.stepping_) : null,
     steps: this.steps_,
     range: true,
+    values: [0, 100],
     slide: jQuery.proxy(this.onSlide_, this),
     stop: jQuery.proxy(this.onStopSlide_, this),
     orientation: 'horizontal'
