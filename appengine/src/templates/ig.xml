@@ -31,7 +31,7 @@
         font-family: sans-serif;
       }
     </style>
-    <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" charset="utf-8">
+    <link rel="stylesheet" href="{{ hostname }}/static/src/stylesheets/{{theme}}/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/lib/stylesheets/rhizo.{{theme}}.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="{{ hostname }}/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
 

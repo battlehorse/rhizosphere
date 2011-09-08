@@ -4,10 +4,10 @@
     <title>Rhizosphere</title>
     <meta name="viewport" content="width=device-width,user-scalable=no">
     <link rel="stylesheet"
-          href="http://www.rhizospherejs.com/static/shared/src/jquery-ui-1.8.16.custom.css"
+          href="http://www.rhizospherejs.com/static/shared/src/default/jquery-ui-1.8.16.custom.css"
           type="text/css">
     <link rel="stylesheet"
-          href="http://www.rhizospherejs.com/static/lib/stylesheets/rhizo.css"
+          href="http://www.rhizospherejs.com/static/lib/stylesheets/rhizo.default.css"
           type="text/css">
 
     <!-- Early loading of the Google Visualization API libraries -->
