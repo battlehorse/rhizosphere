@@ -9,15 +9,23 @@
 </p>
 <h2>jQuery UI</h2>
 <p>
-  Rhizosphere uses both a custom theme and packaging for jQuery UI components.
-  To update the version of jQuery UI used:
+  Rhizosphere uses both a custom theme and packaging of jQuery UI components.
+  To update the version of jQuery UI used, for each visual theme Rhizosphere
+  supports:
 </p>
 <ul>
-  <li>Use this <a href="http://jqueryui.com/themeroller/?ctl=themeroller&ctl=themeroller&ffDefault=sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=5px&bgColorHeader=426dc9&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=55&borderColorHeader=2e4987&fcHeader=ffffff&iconColorHeader=ebeff9&bgColorContent=fcfdfd&bgTextureContent=06_inset_hard.png&bgImgOpacityContent=100&borderColorContent=2e4987&fcContent=222222&iconColorContent=6391de&bgColorDefault=ebeff9&bgTextureDefault=02_glass.png&bgImgOpacityDefault=85&borderColorDefault=2e4987&fcDefault=2e4987&iconColorDefault=2e4987&bgColorHover=e3e9f7&bgTextureHover=02_glass.png&bgImgOpacityHover=85&borderColorHover=2e4987&fcHover=2e4987&iconColorHover=2e4987&bgColorActive=6391de&bgTextureActive=02_glass.png&bgImgOpacityActive=55&borderColorActive=2e4987&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=fbec88&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=fad42e&fcHighlight=363636&iconColorHighlight=6391de&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px">
-    custom themeroller theme</a>
-  (you can always find the most recent jQuery UI themeroller url in the
-      generated jQuery UI CSS file).</li>
-  <li>Use the custom <code>.rhizo</code> CSS scope.</li>
+  <li>light: <a href="http://jqueryui.com/themeroller/?ffDefault=Verdana,Arial,sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=4px&bgColorHeader=cccccc&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=75&borderColorHeader=aaaaaa&fcHeader=222222&iconColorHeader=222222&bgColorContent=ffffff&bgTextureContent=01_flat.png&bgImgOpacityContent=75&borderColorContent=aaaaaa&fcContent=222222&iconColorContent=222222&bgColorDefault=e6e6e6&bgTextureDefault=02_glass.png&bgImgOpacityDefault=75&borderColorDefault=d3d3d3&fcDefault=555555&iconColorDefault=888888&bgColorHover=dadada&bgTextureHover=02_glass.png&bgImgOpacityHover=75&borderColorHover=999999&fcHover=212121&iconColorHover=454545&bgColorActive=ffffff&bgTextureActive=02_glass.png&bgImgOpacityActive=65&borderColorActive=aaaaaa&fcActive=212121&iconColorActive=454545&bgColorHighlight=fbf9ee&bgTextureHighlight=02_glass.png&bgImgOpacityHighlight=55&borderColorHighlight=fcefa1&fcHighlight=363636&iconColorHighlight=2e83ff&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px">
+    corresponding jQuery UI theme</a>,</li>
+  <li>default: <a href="http://jqueryui.com/themeroller/?ctl=themeroller&ctl=themeroller&ffDefault=sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=5px&bgColorHeader=426dc9&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=55&borderColorHeader=2e4987&fcHeader=ffffff&iconColorHeader=ebeff9&bgColorContent=fcfdfd&bgTextureContent=06_inset_hard.png&bgImgOpacityContent=100&borderColorContent=2e4987&fcContent=222222&iconColorContent=6391de&bgColorDefault=ebeff9&bgTextureDefault=02_glass.png&bgImgOpacityDefault=85&borderColorDefault=2e4987&fcDefault=2e4987&iconColorDefault=2e4987&bgColorHover=e3e9f7&bgTextureHover=02_glass.png&bgImgOpacityHover=85&borderColorHover=2e4987&fcHover=2e4987&iconColorHover=2e4987&bgColorActive=6391de&bgTextureActive=02_glass.png&bgImgOpacityActive=55&borderColorActive=2e4987&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=fbec88&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=fad42e&fcHighlight=363636&iconColorHighlight=6391de&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px">
+    corresponding jQuery UI theme</a>.</li>
+</ul>
+<p>
+  Perform the following series of steps:
+</p>
+<ul>
+  <li>Download the corresponding jQuery UI theme for each Rhizosphere theme
+    by navigating to each of the above links,</li>
+  <li>Use the custom <code>.rhizo</code> CSS scope,</li>
   <li>Include the following packages when building the jQuery UI download:
     <code>draggable, droppable, selectable, slider, progressbar</code>.
   </li>
@@ -25,7 +33,12 @@
     source tree: <code>jquery-ui-1.8.16.custom.min.js</code>,
     <code>jquery-ui-1.8.16.custom.js</code>,
     <code>jquery-ui-1.8.16.custom.css</code> and all the <code>images/</code>
-    associated with the custom style.
+    associated with the custom style. The css and images must positioned
+    inside the corresponding theme directory.
   </li>
 </ul>
+<p class="note"><strong>Note</strong>. You can always find the most recent
+  jQuery UI themeroller urls in the generated jQuery UI CSS files, included
+  in Rhizosphere source tree.
+</p>
 {% endblock %}
