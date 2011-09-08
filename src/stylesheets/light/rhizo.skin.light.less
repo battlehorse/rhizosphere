@@ -1,0 +1,107 @@
+/*
+  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+// -*- mode: CSS;-*-
+
+/*
+  This file extends the default skin (rhizo.skin.default.less) of a Rhizosphere
+  visualization, to showcase customization of visualization skins.
+*/
+
+@import "../default/rhizo.skin.default.less";
+
+.rhizo {
+  line-height: 1.5em;
+}
+
+.rhizo BUTTON,
+.rhizo SELECT {
+  .gradient(#f5f5f5, #f1f1f1);
+  border: 1px solid gainsboro;
+  /* We use min-height instead of heigh to allow growing space for
+     multi-select comboboxes */
+  min-height: 27px;
+  line-height: 27px;
+  color: #444;
+  .rounded_corners(2px);
+  font-weight: bold;
+  font-size: 11px;
+  vertical-align: middle;
+  margin: 0.2em;
+
+  &:disabled {
+    color: #aaa;
+    .noshadow;
+  }
+
+  &:hover {
+    .gradient(#f8f8f8, #f1f1f1);
+    border: 1px solid #c6c6c6;
+    .shadow(0, 1px, 1px, rgba(0, 0, 0, 0.2))
+  }
+}
+
+.rhizo BUTTON {
+  text-align: center;
+}
+
+.rhizo INPUT {
+  border: 1px solid gainsboro;
+  padding: 0.3em;
+  color: #444;
+  font-weight: bold;
+}
+
+.rhizo-filter-selector {
+  width: 90%;
+  margin-left: 0.5em ! important;
+}
+
+.rhizo-section-header {
+  margin-top: 1em;
+  padding-top: 0.5em;
+}
+
+.rhizo-layout-extra-options {
+  margin-top: 0.5em;
+}
+
+.rhizo-layout-control {
+  margin-bottom: 0.5em;
+}
+
+.rhizo-filter {
+  margin-bottom: 1em;
+}
+
+.rhizo-autocommit-panel {
+  padding-top: 0.5em;
+  border-top: 1px solid lighten(@primary-interface-color, 20);
+}
+
+.rhizo-viewport::-webkit-scrollbar {
+  background: transparent;
+  overflow: visible;
+  width: 15px;
+}
+
+.rhizo-viewport::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: solid white;
+}
+
+.rhizo-viewport::-webkit-scrollbar-corner {
+  background: transparent;
+}

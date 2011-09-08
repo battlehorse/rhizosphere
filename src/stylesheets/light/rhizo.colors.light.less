@@ -1,0 +1,98 @@
+/*
+  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+// -*- mode: CSS;-*-
+
+/*
+  This file defines an alternate (light) color scheme for a Rhizosphere
+  visualization. It can be swapped with other color schemes when skinning
+  a visualization. See rhizo.colors.blue.less for further info.
+*/
+
+/******************
+  Main palette
+ *****************/
+
+@primary-text-color: #333;
+@primary-link-color: #666;
+@primary-background: #fff;
+@primary-interface-color: #aaa;
+@primary-interface-shadow: #ddd;
+@primary-control-color: #333;
+@primary-control-background: #f8f8f8;
+@primary-control-hover: #fff;
+@primary-control-hover-background: #666;
+@primary-control-active: #2e4987;
+@primary-control-active-background: #FFC763;
+
+@alternate-text-color: #666;
+@alternate-link-color: #666;
+@alternate-background: #fff;
+@alternate-interface-color: #ccc;
+@alternate-interface-shadow: #fff;
+/* Alternate controls currently unused, but included for consistency with the
+   above section. */
+@alternate-control-color: #fff;
+@alternate-control-background: spin(#6391de, 3);
+@alternate-control-hover: darken(spin(#6391de, 3), 10);
+@alternate-control-hover-background: #fff;
+@alternate-control-active: #fff;
+@alternate-control-active-background: #FFC763;
+
+/******************
+  Specific colors for entities that do not fit in the main palette
+ *****************
+
+/* Percentage to use when computing gradients */
+@gradient-percentage: 0;
+
+/* Logo */
+@logo-color: #DD4B39;
+
+/* selection */
+@selection-color: #DD4B39;
+@selection-background: #f5f5f5;
+
+/* viewport */
+@viewport-background: #fff;
+@viewport-selecting-background: #fcf6e2;
+
+/* errors */
+@error-color: #fff;
+@error-background-color: #C00000;
+
+/* autocommit panel */
+@autocommit-background: #f5f5f5;
+
+/* legend */
+@legend-color-0: #fff;
+@legend-color-1: #fbebe9;
+@legend-color-2: #f6d3cf;
+@legend-color-3: #f0b3ac;
+@legend-color-4: #e98c80;
+@legend-color-5: #DD4B39;
+
+/******************
+  Derived palette
+ *****************/
+
+@import "../base/rhizo.colors.derived.less";
+
+// Custom overrides to the derived palette here:
+@viewport-selection-box-background: rgba(0, 0, 0, 0.2);
+@viewport-artifact-color: #666;
+
+@bottombar-background: #ddd;
+@filter-border-color: #fff;

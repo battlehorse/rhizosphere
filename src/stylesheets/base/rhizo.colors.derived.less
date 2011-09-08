@@ -1,0 +1,139 @@
+/*
+  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+// -*- mode: CSS;-*-
+
+/*
+  This file derives the colors to assign to each specific interface element
+  based on a basic palette definition (for example, rhizo.colors.default.less).
+*/
+
+/******************
+  Models (incl. synthetic ones)
+ *****************/
+
+@model-background: @primary-background;
+@model-border-color: @primary-interface-color;
+@model-shadow-color: @primary-interface-shadow;
+
+@model-selection-background: @selection-background;
+@model-selection-border-color: @selection-color;
+
+/******************
+  Viewport
+ *****************/
+
+// @viewport-background  -- see palette definition
+// @viewport-selecting-background -- see palette definition
+@viewport-darken-percentage: @gradient-percentage;
+@viewport-selection-trigger: @primary-control-color;
+@viewport-selection-trigger-background: rgba(255, 255, 255, 0.4);
+@viewport-selection-trigger-active-background: @primary-control-active-background;
+@viewport-selection-box: @primary-control-color;
+@viewport-selection-box-background: rgba(255, 255, 255, 0.2);
+
+@viewport-artifact-color: @primary-interface-color;
+
+/******************
+  Toolbars
+ *****************/
+
+@leftbar-background: @primary-background;
+@leftbar-border-color: @primary-interface-color;
+@leftbar-shadow-color: @primary-interface-shadow;
+
+@rightbar-background: @primary-background;
+@rightbar-border-color: @primary-interface-color;
+@rightbbar-shadow-color: @primary-interface-shadow;
+@rightbar-control: @primary-control-color;
+@rightbar-control-background: @primary-control-background;
+@rightbar-control-hover: @primary-control-hover;
+@rightbar-control-hover-background: @primary-control-hover-background;
+
+@bottombar-background: @alternate-background;
+@bottombar-border-color: @alternate-interface-color;
+@bottombar-shadow-color: @alternate-interface-shadow;
+@bottombar-darken-percentage: @gradient-percentage * 1.5;
+
+/******************
+  Floating Panels
+ *****************/
+
+@floatingpanel-background: @primary-background;
+@floatingpanel-border-color: @primary-interface-color;
+
+/******************
+  Section headers
+ *****************/
+
+@section-background: @alternate-background;
+@section-border-color: @alternate-interface-color;
+@section-color: @alternate-text-color;
+@section-link-color: @alternate-link-color;
+@section-shadow-color: @alternate-interface-shadow;
+@section-darken-percentage: @gradient-percentage * 1.5;
+
+/******************
+  Filters' widgets
+ *****************/
+
+@filter-border-color: @primary-interface-color;
+@filter-control: @primary-control-color;
+@filter-control-background: @primary-background;
+@filter-control-hover: @primary-control-hover;
+@filter-control-hover-background: @primary-control-hover-background;
+@filter-control-active: @primary-control-active;
+@filter-control-active-background: @primary-control-active-background;
+@filter-control-darken-percentage: @gradient-percentage;
+
+/******************
+  Filters' autocommit panel
+ *****************/
+
+// @autocommit-background  -- see palette definition
+@autocommit-shadow-color: @primary-interface-shadow;
+@autocommit-control: @primary-control-color;
+@autocommit-control-background: @primary-control-background;
+@autocommit-control-hover: @primary-control-hover;
+@autocommit-control-hover-background: @primary-control-hover-background;
+@autocommit-darken-percentage: @gradient-percentage;
+
+/******************
+  Progress bar
+ *****************/
+
+@progressbar-shadow-color: @primary-interface-shadow;
+@progressbar-background: @primary-background;
+@progressbar-border-color: @primary-interface-color;
+@progressbar-color: @primary-text-color;
+
+/******************
+  Legend
+ *****************/
+
+// @legend-color-0  -- see palette definition
+// @legend-color-1  -- see palette definition
+// @legend-color-2  -- see palette definition
+// @legend-color-3  -- see palette definition
+// @legend-color-4  -- see palette definition
+// @legend-color-5  -- see palette definition
+@legend-border-color: @primary-interface-color;
+
+/******************
+  Onscreen Keyboard
+ *****************/
+
+@keyboard-background: @primary-background;
+@keyboard-border-color: darken(@primary-background, 3*@gradient-percentage);

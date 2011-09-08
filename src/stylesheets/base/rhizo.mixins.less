@@ -1,0 +1,57 @@
+/*
+  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+// -*- mode: CSS;-*-
+
+/*
+  This utility file defines various LESS mixins that can be reused in other
+  LESS stylesheets.
+*/
+
+.gradient (@fromcolor, @tocolor) {
+  background-color: @fromcolor;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@fromcolor), to(@tocolor));
+  background-image: -moz-linear-gradient(-90deg, @fromcolor, @tocolor);
+}
+
+.horgradient (@fromcolor, @tocolor) {
+  background-color: @fromcolor;
+  background-image: -webkit-gradient(linear, 0 0, 100% 0, from(@fromcolor), to(@tocolor));
+  background-image: -moz-linear-gradient(@fromcolor, @tocolor);
+}
+
+
+.importantgradient(@fromcolor, @tocolor) {
+  background-color: @fromcolor !important;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(@fromcolor), to(@tocolor)) !important;
+  background-image: -moz-linear-gradient(-90deg, @fromcolor, @tocolor) !important;
+}
+
+.shadow(@dx, @dy, @blur, @color) {
+  -webkit-box-shadow: @dx @dy @blur @color;
+  -moz-box-shadow: @dx @dy @blur @color;
+  box-shadow: @dx @dy @blur @color;
+}
+
+.noshadow {
+  -webkit-box-shadow: 0 0 0;
+  -moz-box-shadow: 0 0 0;
+  box-shadow: 0 0 0;
+}
+
+.rounded_corners(@radius) {
+  -moz-border-radius: @radius;
+  border-radius: @radius;
+}

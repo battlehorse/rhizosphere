@@ -14,16 +14,21 @@
 <meta name="viewport" content="width=device-width,user-scalable=no">
 {% endifequal %}
 
+<style>
+  BODY {
+  margin: 0;
+  font-family: sans-serif;
+}
+</style>
 <link rel="stylesheet" href="/static/src/stylesheets/jquery-ui-1.8.10.custom.css" type="text/css" media="screen" charset="utf-8">
-<link rel="stylesheet" href="/static/src/stylesheets/base.css" type="text/css" media="screen" charset="utf-8">
 <link rel="stylesheet" href="/static/samples/stylesheets/samples.css" type="text/css" media="screen" charset="utf-8">
 
 {% if debug %}
-  <link rel="stylesheet/less" href="/static/src/stylesheets/rhizo.less" type="text/css" />
+  <link rel="stylesheet/less" href="/static/src/stylesheets/{{ theme }}/rhizo.less" type="text/css" />
   <script src="/static/shared/js/less-1.0.41.min.js"></script>
 
 {% else %}
-  <link rel="stylesheet" href="/static/lib/stylesheets/rhizo.css" type="text/css" media="screen" charset="utf-8">
+  <link rel="stylesheet" href="/static/lib/stylesheets/rhizo.{{theme}}.css" type="text/css" media="screen" charset="utf-8">
 {% endif %}
 
 <!-- Scripts section -->

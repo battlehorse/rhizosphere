@@ -1,0 +1,111 @@
+/*
+  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+// -*- mode: CSS;-*-
+
+/*
+  This file defines the default (blue) color scheme for a Rhizosphere
+  visualization. It can be swapped with other color schemes when skinning
+  a visualization.
+*/
+
+/******************
+  Main palette
+ *****************/
+
+/*
+  The Rhizosphere color palette is divided into primary (used for the main
+  UI skinning) and alternate (for UI elements that are contraposed to primary
+  ones, such as section headers vs section contents). Within each group, colors
+  are defined for fonts, backgrounds, controls (such as buttons and icons) and
+  generic interface elements (such as borders and separators).
+
+  In addition to the main palette, a few specific components, such as the
+  visualization viewport, have specific named colors assigned to them.
+
+  All the colors for specific interface elements are computed from the given
+  palette in rhizo.colors.derived.less. For basic color theming it should be
+  enough to alter the palette colors defined here. For more advanced theming,
+  each single interface element color can be overriden by altering its assigned
+  color after the 'derived' file has been imported.
+*/
+
+@primary-text-color: #222;
+@primary-link-color: #20c;
+@primary-background: #fff;
+@primary-interface-color: #6391de;
+@primary-interface-shadow: darken(#ebeff9, 10%);
+@primary-control-color: #2e4987;
+@primary-control-background: #fff;
+@primary-control-hover: #fff;
+@primary-control-hover-background: lighten(#2e4987, 10);
+@primary-control-active: #2e4987;
+@primary-control-active-background: #FFC763;
+
+@alternate-text-color: #fff;
+@alternate-link-color: #fff;
+@alternate-background: #6391de;
+@alternate-interface-color: #6391de;
+@alternate-interface-shadow: darken(#ebeff9, 10%);
+/* Alternate controls currently unused, but included for consistency with the
+   above section. */
+@alternate-control-color: #fff;
+@alternate-control-background: spin(#6391de, 3);
+@alternate-control-hover: darken(spin(#6391de, 3), 10);
+@alternate-control-hover-background: #fff;
+@alternate-control-active: #fff;
+@alternate-control-active-background: #F796FF;
+
+/******************
+  Specific colors for entities that do not fit in the main palette
+ *****************
+
+/* Percentage to use when computing gradients */
+@gradient-percentage: 10;
+
+/* Logo */
+@logo-color: #6391de;
+
+/* selection */
+@selection-color: #7E18AC;
+@selection-background: #F796FF;
+
+/* viewport */
+@viewport-background: #ebeff9;
+@viewport-selecting-background: #d9f2db;
+
+/* errors */
+@error-color: #fff;
+@error-background-color: #C00000;
+
+/* autocommit panel */
+@autocommit-background: #ebeff9;
+
+/* legend */
+@legend-color-0: #fff;
+@legend-color-1: #F9FCCA;
+@legend-color-2: #E7FCCA;
+@legend-color-3: #D5FCCA;
+@legend-color-4: #C3FCCA;
+@legend-color-5: #B1FCCA;
+
+/******************
+  Derived palette
+ *****************/
+
+@import "../base/rhizo.colors.derived.less";
+
+// Add custom overrides to the derived palette here. For example
+// @model-background: red;

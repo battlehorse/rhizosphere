@@ -1,0 +1,307 @@
+/*
+  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+// -*- mode: CSS;-*-
+
+/*
+  This file defines the fundamentals of the Rhizosphere visualization, such
+  as the positioning of the chrome elements in Rhizosphere fluid layout,
+  the basic characteristics of visualization elements (such as their initial
+  visibility, opacity and z-indexing) and standard aspects of UI behavior that
+  do not change depending on the theme (such as the cursors to display in
+  various interaction modes).
+
+  This file should not be touched for theming.
+*/
+
+/******************
+  Globals
+ *****************/
+.rhizo {
+  overflow: hidden;
+}
+
+/* Manual tweak on jQuery UI styles, otherwise rhizo-viewport looks funny while
+   dragging is in progress. */
+.rhizo .ui-state-disabled {
+  opacity: 1; filter:Alpha(Opacity=1);
+}
+
+/* jQuery UI selectable helper is created outside the .rhizo container, so we
+   need this tweak to make it visible. */
+.ui-selectable-helper { position: absolute; z-index: 100; }
+
+/******************
+  Icons
+ *****************/
+
+.rhizo-icon {
+  display: inline-block;
+}
+
+.rhizo-expand-model {
+  position: absolute;
+  visibility: hidden;
+  top: 2px;
+  right: 2px;
+}
+
+.rhizo-device-ipad .ui-selected .rhizo-expand-model {
+  visibility: visible !important;
+  opacity: 0.6;
+}
+
+/******************
+  Models (incl. synthetic ones)
+ *****************/
+
+/* Note: if you alter this class borders, margins and paddings, you also
+   have to fix the assumptions in rhizo.ui.Rendering.rescaleRendering. */
+.rhizo-model {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+
+  /* Changes the rhizo.ui.Elevation offset if you change this value. */
+  z-index: 50;
+
+  /* Models are hidden/show using 'visibility' rather than 'display' to be able
+     to compute their offsetWidth / offsetHeight even when hidden. */
+  visibility: hidden;
+  opacity: 0;
+  cursor: auto;
+}
+
+/* Drag-n-drop enabled */
+.rhizo-drag-handle {
+  cursor: pointer;
+}
+
+/* Synthetic models */
+.rhizo-tree-syntheticnode,
+.rhizo-treemap-syntheticnode {
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+  cursor: auto;
+}
+
+/* Droppable actions */
+.rhizo-droppable-action {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+/******************
+  Viewport and universe
+ *****************/
+.rhizo-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.rhizo-template-default .rhizo-viewport {
+  // Default margins, that skins can override, based on left and right bar
+  // default widths.
+  left: 295px;
+  right: 5px;
+}
+
+.rhizo-panning-infinite,
+.rhizo-panning-none {
+  overflow: hidden;
+}
+
+.rhizo-panning-native {
+  overflow: auto;
+  overflow-y: scroll;
+}
+
+.rhizo-universe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* border: 1px dotted #000; */ /* uncomment this to debug endless desktop */
+}
+
+/* Enable a 'move' cursor if the user can pan the visualization by dragging
+   the background */
+.rhizo-panning-infinite .rhizo-universe {
+  cursor: move;
+}
+
+.rhizo-selection-trigger {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.rhizo-selection-trigger:hover {
+  cursor: pointer;
+}
+
+.rhizo-template-bottom .rhizo-selection-trigger {
+  top: 0;
+}
+
+/******************
+  Error notifications
+ ******************/
+
+.rhizo-error {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 350;
+}
+
+/******************
+  Toolbars
+ *****************/
+.rhizo-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 300;
+  width: 295px; // Default width, that skins can override.
+}
+
+.rhizo-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 120px; // Default width, that skins can override.
+  z-index: 300;
+}
+
+.rhizo-right-pop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 5px;  // Default width, that skins can override.
+  z-index:300;
+}
+
+.rhizo-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1300;
+}
+
+/******************
+  Section headers
+ *****************/
+
+.rhizo-bottom-bar .rhizo-section-header {
+  display: inline;
+}
+
+/******************
+  Floating Panels
+ *****************/
+
+.rhizo-floating-panel {
+  position: absolute;
+  /* Floating panels sit above the bottom bar. This absolute positioning
+     depends on the actual height of the bottom bar, which can change depending
+     on the current skin, so this setting might be overriden in the skin file.
+  */
+  bottom: 2.4em;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+}
+
+/******************
+  Selection management
+ *****************/
+
+.rhizo-bucket-header {
+  cursor: auto;
+}
+
+/* Click-based selection is enabled. Change the cursor for all the elements
+   that respond to click selection */
+.rhizo-selectionmode-click .rhizo-model,
+.rhizo-selectionmode-all .rhizo-model,
+.rhizo-selectionmode-click .rhizo-bucket-header,
+.rhizo-selectionmode-all .rhizo-bucket-header,
+.rhizo-selectionmode-click .rhizo-tree-syntheticnode,
+.rhizo-selectionmode-all .rhizo-tree-syntheticnode,
+.rhizo-selectionmode-click .rhizo-treemap-syntheticnode,
+.rhizo-selectionmode-all .rhizo-treemap-syntheticnode {
+  cursor: pointer;
+}
+
+/* Respectively in order:
+   - Viewport toggled to box selection,
+   - Viewport toggled to box selection, switching away from infinite panning.
+     Force a crosshair cursor instead of a move one,
+   - box selection enabled by default because infinite panning is not used
+*/
+.rhizo-viewport.rhizo-box-selecting,
+.rhizo-viewport.rhizo-panning-infinite.rhizo-box-selecting .rhizo-universe,
+.rhizo-universe.rhizo-box-selecting {
+  cursor: crosshair !important;
+}
+
+/******************
+  Progress bar
+ *****************/
+
+.rhizo-progressbar-panel {
+  position: absolute;
+  z-index: 5000;
+}
+
+/***************************
+  Broadcasting component
+***************************/
+
+.rhizo-broadcast-url {
+  display: none;
+}
+
+
+/***************************
+  Onscreen Keyboard
+***************************/
+
+.rhizo-keyboard {
+    position: absolute;
+    left: 100px;
+    top: 100px;
+    width: 670px;
+    height: 250px;
+    display: none;
+    z-index: 11000;
+}

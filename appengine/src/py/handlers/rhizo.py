@@ -48,6 +48,7 @@ class RhizoHandler(webapp.RequestHandler):
         template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
             'template': uitemplate,
+            'theme': self.request.get('theme', 'default'),
             'device': device,
             'platform': platform,
             'use_channels': use_channels,
@@ -62,7 +63,8 @@ class IGoogleHandler(webapp.RequestHandler):
     def get(self):
         template_values = rhizoglobals.DefaultTemplate(self.request)
         template_values.update({
-            'hostname': 'http://%s' % os.environ['HTTP_HOST']
+            'hostname': 'http://%s' % os.environ['HTTP_HOST'],
+            'theme': self.request.get('theme', 'default'),
         })
         path = os.path.join(os.path.dirname(__file__), '../../templates/ig.xml')
         self.response.headers.add_header('Content-Type', 'text/xml')
