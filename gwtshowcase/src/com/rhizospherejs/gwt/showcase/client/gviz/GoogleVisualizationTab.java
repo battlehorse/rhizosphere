@@ -129,7 +129,9 @@ public class GoogleVisualizationTab extends Composite implements DataTableChange
     VisualizationUtils.loadVisualizationApi(new Runnable() {
       @Override
       public void run() {
-        RhizosphereLoader.getInstance().ensureInjected(new Runnable() { 
+        RhizosphereLoader loader = RhizosphereLoader.getInstance();
+        loader.setTheme("blue");
+        loader.ensureInjected(new Runnable() { 
           @Override
           public void run() {
             // Populate the DataTable with some sample data.

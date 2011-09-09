@@ -62,6 +62,11 @@ public final class RhizosphereLoader {
    * dependencies.
    */
   private boolean useGoogleCDN = false;
+  
+  /**
+   * The visual theme that Rhizosphere will use.
+   */
+  private String theme = "default";
 
   /**
    * List of callbacks to execute once Rhizosphere libraries have been loaded.
@@ -84,6 +89,23 @@ public final class RhizosphereLoader {
    */
   public void setUseGoogleCDN(final boolean useGoogleCDN) {
     this.useGoogleCDN = useGoogleCDN;
+  }
+  
+  /**
+   * Sets the visual theme that Rhizosphere will use. Note that this method
+   * does _not_ perform validation, so it's up to the caller to verify that
+   * the specified theme actually exists.
+   * <p>
+   * Rhizosphere only allows a single theme to be used on any given web page
+   * (there cannot be two Rhizosphere visualizations with different themes on
+   * the same web page). In GWT terms, this implies that there can be only
+   * one theme per GWT host page. For this reasons, the visual theme is
+   * defined here at the injection stage.
+   *
+   * @param theme The name of the theme to use.
+   */
+  public void setTheme(String theme) {
+    this.theme = theme;
   }
 
   /**
@@ -108,8 +130,8 @@ public final class RhizosphereLoader {
     GWT.log("Starting Rhizosphere load sequence.");
     injecting = true;
     final ResourcesInjector resourcesFactory = GWT.create(ResourcesInjector.class);
-    resourcesFactory.injectDependenciesCss();
-    resourcesFactory.injectRhizoCss();
+    resourcesFactory.injectDependenciesCss(theme);
+    resourcesFactory.injectRhizoCss(theme);
 
     Runnable dependenciesLoadedCallback = new DependenciesLoadedCallback(resourcesFactory);
     resourcesFactory.injectDependenciesJavascript(dependenciesLoadedCallback, useGoogleCDN);

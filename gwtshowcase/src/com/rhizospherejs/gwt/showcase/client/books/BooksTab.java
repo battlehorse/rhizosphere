@@ -110,6 +110,7 @@ public class BooksTab extends Composite {
     // Wait 200ms before showing the loading icon, to avoid flickering if
     // Rhizosphere loads quickly enough.
     panel.setLoadingDelayMillis(200);
+    panel.setTheme("blue");
     return panel;
   }
   

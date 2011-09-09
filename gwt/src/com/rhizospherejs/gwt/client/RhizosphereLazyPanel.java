@@ -112,6 +112,11 @@ public class RhizosphereLazyPanel<T> extends LazyPanel {
   private boolean useGoogleCDN;
   
   /**
+   * The visual theme that Rhizosphere will use.
+   */
+  private String theme;
+  
+  /**
    * The amount of time to wait, since the start of the Rhizosphere libraries
    * injection, before showing the {@link #loadingWidget}.
    * The purpose of this timer is to avoid flickering of the
@@ -140,6 +145,7 @@ public class RhizosphereLazyPanel<T> extends LazyPanel {
    *     Rhizosphere libraries are injected in the GWT host page.
    * @param builder Builder that will assemble a Rhizosphere instance to fit
    *     inside the panel.
+   * @param theme The visual theme that Rhizosphere will use. 
    * @param useGoogleCDN Whether the Google CDN should be used as possible to
    *     load Rhizosphere libraries and its dependencies.
    * @param loadingDelayMillis The amount of time to wait, since the start of
@@ -149,9 +155,11 @@ public class RhizosphereLazyPanel<T> extends LazyPanel {
    */
   public RhizosphereLazyPanel(Widget loadingWidget,
                               RhizosphereBuilder<T> builder,
+                              String theme,
                               boolean useGoogleCDN,
                               int loadingDelayMillis) {
     this.loadingWidget = loadingWidget;
+    this.theme = theme;
     this.useGoogleCDN = useGoogleCDN;
     this.builder = builder;
     this.loadingDelayMillis = loadingDelayMillis > 0 ? loadingDelayMillis : 1;
@@ -166,6 +174,21 @@ public class RhizosphereLazyPanel<T> extends LazyPanel {
   public void setUseGoogleCDN(final boolean useGoogleCDN) {
     this.useGoogleCDN = useGoogleCDN;
   }
+  
+  /**
+   * Sets the visual theme that Rhizosphere will use. Note that this method
+   * does _not_ perform validation, so it's up to the caller to verify that
+   * the specified theme actually exists.
+   * <p>
+   * This setting is ignored if Rhizosphere libraries have already been
+   * injected in the GWT host page when this panel is created. See
+   * {@link RhizosphereLoader#setTheme(String)} for further info. 
+   *
+   * @param theme The name of the theme to use.
+   */
+  public void setTheme(String theme) {
+    this.theme = theme;
+  }  
   
   /**
    * Sets the amount of time to wait, since the start of the Rhizosphere
@@ -205,6 +228,9 @@ public class RhizosphereLazyPanel<T> extends LazyPanel {
     timer.schedule(loadingDelayMillis);
     RhizosphereLoader loader = RhizosphereLoader.getInstance();
     loader.setUseGoogleCDN(useGoogleCDN);
+    if (theme != null) {
+      loader.setTheme(theme);
+    }
     loader.ensureInjected(new Runnable() {
       @Override
       public void run() {

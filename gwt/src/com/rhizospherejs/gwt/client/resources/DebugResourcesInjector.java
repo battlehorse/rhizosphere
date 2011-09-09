@@ -32,8 +32,9 @@ public class DebugResourcesInjector implements ResourcesInjector {
   private DebugResources resources = GWT.create(DebugResources.class);
 
   @Override
-  public void injectRhizoCss() {
-    domHelper.injectStyle("rhizosphere/src/stylesheets/rhizo.less", "stylesheet/less");
+  public void injectRhizoCss(String theme) {
+    domHelper.injectStyle(
+        "rhizosphere/src/stylesheets/" + theme + "/rhizo.less", "stylesheet/less");
     domHelper.injectInlineJavascriptLibrary(resources.lessJs());
   }
 
@@ -75,9 +76,9 @@ public class DebugResourcesInjector implements ResourcesInjector {
   }
 
   @Override
-  public void injectDependenciesCss() {
+  public void injectDependenciesCss(String theme) {
     domHelper.injectStyle(
-        "rhizosphere/src/stylesheets/jquery-ui-1.8.10.custom.css", "stylesheet");
+        "rhizosphere/src/stylesheets/" + theme + "/jquery-ui-1.8.16.custom.css", "stylesheet");
   }
  
   @Override
@@ -88,12 +89,12 @@ public class DebugResourcesInjector implements ResourcesInjector {
       // this issue is solved: http://code.google.com/p/gwt-google-apis/issues/detail?id=306.
       jsFiles = new String[] {
           domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js",
-          domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.js"
+          domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"
       };
     } else {
       jsFiles = new String[] {
           "rhizosphere/shared/js/jquery-1.5.1.js",
-          "rhizosphere/shared/js/jquery-ui-1.8.10.custom.js"
+          "rhizosphere/shared/js/jquery-ui-1.8.16.custom.js"
       };
     }
     domHelper.injectJavascriptLibrary(jsFiles, callback);

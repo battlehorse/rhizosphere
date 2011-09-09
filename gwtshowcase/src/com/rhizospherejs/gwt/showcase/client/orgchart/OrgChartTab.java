@@ -138,7 +138,9 @@ public class OrgChartTab extends Composite {
       public void run() {
         // Ensures that Rhizosphere libraries are loaded. No-op if they have
         // already been loaded in another tab.
-        RhizosphereLoader.getInstance().ensureInjected(new Runnable() {
+        RhizosphereLoader loader = RhizosphereLoader.getInstance();
+        loader.setTheme("blue");
+        loader.ensureInjected(new Runnable() {
           @Override
           public void run() {
             // Create some default options.

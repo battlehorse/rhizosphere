@@ -28,13 +28,17 @@ public interface ResourcesInjector {
   /**
    * Injects the styles required by Rhizosphere dependencies (like jQuery UI)
    * into the GWT host page.
+   * 
+   * @param theme The visual theme to use.
    */
-  void injectDependenciesCss();
+  void injectDependenciesCss(String theme);
 
   /**
    * Injects the styles required by Rhizosphere into the GWT host page.
+   * 
+   * @param theme The visual theme to use.
    */
-  void injectRhizoCss();
+  void injectRhizoCss(String theme);
 
   /**
    * Injects the javascript libraries Rhizosphere depends upon into the
