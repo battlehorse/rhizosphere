@@ -27,10 +27,10 @@ import com.google.gwt.uibinder.client.UiFactory;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -71,7 +71,7 @@ import java.util.Set;
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */
-public class BooksTab extends Composite {
+public class BooksTab extends ResizeComposite {
   interface BooksTabUI extends UiBinder<Widget, BooksTab> {}
   private BooksTabUI ui = GWT.create(BooksTabUI.class);
 

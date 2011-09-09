@@ -167,6 +167,14 @@ rhizo.layout.LayoutBox = function(container, opt_layoutConstraints) {
 };
 
 /**
+ * @return {boolean} Whether the layout box has a non-zero area to accomodate
+ *     elements to be laid out.
+ */
+rhizo.layout.LayoutBox.prototype.isEmpty = function() {
+  return (this.width <= 0) || (this.height <= 0);
+};
+
+/**
  * Computes the top,bottom,left,right,width and height attributes of the layout
  * rectangle, given the surrounding container size and any externally provided
  * constraints.

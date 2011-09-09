@@ -137,6 +137,10 @@ rhizo.Project.prototype.deploy = function() {
   rhizo.state.getMasterOverlord().attachProject(this, bindings);
   this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
 
+  if (this.options_.mustLayoutOnResize()) {
+    this.gui_.trackViewportResize(this.layoutManager_);
+  }
+
   return {success: true};
 };
 

@@ -328,15 +328,17 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   if (freeModels.length > 0) {
     var boundingLayoutBox = new rhizo.layout.LayoutBox(
         this.gui_.viewport, this.project_.options().layoutConstraints());
-    dirty = engine.layout(this.renderingPipeline_,
-                          boundingLayoutBox,
-                          freeModels,
-                          this.project_.modelsMap(),
-                          this.project_.metaModel(),
-                          options) || dirty;
+    if (!boundingLayoutBox.isEmpty()) {
+      dirty = engine.layout(this.renderingPipeline_,
+                            boundingLayoutBox,
+                            freeModels,
+                            this.project_.modelsMap(),
+                            this.project_.metaModel(),
+                            options) || dirty;
 
-    // Apply the layout.
-    resultLayoutBox = this.renderingPipeline_.apply();
+      // Apply the layout.
+      resultLayoutBox = this.renderingPipeline_.apply();
+    }
   }
 
   // Resize the universe based on the occupied layout box.
@@ -402,9 +404,9 @@ rhizo.layout.LayoutManager.prototype.modelsMoved = function(positions) {
 /**
  * Forces an out-of-band layout operation for the current layout engine and
  * state, which won't be published on the channel. This is useful when a
- * layout is not directly requested by the user requested, but still necessary
- * as a consequence of other operations (such as model filtering or changes
- * in the selected models).
+ * layout is not directly requested by the user, but still necessary as a
+ * consequence of other operations (such as model filtering or changes in the
+ * selected models).
  *
  * @param {!Object} options Layout configuration options.
  */

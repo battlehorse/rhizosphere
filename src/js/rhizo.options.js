@@ -50,6 +50,7 @@ rhizo.Options = function(opt_optionsObj) {
       enableLoadingIndicator: true,
       enableAnims: true,
       enableDragAndDrop: true,
+      enableLayoutOnResize: true,
       allowConfigFromUrl: false,
       logLevel: 'error',
       cacheDimensions: false,
@@ -240,6 +241,14 @@ rhizo.Options.prototype.isLoadingIndicatorEnabled = function() {
  */
 rhizo.Options.prototype.isDragAndDropEnabled = function() {
   return !!this.options_['enableDragAndDrop'];
+};
+
+/**
+ * @return {boolean} Whether the visualization models will be laid out when
+ *     the viewport visible area changes.
+ */
+rhizo.Options.prototype.mustLayoutOnResize = function() {
+  return !!this.options_['enableLayoutOnResize'];
 };
 
 /**

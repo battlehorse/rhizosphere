@@ -27,8 +27,10 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LazyPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
@@ -65,17 +67,25 @@ import java.util.Map;
  * @author battlehorse@google.com (Riccardo Govoni)
  *
  */
-public class OrgChartTab extends Composite {
+public class OrgChartTab extends ResizeComposite {
   interface OrgChartTabUI extends UiBinder<Widget, OrgChartTab> {}
   private OrgChartTabUI ui = GWT.create(OrgChartTabUI.class); 
 
   // Wraps the tab widget into a LazyPanel, so that its contents (including
   // Rhizosphere libraries) are loaded only when the tab is activated.
-  private static class LazyTab extends LazyPanel {
+  private static class LazyTab extends LazyPanel implements RequiresResize, ProvidesResize {
     @Override
     protected Widget createWidget() {
       return new OrgChartTab();
     }
+    
+    @Override
+    public void onResize() {
+      if (getWidget() instanceof RequiresResize) {
+        ((RequiresResize) getWidget()).onResize();
+      }
+    }
+    
   }
 
   public static Widget get() {
@@ -120,6 +130,17 @@ public class OrgChartTab extends Composite {
 
   public OrgChartTab() {
     initWidget(ui.createAndBindUi(this));
+  }
+  
+  @Override
+  public void onResize() {
+    // Propagate resize events to the Rhizosphere instance bypassing the
+    // rhizosphereContainer (which, being a SimplePanel, does not propagate
+    // resize events).
+    super.onResize();
+    if (rhizosphere != null) {
+      rhizosphere.onResize();
+    }
   }
 
   @Override

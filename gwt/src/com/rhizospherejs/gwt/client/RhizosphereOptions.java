@@ -163,6 +163,59 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
      */
     INFINITE
   }
+  
+  
+  /**
+   * Enumeration of the resize tracking modes that the Rhizosphere
+   * visualization supports. If resize tracking is enabled, Rhizosphere will
+   * reflow visualization elements to match the available viewport size whenever
+   * a resize event occurs. 
+   */
+  public enum ResizeTrackingMode {
+    
+    /**
+     * No resize tracking.
+     */
+    NONE,
+    
+    /**
+     * Standard GWT resize tracking, based on
+     * {@link com.google.gwt.user.client.ui.ProvidesResize} and
+     * {@link com.google.gwt.user.client.ui.RequiresResize} interfaces.
+     * <p>
+     * This is the preferred mode, if you GWT application supports the
+     * {@code ProvidesResize}, {@code RequiresResize} conventions.
+     * <p>
+     * <strong>NOTE:</strong> When this mode is used, Rhizosphere will not
+     * respond to resize events when not visible: if a resize occurs while
+     * the visualization is hidden, its models will remain in the precedent
+     * layout when it becomes visible again.
+     * <p>
+     * <strong>NOTE:</strong> This mode is not supported when using Rhizosphere
+     * through the Google Visualization API (see
+     * {@link com.rhizospherejs.gwt.client.gviz.GVizRhizosphere}).
+     */
+    // Explanation for the first note: A Rhizosphere visualization may be made
+    // hidden, either explicitly or implicitly (because one of the parent
+    // widgets becomes hidden), while still attached to the DOM. This is the
+    // case, for example, of having Rhizosphere inside a TabLayoutPanel.
+    // In GWT-land being hidden means having a display:none style. When
+    // Rhizosphere receives a layout request in such condition (as a result of
+    // a screen or widget resize), its computed viewport area will be zero and
+    // will silently ignore the request.
+    
+    // Explanation for the second note: The userAgent/project is not accessible
+    // when using Rhizosphere via the GViz layer, hence we cannot fire layout
+    // requests in response to GWT onResize() calls. See
+    // http://code.google.com/p/rhizosphere/issues/detail?id=164
+    GWT,
+    
+    /**
+     * Internal Rhizosphere resize tracking, based on window timeouts monitoring
+     * the viewport size. This is the default resize tracking mode.
+     */
+    RHIZOSPHERE
+  }  
 
   /**
    * Creates a new options instance.
@@ -250,6 +303,26 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
   
   private native void nativeSetPanningMode(String panningMode) /*-{
     this['panningMode'] = panningMode;
+  }-*/;
+  
+  /**
+   * Whether to recompute the layout of visualization models whenever the
+   * viewport size changes.
+   * 
+   * @param resizeMode Defines how resize tracking should occur.
+   */
+  public final void setEnableLayoutOnResize(ResizeTrackingMode resizeMode) {
+    nativeSetEnableLayoutOnResize(resizeMode == ResizeTrackingMode.RHIZOSPHERE, resizeMode.name());
+  }
+  
+  private native void nativeSetEnableLayoutOnResize(
+      boolean enableLayoutOnResize, String resizeMode) /*-{
+    this['enableLayoutOnResize'] = enableLayoutOnResize;
+    this['__gwtResizeTrackingMode'] = resizeMode;
+  }-*/;
+  
+  final native boolean mustLayoutOnResize() /*-{
+    return this['__gwtResizeTrackingMode'] == 'GWT';
   }-*/;
   
   /**

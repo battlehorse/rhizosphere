@@ -44,7 +44,7 @@ import java.util.Map;
 public class RhizosphereUserAgent<T> { 
 
   private Rhizosphere<T> ownerVisualization;
-private JavaScriptObject nativeUserAgent;
+  private JavaScriptObject nativeUserAgent;
 
   /**
    * Creates a new instance.
@@ -263,6 +263,20 @@ private JavaScriptObject nativeUserAgent;
         cb.@com.rhizospherejs.gwt.client.RhizosphereCallback::run(ZLjava/lang/String;)(status, details);
       }    
     });
+  }-*/;
+  
+  /**
+   * Forces an out-of-band layout operation for the current layout engine and
+   * state, which won't be published on the 'layout' channel. This is useful
+   * when a layout is not directly requested by the user, but still necessary
+   * as a consequence of other operations (such as UI resizing).
+   */
+  void forceLayout() {
+    nativeForceLayout(nativeUserAgent);
+  }
+  
+  private native void nativeForceLayout(JavaScriptObject nativeUserAgent) /*-{
+    nativeUserAgent.getProject().layoutManager().forceLayout();
   }-*/;
   
   /**

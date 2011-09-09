@@ -25,6 +25,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
@@ -212,7 +213,7 @@ import java.util.Map;
  */
 public class Rhizosphere<T> extends Composite implements
     HasReadyHandlers, HasFilterHandlers, HasLayoutHandlers, HasSelectionHandlers,
-    HasModelChangeHandlers, HasErrorHandlers {
+    HasModelChangeHandlers, HasErrorHandlers, RequiresResize {
 
   /**
    * Manages the lifecycle of Rhizosphere renderings. Each datapoint of the
@@ -341,7 +342,11 @@ public class Rhizosphere<T> extends Composite implements
    *     a separate instance of RhizosphereOptions.
    */
   public Rhizosphere(final RhizosphereOptions<T> options) {
-    this.options = options;
+    if (options == null) {
+      this.options = RhizosphereOptions.create();
+    } else {
+      this.options = options;
+    }
 
     RhizoPanel p = new RhizoPanel();
     initWidget(p);
@@ -1017,6 +1022,16 @@ public class Rhizosphere<T> extends Composite implements
     nativeRenderer.setModelExtractor(modelBridge);
     nativeRenderer.setWidgetBridge(widgetBridge);
     return nativeRenderer;
+  }
+  
+  @Override
+  public void onResize() {
+    if (!options.mustLayoutOnResize()) {
+      return;
+    }
+    if (bootstrap.isDeployed()) {
+      userAgent.forceLayout();
+    }
   }
 
 }

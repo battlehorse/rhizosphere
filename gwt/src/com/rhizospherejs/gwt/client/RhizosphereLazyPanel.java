@@ -19,6 +19,8 @@ package com.rhizospherejs.gwt.client;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.DeckPanel;
 import com.google.gwt.user.client.ui.LazyPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -73,7 +75,7 @@ import com.google.gwt.user.client.ui.Widget;
  * 
  * @author battlehorse@google.com (Riccardo Govoni)
  */
-public class RhizosphereLazyPanel<T> extends LazyPanel {
+public class RhizosphereLazyPanel<T> extends LazyPanel implements RequiresResize, ProvidesResize {
   
   /**
    * Builder interface the {@link RhizosphereLazyPanel} delegates the actual
@@ -244,5 +246,15 @@ public class RhizosphereLazyPanel<T> extends LazyPanel {
     });
     
     return loadingPanel;
+  }
+  
+  @Override
+  public void onResize() {
+    if (loadingWidget instanceof RequiresResize) {
+      ((RequiresResize) loadingWidget).onResize();
+    }
+    if (rhizosphere != null) {
+      rhizosphere.onResize();
+    }
   }
 }
