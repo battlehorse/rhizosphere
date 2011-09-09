@@ -68,8 +68,8 @@
 
   var renderer = {
     render: function(model, expanded, renderingHints) {
-      return $("<div class='rhizo-sample'>" +
-               "<p><b>" + model.name + "</b></p></div>");
+      return $("<div style='padding: 3px'>" +
+               "<b>" + model.name + "</b></div>");
     },
     cacheDimensions: true
   };

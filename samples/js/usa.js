@@ -314,19 +314,19 @@
   var renderer = {
     render: function(model, expanded, renderingHints) {
       if (renderingHints.small) {
-        return $("<div class='rhizo-sample'>" + 
-                 "<p><b><span style='color:" +
+        return $("<div>" +
+                 "<b><span style='color:" +
                  this.getElectionColor(model) + "'>"+ 
                  model.name + "</span></b><br />" +
-                 "<span class='dim'>" + model.kind + "</span></p>" +
+                 "<span class='dim'>" + model.kind + "</span>" +
                  "</div>");
       } else {
         var html = [];
-        html.push("<div class='rhizo-sample'>");
+        html.push("<div>");
         html.push("<p>");
         if (model.kind == 'State' || model.kind == 'Country') {
           html.push("<img src='static/samples/img/usa_flags/" + 
-                    model.imgName + "' width='50px' align='left' >");
+                    model.imgName + "' width='50px' align='left' style='margin: 3px' >");
         }
         html.push("<b><span style='color:" + this.getElectionColor(model) + ";'>" +
                   model.name + "</span></b><br />");

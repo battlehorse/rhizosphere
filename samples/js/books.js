@@ -136,7 +136,7 @@
 
   var renderer = {
     render: function(model) {
-      return $("<div class='rhizo-sample'>" + 
+      return $("<div style='padding: 3px'>" +
                "<p style='white-space: nowrap; overflow:hidden'>" +
                "<img src='" + model.img + "' align='left' width='75px'>" + 
                "<b>" + model.title + "</b><br />" +

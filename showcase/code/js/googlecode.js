@@ -380,7 +380,6 @@ googlecode.Renderer.prototype.changeStyle = function(unused_model,
                                                      node,
                                                      props,
                                                      opt_hintRevert) {
-  $(node).css(props);
   if (opt_hintRevert) {
     // We are reverting to the original style.
     $(node).removeClass('custom');

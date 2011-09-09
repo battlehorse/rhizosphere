@@ -241,3 +241,17 @@ rhizo.autorender.AR.prototype.render = function(model,
     return $(html.join(''));
   }
 };
+
+/**
+ * React to style changes that affect the background color (for example as
+ * dictated by treemap colorings) to override the default background color
+ * that the autorenderer would otherwise use.
+ */
+rhizo.autorender.AR.prototype.changeStyle = function(
+    unused_model, node, props, opt_hintRevert) {
+  if (!('backgroundColor' in props)) {
+    return;
+  }
+  $(node).css(
+      'backgroundColor', !!opt_hintRevert ? '' : props['backgroundColor']);
+};

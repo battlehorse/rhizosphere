@@ -369,7 +369,7 @@ rhizo.ui.RenderingPipeline.prototype.apply = function() {
           rendering.rescaleRendering(ops[i].width, ops[i].height);
           break;
         case rhizo.ui.RenderingOp.STYLE:
-          rendering.setNakedCss(ops[i].styleProps);
+          rendering.setCss(ops[i].styleProps);
           break;
         default:
           throw("Unrecognized rendering op: " + ops[i].op);
@@ -573,7 +573,7 @@ rhizo.ui.RenderingBackup = function(rendering) {
   // NOTE: background-color is the only style that Rhizosphere layouts and
   // RenderingPipelines actually change, so we take the shortcut here of
   // tracking the initial value of just this style attribute.
-  this.originalBackground_ = rendering.nakedCss('background-color');
+  this.originalBackground_ = rendering.css('background-color');
 
   this.originalElevation_ = this.rendering_.cloneElevation();
 };
@@ -589,7 +589,7 @@ rhizo.ui.RenderingBackup = function(rendering) {
 rhizo.ui.RenderingBackup.prototype.restore = function(
     restoreSizes, restoreElevation, restoreStyles) {
   if (restoreStyles) {
-    this.rendering_.setNakedCss({backgroundColor: this.originalBackground_},
+    this.rendering_.setCss({backgroundColor: this.originalBackground_},
                                 /* revert hint */ true);
   }
   if (restoreSizes) {
@@ -1241,9 +1241,10 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
 };
 
 /**
- * Applies a set of CSS styles to the naked rendering. If the renderer
- * exposes a style changer, the task is delegated to it, otherwise the styles
- * are applied directly on the naked rendering.
+ * Applies a set of CSS styles to the rendering. If the renderer exposes a style
+ * changer, then the style changer is notified of then change too to have the
+ * chance to react to it and updated the naked rendering accordingly (if
+ * needed).
  *
  * @param {*} props CSS styles to apply, in the form of a plain javascript
  *     object.
@@ -1251,29 +1252,28 @@ rhizo.ui.Rendering.prototype.rescaleRendering = function(width,
  *     the rendering properties are being reverted to their original state,
  *     to cancel the effects of a previous call to this function.
  */
-rhizo.ui.Rendering.prototype.setNakedCss = function(props, opt_hintRevert) {
+rhizo.ui.Rendering.prototype.setCss = function(props, opt_hintRevert) {
   if (typeof props != 'object') {
-    throw 'setNakedCss() expects a map of properties.';
+    throw 'setCss() expects a map of properties.';
   }
+  this.raw_node_.css(props);
   if (this.rendererStyleChanger_) {
     this.rendererStyleChanger_(this.model_.unwrap(), 
                                this.naked_node_, 
                                props, 
                                opt_hintRevert);
-  } else {
-    $(this.naked_node_).css(props);
   }
 };
 
 /**
  * @param {string} propName The property to extract.
- * @return {*} A CSS style extracted from the naked rendering.
+ * @return {*} A CSS style extracted from the raw rendering.
  */
-rhizo.ui.Rendering.prototype.nakedCss = function(propName) {
+rhizo.ui.Rendering.prototype.css = function(propName) {
   if (typeof propName != 'string') {
-    throw 'nakedCss() expects a string of the property to access.';
+    throw 'css() expects a string of the property to access.';
   }
-  return $(this.naked_node_).css(propName);
+  return this.raw_node_.css(propName);
 };
 
 /**

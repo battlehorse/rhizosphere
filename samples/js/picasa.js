@@ -49,18 +49,18 @@
   var renderer = {
     render: function(model, expanded, renderingHints) {
       if (!expanded) {
-        var container = $("<div class='rhizo-sample'></div>");
+        var container = $("<div />", {'style': 'padding: 3px'});
         var img = $("<img src='" + model.thumbnail.url +
                     "' width='" + model.thumbnail.width +
                     "' height='" + model.thumbnail.height +
                     "' />").appendTo(container);
         cvi_instant.add(img.get(0), {tilt: model.tilt});
-        $("<p style='font-size:0.9em'>by <b>" +
+        $("<p style='font-size:0.9em; margin:0'>by <b>" +
           model.author +
           '</b></p>').appendTo(container);
         return container;
       } else {
-        return $("<div class='rhizo-sample'>" +
+        return $("<div style='padding: 3px'>" +
                  '<p>by <b>' +  model.author + '</b></p>' +
                  '<p>' + model.summary + '</p>' +
                  "</div>");

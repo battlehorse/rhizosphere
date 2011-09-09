@@ -56,20 +56,20 @@
   var renderer = {
     render: function(model, expanded, renderingHints) {
       if (renderingHints.small) {
-        return $("<div class='rhizo-sample'>" +
-                 "<p><b><span style='color:" +
+        return $("<div>" +
+                 "<b><span style='color:" +
                  (model.male ? "blue" : "pink") + "'>"+
-                 model.name + "</span></b></p>" +
+                 model.name + "</span></b>" +
                  "</div>");
       } else {
-        return $("<div class='rhizo-sample'>" +
-                 "<p><b><span style='color:" +
+        return $("<div style='padding: 3px'>" +
+                 "<b><span style='color:" +
                  (model.male ? "blue" : "pink") + "'>"+
-                 model.name + "</span></b></p>" +
-                 "<p><span class='dim'>Age:</span>" + model.age + "</p>" +
-                 "<p style='white-space: nowrap'>" +
+                 model.name + "</span></b><br />" +
+                 "<span class='dim'>Age:</span>" + model.age + "<br />" +
+                 "<span style='white-space: nowrap'>" +
                  "<span class='dim'>Hobbies:</span><br />" +
-                 (model.hobbies.length > 0 ? model.hobbies : "Nothing") + "<p>" +
+                 (model.hobbies.length > 0 ? model.hobbies : "Nothing") + "</span>" +
                  "</div>");
       }
     },

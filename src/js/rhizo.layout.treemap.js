@@ -585,7 +585,7 @@ rhizo.layout.TreeMapLayout.prototype.layout = function(pipeline,
       kind: this.project_.metaModel()[colorMeta].kind,
       colorMin: {r: 237, g: 76, b: 95},
       colorMax: {r: 122, g: 255, b: 115},
-      colorGroup: 'transparent'
+      colorGroup: 'white'
     };
     this.computeColorRange_(treeRoot, colorRange);
     this.colorTree_(treeRoot, colorRange);

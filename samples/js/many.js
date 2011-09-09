@@ -57,10 +57,10 @@
   // information is faster as a consequence.
   var renderer = {
     render: function(model) {
-      var backgroundColor = 150 + (parseInt(model.id, 10) % 100);
-      return "<div  class='rhizo-sample' style='background-color: rgb(150, 150, " +
-        backgroundColor +
-        ")' ><p>" + model.id + "</p></div>";
+      var hue = parseInt(model.id, 10) % 360;
+      return "<div style='padding: 3px; width: 100%; height: 100%; background-color: hsla(" +
+        hue + ", 100%, 50%, 0.2)'" +
+        ">" + model.id + "</div>";
     },
     cacheDimensions: true
   };

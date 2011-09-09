@@ -73,8 +73,3 @@ handlers:
 - url: /static/samples/img/(.*)
   static_files: static/samples/img/\1
   upload: static/samples/img/(.*)
-
-- url: /static/samples/stylesheets/(.*)
-  static_files: static/samples/stylesheets/\1
-  upload: static/samples/stylesheets/(.*)
-
