@@ -16,9 +16,11 @@
 // -*- mode: CSS;-*-
 
 /*
-  This file defines the default (blue) color scheme for a Rhizosphere
-  visualization. It can be swapped with other color schemes when skinning
-  a visualization.
+  This file defines the default color scheme for a Rhizosphere visualization.
+  The default color scheme is voluntarily simple to allow easy customization,
+  both in the form of LESS extensions and by directly using CSS overrides
+  in the HTML pages using this theme.
+  It can be swapped with other color schemes when skinning a visualization.
 */
 
 /******************
@@ -42,56 +44,56 @@
   color after the 'derived' file has been imported.
 */
 
-@primary-text-color: #222;
-@primary-link-color: #20c;
+@primary-text-color: #000;
+@primary-link-color: #00f;
 @primary-background: #fff;
-@primary-interface-color: #6391de;
-@primary-interface-shadow: darken(#ebeff9, 10%);
-@primary-control-color: #2e4987;
+@primary-interface-color: #999;
+@primary-interface-shadow: #fff;
+@primary-control-color: #000;
 @primary-control-background: #fff;
 @primary-control-hover: #fff;
-@primary-control-hover-background: lighten(#2e4987, 10);
-@primary-control-active: #2e4987;
-@primary-control-active-background: #FFC763;
+@primary-control-hover-background: #000;
+@primary-control-active: #000;
+@primary-control-active-background: #ff0;
 
-@alternate-text-color: #fff;
-@alternate-link-color: #fff;
-@alternate-background: #6391de;
-@alternate-interface-color: #6391de;
-@alternate-interface-shadow: darken(#ebeff9, 10%);
+@alternate-text-color: #000;
+@alternate-link-color: #000;
+@alternate-background: #fff;
+@alternate-interface-color: #fff;
+@alternate-interface-shadow: #fff;
 /* Alternate controls currently unused, but included for consistency with the
    above section. */
-@alternate-control-color: #fff;
-@alternate-control-background: spin(#6391de, 3);
-@alternate-control-hover: darken(spin(#6391de, 3), 10);
-@alternate-control-hover-background: #fff;
-@alternate-control-active: #fff;
-@alternate-control-active-background: #F796FF;
+@alternate-control-color: #000;
+@alternate-control-background: #fff;
+@alternate-control-hover: #fff;
+@alternate-control-hover-background: #000;
+@alternate-control-active: #000;
+@alternate-control-active-background: #ff0;
 
 /******************
   Specific colors for entities that do not fit in the main palette
  *****************
 
 /* Percentage to use when computing gradients */
-@gradient-percentage: 10;
+@gradient-percentage: 0;
 
 /* Logo */
-@logo-color: #6391de;
+@logo-color: #000;
 
 /* selection */
-@selection-color: #7E18AC;
-@selection-background: #F796FF;
+@selection-color: darken(#ff0, 30);
+@selection-background: #ff0;
 
 /* viewport */
-@viewport-background: #ebeff9;
-@viewport-selecting-background: #d9f2db;
+@viewport-background: #fff;
+@viewport-selecting-background: #fff;
 
 /* errors */
 @error-color: #fff;
 @error-background-color: #C00000;
 
 /* autocommit panel */
-@autocommit-background: #ebeff9;
+@autocommit-background: #fff;
 
 /* legend */
 @legend-color-0: #fff;

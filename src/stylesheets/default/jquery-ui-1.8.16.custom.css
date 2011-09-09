@@ -50,33 +50,33 @@
  *
  * http://docs.jquery.com/UI/Theming/API
  *
- * To view and modify this theme, visit http://jqueryui.com/themeroller/?ctl=themeroller&ctl=themeroller&ffDefault=sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=5px&bgColorHeader=426dc9&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=55&borderColorHeader=2e4987&fcHeader=ffffff&iconColorHeader=ebeff9&bgColorContent=fcfdfd&bgTextureContent=06_inset_hard.png&bgImgOpacityContent=100&borderColorContent=2e4987&fcContent=222222&iconColorContent=6391de&bgColorDefault=ebeff9&bgTextureDefault=02_glass.png&bgImgOpacityDefault=85&borderColorDefault=2e4987&fcDefault=2e4987&iconColorDefault=2e4987&bgColorHover=e3e9f7&bgTextureHover=02_glass.png&bgImgOpacityHover=85&borderColorHover=2e4987&fcHover=2e4987&iconColorHover=2e4987&bgColorActive=6391de&bgTextureActive=02_glass.png&bgImgOpacityActive=55&borderColorActive=2e4987&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=fbec88&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=fad42e&fcHighlight=363636&iconColorHighlight=6391de&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
+ * To view and modify this theme, visit http://jqueryui.com/themeroller/?ctl=themeroller&ffDefault=Verdana,Arial,sans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=4px&bgColorHeader=cccccc&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=75&borderColorHeader=aaaaaa&fcHeader=222222&iconColorHeader=222222&bgColorContent=ffffff&bgTextureContent=01_flat.png&bgImgOpacityContent=75&borderColorContent=aaaaaa&fcContent=222222&iconColorContent=222222&bgColorDefault=e6e6e6&bgTextureDefault=02_glass.png&bgImgOpacityDefault=75&borderColorDefault=d3d3d3&fcDefault=555555&iconColorDefault=888888&bgColorHover=dadada&bgTextureHover=02_glass.png&bgImgOpacityHover=75&borderColorHover=999999&fcHover=212121&iconColorHover=454545&bgColorActive=ffffff&bgTextureActive=02_glass.png&bgImgOpacityActive=65&borderColorActive=aaaaaa&fcActive=212121&iconColorActive=454545&bgColorHighlight=fbf9ee&bgTextureHighlight=02_glass.png&bgImgOpacityHighlight=55&borderColorHighlight=fcefa1&fcHighlight=363636&iconColorHighlight=2e83ff&bgColorError=fef1ec&bgTextureError=02_glass.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
  */
 
 
 /* Component containers
 ----------------------------------*/
-.rhizo .ui-widget { font-family: sans-serif; font-size: 1.1em; }
+.rhizo .ui-widget { font-family: Verdana,Arial,sans-serif; font-size: 1.1em; }
 .rhizo .ui-widget .ui-widget { font-size: 1em; }
-.rhizo .ui-widget input, .rhizo .ui-widget select, .rhizo .ui-widget textarea, .rhizo .ui-widget button { font-family: sans-serif; font-size: 1em; }
-.rhizo .ui-widget-content { border: 1px solid #2e4987; background: #fcfdfd url(images/ui-bg_inset-hard_100_fcfdfd_1x100.png) 50% bottom repeat-x; color: #222222; }
+.rhizo .ui-widget input, .rhizo .ui-widget select, .rhizo .ui-widget textarea, .rhizo .ui-widget button { font-family: Verdana,Arial,sans-serif; font-size: 1em; }
+.rhizo .ui-widget-content { border: 1px solid #aaaaaa; background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
 .rhizo .ui-widget-content a { color: #222222; }
-.rhizo .ui-widget-header { border: 1px solid #2e4987; background: #426dc9 url(images/ui-bg_highlight-soft_55_426dc9_1x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold; }
-.rhizo .ui-widget-header a { color: #ffffff; }
+.rhizo .ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
+.rhizo .ui-widget-header a { color: #222222; }
 
 /* Interaction states
 ----------------------------------*/
-.rhizo .ui-state-default, .rhizo .ui-widget-content .ui-state-default, .rhizo .ui-widget-header .ui-state-default { border: 1px solid #2e4987; background: #ebeff9 url(images/ui-bg_glass_85_ebeff9_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #2e4987; }
-.rhizo .ui-state-default a, .rhizo .ui-state-default a:link, .rhizo .ui-state-default a:visited { color: #2e4987; text-decoration: none; }
-.rhizo .ui-state-hover, .rhizo .ui-widget-content .ui-state-hover, .rhizo .ui-widget-header .ui-state-hover, .rhizo .ui-state-focus, .rhizo .ui-widget-content .ui-state-focus, .rhizo .ui-widget-header .ui-state-focus { border: 1px solid #2e4987; background: #e3e9f7 url(images/ui-bg_glass_85_e3e9f7_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #2e4987; }
-.rhizo .ui-state-hover a, .rhizo .ui-state-hover a:hover { color: #2e4987; text-decoration: none; }
-.rhizo .ui-state-active, .rhizo .ui-widget-content .ui-state-active, .rhizo .ui-widget-header .ui-state-active { border: 1px solid #2e4987; background: #6391de url(images/ui-bg_glass_55_6391de_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
-.rhizo .ui-state-active a, .rhizo .ui-state-active a:link, .rhizo .ui-state-active a:visited { color: #ffffff; text-decoration: none; }
+.rhizo .ui-state-default, .rhizo .ui-widget-content .ui-state-default, .rhizo .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3; background: #e6e6e6 url(images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #555555; }
+.rhizo .ui-state-default a, .rhizo .ui-state-default a:link, .rhizo .ui-state-default a:visited { color: #555555; text-decoration: none; }
+.rhizo .ui-state-hover, .rhizo .ui-widget-content .ui-state-hover, .rhizo .ui-widget-header .ui-state-hover, .rhizo .ui-state-focus, .rhizo .ui-widget-content .ui-state-focus, .rhizo .ui-widget-header .ui-state-focus { border: 1px solid #999999; background: #dadada url(images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
+.rhizo .ui-state-hover a, .rhizo .ui-state-hover a:hover { color: #212121; text-decoration: none; }
+.rhizo .ui-state-active, .rhizo .ui-widget-content .ui-state-active, .rhizo .ui-widget-header .ui-state-active { border: 1px solid #aaaaaa; background: #ffffff url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
+.rhizo .ui-state-active a, .rhizo .ui-state-active a:link, .rhizo .ui-state-active a:visited { color: #212121; text-decoration: none; }
 .rhizo .ui-widget :active { outline: none; }
 
 /* Interaction Cues
 ----------------------------------*/
-.rhizo .ui-state-highlight, .rhizo .ui-widget-content .ui-state-highlight, .rhizo .ui-widget-header .ui-state-highlight  {border: 1px solid #fad42e; background: #fbec88 url(images/ui-bg_flat_55_fbec88_40x100.png) 50% 50% repeat-x; color: #363636; }
+.rhizo .ui-state-highlight, .rhizo .ui-widget-content .ui-state-highlight, .rhizo .ui-widget-header .ui-state-highlight  {border: 1px solid #fcefa1; background: #fbf9ee url(images/ui-bg_glass_55_fbf9ee_1x400.png) 50% 50% repeat-x; color: #363636; }
 .rhizo .ui-state-highlight a, .rhizo .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #363636; }
 .rhizo .ui-state-error, .rhizo .ui-widget-content .ui-state-error, .rhizo .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #fef1ec url(images/ui-bg_glass_95_fef1ec_1x400.png) 50% 50% repeat-x; color: #cd0a0a; }
 .rhizo .ui-state-error a, .rhizo .ui-widget-content .ui-state-error a, .rhizo .ui-widget-header .ui-state-error a { color: #cd0a0a; }
@@ -89,13 +89,13 @@
 ----------------------------------*/
 
 /* states and images */
-.rhizo .ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_6391de_256x240.png); }
-.rhizo .ui-widget-content .ui-icon {background-image: url(images/ui-icons_6391de_256x240.png); }
-.rhizo .ui-widget-header .ui-icon {background-image: url(images/ui-icons_ebeff9_256x240.png); }
-.rhizo .ui-state-default .ui-icon { background-image: url(images/ui-icons_2e4987_256x240.png); }
-.rhizo .ui-state-hover .ui-icon, .rhizo .ui-state-focus .ui-icon {background-image: url(images/ui-icons_2e4987_256x240.png); }
-.rhizo .ui-state-active .ui-icon {background-image: url(images/ui-icons_ffffff_256x240.png); }
-.rhizo .ui-state-highlight .ui-icon {background-image: url(images/ui-icons_6391de_256x240.png); }
+.rhizo .ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_222222_256x240.png); }
+.rhizo .ui-widget-content .ui-icon {background-image: url(images/ui-icons_222222_256x240.png); }
+.rhizo .ui-widget-header .ui-icon {background-image: url(images/ui-icons_222222_256x240.png); }
+.rhizo .ui-state-default .ui-icon { background-image: url(images/ui-icons_888888_256x240.png); }
+.rhizo .ui-state-hover .ui-icon, .rhizo .ui-state-focus .ui-icon {background-image: url(images/ui-icons_454545_256x240.png); }
+.rhizo .ui-state-active .ui-icon {background-image: url(images/ui-icons_454545_256x240.png); }
+.rhizo .ui-state-highlight .ui-icon {background-image: url(images/ui-icons_2e83ff_256x240.png); }
 .rhizo .ui-state-error .ui-icon, .rhizo .ui-state-error-text .ui-icon {background-image: url(images/ui-icons_cd0a0a_256x240.png); }
 
 /* positioning */
@@ -280,10 +280,10 @@
 ----------------------------------*/
 
 /* Corner radius */
-.rhizo .ui-corner-all, .rhizo .ui-corner-top, .rhizo .ui-corner-left, .rhizo .ui-corner-tl { -moz-border-radius-topleft: 5px; -webkit-border-top-left-radius: 5px; -khtml-border-top-left-radius: 5px; border-top-left-radius: 5px; }
-.rhizo .ui-corner-all, .rhizo .ui-corner-top, .rhizo .ui-corner-right, .rhizo .ui-corner-tr { -moz-border-radius-topright: 5px; -webkit-border-top-right-radius: 5px; -khtml-border-top-right-radius: 5px; border-top-right-radius: 5px; }
-.rhizo .ui-corner-all, .rhizo .ui-corner-bottom, .rhizo .ui-corner-left, .rhizo .ui-corner-bl { -moz-border-radius-bottomleft: 5px; -webkit-border-bottom-left-radius: 5px; -khtml-border-bottom-left-radius: 5px; border-bottom-left-radius: 5px; }
-.rhizo .ui-corner-all, .rhizo .ui-corner-bottom, .rhizo .ui-corner-right, .rhizo .ui-corner-br { -moz-border-radius-bottomright: 5px; -webkit-border-bottom-right-radius: 5px; -khtml-border-bottom-right-radius: 5px; border-bottom-right-radius: 5px; }
+.rhizo .ui-corner-all, .rhizo .ui-corner-top, .rhizo .ui-corner-left, .rhizo .ui-corner-tl { -moz-border-radius-topleft: 4px; -webkit-border-top-left-radius: 4px; -khtml-border-top-left-radius: 4px; border-top-left-radius: 4px; }
+.rhizo .ui-corner-all, .rhizo .ui-corner-top, .rhizo .ui-corner-right, .rhizo .ui-corner-tr { -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; -khtml-border-top-right-radius: 4px; border-top-right-radius: 4px; }
+.rhizo .ui-corner-all, .rhizo .ui-corner-bottom, .rhizo .ui-corner-left, .rhizo .ui-corner-bl { -moz-border-radius-bottomleft: 4px; -webkit-border-bottom-left-radius: 4px; -khtml-border-bottom-left-radius: 4px; border-bottom-left-radius: 4px; }
+.rhizo .ui-corner-all, .rhizo .ui-corner-bottom, .rhizo .ui-corner-right, .rhizo .ui-corner-br { -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; -khtml-border-bottom-right-radius: 4px; border-bottom-right-radius: 4px; }
 
 /* Overlays */
 .rhizo .ui-widget-overlay { background: #aaaaaa url(images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); }

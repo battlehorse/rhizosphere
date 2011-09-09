@@ -247,7 +247,7 @@ class FetchHandler(BaseHandler):
       json_stats = jsonifier.StatsToJSON(stats)
       template_values.update({'issues': json_issues,
                               'stats': json_stats,
-                              'theme': 'default',
+                              'theme': 'blue',
                               'platform': platform,
                               'device': device,
                               'smartphone': smartphone})
