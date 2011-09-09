@@ -36,10 +36,20 @@ namespace("rhizo.ui.gui");
  * @constructor
  */
 rhizo.ui.gui.GUI = function(container, platform, device) {
-  // The target platform we are rendering onto (e.g.: 'mobile').
+  /**
+   * The target platform we are rendering onto (e.g.: 'mobile').
+   *
+   * @type {string}
+   * @private
+   */
   this.platform_ = platform;
 
-  // The specific device we are targeting (e.g.: 'ipad').
+  /**
+   * The specific device we are targeting (e.g.: 'ipad').
+   *
+   * @type {string}
+   * @private
+   */
   this.device_ = device;
 
   // A JQuery object pointing to the DOM element that contains the whole
@@ -89,7 +99,7 @@ rhizo.ui.gui.GUI.prototype.initContainer_ = function() {
   this.container.
       addClass('rhizo').
       addClass('rhizo-device-' + this.device_).
-      addClass('rhizo-platform-' + this.platform_);  
+      addClass('rhizo-platform-' + this.platform_);
   this.is_small_container_ = this.container.width() < 600 ||
       this.container.height() < 250;
 };
