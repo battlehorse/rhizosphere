@@ -55,7 +55,8 @@ rhizo.Options = function(opt_optionsObj) {
       logLevel: 'error',
       cacheDimensions: false,
       arDefaults: true,
-      arNumFields: 5
+      arNumFields: 5,
+      uiStackFiltersThreshold: 5
   };
   this.merge(opt_optionsObj);
 };
@@ -329,4 +330,14 @@ rhizo.Options.prototype.autoRenderUseDefaults = function() {
  */
 rhizo.Options.prototype.autoRenderNumberOfFields = function() {
   return this.asInteger_('arNumFields');
+};
+
+/**
+ * @return {number} The threshold for number of filters displayed in the
+ *     StackFilterContainer interface to decide whether all available filters
+ *     should be displayed immediately, or whether they should be hidden
+ *     behind an 'Add Filter...' dropdown.
+ */
+rhizo.Options.prototype.uiStackFiltersThreshold = function() {
+  return this.asInteger_('uiStackFiltersThreshold');
 };

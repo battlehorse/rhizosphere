@@ -311,7 +311,7 @@ rhizo.bootstrap.Bootstrap.prototype.initTemplate_ = function(project,
                                                              options) {
   // Identify the target device and template to use.
   var templateFactory = this.identifyTemplate_(gui, options);
-  var template = templateFactory(project, options);
+  var template = templateFactory(project);
 
   // Get the minimum chrome up and running.
   template.render();

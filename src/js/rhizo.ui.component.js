@@ -301,7 +301,7 @@ rhizo.ui.component.Container.prototype.phase = function() {
 
 /**
  * Renders the container and iteratively renders all the components contained
- * within. Deletages to renderContainer() and renderSingleComponent() methods
+ * within. Delegates to renderContainer() and renderSingleComponent() methods
  * that subclasses should implement.
  *
  * @return {Array.<HTMLElement>|HTMLElement} The set of elements (can be one
@@ -1460,9 +1460,10 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
   } else {
     this.hideButton_.removeAttr('disabled');
   }
-  if (this.callback_) {
-    this.callback_(autocommit);
-  }
+  this.project_.eventBus().publish(
+      'userAction',
+      {'action': 'autocommit', 'enabled': autocommit},
+      /* callback */ null, this);
   this.project_.filterManager().enableFilterAutocommit(autocommit);
 };
 
@@ -1472,12 +1473,11 @@ rhizo.ui.component.AutocommitPanel.prototype.setAutocommit_ = function(
  * top of the other.
  * @param {!rhizo.Project} project The project this component belongs to.
  * @constructor
- * @extends {rhizo.ui.component.Component}
+ * @extends {rhizo.ui.component.Container}
  */
 rhizo.ui.component.FilterStackContainer = function(project) {
-  rhizo.ui.component.Component.call(this, project,
+  rhizo.ui.component.Container.call(this, project,
                                     'rhizo.ui.component.FilterStackContainer');
-  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel(project);
 
   /**
    * Number of metaModel keys that will trigger filter selection (instead of
@@ -1485,7 +1485,7 @@ rhizo.ui.component.FilterStackContainer = function(project) {
    * @type {number}
    * @private
    */
-  this.filterSelectorThreshold_ = 5;
+  this.filterSelectorThreshold_ = project.options().uiStackFiltersThreshold();
 
   /**
    * Defines which filters are currently visible. This set is only meaningful
@@ -1508,7 +1508,7 @@ rhizo.ui.component.FilterStackContainer = function(project) {
       'filter', this.onFilterChanged_, this, /* committed */ true);
 };
 rhizo.inherits(rhizo.ui.component.FilterStackContainer,
-               rhizo.ui.component.Component);
+               rhizo.ui.component.Container);
 
 /** @override */
 rhizo.ui.component.FilterStackContainer.prototype.title = function() {
@@ -1516,9 +1516,8 @@ rhizo.ui.component.FilterStackContainer.prototype.title = function() {
 };
 
 /** @override */
-rhizo.ui.component.FilterStackContainer.prototype.render = function() {
+rhizo.ui.component.FilterStackContainer.prototype.renderContainer = function() {
   this.filterPanel_ = $('<div />', {'class': 'rhizo-filter-container'});
-  this.filterPanel_.append(this.autocommitPanel_.render());
 
   this.noFilterNotice_ = $('<p />').text('No filters available.');
   this.filterPanel_.append(this.noFilterNotice_);
@@ -1527,7 +1526,15 @@ rhizo.ui.component.FilterStackContainer.prototype.render = function() {
 };
 
 /** @override */
+rhizo.ui.component.FilterStackContainer.prototype.renderSingleComponent =
+    function(component) {
+  this.filterPanel_.prepend(component.render());
+  return null;  // The component has already been added to the container.
+};
+
+/** @override */
 rhizo.ui.component.FilterStackContainer.prototype.metaReady = function() {
+  rhizo.ui.component.Container.prototype.metaReady.call(this);
   var metaModel = this.metaModelWithUi_();
   var filtersNum = 0;
   for (var key in metaModel) {
@@ -1568,7 +1575,7 @@ rhizo.ui.component.FilterStackContainer.prototype.renderFilterSelector_ =
   this.filterSelector_ = $('<select />',
                            {'class': 'rhizo-filter-selector',
                             disabled: 'disabled'});
-  $('<option />').attr('value', '').text('More filters...').
+  $('<option />').attr('value', '').text('Add Filter...').
       appendTo(this.filterSelector_);
   for (var key in metaModel) {
     var option = $('<option />').attr('value', key).text(metaModel[key].label);
@@ -1579,12 +1586,12 @@ rhizo.ui.component.FilterStackContainer.prototype.renderFilterSelector_ =
 
 /** @override */
 rhizo.ui.component.FilterStackContainer.prototype.ready = function() {
+  rhizo.ui.component.Container.prototype.ready.call(this);
   // Every single filter implementation auto-activates itself when created.
   // Here we only need to activate the navigation between filters.
   //
   // TODO(battlehorse): Extend filters so that they can be properly
   // disabled/enabled when needed.
-  this.autocommitPanel_.ready();
   if (this.filterSelector_) {
     // Enable the filter selector dropdown
     this.enableFilterSelector_();
@@ -1713,12 +1720,12 @@ rhizo.ui.component.FilterStackContainer.prototype.onFilterChanged_ = function(
  * @extends {rhizo.ui.component.Component}
  */
 rhizo.ui.component.FilterBookContainer = function(project) {
-  rhizo.ui.component.Component.call(this, project,
+  rhizo.ui.component.Container.call(this, project,
                                     'rhizo.ui.component.FilterBookContainer');
-  this.autocommitPanel_ = new rhizo.ui.component.AutocommitPanel(project);
+  project.eventBus().subscribe('userAction', this.onUserAction_, this);
 };
 rhizo.inherits(rhizo.ui.component.FilterBookContainer,
-               rhizo.ui.component.Component);
+               rhizo.ui.component.Container);
 
 /** @override */
 rhizo.ui.component.FilterBookContainer.prototype.title = function() {
@@ -1726,7 +1733,7 @@ rhizo.ui.component.FilterBookContainer.prototype.title = function() {
 };
 
 /** @override */
-rhizo.ui.component.FilterBookContainer.prototype.render = function() {
+rhizo.ui.component.FilterBookContainer.prototype.renderContainer = function() {
   this.filterPanel_ = $('<div />', {'class': 'rhizo-filter-container'});
 
   this.nextFilter_ =
@@ -1741,19 +1748,21 @@ rhizo.ui.component.FilterBookContainer.prototype.render = function() {
       $('<a />', {'href': 'javascript:;', 'class': 'rhizo-autocommit-link'}).
       text('Apply').
       appendTo(this.filterPanel_);
-
-  this.filterPanel_.append(this.autocommitPanel_.render());
   return this.filterPanel_.get(0);
+};
+
+rhizo.ui.component.FilterBookContainer.prototype.renderSingleComponent =
+    function(component) {
+  this.filterPanel_.append(component.render());
+  return null;   // The component has already been added to the container.
 };
 
 /** @override */
 rhizo.ui.component.FilterBookContainer.prototype.metaReady = function() {
+  rhizo.ui.component.Container.prototype.metaReady.call(this);
   if (this.project_.filterManager().isFilterAutocommit()) {
     this.commitFilterLink_.css('display', 'none');
   }
-  this.autocommitPanel_.registerCallback(jQuery.proxy(function(isAutocommit) {
-    this.commitFilterLink_.css('display', isAutocommit ? 'none' : '');
-  }, this));
 
   var metaModel = this.metaModelWithUi_();
   for (var key in metaModel) {
@@ -1766,7 +1775,7 @@ rhizo.ui.component.FilterBookContainer.prototype.metaReady = function() {
 
 /** @override */
 rhizo.ui.component.FilterBookContainer.prototype.ready = function() {
-  this.autocommitPanel_.ready();
+  rhizo.ui.component.Container.prototype.ready.call(this);
   this.commitFilterLink_.click(jQuery.proxy(function() {
     this.project_.filterManager().commitFilter();
   }, this));
@@ -1812,6 +1821,21 @@ rhizo.ui.component.FilterBookContainer.prototype.metaModelWithUi_ = function() {
     }
   }
   return metaModelWithUi;
+};
+
+/**
+ * Callback invoked whenever a user action occurs on the project. In particular
+ * we care whether the status of the autocommit toggle, if such component
+ * exists on the project.
+ *
+ * @param {Object} message The eventbus message describing the user action.
+ * @private
+ */
+rhizo.ui.component.FilterBookContainer.prototype.onUserAction_ = function(
+    message) {
+  if (message['action'] == 'autocommit') {
+    this.commitFilterLink_.css('display', !!message['enabled'] ? 'none' : '');
+  }
 };
 
 
@@ -2048,10 +2072,12 @@ rhizo.ui.component.BottomTemplate.prototype.initComponents_ = function(
  */
 rhizo.ui.component.BottomTemplate.prototype.defaultComponents = function(
     project) {
+  var filterContainer = new rhizo.ui.component.FilterBookContainer(project);
+  filterContainer.addComponent(new rhizo.ui.component.AutocommitPanel(project));
   return [
       new rhizo.ui.component.Layout(project),
       new rhizo.ui.component.SelectionManager(project),
-      new rhizo.ui.component.FilterBookContainer(project),
+      filterContainer,
       new rhizo.ui.component.Logo(project, false, false)
   ];
 };
@@ -2130,11 +2156,13 @@ rhizo.ui.component.StandardTemplate.prototype.initComponents_ = function(
  */
 rhizo.ui.component.StandardTemplate.prototype.defaultLeftComponents = function(
     project) {
+  var filterContainer = new rhizo.ui.component.FilterStackContainer(project);
+  filterContainer.addComponent(new rhizo.ui.component.AutocommitPanel(project));
   return [
       new rhizo.ui.component.Logo(project, true, true),
       new rhizo.ui.component.Layout(project),
       new rhizo.ui.component.SelectionManager(project),
-      new rhizo.ui.component.FilterStackContainer(project)
+      filterContainer
   ];
 };
 
