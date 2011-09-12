@@ -492,6 +492,17 @@ public class Rhizosphere<T> extends Composite implements
   public void setRenderer(final RhizosphereRenderer<T> renderer) {
     this.renderer = renderer;
   }
+  
+  /**
+   * Returns the visualization Selection Manager.
+   *
+   * @return The Selection Manager for the visualization, which keeps track
+   *     of which elements are currently selected, deselected, hidden or
+   *     focused upon.
+   */
+  public RhizosphereSelectionManager getSelectionManager() {
+    return userAgent.getSelectionManager();
+  }
 
   /**
    * Register a handler to be notified once the visualization is ready for

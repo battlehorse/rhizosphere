@@ -63,6 +63,19 @@ public class RhizosphereUserAgent<T> {
     ownerVisualization = visualization; 
     this.nativeWireListeners(nativeUserAgent);
   }
+  
+  /**
+   * @return The selection manager associated to the Rhizosphere visualization
+   *     this user agent is bound to.
+   */
+  final RhizosphereSelectionManager getSelectionManager() {
+    return nativeGetSelectionManager(nativeUserAgent);
+  }
+  
+  private native RhizosphereSelectionManager nativeGetSelectionManager(
+      JavaScriptObject nativeUserAgent) /*-{
+    return nativeUserAgent.getProject().selectionManager();
+  }-*/;
 
   /**
    * Performs a programmatic selection of visualization models.

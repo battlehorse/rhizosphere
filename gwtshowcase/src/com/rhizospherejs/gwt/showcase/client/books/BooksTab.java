@@ -193,24 +193,13 @@ public class BooksTab extends ResizeComposite {
   private class SelectionHandler implements SelectionEvent.Handler {
     @Override
     public void onSelection(SelectionEvent event) {
-       if (event.getAction().equals("focus") ||
-           event.getAction().equals("hide") ||
-           event.getAction().equals("deselectAll") ||
-           event.getAction().equals("resetFocus")) {
-         // All these actions clear the set of selected books.
-         selectedBooks.clear();
-       } else if (event.getAction().equals("select")) {
-         selectedBooks.addAll(event.getModelRefs());
-       } else if (event.getAction().equals("deselect")) {
-         selectedBooks.removeAll(event.getModelRefs());
-       } else if (event.getAction().equals("selectAll")) {
-         selectedBooks.addAll(books.values());
-       }
-       if (selectedBooks.size() == 0) {
-         removeButton.setText("Remove all");
-       } else {
-         removeButton.setText("Remove selected");
-       }
+      int numBooksSelected =
+          rhizospherePanel.getRhizosphere().getSelectionManager().getNumSelected();
+      if (numBooksSelected == 0) {
+        removeButton.setText("Remove all");
+      } else {
+        removeButton.setText("Remove selected");
+      }
     }
   }
   
@@ -229,11 +218,6 @@ public class BooksTab extends ResizeComposite {
    * by their id (usually their ISBN code).
    */
   private Map<String, RhizosphereModelRef> books = new HashMap<String, RhizosphereModelRef>();
-  
-  /**
-   * The set of books currently selected.
-   */
-  private Set<RhizosphereModelRef> selectedBooks = new HashSet<RhizosphereModelRef>();
 
   private BooksTab() {
     searchApiLoaded = false;
@@ -271,19 +255,12 @@ public class BooksTab extends ResizeComposite {
   void clearBooks(ClickEvent event) {
     Rhizosphere<Book> rhizosphere = rhizospherePanel.getRhizosphere();
     assert rhizosphere != null;
-    if (selectedBooks.size() > 0) {
+    if (rhizosphere.getSelectionManager().getNumSelected() > 0) {
       // If a selection exists, remove from the visualization only the selected
       // books.
-      rhizosphere.removeModels(selectedBooks, null);
+      rhizosphere.removeModels(rhizosphere.getSelectionManager().allSelected(), null);
       Iterator<Map.Entry<String, RhizosphereModelRef>> it = books.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry<String, RhizosphereModelRef> entry = it.next();
-        if (selectedBooks.contains(entry.getValue())) {
-          it.remove();
-        }
-      }
       rhizosphere.doSelection("deselectAll", null, null);
-      selectedBooks.clear();
       removeButton.setText("Remove all");
       
     } else {
