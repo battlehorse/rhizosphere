@@ -1044,5 +1044,4 @@ public class Rhizosphere<T> extends Composite implements
       userAgent.forceLayout();
     }
   }
-
 }

@@ -164,7 +164,6 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
     INFINITE
   }
   
-  
   /**
    * Enumeration of the resize tracking modes that the Rhizosphere
    * visualization supports. If resize tracking is enabled, Rhizosphere will

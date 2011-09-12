@@ -180,5 +180,4 @@ public final class RhizosphereLoader {
       RhizosphereLoader.this.rhizosphereReady();
     }
   }
-
 }

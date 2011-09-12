@@ -85,7 +85,6 @@ public class OrgChartTab extends ResizeComposite {
         ((RequiresResize) getWidget()).onResize();
       }
     }
-    
   }
 
   public static Widget get() {
