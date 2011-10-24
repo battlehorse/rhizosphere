@@ -108,7 +108,7 @@ namespace("rhizo.broadcast");
  *
  * @param {!rhizo.Project} project  The project this component belongs to.
  * @constructor
- * @xtends {rhizo.ui.component.Component}
+ * @extends {rhizo.ui.component.Component}
  */
 rhizo.broadcast.BaseComponent = function(project) {
   rhizo.ui.component.Component.call(this, project,
