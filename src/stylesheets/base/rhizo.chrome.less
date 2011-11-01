@@ -39,10 +39,6 @@
   opacity: 1; filter:Alpha(Opacity=1);
 }
 
-/* jQuery UI selectable helper is created outside the .rhizo container, so we
-   need this tweak to make it visible. */
-.ui-selectable-helper { position: absolute; z-index: 100; }
-
 /******************
   Icons
  *****************/
@@ -58,7 +54,7 @@
   right: 2px;
 }
 
-.rhizo-device-ipad .ui-selected .rhizo-expand-model {
+.rhizo-device-ipad .xselectable-selected .rhizo-expand-model {
   visibility: visible !important;
   opacity: 0.6;
 }
@@ -137,6 +133,12 @@
   overflow-y: scroll;
 }
 
+/* Enable a 'move' cursor if the user can pan the visualization by dragging
+   the background */
+.rhizo-panning-infinite {
+  cursor: move;
+}
+
 .rhizo-universe {
   position: absolute;
   top: 0;
@@ -144,12 +146,6 @@
   right: 0;
   bottom: 0;
   /* border: 1px dotted #000; */ /* uncomment this to debug endless desktop */
-}
-
-/* Enable a 'move' cursor if the user can pan the visualization by dragging
-   the background */
-.rhizo-panning-infinite .rhizo-universe {
-  cursor: move;
 }
 
 .rhizo-selection-trigger {
@@ -262,15 +258,13 @@
   cursor: pointer;
 }
 
-/* Respectively in order:
-   - Viewport toggled to box selection,
-   - Viewport toggled to box selection, switching away from infinite panning.
-     Force a crosshair cursor instead of a move one,
-   - box selection enabled by default because infinite panning is not used
+/*
+  Either viewport toggled to box selection or box selection enabled by
+  default because infinite panning is not used.
 */
-.rhizo-viewport.rhizo-box-selecting,
-.rhizo-viewport.rhizo-panning-infinite.rhizo-box-selecting .rhizo-universe,
-.rhizo-universe.rhizo-box-selecting {
+.rhizo-box-selecting,
+.rhizo-panning-infinite.rhizo-box-selecting {
+  /* !important forced by jQuery UI .ui-state-disabled */
   cursor: crosshair !important;
 }
 

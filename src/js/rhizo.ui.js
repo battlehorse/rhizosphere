@@ -1004,9 +1004,9 @@ rhizo.ui.Rendering.prototype.position = function() {
  */
 rhizo.ui.Rendering.prototype.setSelected = function(selected) {
   if (selected) {
-    this.raw_node_.addClass('ui-selected');
+    this.raw_node_.addClass('xselectable-selected');
   } else {
-    this.raw_node_.removeClass('ui-selected');
+    this.raw_node_.removeClass('xselectable-selected');
   }
 };
 

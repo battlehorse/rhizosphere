@@ -786,6 +786,14 @@ rhizo.ui.component.Viewport = function(project) {
   this.infinitePanning_ = project.options().panningMode() == 'infinite';
 
   /**
+   * Whether viewport panning is disabled in any form.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.noPanning_ = project.options().panningMode() == 'none';
+
+  /**
    * Whether box selection mode can be toggled on and off. If box selection is
    * not allowed a-priori this will be false. If the viewport uses native or
    * no scrolling, then the default interaction mode is selection, so again
@@ -796,27 +804,6 @@ rhizo.ui.component.Viewport = function(project) {
   this.canToggleBoxSelection_ =
       project.options().isBoxSelectionMode() && this.infinitePanning_;
   this.selectionModeOn_ = false;
-
-  /**
-   * Defines which area, the viewport or the universe, accepts box selection
-   * gestures from the user. This depends on the panning mode the visualization
-   * uses:
-   * - infinite panning: no scrollbars exist. Since the universe may be
-   *   positioned at an offset with respect to the viewport, user clicks might
-   *   fall in areas not covered by the universe. Therefore the viewport is the
-   *   designated handler for user selection gestures.
-   * - native panning: scrollbars exist on the viewport. Because of
-   *   http://bugs.jqueryui.com/ticket/4441 making the viewport selectable would
-   *   trigger the selection box while operating the scrollbar. The universe
-   *   will never be at an offset with respect to the viewport. Therefore the
-   *   universe is the designated handler for user selection gestures.
-   * - no panning: no scrollbars exist. The viewport and universe are guaranteed
-   *   to overlap across all the viewport visible area. Both the universe and
-   *   the viewport can collect user gestures.
-   * @type {!Object}
-   * @private
-   */
-  this.selectionArea_ = null;
 
   if (project.options().showErrorsInViewport()) {
     project.eventBus().subscribe('error', this.onError_, this);
@@ -833,16 +820,13 @@ rhizo.ui.component.Viewport.prototype.render = function() {
       'rhizo-viewport',
       'rhizo-panning-' + this.project_.options().panningMode(),
       'rhizo-selectionmode-' + this.project_.options().selectionMode()];
+  if (!this.infinitePanning_ && this.project_.options().isBoxSelectionMode()) {
+    viewportClasses.push('rhizo-box-selecting');
+  }
   this.viewport_ = $('<div/>', {'class': viewportClasses.join(' ')});
 
-  var universeClasses = ['rhizo-universe'];
-  if (!this.infinitePanning_ && this.project_.options().isBoxSelectionMode()) {
-    universeClasses.push('rhizo-box-selecting');
-  }
-  this.universe_ = $('<div/>', {'class': universeClasses.join(' ')}).
+  this.universe_ = $('<div/>', {'class': 'rhizo-universe'}).
       appendTo(this.viewport_);
-
-  this.selectionArea_ = this.infinitePanning_ ? this.viewport_ : this.universe_;
 
   // Update the GUI object.
   this.gui_.setViewport(this.viewport_);
@@ -897,32 +881,86 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     }, this));
   }
 
-  this.selectionArea_.selectable({
+  this.viewport_.xselectable({
     // If the viewport allows drag-based panning, then panning is the default
     // mode and selection is initially disabled. Otherwise, the only action is
     // selection and is enabled by default.
     disabled: this.infinitePanning_,
-    selected: jQuery.proxy(function(ev, ui) {
-      var selected_id = $(ui.selected).data("id");
-      if (selected_id) {
-        this.project_.eventBus().publish(
-            'selection', {'action': 'select', 'models': selected_id});
-      }
-    }, this),
-    unselected: jQuery.proxy(function(ev, ui) {
-      var deselected_id = $(ui.unselected).data("id");
-      if (deselected_id) {
-        this.project_.eventBus().publish(
-            'selection', {'action': 'deselect', 'models': deselected_id});
-      }
-    }, this),
-    // TODO: disabled until incremental refresh() is implemented
-    // autoRefresh: false,
     filter: this.project_.options().selectFilter(),
     cancel: this.project_.options().selectFilter(),
-    tolerance: 'touch',
     distance: 1
-  });
+  }).bind('xselectableselected', jQuery.proxy(function(ev, ui) {
+    var selectedModels = [];
+    for (var i = ui.selected.length - 1; i >= 0; i--) {
+      var selected_id = $(ui.selected[i]).data("id");
+      if (selected_id) {
+        selectedModels.push(selected_id);
+      }
+    }
+    if (selectedModels.length > 0) {
+      this.project_.eventBus().publish(
+          'selection', {'action': 'select', 'models': selectedModels});
+    }
+  }, this)).bind('xselectableunselected', jQuery.proxy(function(ev, ui) {
+    var deselectedModels = [];
+    for (var i = ui.unselected.length - 1; i >= 0; i--) {
+      var deselected_id = $(ui.unselected[i]).data("id");
+      if (deselected_id) {
+        deselectedModels.push(deselected_id);
+      }
+    }
+    if (deselectedModels.length > 0) {
+      this.project_.eventBus().publish(
+          'selection', {'action': 'deselect', 'models': deselectedModels});
+    }
+  }, this));
+
+  // If Rhizosphere is configured not to allow any panning, set the selectable
+  // scrolling threshold to a negative value, so that it will never occur.
+  if (this.noPanning_) {
+    this.viewport_.xselectable('option', 'scrollingThreshold', -1);
+  }
+
+  // If Rhizosphere is configured to use infinite panning, define a custom
+  // scroller implementation for selection to use it when selection boxes
+  // get close to the viewport edges.
+  // See http://battlehorse.github.com/jquery-xselectable/#options
+  if (this.infinitePanning_) {
+    this.viewport_.xselectable('option', 'scroller', jQuery.proxy(function() {
+
+      var universe = this.universe_;
+
+      var offset = {
+        top: parseInt(universe.css('top'), 10),
+        left: parseInt(universe.css('left'), 10)
+      };
+
+      return {
+        getScrollableDistances: function() {
+          // Scrolling is limitless in all directions.
+          return [
+            Number.MAX_VALUE, Number.MAX_VALUE,
+            Number.MAX_VALUE, Number.MAX_VALUE
+          ];
+        },
+        scroll: function(axis, shift) {
+          // shift is negative when scrolling top (content must shift bottom)
+          shift = Math.round(shift);
+          if (axis == 'vertical') {
+            offset.top -= shift;
+            universe.css('top', offset.top);
+          } else if (axis == 'horizontal') {
+            offset.left -= shift;
+            universe.css('left', offset.left);
+          }
+        },
+        getScrollOffset: function() {
+          return offset;
+        }
+      };
+
+    }, this));
+  }
 };
 
 /**
@@ -958,7 +996,7 @@ rhizo.ui.component.Viewport.prototype.toggleSelectionMode_ = function(
   // Change the viewport operation mode.
   var selectable_status = this.selectionModeOn_ ? 'enable' : 'disable';
   var draggable_status = this.selectionModeOn_ ? 'disable' : 'enable';
-  this.selectionArea_.selectable(selectable_status).
+  this.viewport_.xselectable(selectable_status).
       draggable(draggable_status).
       toggleClass('rhizo-box-selecting', this.selectionModeOn_);
 
