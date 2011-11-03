@@ -52,6 +52,7 @@ rhizo.Options = function(opt_optionsObj) {
       enableDragAndDrop: true,
       enableLayoutOnResize: true,
       allowConfigFromUrl: false,
+      layoutOptions: {},
       logLevel: 'error',
       cacheDimensions: false,
       arDefaults: true,
@@ -285,6 +286,21 @@ rhizo.Options.prototype.allowConfigFromUrl = function() {
  */
 rhizo.Options.prototype.layoutConstraints = function() {
   return this.options_['layoutConstraints'];
+};
+
+/**
+ * @param {string} layout The name of the layout engine whose option is to be
+ *     looked up.
+ * @param {string} key The option key to look up.
+ * @return {*} A specific configuration option for the requested layout engine,
+ *     if it exists. If not found, undefined is returned.
+ */
+rhizo.Options.prototype.layoutOptions = function(layout, key) {
+  var layoutOptions = this.options_['layoutOptions'][layout];
+  if (!layoutOptions) {
+    return undefined;
+  }
+  return layoutOptions[key];
 };
 
 /**

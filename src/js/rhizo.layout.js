@@ -261,16 +261,25 @@ rhizo.layout.ScrambleLayout.prototype.toString = function() {
  * A layout that positions models sequentially, left to right, top to bottom.
  *
  * @param {rhizo.Project} project
- * @param {?number} opt_top Optional vertical separation (in px) to use between
- *     rows of models.
- * @param {?number} opt_left Optional horizontal separation (in px) to use
- *     between models next to each other.
  * @constructor
  */
-rhizo.layout.FlowLayout = function(project, opt_top, opt_left) {
+rhizo.layout.FlowLayout = function(project) {
   this.project_ = project;
-  this.top = opt_top || 5;
-  this.left = opt_left || 5;
+
+  this.vgutter = parseInt(
+      project.options().layoutOptions('flow', 'verticalGutter'), 10);
+  if (isNaN(this.vgutter) || this.vgutter < 0) {
+    this.vgutter = 5;
+  }
+  this.top = this.vgutter;
+
+  this.hgutter = parseInt(
+      project.options().layoutOptions('flow', 'horizontalGutter'), 10);
+  if (isNaN(this.hgutter) || this.hgutter < 0) {
+    this.hgutter = 5;
+  }
+  this.left = this.hgutter;
+
   rhizo.layout.StatefulLayout.call(this, project);
 };
 rhizo.inherits(rhizo.layout.FlowLayout, rhizo.layout.StatefulLayout);
@@ -332,13 +341,13 @@ rhizo.layout.FlowLayout.prototype.layout = function(pipeline,
     lineHeight = Math.max(lineHeight, modelDims.height);
 
     if (this.left + modelDims.width > maxWidth) {
-      this.left = 5;
-      this.top += lineHeight + 5;
+      this.left = this.hgutter;
+      this.top += lineHeight + this.vgutter;
       lineHeight = modelDims.height;
     }
 
     pipeline.move(supermodels[i].id, this.top, this.left);
-    this.left += modelDims.width + 5;
+    this.left += modelDims.width + this.hgutter;
   }
   // adjust top after last line
   this.top += lineHeight;
@@ -346,7 +355,8 @@ rhizo.layout.FlowLayout.prototype.layout = function(pipeline,
 };
 
 rhizo.layout.FlowLayout.prototype.cleanup = function(sameEngine) {
-  this.top = this.left = 5;
+  this.top = this.vgutter;
+  this.left = this.hgutter;
   return false;
 };
 
@@ -466,8 +476,8 @@ rhizo.layout.BucketLayout.prototype.layout = function(pipeline,
                                             meta) || dirty;
 
     // re-position for next bucket
-    this.internalFlowLayout_.top += 10;
-    this.internalFlowLayout_.left = 5;
+    this.internalFlowLayout_.top += this.internalFlowLayout_.vgutter * 2;
+    this.internalFlowLayout_.left = this.internalFlowLayout_.hgutter;
     firstBucket = false;
   }
   return dirty;
@@ -498,7 +508,7 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
 
   bucketHeader.text(header).
                css('position', 'absolute').
-               css('left', 5).
+               css('left', this.internalFlowLayout_.hgutter).
                css('top', this.internalFlowLayout_.top);
   if (this.project_.options().isClickSelectionMode()) {
     bucketHeader.click(jQuery.proxy(function() {
@@ -507,7 +517,8 @@ rhizo.layout.BucketLayout.prototype.renderBucketHeader_ =
         }, this));
   }
   pipeline.artifact(bucketHeader);
-  this.internalFlowLayout_.top += bucketHeader.height() + 5;
+  this.internalFlowLayout_.top +=
+      bucketHeader.height() + this.internalFlowLayout_.vgutter;
 };
 
 rhizo.layout.BucketLayout.prototype.cleanup = function(sameEngine) {
