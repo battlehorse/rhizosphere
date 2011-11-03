@@ -27,6 +27,6 @@ import com.google.gwt.resources.client.TextResource;
  */
 public interface DebugResources extends ClientBundle {
 
-  @Source("com/rhizospherejs/gwt/jsni/rhizosphere/shared/js/less-1.1.3.min.js")
+  @Source("com/rhizospherejs/gwt/jsni/rhizosphere/shared/js/less-1.1.4.min.js")
   TextResource lessJs();
 }
