@@ -45,6 +45,7 @@ public class DebugResourcesInjector implements ResourcesInjector {
         "rhizosphere/src/js/rhizo.options.js",
         "rhizosphere/src/js/rhizo.eventbus.js",        
         "rhizosphere/src/js/rhizo.jquery.js",
+        "rhizosphere/src/js/rhizo.jquery.xselectable.js",
         "rhizosphere/src/js/rhizo.log.js",
         "rhizosphere/src/js/rhizo.state.js",
         "rhizosphere/src/js/rhizo.base.js",

@@ -131,6 +131,8 @@ public class BooksTab extends ResizeComposite {
       options.setPanningMode(PanningMode.NATIVE);
       options.setSelectionMode(SelectionMode.BOX);
       options.setLogLevel(LogLevel.DEBUG);
+      options.setLayoutOption("flow", "horizontalGutter", 10);
+      options.setLayoutOption("flow", "verticalGutter", 10);
 
       // Create a new Rhizosphere visualization suited to display Book objects.
       Rhizosphere<Book> rhizosphere = new Rhizosphere<Book>(options);
