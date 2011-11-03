@@ -290,7 +290,7 @@ rhizo.Options.prototype.layoutConstraints = function() {
 
 /**
  * @param {string} layout The name of the layout engine whose option is to be
- *     looked up.
+ *     looked up (e.g.: 'flow'), as registered in the rhizo.layout.layouts map.
  * @param {string} key The option key to look up.
  * @return {*} A specific configuration option for the requested layout engine,
  *     if it exists. If not found, undefined is returned.
