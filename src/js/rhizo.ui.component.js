@@ -876,7 +876,7 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
       this.project_.eventBus().publish(
           'userAction', {
               'action': 'selection',
-              'isOn': this.selectionModeOn_
+              'detail': this.selectionModeOn_ ? 'activate' : 'deactivate'
           }, /* callback */ null, this);
     }, this));
   }
@@ -889,7 +889,15 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     filter: this.project_.options().selectFilter(),
     cancel: this.project_.options().selectFilter(),
     distance: 1
-  }).bind('xselectableselected', jQuery.proxy(function(ev, ui) {
+  }).bind('xselectablestart', jQuery.proxy(function() {
+    this.project_.eventBus().publish('userAction', {
+      'action': 'selection', 'detail': 'gesturestart'
+    }, null, this);
+  }, this)).bind('xselectablestop', jQuery.proxy(function() {
+    this.project_.eventBus().publish('userAction', {
+      'action': 'selection', 'detail': 'gesturestop'
+    }, null, this);
+  }, this)).bind('xselectableselected', jQuery.proxy(function(ev, ui) {
     var selectedModels = [];
     for (var i = ui.selected.length - 1; i >= 0; i--) {
       var selected_id = $(ui.selected[i]).data("id");
@@ -1122,7 +1130,7 @@ rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
  */
 rhizo.ui.component.Viewport.prototype.onUserAction_ = function(message) {
   if (message['action'] == 'selection') {
-    this.toggleSelectionMode_(!!message['isOn']);
+    this.toggleSelectionMode_(message['detail'] != 'deactivate');
   }
 };
 
@@ -1385,7 +1393,7 @@ rhizo.ui.component.SelectionManager.prototype.onUserAction_ = function(
         'userAction', {
             'action': 'componentActivation',
             'componentKey': this.key(),
-            'active': !!message['isOn']
+            'active': message['detail'] != 'deactivate'
         }, /* callback */ null, this);
   } else if (message['action'] == 'componentActivation' &&
              message['componentKey'] == this.key()) {
@@ -1394,7 +1402,7 @@ rhizo.ui.component.SelectionManager.prototype.onUserAction_ = function(
     this.project_.eventBus().publish(
         'userAction', {
             'action': 'selection',
-            'isOn': !!message['active']
+            'detail': message['active'] ? 'activate' : 'deactivate'
         }, /* callback */ null, this);
   }
 };

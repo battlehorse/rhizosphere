@@ -450,7 +450,8 @@ rhizo.UserAgent = function(project) {
     'filter': [],
     'layout': [],
     'model': [],
-    'error': []
+    'error': [],
+    'userAction': []
   };
 };
 
@@ -604,11 +605,10 @@ rhizo.UserAgent.prototype.removeModelListener = function(
  * visualization.
  *
  * @param {!function(Object)} listenerCallback The callback to invoke when
- *     models are added or removed from the visualization. The callback is
- *     passed a 'message' describing the event. The message contains either
- *     a 'clear' field (indicating the desire to clear previous errors) or
- *     an 'arguments' field (pointing to an array of objects representing the
- *     error details).
+ *     errors occur on the visualization. The callback is passed a 'message'
+ *     describing the event. The message contains either a 'clear' field
+ *     (indicating the desire to clear previous errors) or an 'arguments' field
+ *     (pointing to an array of objects representing the error details).
  * @param {!Object} listener The object in whose scope ('this') the callback
  *     will be invoked.
  */
@@ -633,6 +633,40 @@ rhizo.UserAgent.prototype.removeErrorListener = function(
   this.unsubscribe_('error', opt_listener, opt_listenerCallback);
 };
 
+/**
+ * Adds a listener that will be notified whenever an user action occurs on the
+ * visualization. These are particular actions or gestures performed by the
+ * user, such as the activation or deactivation of specific UI components, the
+ * starting and ending of a selection gesture and more.
+ *
+ * @param {!function(Object)} listenerCallback The callback to invoke when an
+ *     user action occurs on the visualization. The callback is passed a
+ *     'message' describing the event. The message contains an 'action' field
+ *     that defines the action that occurred, and an arbitrary number of
+ *     additional fields containing the action details (if any).
+ * @param {!Object} listener The object in whose scope ('this') the callback
+ *     will be invoked.
+ */
+rhizo.UserAgent.prototype.addUserActionListener = function(
+    listenerCallback, listener) {
+  this.subscribe_('userAction', listenerCallback, listener);
+};
+
+/**
+ * Removes one or more listeners registered for user action events.
+ * If both parameters are specified, only the specific callback is removed. If
+ * only opt_listener is specified, all the callbacks associated to that listener
+ * are removed. If neither parameter is specified, all the callbacks associated
+ * to user action events are removed.
+ *
+ * @param {Object=} opt_listener The object whose listeners have to be removed.
+ * @param {function(Object)=} opt_listenerCallback The specific listener
+ *    callback to remove.
+ */
+rhizo.UserAgent.prototype.removeUserActionListener = function(
+    opt_listener, opt_listenerCallback) {
+  this.unsubscribe_('userAction', opt_listener, opt_listenerCallback);
+};
 
 /**
  * Adds a callback/listener pair to the notification list for events published
