@@ -47,6 +47,7 @@ import com.rhizospherejs.gwt.client.handlers.FilterEvent;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
 import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
+import com.rhizospherejs.gwt.client.handlers.UserActionEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -247,6 +248,21 @@ public class OrgChartTab extends ResizeComposite {
                   sb.append(",left:").append(p.getLeft()).append("),");
                 }
                 appendLog(sb.toString());
+              }
+            });
+            
+            // React to user actions performed on the visualization. 
+            rhizosphere.addUserActionHandler(new UserActionEvent.Handler() {
+              
+              @Override
+              public void onUserAction(UserActionEvent event) {
+                if (event.getAction().equals("selection")) {
+                  if ("gesturestart".equals(event.getDetail("detail"))) {
+                    appendLog("Box selection starting...");
+                  } else if ("gesturestop".equals(event.getDetail("detail"))) {
+                    appendLog("Box selection completed.");
+                  }
+                }
               }
             });
 

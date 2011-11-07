@@ -43,10 +43,12 @@ import com.rhizospherejs.gwt.client.handlers.HasLayoutHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasModelChangeHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasReadyHandlers;
 import com.rhizospherejs.gwt.client.handlers.HasSelectionHandlers;
+import com.rhizospherejs.gwt.client.handlers.HasUserActionHandlers;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
 import com.rhizospherejs.gwt.client.handlers.ModelChangeEvent;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
 import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
+import com.rhizospherejs.gwt.client.handlers.UserActionEvent;
 import com.rhizospherejs.gwt.client.meta.AttributeBuilder;
 import com.rhizospherejs.gwt.client.renderer.NativeRenderer;
 import com.rhizospherejs.gwt.client.renderer.WidgetBridge;
@@ -213,7 +215,8 @@ import java.util.Map;
  */
 public class Rhizosphere<T> extends Composite implements
     HasReadyHandlers, HasFilterHandlers, HasLayoutHandlers, HasSelectionHandlers,
-    HasModelChangeHandlers, HasErrorHandlers, RequiresResize {
+    HasModelChangeHandlers, HasErrorHandlers, HasUserActionHandlers,
+    RequiresResize {
 
   /**
    * Manages the lifecycle of Rhizosphere renderings. Each datapoint of the
@@ -564,6 +567,16 @@ public class Rhizosphere<T> extends Composite implements
   @Override
   public HandlerRegistration addErrorHandler(ErrorEvent.Handler handler) {
     return addHandler(handler, ErrorEvent.getType());
+  }
+  
+  /**
+   * Register a handler to be notified whenever user actions occur on the
+   * visualization. 
+   * @param handler The handler to notify.
+   */
+  @Override
+  public HandlerRegistration addUserActionHandler(UserActionEvent.Handler handler) {
+    return addHandler(handler, UserActionEvent.getType());
   }
   
   /**

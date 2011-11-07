@@ -18,6 +18,7 @@ package com.rhizospherejs.gwt.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -27,9 +28,11 @@ import com.rhizospherejs.gwt.client.handlers.FilterEvent;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
 import com.rhizospherejs.gwt.client.handlers.ModelChangeEvent;
 import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
+import com.rhizospherejs.gwt.client.handlers.UserActionEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -474,6 +477,18 @@ public class RhizosphereUserAgent<T> {
         this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onErrorAdd(Ljava/lang/String;)(errorMsg);
       }
     }, this);
+    nativeUserAgent.addUserActionListener(function(message) {
+      var action = message['action'];
+      var detailKeys = [];
+      var detailValues = [];
+      for (var key in message) {
+        if (key != 'action') {
+          detailKeys.push(key);
+          detailValues.push(String(message[key]));
+        }
+      }
+      this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onUserAction(Ljava/lang/String;Lcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JsArrayString;)(action, detailKeys, detailValues);
+    }, this);
   }-*/;
 
   /**
@@ -536,6 +551,18 @@ public class RhizosphereUserAgent<T> {
    */
   private void onErrorAdd(String errorDetails) {
     ErrorEvent.fire(ownerVisualization, false, errorDetails);
+  }
+  
+  /**
+   * Callback invoked when an user action occurs on the visualization.
+   */
+  private void onUserAction(
+      String action, JsArrayString detailKeys, JsArrayString detailValues) {
+    Map<String, String> details = new HashMap<String, String>();
+    for (int i = 0; i < detailKeys.length(); i++) {
+      details.put(detailKeys.get(i), detailValues.get(i));
+    }
+    UserActionEvent.fire(ownerVisualization, action, details);
   }
 
   private final native <T> T nativeNewJsArray() /*-{
