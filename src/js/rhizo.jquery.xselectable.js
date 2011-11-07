@@ -390,9 +390,10 @@
 
         // Compute the scrolling shift: the closer we push the mouse toward the
         // border, the bigger the shift.
-        var shift = metric.direction *
-            Math.min(available, Math.ceil((threshold - metric.distance) / 10)) *
-            scrollLagMultiplier * scrollSpeedMultiplier;
+        var shift = metric.direction * Math.round(Math.min(
+            available,
+            Math.ceil((threshold - metric.distance) / 10) *
+                scrollLagMultiplier * scrollSpeedMultiplier));
 
         // Scroll in the desired direction
         scroller.scroll(metric.scrollAxis, shift);
@@ -492,9 +493,6 @@
       return;
     }
 
-    // Trigger the selection 'start' event.
-    $this.trigger(pluginName + 'start');
-
     // Record the initial position of the container, with respect to the
     // document. Also include the current border size (assuming equal
     // top/bottom and right/left border sizes).
@@ -559,6 +557,9 @@
     data.curPosition = {'pageX': evt.pageX, 'pageY': evt.pageY};
 
     if (!data.selectionBox) {
+      // Trigger the selection 'start' event.
+      $this.trigger(pluginName + 'start');
+
       // Create the selection box if we haven't created it yet.
       createSelectionBox.apply(this);
 
