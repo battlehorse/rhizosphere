@@ -19,7 +19,10 @@ package com.rhizospherejs.gwt.client.handlers;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
+import com.rhizospherejs.gwt.client.RhizosphereModelRef;
+
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,10 +46,15 @@ public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
   
   private String action;
   private Map<String, String> details;
+  private List<RhizosphereModelRef> affectedModels;
   
-  private UserActionEvent(String action, Map<String, String> details) {
+  private UserActionEvent(
+      String action,
+      Map<String, String> details,
+      List<RhizosphereModelRef> affectedModels) {
     this.action = action;
     this.details = details;
+    this.affectedModels = affectedModels;
   }
   
   /**
@@ -62,6 +70,14 @@ public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
    */
   public Map<String, String> getDetails() {
     return Collections.unmodifiableMap(details);
+  }
+  
+  /**
+   * @return The list of models that were affected by the user action, if
+   *    any. An empty list is returned if no models were affected.
+   */
+  public List<RhizosphereModelRef> getAffectedModels() {
+    return Collections.unmodifiableList(affectedModels);
   }
   
   /** 
@@ -82,12 +98,15 @@ public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
    * @param action The user action that occurred.
    * @param details A map collecting all the action details (the contents are
    *     specific to the action that occurred).
+   * @param affectedModels A list of models affected by the user action,
+   *     empty if the action does not affect any.
    */
   public static void fire(HasUserActionHandlers source,
                           String action,
-                          Map<String, String> details) {
+                          Map<String, String> details,
+                          List<RhizosphereModelRef> affectedModels) {
     if (TYPE != null) {
-      UserActionEvent event = new UserActionEvent(action, details);
+      UserActionEvent event = new UserActionEvent(action, details, affectedModels);
       source.fireEvent(event);
     }
   }

@@ -875,7 +875,7 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
       this.toggleSelectionMode_(!this.selectionModeOn_);
       this.project_.eventBus().publish(
           'userAction', {
-              'action': 'selection',
+              'action': 'selectionActivation',
               'detail': this.selectionModeOn_ ? 'activate' : 'deactivate'
           }, /* callback */ null, this);
     }, this));
@@ -906,6 +906,20 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
   }, this)).bind('xselectablestop', jQuery.proxy(function() {
     this.project_.eventBus().publish('userAction', {
       'action': 'selection', 'detail': 'gesturestop'
+    }, null, this);
+  }, this)).bind('xselectableselecting', jQuery.proxy(function(ev, ui) {
+    this.project_.eventBus().publish('userAction', {
+        'action': 'selection',
+        'detail': 'selecting',
+        'affectedModels': [
+            rhizo.ui.elementToModel(ui.selecting, this.project_).id]
+    }, null, this);
+  }, this)).bind('xselectableunselecting', jQuery.proxy(function(ev, ui) {
+    this.project_.eventBus().publish('userAction', {
+        'action': 'selection',
+        'detail': 'unselecting',
+        'affectedModels': [
+            rhizo.ui.elementToModel(ui.unselecting, this.project_).id]
     }, null, this);
   }, this)).bind('xselectableselected', jQuery.proxy(function(ev, ui) {
     var selectedModels = [];
@@ -1139,7 +1153,7 @@ rhizo.ui.component.Viewport.prototype.onError_ = function(message) {
  * @private
  */
 rhizo.ui.component.Viewport.prototype.onUserAction_ = function(message) {
-  if (message['action'] == 'selection') {
+  if (message['action'] == 'selectionActivation') {
     this.toggleSelectionMode_(message['detail'] != 'deactivate');
   }
 };
@@ -1396,7 +1410,7 @@ rhizo.ui.component.SelectionManager.prototype.onModelChanged_ = function() {
  */
 rhizo.ui.component.SelectionManager.prototype.onUserAction_ = function(
     message) {
-  if (message['action'] == 'selection') {
+  if (message['action'] == 'selectionActivation') {
     // User initiated a selection operation. Ensure this component is the
     // active one, by firing a component activation request.
     this.project_.eventBus().publish(
@@ -1411,7 +1425,7 @@ rhizo.ui.component.SelectionManager.prototype.onUserAction_ = function(
     // a consequence.
     this.project_.eventBus().publish(
         'userAction', {
-            'action': 'selection',
+            'action': 'selectionActivation',
             'detail': message['active'] ? 'activate' : 'deactivate'
         }, /* callback */ null, this);
   }

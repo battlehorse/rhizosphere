@@ -125,6 +125,12 @@ public class OrgChartTab extends ResizeComposite {
    * referencing of specific visualization objects.
    */
   private RhizosphereModelRef sara, jennifer;
+  
+  /**
+   * Keeps track of models being selected while a selection gesture is in
+   * progress.  
+   */
+  private List<RhizosphereModelRef> modelsUnderSelection = new LinkedList<RhizosphereModelRef>();
 
   private LogCallback logCallback = new LogCallback();
 
@@ -257,10 +263,18 @@ public class OrgChartTab extends ResizeComposite {
               @Override
               public void onUserAction(UserActionEvent event) {
                 if (event.getAction().equals("selection")) {
-                  if ("gesturestart".equals(event.getDetail("detail"))) {
+                  String detail = event.getDetail("detail");
+                  if ("gesturestart".equals(detail)) {
+                    modelsUnderSelection.clear();
                     appendLog("Box selection starting...");
-                  } else if ("gesturestop".equals(event.getDetail("detail"))) {
+                  } else if ("gesturestop".equals(detail)) {
                     appendLog("Box selection completed.");
+                  } else if ("selecting".equals(detail)) {
+                    modelsUnderSelection.addAll(event.getAffectedModels());
+                    appendLog("Currently selected:" + toModelNames(modelsUnderSelection));
+                  } else if ("unselecting".equals(detail)) {
+                    modelsUnderSelection.removeAll(event.getAffectedModels());
+                    appendLog("Currently selected:" + toModelNames(modelsUnderSelection));
                   }
                 }
               }
@@ -318,6 +332,21 @@ public class OrgChartTab extends ResizeComposite {
         }
       }
     });
+  }
+  
+  /**
+   * Converts a list of models into a comma separate list of employee names
+   * for the employees they refer to.
+   *
+   * @param refs The models to convert.
+   * @return A comma separated list of employee names.
+   */
+  private String toModelNames(List<RhizosphereModelRef> refs) {
+    StringBuilder sb = new StringBuilder();
+    for (Employee e : rhizosphere.resolveModelRefs(refs)) {
+      sb.append(e.getName()).append(",");
+    }
+    return sb.toString();
   }
 
   /**

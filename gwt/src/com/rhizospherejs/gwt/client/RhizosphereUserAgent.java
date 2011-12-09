@@ -481,13 +481,18 @@ public class RhizosphereUserAgent<T> {
       var action = message['action'];
       var detailKeys = [];
       var detailValues = [];
+      var affectedModels = [];
       for (var key in message) {
-        if (key != 'action') {
+        if (key == 'affectedModels') {
+          for (var i = 0; i < message[key].length; i++) {
+            affectedModels.push(nativeUserAgent.getProject().model(message[key][i]).unwrap());
+          }
+        } else if (key != 'action') {
           detailKeys.push(key);
           detailValues.push(String(message[key]));
         }
       }
-      this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onUserAction(Ljava/lang/String;Lcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JsArrayString;)(action, detailKeys, detailValues);
+      this.@com.rhizospherejs.gwt.client.RhizosphereUserAgent::onUserAction(Ljava/lang/String;Lcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JsArray;)(action, detailKeys, detailValues, affectedModels);
     }, this);
   }-*/;
 
@@ -557,12 +562,19 @@ public class RhizosphereUserAgent<T> {
    * Callback invoked when an user action occurs on the visualization.
    */
   private void onUserAction(
-      String action, JsArrayString detailKeys, JsArrayString detailValues) {
+      String action,
+      JsArrayString detailKeys, 
+      JsArrayString detailValues,
+      JsArray<RhizosphereModelRef> affectedModels) {
     Map<String, String> details = new HashMap<String, String>();
     for (int i = 0; i < detailKeys.length(); i++) {
       details.put(detailKeys.get(i), detailValues.get(i));
     }
-    UserActionEvent.fire(ownerVisualization, action, details);
+    List<RhizosphereModelRef> models = new ArrayList<RhizosphereModelRef>();
+    for (int i = 0; i < affectedModels.length(); i++) {
+      models.add(affectedModels.get(i));
+    }
+    UserActionEvent.fire(ownerVisualization, action, details, models);
   }
 
   private final native <T> T nativeNewJsArray() /*-{
