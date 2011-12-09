@@ -43,6 +43,7 @@ import com.rhizospherejs.gwt.client.RhizosphereModelPosition;
 import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
 import com.rhizospherejs.gwt.client.RhizosphereOptions.LogLevel;
+import com.rhizospherejs.gwt.client.RhizosphereRendering;
 import com.rhizospherejs.gwt.client.handlers.FilterEvent;
 import com.rhizospherejs.gwt.client.handlers.LayoutEvent;
 import com.rhizospherejs.gwt.client.handlers.ReadyEvent;
@@ -116,7 +117,7 @@ public class OrgChartTab extends ResizeComposite {
   
   @UiField
   Button resetFilters, salaryFilter, salaryGenderFilter, select, layout, layoutPositions,
-      createError, clearErrors;
+      positionAndDimension, createError, clearErrors;
 
   private Rhizosphere<Employee> rhizosphere;
 
@@ -360,6 +361,7 @@ public class OrgChartTab extends ResizeComposite {
     select.setEnabled(true);
     layout.setEnabled(true);
     layoutPositions.setEnabled(true);
+    positionAndDimension.setEnabled(true);
     createError.setEnabled(true);
     clearErrors.setEnabled(true);
   }
@@ -410,6 +412,16 @@ public class OrgChartTab extends ResizeComposite {
     List<RhizosphereModelPosition> positions = new ArrayList<RhizosphereModelPosition>();
     positions.add(RhizosphereModelPosition.create(sara, 400, 300));
     rhizosphere.doLayout(null, null, positions, logCallback);
+  }
+  
+  @UiHandler("positionAndDimension")
+  void printSaraPositionAndDimension(ClickEvent event) {
+    RhizosphereRendering rendering = rhizosphere.resolveRendering(sara);
+    appendLog(
+        "Sara position: top=" + rendering.getPosition().top() +
+        ", left=" + rendering.getPosition().left() +
+        ", dimensions=[w=" + rendering.getDimensions().width() +
+        ", h=" + rendering.getDimensions().height() + "]");
   }
   
   @UiHandler("createError")

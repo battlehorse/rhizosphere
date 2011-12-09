@@ -79,6 +79,21 @@ public class RhizosphereUserAgent<T> {
       JavaScriptObject nativeUserAgent) /*-{
     return nativeUserAgent.getProject().selectionManager();
   }-*/;
+  
+  /**
+   * Returns the rendering associated to a given model.
+   * 
+   * @param model The model to resolve.
+   * @return The Rhizosphere rendering bound to the specified model.
+   */  
+  final RhizosphereRendering getRendering(RhizosphereModelRef model) {
+    return nativeGetRendering(nativeUserAgent, model);
+  }
+
+  private native RhizosphereRendering nativeGetRendering(
+      JavaScriptObject nativeUserAgent, RhizosphereModelRef model) /*-{
+    return nativeUserAgent.getProject().model(model.id).rendering();
+  }-*/;
 
   /**
    * Performs a programmatic selection of visualization models.

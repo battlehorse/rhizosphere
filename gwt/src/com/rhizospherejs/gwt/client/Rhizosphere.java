@@ -1001,6 +1001,41 @@ public class Rhizosphere<T> extends Composite implements
     return modelBridge.extractModel(modelRef);
   }
 
+  /**
+   * Returns the renderings which are responsible for the display of the given
+   * model references.
+   * 
+   * @param modelRefs The models to resolve.
+   * @return The renderings bound to each model. The returned collection has the
+   *         same size and enforces the same ordering as the input one.
+   */
+  public Collection<RhizosphereRendering> resolveRenderings(
+      Collection<RhizosphereModelRef> modelRefs) {
+    if (modelRefs == null) {
+      return null;
+    }
+
+    List<RhizosphereRendering> renderings = new ArrayList<RhizosphereRendering>(modelRefs.size());
+    for (RhizosphereModelRef modelRef : modelRefs) {
+      renderings.add(resolveRendering(modelRef));
+    }
+    return renderings;
+  }
+
+  /**
+   * Returns the rendering which is responsible for the display of the given
+   * model reference.
+   * 
+   * @param modelRef The model reference to resolve.
+   * @return The associated rendering.
+   */
+  public RhizosphereRendering resolveRendering(RhizosphereModelRef modelRef) {
+    if (modelRef == null) {
+      return null;
+    }
+    return userAgent.getRendering(modelRef);
+  } 
+
   @Override
   protected void onLoad() {
     if (bootstrap.isDeployed()) {
