@@ -49,11 +49,9 @@ import com.rhizospherejs.gwt.client.handlers.SelectionEvent;
 import com.rhizospherejs.gwt.showcase.client.resources.Resources;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Tab that demonstrates Rhizosphere integration with an external datasource.
