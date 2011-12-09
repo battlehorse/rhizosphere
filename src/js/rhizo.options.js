@@ -51,6 +51,7 @@ rhizo.Options = function(opt_optionsObj) {
       enableAnims: true,
       enableDragAndDrop: true,
       enableLayoutOnResize: true,
+      enableSelectionFromCard: true,
       allowConfigFromUrl: false,
       layoutOptions: {},
       logLevel: 'error',
@@ -184,6 +185,18 @@ rhizo.Options.prototype.selectFilter = function() {
  */
 rhizo.Options.prototype.selectionMode = function() {
   return this.asString_('selectionMode');
+};
+
+/**
+ * @return {boolean} Whether box selection gestures (if enabled), can be
+ *     triggered from everywhere within the viewport (including when the mouse
+ *     is hovering over a model rendering) or otherwise can only be triggered
+ *     from 'empty' viewport areas. This option is ignored (and implicitly
+ *     treated as false) is drag'n'drop is enabled, since that takes priority
+ *     in handling drag gestures starting from within a model rendering.
+ */
+rhizo.Options.prototype.isSelectionFromCardEnabled = function() {
+  return !!this.options_['enableSelectionFromCard'];
 };
 
 /**

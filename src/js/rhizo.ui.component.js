@@ -881,15 +881,25 @@ rhizo.ui.component.Viewport.prototype.activateSelectableViewport_ =
     }, this));
   }
 
-  this.viewport_.xselectable({
-    // If the viewport allows drag-based panning, then panning is the default
-    // mode and selection is initially disabled. Otherwise, the only action is
-    // selection and is enabled by default.
-    disabled: this.infinitePanning_,
-    filter: this.project_.options().selectFilter(),
-    cancel: this.project_.options().selectFilter(),
-    distance: 1
-  }).bind('xselectablestart', jQuery.proxy(function() {
+  var xselectableOptions = {
+    'distance': 3,
+    'filter': this.project_.options().selectFilter()
+  };
+
+  // If the viewport allows drag-based panning, then panning is the default
+  // mode and selection is initially disabled. Otherwise, the only action is
+  // selection and is enabled by default.
+  xselectableOptions['disabled'] = this.infinitePanning_;
+
+  // Forbid selection gestures from starting within a model rendering
+  // when drag'n'drop is enabled or when the user explicitly told us to do so.
+  if (this.project_.options().isDragAndDropEnabled() ||
+      !this.project_.options().isSelectionFromCardEnabled()) {
+    xselectableOptions['cancel'] = this.project_.options().selectFilter();
+  }
+
+  this.viewport_.xselectable(xselectableOptions).
+      bind('xselectablestart', jQuery.proxy(function() {
     this.project_.eventBus().publish('userAction', {
       'action': 'selection', 'detail': 'gesturestart'
     }, null, this);
