@@ -283,6 +283,15 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
   }-*/;
   
   /**
+   * Whether to allow box selection gestures starting from within a model
+   * rendering. This options is ignored (and implicitly treated as
+   * {@code false}) if box selection is disabled or if drag'n'drop is enabled.
+   */
+  public final native void setEnableSelectionFromCard(boolean enableSelectionFromCard) /*-{
+    this['enableSelectionFromCard'] = enableSelectionFromCard;
+  }-*/;
+  
+  /**
    * Sets the visualization selection mode.
    */
   public final void setSelectionMode(SelectionMode selectionMode) {
