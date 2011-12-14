@@ -26,10 +26,10 @@ import com.google.gwt.event.shared.HasHandlers;
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public interface HasUserActionHandlers extends HasHandlers {
-  
+
   /**
    * Adds an {@link UserActionEvent} handler.
-   * 
+   *
    * @param handler the handler
    * @return the handler registration
    */

@@ -34,20 +34,20 @@ import java.util.Map;
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
-  
+
   public interface Handler extends EventHandler {
     void onUserAction(UserActionEvent event);
   }
-  
+
   /**
    * The event type.
    */
   static Type<UserActionEvent.Handler> TYPE;
-  
+
   private String action;
   private Map<String, String> details;
   private List<RhizosphereModelRef> affectedModels;
-  
+
   private UserActionEvent(
       String action,
       Map<String, String> details,
@@ -56,22 +56,22 @@ public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
     this.details = details;
     this.affectedModels = affectedModels;
   }
-  
+
   /**
    * @return The type of action that occurred, e.g. 'selection'.
    */
   public String getAction() {
     return action;
   }
-  
-  /** 
+
+  /**
    * @return A map collecting all the action details (the contents are
    *     specific to the action that occurred).
    */
   public Map<String, String> getDetails() {
     return Collections.unmodifiableMap(details);
   }
-  
+
   /**
    * @return The list of models that were affected by the user action, if
    *    any. An empty list is returned if no models were affected.
@@ -79,8 +79,8 @@ public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
   public List<RhizosphereModelRef> getAffectedModels() {
     return Collections.unmodifiableList(affectedModels);
   }
-  
-  /** 
+
+  /**
    * Returns a specific action detail.
    *
    * @param key The identifying key of the detail to retrieve.
@@ -131,5 +131,5 @@ public class UserActionEvent extends GwtEvent<UserActionEvent.Handler> {
   @Override
   public com.google.gwt.event.shared.GwtEvent.Type<Handler> getAssociatedType() {
     return TYPE;
-  } 
+  }
 }

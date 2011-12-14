@@ -79,13 +79,13 @@ public class RhizosphereUserAgent<T> {
       JavaScriptObject nativeUserAgent) /*-{
     return nativeUserAgent.getProject().selectionManager();
   }-*/;
-  
+
   /**
    * Returns the rendering associated to a given model.
-   * 
+   *
    * @param model The model to resolve.
    * @return The Rhizosphere rendering bound to the specified model.
-   */  
+   */
   final RhizosphereRendering getRendering(RhizosphereModelRef model) {
     return nativeGetRendering(nativeUserAgent, model);
   }
@@ -572,13 +572,13 @@ public class RhizosphereUserAgent<T> {
   private void onErrorAdd(String errorDetails) {
     ErrorEvent.fire(ownerVisualization, false, errorDetails);
   }
-  
+
   /**
    * Callback invoked when an user action occurs on the visualization.
    */
   private void onUserAction(
       String action,
-      JsArrayString detailKeys, 
+      JsArrayString detailKeys,
       JsArrayString detailValues,
       JsArray<RhizosphereModelRef> affectedModels) {
     Map<String, String> details = new HashMap<String, String>();

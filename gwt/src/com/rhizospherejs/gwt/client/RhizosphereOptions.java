@@ -383,7 +383,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
     }
     return this['layoutConstraints'];
   }-*/;
-  
+
   /**
    * Sets a custom configuration option for a layout engine.
    *
@@ -400,7 +400,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
     }
     (this['layoutOptions'][layoutName] = this['layoutOptions'][layoutName] || {})[key] = value;
   }-*/;
-  
+
   /**
    * Sets a custom configuration option for a layout engine.
    *
@@ -409,7 +409,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
    *     (e.g.: 'flow').
    * @param key The name of the option to set.
    * @param value The option value.
-   */  
+   */
   public final native void setLayoutOption(
       String layoutName, String key, double value) /*-{
     if (!('layoutOptions' in this)) {
@@ -417,7 +417,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
     }
     (this['layoutOptions'][layoutName] = this['layoutOptions'][layoutName] || {})[key] = value;
   }-*/;
-  
+
   /**
    * Sets a custom configuration option for a layout engine.
    *
@@ -426,7 +426,7 @@ public class RhizosphereOptions<T> extends JavaScriptObject {
    *     (e.g.: 'flow').
    * @param key The name of the option to set.
    * @param value The option value.
-   */  
+   */
   public final native void setLayoutOption(
       String layoutName, String key, String value) /*-{
     if (!('layoutOptions' in this)) {

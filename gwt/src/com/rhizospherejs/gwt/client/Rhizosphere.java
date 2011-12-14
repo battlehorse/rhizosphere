@@ -568,10 +568,10 @@ public class Rhizosphere<T> extends Composite implements
   public HandlerRegistration addErrorHandler(ErrorEvent.Handler handler) {
     return addHandler(handler, ErrorEvent.getType());
   }
-  
+
   /**
    * Register a handler to be notified whenever user actions occur on the
-   * visualization. 
+   * visualization.
    * @param handler The handler to notify.
    */
   @Override
@@ -1004,7 +1004,7 @@ public class Rhizosphere<T> extends Composite implements
   /**
    * Returns the renderings which are responsible for the display of the given
    * model references.
-   * 
+   *
    * @param modelRefs The models to resolve.
    * @return The renderings bound to each model. The returned collection has the
    *         same size and enforces the same ordering as the input one.
@@ -1025,7 +1025,7 @@ public class Rhizosphere<T> extends Composite implements
   /**
    * Returns the rendering which is responsible for the display of the given
    * model reference.
-   * 
+   *
    * @param modelRef The model reference to resolve.
    * @return The associated rendering.
    */
@@ -1034,7 +1034,7 @@ public class Rhizosphere<T> extends Composite implements
       return null;
     }
     return userAgent.getRendering(modelRef);
-  } 
+  }
 
   @Override
   protected void onLoad() {

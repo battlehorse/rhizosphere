@@ -29,12 +29,12 @@ import com.google.gwt.core.client.JavaScriptObject;
  * accessible from this class. This class currently exposes a limited subset
  * of the information available in the {@code rhizo.ui.Rendering} javascript
  * counterpart.
- * 
+ *
  * @author battlehorse@google.com (Riccardo Govoni)
  */
 public class RhizosphereRendering extends JavaScriptObject {
   protected RhizosphereRendering() {}
-  
+
   /**
    * Describes position information of a Rhizosphere rendering. In particular,
    * it indicates the position of the rendering top-left corner, with respect
@@ -42,26 +42,26 @@ public class RhizosphereRendering extends JavaScriptObject {
    */
   public static final class Position extends JavaScriptObject {
     protected Position() {}
-    
+
     public final native int top() /*-{
       return this.top;
     }-*/;
-      
+
     public final native int left() /*-{
       return this.left;
     }-*/;
   }
-  
+
   /**
    * Describes dimension information of a Rhizosphere rendering, in pixels.
    */
   public static final class Dimensions extends JavaScriptObject {
     protected Dimensions() {}
-    
+
     public final native int width() /*-{
       return this.width;
     }-*/;
-    
+
     public final native int height() /*-{
       return this.height;
     }-*/;
@@ -75,15 +75,15 @@ public class RhizosphereRendering extends JavaScriptObject {
    *     the visualization universe top-left corner.
    */
   public final native Position getPosition() /*-{
-    return this.position(); 
+    return this.position();
   }-*/;
-  
+
   /**
    * Returns the rendering dimensions.
    *
    * @return The dimensions of this model rendering. The returned object width
    *      and height map to the outer dimensions (incl. border and such) of the
-   *      rendering. The returned values are cached depending on 
+   *      rendering. The returned values are cached depending on
    *      {@link RhizosphereOptions#setCacheDimensions(boolean)}.
    */
   public final native Dimensions getDimensions() /*-{
