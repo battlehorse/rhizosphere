@@ -42,6 +42,7 @@ import com.google.gwt.visualization.client.visualizations.ScatterChart;
 import com.rhizospherejs.gwt.client.RhizosphereKind;
 import com.rhizospherejs.gwt.client.RhizosphereLoader;
 import com.rhizospherejs.gwt.client.RhizosphereMetaModel;
+import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereOptions;
 import com.rhizospherejs.gwt.client.RhizosphereOptions.LogLevel;
 import com.rhizospherejs.gwt.client.gviz.GVizRhizosphere;
@@ -293,7 +294,8 @@ public class GoogleVisualizationTab extends Composite implements DataTableChange
     }
 
     @Override
-    public void render(DataTableModel model, boolean expanded, RenderingOutput helper) {
+    public void render(
+        DataTableModel model, RhizosphereModelRef ref, boolean expanded, RenderingOutput helper) {
       // Delegate rendering code to PersonWidget, to show that UiBinder templates
       // can be used within Rhizosphere too.
       helper.emitWidget(new PersonWidget(model, changeHandler));

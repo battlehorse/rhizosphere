@@ -34,7 +34,7 @@ public class RhizosphereModelRef extends JavaScriptObject {
    * {@link com.rhizospherejs.gwt.client.bridge.ModelBridge} into an opaque
    * reference.
    */
-  static final native RhizosphereModelRef asModelRef(JavaScriptObject jso) /*-{
+  public static final native RhizosphereModelRef asModelRef(JavaScriptObject jso) /*-{
     return jso;
   }-*/;
   

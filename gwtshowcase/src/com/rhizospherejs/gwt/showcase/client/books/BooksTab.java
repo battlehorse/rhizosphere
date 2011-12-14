@@ -179,7 +179,7 @@ public class BooksTab extends ResizeComposite {
 
       // Registers the metamodel and renderer.
       rhizosphere.setMetaModel(meta);
-      rhizosphere.setRenderer(new BookRenderer(books, rhizosphere));
+      rhizosphere.setRenderer(new BookRenderer(rhizosphere));
       return rhizosphere;
     }
   }  

@@ -22,6 +22,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.rhizospherejs.gwt.client.RhizosphereException;
+import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereRenderer;
 import com.rhizospherejs.gwt.client.bridge.ModelExtractor;
 
@@ -261,7 +262,7 @@ public class NativeRenderer<T> {
     }
     RenderingOutputImpl output = new RenderingOutputImpl(
         RenderingHints.create(jsoRenderingHints), widgetBridge);
-    gwtRenderer.render(model, expanded, output);
+    gwtRenderer.render(model, RhizosphereModelRef.asModelRef(jso), expanded, output);
     Widget rendering = output.getRendering();
     if (rendering == null) {
       throw new RhizosphereException("Rhizosphere renderer returned a null widget");

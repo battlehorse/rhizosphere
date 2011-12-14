@@ -56,7 +56,8 @@ import com.rhizospherejs.gwt.client.renderer.RenderingOutput;
  * }
  *
  * class PersonRenderer implements RhizosphereRenderer&lt;Person&gt;, HasCustomDragHandlers {
- *   public void render(Person model, boolean expanded, RenderingOutput helper) {
+ *   public void render(
+ *      Person model, RhizosphereModelRef ref, boolean expanded, RenderingOutput helper) {
  *     HorizontalPanel hp = new HorizontalPanel();
  *
  *     // Create a handle that will be used to drag the widget around.
@@ -96,6 +97,8 @@ public interface RhizosphereRenderer<T> {
    * by the {@link RenderingOutput} helper with the produced rendering.
    *
    * @param model The model to render.
+   * @param modelRef An opaque reference to the model itself, accepted by
+   *     various {@link Rhizosphere} model mutators methods.
    * @param expanded Whether the model should be rendered in 'expanded'
    *     (i.e. maximized) state or not. This option is always false if model
    *     expansion is not enabled. See
@@ -103,5 +106,5 @@ public interface RhizosphereRenderer<T> {
    * @param helper Helper class the renderer must use to emit the produced
    *     rendering and configure its behavior.
    */
-  void render(T model, boolean expanded, RenderingOutput helper);
+  void render(T model, RhizosphereModelRef modelRef, boolean expanded, RenderingOutput helper);
 }

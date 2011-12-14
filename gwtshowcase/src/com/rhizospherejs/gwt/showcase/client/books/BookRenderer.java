@@ -39,8 +39,6 @@ import com.rhizospherejs.gwt.client.renderer.HasCustomDragHandlers;
 import com.rhizospherejs.gwt.client.renderer.RenderingOutput;
 import com.rhizospherejs.gwt.showcase.client.resources.Resources;
 
-import java.util.Map;
-
 /**
  * A Rhizosphere renderer that programmatically assembles the rendering as a
  * composed GWT widget.
@@ -50,16 +48,15 @@ import java.util.Map;
 public class BookRenderer implements 
       RhizosphereRenderer<Book>, HasCustomDragHandlers, HasCacheDimensions {
 
-  private Map<String, RhizosphereModelRef> books;
   private Rhizosphere<Book> rhizosphere;
   
-  public BookRenderer(Map<String, RhizosphereModelRef> books, Rhizosphere<Book> rhizosphere) {
-    this.books = books;
+  public BookRenderer(Rhizosphere<Book> rhizosphere) {
     this.rhizosphere = rhizosphere;
   }
 
   @Override
-  public void render(final Book book, boolean expanded, RenderingOutput helper) {
+  public void render(
+      final Book book, final RhizosphereModelRef ref, boolean expanded, RenderingOutput helper) {
     HorizontalPanel hp = new HorizontalPanel();
 
     // Create a drag handle: users will be able to drag Book renderings by using
@@ -84,7 +81,7 @@ public class BookRenderer implements
     final Button closeButton = new Button("x", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        rhizosphere.removeModel(books.get(book.getBookId()), null);
+        rhizosphere.removeModel(ref, null);
       }
     });
     closeButton.setStyleName(Resources.INSTANCE.booksCss().bookCloseButton());

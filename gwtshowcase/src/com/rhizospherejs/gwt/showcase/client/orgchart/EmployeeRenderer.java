@@ -16,6 +16,7 @@
 
 package com.rhizospherejs.gwt.showcase.client.orgchart;
 
+import com.rhizospherejs.gwt.client.RhizosphereModelRef;
 import com.rhizospherejs.gwt.client.RhizosphereRenderer;
 import com.rhizospherejs.gwt.client.renderer.HasExpandable;
 import com.rhizospherejs.gwt.client.renderer.RenderingHints;
@@ -35,7 +36,8 @@ import com.rhizospherejs.gwt.client.renderer.RenderingOutput;
 public class EmployeeRenderer implements RhizosphereRenderer<Employee>, HasExpandable {
 
   @Override
-  public void render(Employee model, boolean expanded, RenderingOutput helper) {
+  public void render(
+      Employee model, RhizosphereModelRef ref, boolean expanded, RenderingOutput helper) {
     if (expanded) {
       helper.emitHTML("<div class='rhizo-sample-expanded'>" +
           "<p><b><span style='color:" +
