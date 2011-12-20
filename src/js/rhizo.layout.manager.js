@@ -59,6 +59,8 @@ namespace('rhizo.layout');
  *      of a filter being applied.
  *   - 'forcealign' (boolean): Whether models' visibility should be synced at
  *      the end of the layout operation.
+ *   - 'instant' (boolean): Whether the layout transition should happen
+ *      instantly, ignoring any animation settings that might exist.
  *
  * - positions: List of manual overrides for models that should be explicitly
  *   placed in a given position in the viewport.  Each entry is a key-value map
@@ -66,7 +68,7 @@ namespace('rhizo.layout');
  *   - 'id': the id of the model to move,
  *   - 'top': the top coordinate (in px) of the top-left model corner, with
  *      respect to the visualization universe, where the model should be placed.
- *   - 'left', the left coordinate (in px) of the top-left model corner, with
+ *   - 'left': the left coordinate (in px) of the top-left model corner, with
  *     respect to the visualization universe, where the model should be placed.
  *
  *   TODO(battlehorse): Update top/left to be resolution independent. See
@@ -291,6 +293,11 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   var lastEngine = this.engines_[this.curEngineName_];
   var options = message['options'] || {};
 
+  // Disable animations if requested to do so.
+  if (!!options['instant'] && this.project_.options().areAnimationsEnabled()) {
+    this.project_.gui().disableFx(true);
+  }
+
   // Update the name of the current engine.
   this.curEngineName_ = message['engine'];
   var engine = this.engines_[this.curEngineName_];
@@ -362,6 +369,11 @@ rhizo.layout.LayoutManager.prototype.onLayout_ = function(message) {
   if (message['positions']) {
     this.moveModels_(message['positions']);
   }
+
+  // Restore animation settings if we artificially disabled them.
+  if (!!options['instant'] && this.project_.options().areAnimationsEnabled()) {
+    this.project_.alignFx();
+  }
   this.project_.logger().timeEnd('LayoutManager::onLayout');
 };
 
@@ -377,8 +389,7 @@ rhizo.layout.LayoutManager.prototype.moveModels_ = function(positions) {
   for (var i = positions.length-1; i >= 0; i--) {
     var model = this.project_.model(positions[i].id);
     if (model) {
-      model.rendering().move(
-          positions[i].top, positions[i].left);
+      model.rendering().move(positions[i].top, positions[i].left);
     }
   }
 };
@@ -390,7 +401,7 @@ rhizo.layout.LayoutManager.prototype.moveModels_ = function(positions) {
  *
  * @param {Array.<*>} positions An array of all model positions that changed.
  *     Each entry is a key-value map with the following properties: 'id', the
- *     id of the model that moved, 'top': the ending top coordinate of the
+ *     id of the model that moved, 'top', the ending top coordinate of the
  *     top-left model corner with respect to the visualization universe,
  *     'left', the ending left coordinate of the top-left model corner with
  *     respect to the visualization universe.

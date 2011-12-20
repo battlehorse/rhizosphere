@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Widget wrapping a Rhizosphere visualization. This is the main entry point
@@ -144,7 +145,7 @@ import java.util.Map;
  * ({@link #doFilter(Map, RhizosphereCallback)}), selection
  * ({@link #doSelection(String, Collection, RhizosphereCallback)}) and layout
  * changes
- * ({@link #doLayout(String, JSONObject, Collection, RhizosphereCallback)}).
+ * ({@link #doLayout(String, JSONObject, Collection, Set, RhizosphereCallback)}).
  * 
  * <p>
  * The following code snippet demonstrates how to initialize a Rhizosphere
@@ -909,6 +910,8 @@ public class Rhizosphere<T> extends Composite implements
    *     information for visualization models, that will override any position
    *     the layout engine would otherwise define. Leave {@code null} if
    *     unneeded.
+   * @param flags An optional set of configuration flags to tweak the layout
+   *     operation.
    * @param cb An optional callback invoked with the outcome of the layout
    *     operation.
    */
@@ -916,6 +919,7 @@ public class Rhizosphere<T> extends Composite implements
   public void doLayout(String engine,
                        JSONObject state,
                        Collection<RhizosphereModelPosition> positions,
+                       Set<RhizosphereLayoutFlags> flags,
                        RhizosphereCallback cb) {
     if (!bootstrap.isDeployed()) {
       if (cb != null) {
@@ -923,7 +927,7 @@ public class Rhizosphere<T> extends Composite implements
       }
       return;
     }    
-    userAgent.doLayout(engine, state, positions, cb);
+    userAgent.doLayout(engine, state, positions, flags, cb);
   }
   
   /**

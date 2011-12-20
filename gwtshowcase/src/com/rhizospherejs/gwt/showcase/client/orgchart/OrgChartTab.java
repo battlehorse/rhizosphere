@@ -404,14 +404,14 @@ public class OrgChartTab extends ResizeComposite {
 
   @UiHandler("layout")
   void applyRandomLayout(ClickEvent event) {
-    rhizosphere.doLayout("scramble", null, null, logCallback);
+    rhizosphere.doLayout("scramble", null, null, null, logCallback);
   }
 
   @UiHandler("layoutPositions")
   void moveSara(ClickEvent event) {
     List<RhizosphereModelPosition> positions = new ArrayList<RhizosphereModelPosition>();
     positions.add(RhizosphereModelPosition.create(sara, 400, 300));
-    rhizosphere.doLayout(null, null, positions, logCallback);
+    rhizosphere.doLayout(null, null, positions, null, logCallback);
   }
   
   @UiHandler("positionAndDimension")

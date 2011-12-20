@@ -405,6 +405,10 @@ rhizo.Project.prototype.userAgent = function() {
  * If either number is too high, animations are disabled.
  */
 rhizo.Project.prototype.alignFx = function() {
+  if (!this.options_.areAnimationsEnabled()) {
+    this.gui_.disableFx(true);
+    return;
+  }
   var numUnfilteredModels = 0;
   var numVisibleModels = 0;
   var models = this.modelManager_.models();
@@ -417,8 +421,7 @@ rhizo.Project.prototype.alignFx = function() {
       numVisibleModels++;
     }
   }
-  this.gui_.disableFx(!this.options_.areAnimationsEnabled() ||
-                      numUnfilteredModels > 200 ||
+  this.gui_.disableFx(numUnfilteredModels > 200 ||
                       numVisibleModels > 200);
 };
 
@@ -811,13 +814,15 @@ rhizo.UserAgent.prototype.doResetFilters = function(opt_callback) {
  *     specific model renderings. See rhizo.layout.LayoutManager for the
  *     expected structure of each array entry. Leave unspecified if position
  *     overrides are not needed.
+ * @param {Object=} opt_options A set of key-value options to tweak the layout
+ *     operation. See rhizo.layout.manager.js for the list of supported options.
  * @param {function(boolean, string=)=} opt_callback An optional callback
  *     invoked after the layout operation has been dispatched. Receives two
  *     parameters: a boolean describing whether the operation was rejected and
  *     an optional string containing the rejection details, if any.
  */
 rhizo.UserAgent.prototype.doLayout = function(
-    opt_engine, opt_state, opt_positions, opt_callback) {
+    opt_engine, opt_state, opt_positions, opt_options, opt_callback) {
   var message = {};
   if (opt_engine) {
     message['engine'] = opt_engine;
@@ -827,6 +832,9 @@ rhizo.UserAgent.prototype.doLayout = function(
   }
   if (opt_positions) {
     message['positions'] = opt_positions;
+  }
+  if (opt_options) {
+    message['options'] = opt_options;
   }
   this.project_.eventBus().publish('layout', message, opt_callback, this);
 };

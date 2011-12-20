@@ -19,6 +19,7 @@ package com.rhizospherejs.gwt.client;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -35,6 +36,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The UserAgent is an high-level interface to programmatically drive a
@@ -263,12 +265,15 @@ public class RhizosphereUserAgent<T> {
    *     information for visualization models, that will override any position
    *     the layout engine would otherwise define. Leave {@code null} if
    *     unneeded.
+   * @param flags An optional set of configuration flags to tweak the layout
+   *     operation.
    * @param cb An optional callback invoked with the outcome of the layout
    *     operation.
    */
   void doLayout(String engine,
                 JSONObject state,
                 Collection<RhizosphereModelPosition> positions,
+                Set<RhizosphereLayoutFlags> flags,
                 RhizosphereCallback cb) {
     JsArray<RhizosphereModelPosition> modelPositions = null;
     if (positions != null && !positions.isEmpty()) {
@@ -277,19 +282,27 @@ public class RhizosphereUserAgent<T> {
         modelPositions.push(p);
       }
     }
+    JSONObject options = new JSONObject();
+    if (flags != null && !flags.isEmpty()) {
+      for (RhizosphereLayoutFlags flag: flags) {
+        options.put(flag.name().toLowerCase(), JSONBoolean.getInstance(true));
+      }
+    }
     nativeDoLayout(nativeUserAgent,
                    engine,
                    state != null ? state.getJavaScriptObject() : null,
                    modelPositions,
+                   options.getJavaScriptObject(),
                    cb);
   }
   
   private native void nativeDoLayout(JavaScriptObject nativeUserAgent, 
                                      String engine, 
                                      JavaScriptObject state,
-                                     JsArray<RhizosphereModelPosition> positions, 
+                                     JsArray<RhizosphereModelPosition> positions,
+                                     JavaScriptObject options,
                                      RhizosphereCallback cb) /*-{
-    nativeUserAgent.doLayout(engine, state, positions, function(status, details) {
+    nativeUserAgent.doLayout(engine, state, positions, options, function(status, details) {
       if (cb) {
         cb.@com.rhizospherejs.gwt.client.RhizosphereCallback::run(ZLjava/lang/String;)(status, details);
       }    

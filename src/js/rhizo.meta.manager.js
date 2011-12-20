@@ -303,12 +303,19 @@ rhizo.meta.FilterManager.prototype.onFilter_ = function(message) {
   }
 
   if (modelsChange) {
+    // An fx alignment must occur _before_ the visibility change if a large
+    // number of models is becoming visible (moving from enabled to
+    // disabled animations), otherwise the visibility flip might be slow.
     this.project_.alignFx();
     if (this.mustLayoutAfterFilter_()) {
       this.commitFilter();
     } else {
       this.alignVisibility(rhizo.ui.Visibility.GREY);
     }
+    // An fx alignment must occur _after_ the visibility change if a large
+    // number of models became hidden (moving from disabled to enabled
+    // animtations), otherwise animations would remain unnecessarily disabled.
+    this.project_.alignFx();
   }
   this.project_.logger().timeEnd('FilterManager::onFilter');
 };
