@@ -18,6 +18,8 @@ package com.rhizospherejs.gwt.client.resources;
 
 import com.google.gwt.core.client.GWT;
 
+import java.util.Date;
+
 /**
  * Resource injector used when Rhizosphere is deployed in development mode.
  * All libraries are served uncompiled and unbundled. Styles are computed on
@@ -73,6 +75,9 @@ public class DebugResourcesInjector implements ResourcesInjector {
         "rhizosphere/src/js/extra/rhizo.broadcast.js",
         "rhizosphere/src/js/rhizo.bootstrap.js"
     };
+    for (int i = 0; i < jsFiles.length; i++) {
+      jsFiles[i] += "?v=" + new Date().getTime();
+    }
     domHelper.injectJavascriptLibrary(jsFiles, callback);
   }
 

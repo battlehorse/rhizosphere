@@ -16,6 +16,8 @@
 
 package com.rhizospherejs.gwt.client.resources;
 
+import com.rhizospherejs.gwt.client.RhizosphereVersion;
+
 /**
  * Resource injector used when Rhizosphere is deployed in production mode.
  * All libraries are served compiled and packed into as few files as possible.
@@ -28,12 +30,14 @@ public class ProdResourcesInjector implements ResourcesInjector {
 
   @Override
   public void injectRhizoCss(String theme) {
-    domHelper.injectStyle("rhizosphere/lib/stylesheets/rhizo." + theme + ".css", "stylesheet");
+    domHelper.injectStyle(
+        "rhizosphere/lib/stylesheets/rhizo." + theme + ".css?v=" + RhizosphereVersion.VERSION,
+        "stylesheet");
   }
 
   @Override
   public void injectRhizoJavascript(Runnable callback) {
-    String[] jsFiles = { "rhizosphere/lib/js/rhizo.pack.js" };
+    String[] jsFiles = { "rhizosphere/lib/js/rhizo.pack.js?v=" + RhizosphereVersion.VERSION };
     domHelper.injectJavascriptLibrary(jsFiles, callback);
   }
 

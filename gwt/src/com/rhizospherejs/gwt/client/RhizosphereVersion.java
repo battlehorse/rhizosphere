@@ -1,5 +1,5 @@
 /*
-  Copyright 2011 The Rhizosphere Authors. All Rights Reserved.
+  Copyright 2012 The Rhizosphere Authors. All Rights Reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,24 +14,14 @@
   limitations under the License.
 */
 
-package com.rhizospherejs.gwt.client.handlers;
-
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.event.shared.HasHandlers;
+package com.rhizospherejs.gwt.client;
 
 /**
- * Interface to track listeners on visualization {@link UserActionEvent}
- * events.
+ * Identifies the current library version.
  *
  * @author battlehorse@google.com (Riccardo Govoni)
  */
-public interface HasUserActionHandlers extends HasHandlers {
+public interface RhizosphereVersion {
 
-  /**
-   * Adds an {@link UserActionEvent} handler.
-   *
-   * @param handler the handler
-   * @return the handler registration
-   */
-  HandlerRegistration addUserActionHandler(UserActionEvent.Handler handler);
+  public static String VERSION = "0.94";
 }
