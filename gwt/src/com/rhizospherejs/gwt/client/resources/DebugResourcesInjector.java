@@ -45,7 +45,7 @@ public class DebugResourcesInjector implements ResourcesInjector {
     String[] jsFiles = {
         "rhizosphere/src/js/rhizo.js",
         "rhizosphere/src/js/rhizo.options.js",
-        "rhizosphere/src/js/rhizo.eventbus.js",        
+        "rhizosphere/src/js/rhizo.eventbus.js",
         "rhizosphere/src/js/rhizo.jquery.js",
         "rhizosphere/src/js/rhizo.jquery.xselectable.js",
         "rhizosphere/src/js/rhizo.log.js",
@@ -86,7 +86,7 @@ public class DebugResourcesInjector implements ResourcesInjector {
     domHelper.injectStyle(
         "rhizosphere/src/stylesheets/" + theme + "/jquery-ui-1.8.16.custom.css", "stylesheet");
   }
- 
+
   @Override
   public void injectDependenciesJavascript(final Runnable callback, boolean useGoogleCDN) {
     String[] jsFiles;

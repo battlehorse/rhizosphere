@@ -55,7 +55,7 @@ public class ProdResourcesInjector implements ResourcesInjector {
       // this issue is solved: http://code.google.com/p/gwt-google-apis/issues/detail?id=306.
       jsFiles = new String[] {
           domHelper.getProtocol() + "//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js",
-          domHelper.getProtocol() + 
+          domHelper.getProtocol() +
           "//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"
       };
     } else {
