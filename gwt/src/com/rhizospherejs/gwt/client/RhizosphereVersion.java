@@ -23,5 +23,5 @@ package com.rhizospherejs.gwt.client;
  */
 public interface RhizosphereVersion {
 
-  public static String VERSION = "0.94";
+  public static String VERSION = "0.95";
 }
