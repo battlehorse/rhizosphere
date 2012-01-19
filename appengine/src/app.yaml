@@ -16,6 +16,12 @@ handlers:
 - url: /google_visualization.html
   script: py/handlers/rhizo.py
 
+- url: /history_test.html
+  script: py/handlers/rhizo.py
+
+- url: /history_test_intro.html
+  script: py/handlers/rhizo.py
+
 - url: /ig
   script: py/handlers/rhizo.py
 

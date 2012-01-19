@@ -71,10 +71,20 @@ class IGoogleHandler(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
 
 
+class PlainHandler(webapp.RequestHandler):
+
+    def get(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            '../../templates%s' % self.request.path)
+        self.response.out.write(template.render(path, {}))
+
+
 application = webapp.WSGIApplication(
     [('/rhizo.html', RhizoHandler),
      ('/multi.html', RhizoHandler),
      ('/google_visualization.html', RhizoHandler),
+     ('/history_test.html', RhizoHandler),
+     ('/history_test_intro.html', PlainHandler),
      ('/ig', IGoogleHandler),
     ],
     debug=rhizoglobals.appenginedebug)

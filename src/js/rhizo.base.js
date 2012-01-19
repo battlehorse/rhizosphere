@@ -47,13 +47,6 @@ rhizo.Project = function(gui, options) {
   this.logger_ = rhizo.log.newLogger(this, this.options_);
 
   /**
-   * Manages transitions in visualization state.
-   * @type {rhizo.state.ProjectStateBinder}
-   * @private
-   */
-  this.state_ = null;
-
-  /**
    * The publish/subscribe message dispatcher used by visualization elements
    * and components to communicate across the project.
    *
@@ -135,7 +128,6 @@ rhizo.Project.prototype.deploy = function() {
     bindings.push(rhizo.state.Bindings.HISTORY);
   }
   rhizo.state.getMasterOverlord().attachProject(this, bindings);
-  this.state_ = rhizo.state.getMasterOverlord().projectBinder(this);
 
   if (this.options_.mustLayoutOnResize()) {
     this.gui_.trackViewportResize(this.layoutManager_);

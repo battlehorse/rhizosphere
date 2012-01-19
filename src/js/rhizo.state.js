@@ -59,7 +59,8 @@
  * HTML5 history is a sequence of document-wide state. PopStateEvent events are
  * fired whenever the document state should be updated as a consequence of the
  * user hitting the back/forward button (either to arrive in the current page,
- * return to the current page or move within current page states).
+ * return to the current page or move within current page states) or generating
+ * history changes by other means.
  *
  * Because of differences in browsers implementations:
  * - a PopStateEvent might fire or not when we arrive directly on a page
@@ -117,13 +118,16 @@ rhizo.state.Bindings = {
 
 
 /**
- * The global state overlord, that oversees state changes for all the
- * visualizations present in a page.
- * @constructor
+ * Returns an empty Rhizosphere global state object, that can be used to track
+ * the individual state of multiple visualizations in the same page, persisted
+ * and distributed for history management and other needs (such as
+ * broadcasting).
+ *
+ * @private
+ * @returns {!Object} An empty Rhizosphere global state object.
  */
-rhizo.state.MasterOverlord = function() {
-  // Plain JS object that describes the global state. Initially empty.
-  this.state_ = {
+rhizo.state.getEmptyState_ = function() {
+  return {
     type: rhizo.state.TYPE,  // Watermarking
     uuids: {},  // per-visualization state. Each entry has the visualization
                 // uuid as its key and the visualization state as the value.
@@ -137,6 +141,17 @@ rhizo.state.MasterOverlord = function() {
       facetState: null  // associated facet state.
     }
   };
+};
+
+
+/**
+ * The global state overlord, that oversees state changes for all the
+ * visualizations present in a page.
+ * @constructor
+ */
+rhizo.state.MasterOverlord = function() {
+  // Plain JS object that describes the global state. Initially empty.
+  this.state_ = rhizo.state.getEmptyState_();
 
   /**
    * Collection of all project overlords, keyed by project uuid.
@@ -682,8 +697,8 @@ rhizo.state.ProjectStateBinder.prototype.onLayout_ = function(message) {
 rhizo.state.ProjectStateBinder.prototype.curLayoutHasPositions_ = function() {
   var state = this.overlord_.master().state();
   var uuid = this.overlord_.uuid();
-  return uuid in state.uuids &&
-      rhizo.state.Facets.LAYOUT in state.uuids[uuid] &&
+  return !!state.uuids[uuid] &&
+      !!state.uuids[uuid][rhizo.state.Facets.LAYOUT] &&
       !!state.uuids[uuid][rhizo.state.Facets.LAYOUT].positions;
 };
 
@@ -845,6 +860,11 @@ rhizo.state.HistoryHelper = function(masterOverlord, logger) {
   this.master_ = masterOverlord;
   this.logger_ = logger;
   this.listeners_ = {};
+
+  /**
+   * @type {boolean}
+   * @private
+   */
   this.initialStateReceived_ = false;
 
   $(window).bind('popstate', jQuery.proxy(this.historyChange_, this));
@@ -880,12 +900,24 @@ rhizo.state.HistoryHelper.prototype.removeListener = function(uuid) {
  * Pushes the current master state to HTML5 history.
  */
 rhizo.state.HistoryHelper.prototype.sync = function(state, opt_replace) {
-  // Stop listening for initial events after the first push.
-  // We assume the initial state was never fired during the init process,
-  // as is the case of Safari/MacOs when we are landing directly on the
-  // visualization page (not arriving from history browse).
+  // Stop listening for initial events after the first sync,
+  // since the sync itself is responsible for setting the initial state.
   this.logger_.debug('Pushing history state, replace=', !!opt_replace);
+
+  var firstSync = !this.initialStateReceived_;
   this.initialStateReceived_ = true;
+
+  if (firstSync) {
+    // Once the first user-generated history change, we first push an
+    // initial empty state to be able to revert to the visualization
+    // default state when going back in history.
+    //
+    // TODO(battlehorse): replace with the correct state once it is possible
+    // to initialize the visualization in a predefined state. 
+    window.history.pushState(
+        rhizo.state.getEmptyState_(), /* empty title */ '');
+  }
+
   if (!!opt_replace) {
     window.history.replaceState(state, /* empty title */ '');
   } else {
@@ -899,71 +931,65 @@ rhizo.state.HistoryHelper.prototype.sync = function(state, opt_replace) {
  * @private
  */
 rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
-  this.logger_.debug('History popstate event: ', evt.originalEvent.state);
-  if (!this.initialStateReceived_) {
-    this.logger_.debug('History event is initial.');
+  var target_state = evt.originalEvent.state;
+  this.logger_.debug('History popstate event: ', target_state);
 
-    // A PopStateEvent is fired on page load when we are arriving on the page
-    // as a consequence of browser back/forward navigation. The event contains
-    // the initial state Rhizosphere visualizations should be restored to.
-    this.initialStateReceived_ = true;
-    var initial_state = evt.originalEvent.state;
-
-    // A null PopStateEvent is fired by Chrome (on Linux, Win) and FF4 when
-    // we are landing directly on the page that contains the visualization
-    // (i.e.: no back/forward buttons were used).
-    if (initial_state) {
-
-      // Verify whether the state we received belongs to Rhizosphere.
-      if (this.isRhizoState_(initial_state)) {
-        this.master_.setInitialState(rhizo.state.Bindings.HISTORY,
-                                     initial_state);
-      }
-    } else {
-      this.logger_.debug('Initial history event is null.');
-    }
+  if (!this.isRhizoState_(target_state)) {
+    // A PopState event with a null (or non-Rhizosphere) state might occur in
+    // several occasions:
+    // - when transitioning to a 'traditional' history location as set by
+    //   simply changing window.location.hash (i.e. not carrying any state),
+    // - depending on the browser (Chrome17 has the behavior, Opera 11.6 and
+    //   FF4+ do not) when _generating_ a 'traditional' history event (by
+    //   clicking on a link that only changes the location hash -- even when
+    //   the same link is clicked multiple times -- or by changing the
+    //   location.hash programmatically)
+    // - when moving backward to the initial arrival on the page, 
+    // - depending on the browser (Chrome17 has the behavior, Opera 11.6 and
+    //   FF4+ do not) when _arriving_ on the page.
+    //
+    // Out of all these, the only case we care about is the second, as we
+    // want to revert the visualization to its initial (default) state, but
+    // this is dealt separately by pushing a double state on the first sync()
+    // so we can safely ignore any null states.
     return;
   }
 
-  var delta;
-  var target_state = evt.originalEvent.state;
-  if (!target_state) {
-    // A null target state implies we are moving backward to the initial state
-    // the page has when we land on it directly (not coming from an history
-    // event).
-    //
-    // Prepare a suitable delta to revert the facet to its initial (default)
-    // state.
-    delta = {
-      ts: new Date().getTime(),
-      uuid: this.master_.state().delta.uuid,
-      facet: this.master_.state().delta.facet,
-      facetState: null
-    };
-  } else {
-    if (!this.isRhizoState_(target_state)) {
-      // Notified of an HTML5 history state change that was not set by
-      // Rhizosphere.
-      return;
-    }
-
-    if (this.master_.state().delta.ts == target_state.delta.ts) {
-      // We are receiving the same state twice (assuming timestamp measurement
-      // is granular enough).
-      // This can happen in some weird cases. For example:
-      // - if we are on Chrome/Linux,
-      // - and we set an initial state with replacement (as when resuming the
-      //   the initial following of a remote visualization)
-      // Then:
-      // - a popState event will be fired _after_ the initial state was set.
-      // Since we performed a state replace, the popstate event will contain
-      // the exact state currently in the master.
-      return;
-    }
-
-    // Compute the transition required to reach the target state.
-    delta = this.diff_(this.master_.state(), target_state);
+  if (!this.initialStateReceived_) {
+    // This is the first Rhizosphere-specific history event that we receive,
+    // even before any user action on the visualization(s). This derives
+    // from the user either a) browsing back to the page into the last
+    // visualization state before he left or b) browsing forward to the page
+    // to first visualization state of a previous sequence.
+    this.logger_.debug('History event is initial.');
+    this.initialStateReceived_ = true;
+    this.master_.setInitialState(rhizo.state.Bindings.HISTORY, target_state);
+    return;
   }
+
+  if (this.master_.state().delta.ts == target_state.delta.ts) {
+    // Under some conditions, the same state can be received twice
+    // (assuming timestamp measurement is granular enough), in which case
+    // we don't consider the state valid and ignore it.
+    //
+    // The most common case is when navigating back from a traditional history
+    // event (no state attached) to a Rhizosphere one. In such case, the
+    // target_state and the current master state coincide and no transition
+    // is required.
+    //
+    // Alternatively, this can happen in some other corner cases. For example:
+    // - if we are on Chrome/Linux,
+    // - and we set an initial state with replacement (as when resuming the
+    //   the initial following of a remote visualization)
+    // Then:
+    // - a popState event will be fired _after_ the initial state was set.
+    // Since we performed a state replace, the popstate event will contain
+    // the exact state currently in the master.
+    return;
+  }
+
+  // Compute the transition required to reach the target state.
+  var delta = this.diff_(this.master_.state(), target_state);
 
   this.logger_.debug('Delta change extracted from history: ', delta);
   if (delta.uuid in this.listeners_) {
@@ -975,11 +1001,7 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
     // update the master state directly.
     // (even though no longer useful, we cannot miss this state, because
     // delta computations in diff() must operate on consecutive states).
-    if (target_state) {
-      this.master_.setState(target_state);
-    } else {
-      this.master_.pushDelta(delta);
-    }
+    this.master_.pushDelta(delta);
   }
 };
 
@@ -989,7 +1011,7 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
  * @private
  */
 rhizo.state.HistoryHelper.prototype.isRhizoState_ = function(state) {
-  return state.type == rhizo.state.TYPE;
+  return !!state && state.type == rhizo.state.TYPE;
 };
 
 /**
