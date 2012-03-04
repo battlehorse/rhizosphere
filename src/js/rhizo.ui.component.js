@@ -2041,6 +2041,7 @@ rhizo.ui.component.Actions.prototype.ready = function() {
                         "Drop your items here to perform:<br />" +
                         actionName  +"</div>").css({top: top, left: left});
 
+        gui.associateToGUI(dropbox);
         gui.universe.append(dropbox);
         dropbox.fadeIn();
         dropbox.draggable();

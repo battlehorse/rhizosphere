@@ -131,7 +131,7 @@ rhizo.layout.LayoutManager = function(project) {
    * @private
    */
   this.renderingPipeline_ = new rhizo.ui.RenderingPipeline(
-      project, project.gui().universe);
+      project, project.gui(), project.gui().universe);
 
 
   // Registers this manager to validation and notification whenever a

@@ -19,15 +19,13 @@ namespace("rhizo.jquery");
 
 /**
  * Extends jQuery with all the additional behaviors required by Rhizosphere.
- * @param {rhizo.ui.gui.GUI} gui
- * @param {boolean} enableAnims whether the visualization can use animations to
- *     smooth UI transitions, such as applying layouts and filters.
+ *
  * @param {boolean} enableMouseWheelForPanning whether the visualization should
  *     explicitly trap mousewheel (and trackpad) events and convert them into
  *     panning requests for the visualization viewport.
  */
-rhizo.jquery.init = function(gui, enableAnims, enableMouseWheelForPanning) {
-  rhizo.jquery.initAnimations_(gui, enableAnims);
+rhizo.jquery.init = function(enableMouseWheelForPanning) {
+  rhizo.jquery.initAnimations_();
   if (enableMouseWheelForPanning) {
     rhizo.jquery.initMouseWheel_();
   }
@@ -36,91 +34,65 @@ rhizo.jquery.init = function(gui, enableAnims, enableMouseWheelForPanning) {
 /**
  * Extends jQuery by adding (or rewriting) animation-related functions for
  * movement and opacity.
- * 
- * TODO(battlehorse): This code is flawed when multiple visualizations are
- * present in a single page, since the first GUI object will dictate animation
- * status (via gui.noFx) for all the others.
- * See http://code.google.com/p/rhizosphere/issues/detail?id=68
- * 
- * @param {rhizo.ui.gui.GUI} gui
- * @param {boolean} enableAnims whether the visualization can use animations to
- *     smooth UI transitions, such as applying layouts and filters.
  */
-rhizo.jquery.initAnimations_ = function(gui, enableAnims) {
+rhizo.jquery.initAnimations_ = function() {
   if ($.support.greyOut) {
     return;
   }
   $.extend($.support, {greyOut: true});
 
   (function($) {
-    if (!enableAnims) {
-      // Define non-animated move(), fadeIn() and fadeOut() functions
-      $.fn.extend({
-        move: function(top, left, opt_extras) {
+    var noFx = function(el) {
+      return !!$(el).data('gui')  && $(el).data('gui').noFx;
+    }
+
+    // Define move(), fadeIn(), fadeOut(). greyOut() functions that discard
+    // animations when explicitly disabled or in case of UI overload.
+    $.fn.extend({
+      move: function(top, left, opt_extras) {
+        if (noFx(this)) {
           $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
-        },
-        fadeIn: function() {
+        } else {
+          $(this).animate(
+            jQuery.extend({top: top, left: left}, opt_extras),
+            {duration: 400, queue: false});
+        }
+      },
+      fadeIn: function() {
+        $(this).stop(true, true);
+        if (noFx(this)) {
           $(this).css({visibility: 'visible', opacity: 1.0});
-        },
-        fadeOut: function(opt_callback) {
+        } else {
+          $(this).css('visibility', 'visible').animate({opacity: 1.0}, 400);
+        }
+      },
+      fadeOut: function(opt_callback) {
+        $(this).stop(true, true);
+        if (noFx(this)) {
           $(this).css({visibility: 'hidden', opacity: 0.0});
           if (opt_callback) {
             opt_callback.apply(this);
           }
-        },
-        greyOut: function() {
-          $(this).css('opacity', 0.2);
+        } else {
+          $(this).animate({opacity: 0.0}, {
+                           duration: 400,
+                           complete: function() {
+                             $(this).css('visibility', 'hidden');
+                             if (opt_callback) {
+                               opt_callback.apply(this);
+                             }
+                           }});
         }
-      });
-    } else {
-      // Define move(), fadeIn() and fadeOut() functions that discards
-      // animations only in case of overload.
-      $.fn.extend({
-        move: function(top, left, opt_extras) {
-          if (gui.noFx) {
-            $(this).css(jQuery.extend({top: top, left: left}, opt_extras));
-          } else {
-            $(this).animate(
-              jQuery.extend({top: top, left: left}, opt_extras),
-              {duration: 400, queue: false});
-          }
-        },
-        fadeIn: function() {
-          $(this).stop(true, true);
-          if (gui.noFx) {
-            $(this).css({visibility: 'visible', opacity: 1.0});
-          } else {
-            $(this).css('visibility', 'visible').animate({opacity: 1.0}, 400);
-          }
-        },
-        fadeOut: function(opt_callback) {
-          $(this).stop(true, true);
-          if (gui.noFx) {
-            $(this).css({visibility: 'hidden', opacity: 0.0});
-            if (opt_callback) {
-              opt_callback.apply(this);
-            }
-          } else {
-            $(this).animate({opacity: 0.0}, {
-                             duration: 400,
-                             complete: function() {
-                               $(this).css('visibility', 'hidden');
-                               if (opt_callback) {
-                                 opt_callback.apply(this);
-                               }
-                             }});
-          }
-        },
-        greyOut: function() {
-          $(this).stop(true, true);
-          if (gui.noFx) {
-            $(this).css({visibility: 'visible', 'opacity': 0.2});
-          } else {
-            $(this).css('visibility', 'visible').animate({opacity: 0.2}, 400);
-          }
+      },
+      greyOut: function() {
+        $(this).stop(true, true);
+        if (noFx(this)) {
+          $(this).css({visibility: 'visible', 'opacity': 0.2});
+        } else {
+          $(this).css('visibility', 'visible').animate({opacity: 0.2}, 400);
         }
-      });
-    }
+      }
+    });
   })(jQuery);
 };
 

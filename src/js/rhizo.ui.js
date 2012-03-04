@@ -117,10 +117,6 @@ rhizo.ui.Visibility = {
  * @enum {string}
  */
 rhizo.ui.RenderingOp = {
-  // Request to add an artifact (i.e. any UI control or element which is not a
-  // SuperModel) to the layout.
-  ARTIFACT: 'artifact',
-
   // Request to move a SuperModel rendering.
   MOVE: 'move',
 
@@ -144,12 +140,14 @@ rhizo.ui.RenderingOp = {
  * See also rhizo.ui.RenderingBackupManager.
  *
  * @param {rhizo.Project} project The visualization project.
+ * @param {rhizo.ui.gui.GUI} gui The project GUI.
  * @param {*} container The jQuery object pointing to a container where
  *     rendering artifacts will be added (typically the visualization universe).
  * @constructor
  */
-rhizo.ui.RenderingPipeline = function(project, container) {
+rhizo.ui.RenderingPipeline = function(project, gui, container) {
   this.project_ = project;
+  this.gui_ = gui;
   this.container_ = container;
 
   /**
@@ -174,9 +172,9 @@ rhizo.ui.RenderingPipeline = function(project, container) {
    * @type {*}
    * @private
    */
-  this.artifactLayer_ = $('<div />').
+  this.artifactLayer_ = this.gui_.associateToGUI($('<div />').
       css({'visibility': 'hidden', 'opacity': 0.0}).
-      appendTo(this.container_);
+      appendTo(this.container_));
 
   this.backupEnabled_ = true;
   this.backupManager_ = new rhizo.ui.RenderingBackupManager();
@@ -187,9 +185,9 @@ rhizo.ui.RenderingPipeline = function(project, container) {
  */
 rhizo.ui.RenderingPipeline.prototype.cleanup = function() {
   this.artifactLayer_.fadeOut(function() { $(this).remove(); });
-  this.artifactLayer_ = $('<div />').
+  this.artifactLayer_ = this.gui_.associateToGUI($('<div />').
       css({'visibility': 'hidden', 'opacity': 0.0}).
-      appendTo(this.container_);
+      appendTo(this.container_));
 
   this.artifacts_ = [];
   this.renderingOps_ = {};
@@ -332,7 +330,7 @@ rhizo.ui.RenderingPipeline.prototype.style = function(modelId, styleProps) {
  * @return {rhizo.ui.RenderingPipeline} The pipeline itself, for chaining.
  */
 rhizo.ui.RenderingPipeline.prototype.artifact =  function(artifact) {
-  this.artifactLayer_.append(artifact);
+  this.artifactLayer_.append(this.gui_.associateToGUI(artifact));
   return this;
 };
 
@@ -707,10 +705,10 @@ rhizo.ui.Elevation.prototype.recomputeTop_ = function() {
  *     to.
  * @param {*} rawNode The jQuery object that manages the 'raw' rendering.
  * @param {*} renderer The project renderer.
- * @param {*} renderingHints The project rendering hints.
+ * @param {rhizo.ui.gui.GUI} gui The project GUI.
  * @constructor
  */
-rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
+rhizo.ui.Rendering = function(model, rawNode, renderer, gui) {
   this.model_ = model;
   this.id = model.id;
   this.raw_node_ = rawNode;
@@ -722,11 +720,12 @@ rhizo.ui.Rendering = function(model, rawNode, renderer, renderingHints) {
    */
   this.naked_node_ = rawNode.children().get(0);
 
-  // Bind the model id to each rendering
+  // Bind the rendering to both the model id and the GUI it belongs to.
   this.raw_node_.data('id', model.id);
+  gui.associateToGUI(this.raw_node_);
 
   this.renderer_ = renderer;
-  this.renderingHints_ = renderingHints;
+  this.renderingHints_ = gui.allRenderingHints();
 
   /**
    * Function to decide whether the rendering can be rescaled to the desired
@@ -1545,7 +1544,7 @@ rhizo.ui.RenderingBootstrap.prototype.buildFromStrings_ = function(
           var model = models[renderingIdx];
           var rendering = new rhizo.ui.Rendering(
               model, $(rawRendering), this.renderer_,
-              this.gui_.allRenderingHints());
+              this.gui_);
           model.setRendering(rendering);
         }, this));
 };
@@ -1567,7 +1566,7 @@ rhizo.ui.RenderingBootstrap.prototype.buildFromShells_ = function(
     var rendering = new rhizo.ui.Rendering(models[i],
                                            rawRenderings[i],
                                            this.renderer_,
-                                           this.gui_.allRenderingHints());
+                                           this.gui_);
     models[i].setRendering(rendering);
   }
 };

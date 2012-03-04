@@ -287,13 +287,8 @@ rhizo.bootstrap.Bootstrap.prototype.initGui_ = function() {
                                  platformDevice.device);
   gui.disableFx(!this.options_.areAnimationsEnabled());
 
-  // Extends jQuery with all the additional behaviors required by Rhizosphere
-  // Disable animations and other performance tunings if needed.
-  //
-  // TODO(battlehorse): this must happen at the global level, and not locally
-  // for every single visualization.
-  // See http://code.google.com/p/rhizosphere/issues/detail?id=68.
-  rhizo.jquery.init(gui, this.options_.areAnimationsEnabled(), true);
+  // Extends jQuery with all the additional behaviors required by Rhizosphere.
+  rhizo.jquery.init(this.options_.panningMode() == 'infinite');
 
   return gui;
 };

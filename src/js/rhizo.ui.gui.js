@@ -210,12 +210,25 @@ rhizo.ui.gui.GUI.prototype.initContainer_ = function() {
       this.container.height() < 250;
 };
 
+/**
+ * Associates this GUI instance to the given object (via a data() call),
+ * for later operations on the object that depend on the GUI state, such
+ * applying animations.
+ *
+ * @param {*} obj The object to associate the GUI to.
+ * @return {*} The same object received as input.
+ */
+rhizo.ui.gui.GUI.prototype.associateToGUI = function(obj) {
+  $(obj).data('gui', this);
+  return obj;
+};
+
 rhizo.ui.gui.GUI.prototype.setViewport = function(viewport) {
-  this.viewport = viewport;
+  this.viewport =  this.associateToGUI(viewport);
 };
 
 rhizo.ui.gui.GUI.prototype.setUniverse = function(universe) {
-  this.universe = universe;
+  this.universe = this.associateToGUI(universe);
 };
 
 /**
