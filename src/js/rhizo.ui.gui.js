@@ -224,7 +224,7 @@ rhizo.ui.gui.GUI.prototype.associateToGUI = function(obj) {
 };
 
 rhizo.ui.gui.GUI.prototype.setViewport = function(viewport) {
-  this.viewport =  this.associateToGUI(viewport);
+  this.viewport = this.associateToGUI(viewport);
 };
 
 rhizo.ui.gui.GUI.prototype.setUniverse = function(universe) {

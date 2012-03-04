@@ -913,7 +913,7 @@ rhizo.state.HistoryHelper.prototype.sync = function(state, opt_replace) {
     // default state when going back in history.
     //
     // TODO(battlehorse): replace with the correct state once it is possible
-    // to initialize the visualization in a predefined state. 
+    // to initialize the visualization in a predefined state.
     window.history.pushState(
         rhizo.state.getEmptyState_(), /* empty title */ '');
   }
@@ -944,7 +944,7 @@ rhizo.state.HistoryHelper.prototype.historyChange_ = function(evt) {
     //   clicking on a link that only changes the location hash -- even when
     //   the same link is clicked multiple times -- or by changing the
     //   location.hash programmatically)
-    // - when moving backward to the initial arrival on the page, 
+    // - when moving backward to the initial arrival on the page,
     // - depending on the browser (Chrome17 has the behavior, Opera 11.6 and
     //   FF4+ do not) when _arriving_ on the page.
     //

@@ -34,6 +34,8 @@ rhizo.jquery.init = function(enableMouseWheelForPanning) {
 /**
  * Extends jQuery by adding (or rewriting) animation-related functions for
  * movement and opacity.
+ *
+ * @private
  */
 rhizo.jquery.initAnimations_ = function() {
   if ($.support.greyOut) {
@@ -43,7 +45,7 @@ rhizo.jquery.initAnimations_ = function() {
 
   (function($) {
     var noFx = function(el) {
-      return !!$(el).data('gui')  && $(el).data('gui').noFx;
+      return !!$(el).data('gui') && $(el).data('gui').noFx;
     }
 
     // Define move(), fadeIn(), fadeOut(). greyOut() functions that discard
